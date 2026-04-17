@@ -2516,6 +2516,7 @@ export async function hasAnyMethodV2IntroCompleted() {
   return (completedVideos?.data?.length || 0) > 0
 }
 
-function applyPermissionSort(sortOrder, membershipTier) {
-  return `select(membership_tier == '${membershipTier}' => 1, 0) desc, ${sortOrder}`
+function applyPermissionSort(sortOrder, permissionIds) {
+  const idsString = permissionIds.join(",")
+  return `select(permission_v2 in [${idsString}] => 1, 0) desc, ${sortOrder}`
 }
