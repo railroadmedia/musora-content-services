@@ -56,7 +56,7 @@ import { COLLECTION_TYPE } from './sync/models/ContentProgress'
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['fetchRelatedByLicense']
+const excludeFromGeneratedIndex = ['fetchRelatedByLicense', 'devFetchAllLearningPathsAndIntroVideoIdsForDelete']
 
 /**
  * Mapping from tab names to their underlying Sanity content types.
@@ -2200,6 +2200,14 @@ export async function fetchMethodV2Structure(brand) {
     }
   }`
   return await fetchSanity(query, false)
+}
+
+export async function devFetchAllLearningPathsAndIntroVideoIdsForDelete() {
+  const query = `{
+    'intros': *[_type in ['method-intro', 'learning-path-intro']].railcontent_id,
+    'learning_paths': *[_type == 'learning-path-v2'].railcontent_id
+  }`
+  return await fetchSanity(query, true)
 }
 
 /**
