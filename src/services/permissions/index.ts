@@ -69,5 +69,6 @@ export type { PermissionsVersion } from './PermissionsAdapterFactory'
 export {
   fetchUserPermissions,
   reset,
-  getUserMembershipTier,
+  isUserFreeTier,
+  doesUserHaveMembership,
 } from './permissions'

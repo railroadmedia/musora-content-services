@@ -21,8 +21,7 @@ import {
   lessonTypesMapping,
   ownedContentTypes
 } from "../contentTypeConfig";
-import { getPermissionsAdapter, getUserMembershipTier } from './permissions/index.ts'
-import {MEMBERSHIP_PERMISSIONS} from "../constants/membership-permissions.ts";
+import { fetchUserPermissions, getPermissionsAdapter, isUserFreeTier, doesUserHaveMembership } from './permissions/index.ts'
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
@@ -92,8 +91,11 @@ export async function getTabResults(brand, pageName, tabName, {
   sort = 'recommended',
   selectedFilters = []
 } = {}) {
-
   if (!tabName && ['lessons', 'songs'].includes(pageName)) return { type: TabResponseType.CATALOG, data: [], meta: { filters: [], sort: {} } }
+
+  const userPermissions = await fetchUserPermissions()
+  const permissions = userPermissions.permissions || []
+  const isFreeTier = isUserFreeTier(userPermissions)
 
   // Extract and handle 'progress' filter separately
   const progressFilter = selectedFilters.find(f => f.startsWith('progress,')) || 'progress,all';
@@ -107,8 +109,6 @@ export async function getTabResults(brand, pageName, tabName, {
   const tabValue = tabMatch?.value || ''
   const tabRecSysSection = tabMatch?.recSysSection || ''
   const mergedIncludedFields = tabValue ? [...filteredSelectedFilters, tabValue] : filteredSelectedFilters;
-
-  const isUserFreeTier = (await getUserMembershipTier()) === 'free';
 
   // Fetch data
   let results
@@ -132,8 +132,8 @@ export async function getTabResults(brand, pageName, tabName, {
 
       recommendedContent = filterCoursesInCourseCollections(recommendedContent)
 
-      if (isUserFreeTier) {
-        recommendedContent = postSortFreeContent(recommendedContent)
+      if (isFreeTier) {
+        recommendedContent = applyPermissionsPostSort(recommendedContent, permissions)
       }
 
       const start = (page - 1) * limit
@@ -149,7 +149,7 @@ export async function getTabResults(brand, pageName, tabName, {
           includedFields: mergedIncludedFields,
           progress: progressValue,
           excludeIds: recommendedContent.map(c => c.id),
-          sortFreeContent: isUserFreeTier,
+          sortPermissions: permissions,
         })
 
         // Filter out duplicates and combine
@@ -170,7 +170,7 @@ export async function getTabResults(brand, pageName, tabName, {
         sort: '-published_on',
         includedFields: mergedIncludedFields,
         progress: progressValue,
-        sortFreeContent: isUserFreeTier,
+        sortPermissions: permissions,
       })
       contentToDisplay = temp.entity
     }
@@ -191,7 +191,7 @@ export async function getTabResults(brand, pageName, tabName, {
         sort,
         includedFields: mergedIncludedFields,
         progress: progressValue,
-        sortFreeContent: isUserFreeTier,
+        sortPermissions: permissions,
       });
     const [ranking, contextResults] = await Promise.all([
       sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.id)) : [],
@@ -567,9 +567,7 @@ export async function getLegacyMethods(brand)
   const userPermissions = userPermissionsData.permissions
   // Users should only have access to this if they have an active membership AS WELL as the content access
   // This is hardcoded behaviour and isn't found elsewhere
-  const hasMembership = userPermissionsData.isAdmin
-    || userPermissions.includes(MEMBERSHIP_PERMISSIONS.base)
-    || userPermissions.includes(MEMBERSHIP_PERMISSIONS.plus)
+  const hasMembership = doesUserHaveMembership(userPermissionsData)
   const hasContentPermission = userPermissions.includes(100000000 + ids[0])
   if (hasMembership && hasContentPermission) {
    return Promise.all(ids.map(id => fetchCourseCollectionData(id)))
@@ -643,10 +641,10 @@ export function filterCoursesInCourseCollections(data) {
   return data.filter(c => !(c.type === 'course' && c.parent_id))
 }
 
-function postSortFreeContent(contentList) {
+function applyPermissionsPostSort(contentList, permissionIds) {
   contentList.sort((a, b) => {
     const hasAccess = (item) =>
-      item.permission_id?.includes(MEMBERSHIP_PERMISSIONS.free)
+      item.permission_id?.includes(permissionIds)
 
     return hasAccess(b) - hasAccess(a);
   });

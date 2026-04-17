@@ -231,10 +231,11 @@ import {
 	PermissionsAdapter,
 	PermissionsV1Adapter,
 	PermissionsV2Adapter,
+	doesUserHaveMembership,
 	fetchUserPermissions,
 	getPermissionsAdapter,
 	getPermissionsVersion,
-	getUserMembershipTier,
+	isUserFreeTier,
 	reset
 } from './services/permissions/index.ts';
 
@@ -519,6 +520,7 @@ export {
 	deleteProfilePicture,
 	deleteThread,
 	deleteUserActivity,
+	doesUserHaveMembership,
 	duplicatePlaylist,
 	editComment,
 	emitProgressSaved,
@@ -686,7 +688,6 @@ export {
 	getToday,
 	getUpgradePrice,
 	getUserData,
-	getUserMembershipTier,
 	getUserMonthlyStats,
 	getUserPinProgressKey,
 	getUserSignature,
@@ -702,6 +703,7 @@ export {
 	isContentLikedByIds,
 	isNextDay,
 	isSameDate,
+	isUserFreeTier,
 	isUsernameAvailable,
 	jumpToContinueContent,
 	jumpToPost,

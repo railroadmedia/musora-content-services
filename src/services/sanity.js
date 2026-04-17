@@ -796,13 +796,7 @@ const SORT_STRATEGIES = {
   recommended: () => 'published_on desc',
 }
 
-export function getSortOrder(
-  {
-    sort = '-published_on',
-    brand,
-    groupBy,
-    permissionIds
-  }) {
+export function getSortOrder(sort = '-published_on', brand, groupBy) {
   const sanitized = sort?.trim() || '-published_on'
   const isDesc = sanitized.startsWith('-')
   const field = isDesc ? sanitized.slice(1) : sanitized
@@ -1920,10 +1914,10 @@ export async function fetchTabData(
     page = 1,
     limit = 10,
     sort = '-published_on',
+    sortPermissions = [],
     includedFields = [],
     progressIds = undefined,
     progress = 'all',
-    sortFreeContent = false,
     excludeIds = [],
   } = {}
 ) {
@@ -1933,10 +1927,10 @@ export async function fetchTabData(
   const includedFieldsFilter =
     includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName) : ''
 
-  let sortOrder = getSortOrder(sort, brand, '', )
+  let sortOrder = getSortOrder(sort, brand, '')
 
-  if (sortFreeContent) {
-    sortOrder = applyPermissionSort(sortOrder, MEMBERSHIP_PERMISSIONS.free)
+  if (sortPermissions.length > 0) {
+    sortOrder = applyPermissionSort(sortOrder, sortPermissions)
   }
 
   switch (progress) {

@@ -227,10 +227,11 @@ import {
 	PermissionsAdapter,
 	PermissionsV1Adapter,
 	PermissionsV2Adapter,
+	doesUserHaveMembership,
 	fetchUserPermissions,
 	getPermissionsAdapter,
 	getPermissionsVersion,
-	getUserMembershipTier,
+	isUserFreeTier,
 	reset
 } from './services/permissions/index.ts';
 
@@ -520,6 +521,7 @@ declare module 'musora-content-services' {
 		deleteProfilePicture,
 		deleteThread,
 		deleteUserActivity,
+		doesUserHaveMembership,
 		duplicatePlaylist,
 		editComment,
 		emitProgressSaved,
@@ -687,7 +689,6 @@ declare module 'musora-content-services' {
 		getToday,
 		getUpgradePrice,
 		getUserData,
-		getUserMembershipTier,
 		getUserMonthlyStats,
 		getUserPinProgressKey,
 		getUserSignature,
@@ -703,6 +704,7 @@ declare module 'musora-content-services' {
 		isContentLikedByIds,
 		isNextDay,
 		isSameDate,
+		isUserFreeTier,
 		isUsernameAvailable,
 		jumpToContinueContent,
 		jumpToPost,
