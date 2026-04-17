@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.153.0](https://github.com/railroadmedia/musora-content-services/compare/v2.152.1...v2.153.0) (2026-04-15)
+
+
+### Features
+
+* 15 minutes ([#911](https://github.com/railroadmedia/musora-content-services/issues/911)) ([87594f8](https://github.com/railroadmedia/musora-content-services/commit/87594f8d33a90452df66d55e7c00d9b0eb15b30b))
+* initial not bad melon test slop ([#918](https://github.com/railroadmedia/musora-content-services/issues/918)) ([008052b](https://github.com/railroadmedia/musora-content-services/commit/008052bbce724ae49fc12734e28957846be76ab3))
+
+
+### Bug Fixes
+
+* loki adapter cjs/esm export issues in mcs-cli ([#920](https://github.com/railroadmedia/musora-content-services/issues/920)) ([480755e](https://github.com/railroadmedia/musora-content-services/commit/480755e816e28540cd123efd24ae7e299baecabe))
+* remove flush session interval ([#867](https://github.com/railroadmedia/musora-content-services/issues/867)) ([67af03b](https://github.com/railroadmedia/musora-content-services/commit/67af03b5a0d8159d7754e86d94fa736ac47beab0))
+* unref timer only in node ([92385d6](https://github.com/railroadmedia/musora-content-services/commit/92385d66659b76f1f41ebbfba3557aaea14f1abd))
+
 ### [2.152.1](https://github.com/railroadmedia/musora-content-services/compare/v2.152.0...v2.152.1) (2026-04-09)
 
 ## [2.152.0](https://github.com/railroadmedia/musora-content-services/compare/v2.151.1...v2.152.0) (2026-04-09)

@@ -1,6 +1,5 @@
 import { globalConfig, initializeService } from '../src'
 import { LocalStorageMock } from './localStorageMock'
-import { initializeSyncManager } from './unit/sync/initialize-sync-manager'
 const railContentModule = require('../src/services/railcontent.js')
 const awardDefsModule = require('../src/services/awards/internal/award-definitions.js')
 let token = null
@@ -58,8 +57,4 @@ export async function initializeTestService(useLive = false, isAdmin = false) {
   let permissionsMock = jest.spyOn(railContentModule, 'fetchUserPermissionsData')
   let permissionsData = { permissions: [108, 91, 92], isAdmin: isAdmin }
   permissionsMock.mockImplementation(() => permissionsData)
-
-  if (useLive) {
-    initializeSyncManager(userId)
-  }
 }

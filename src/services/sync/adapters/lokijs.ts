@@ -1,14 +1,17 @@
 import { SyncTelemetry } from '../telemetry'
 
-import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
+import _LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 
 import { deleteDatabase, lokiFatalError } from '@nozbe/watermelondb/adapters/lokijs/worker/lokiExtensions'
+
+// Handle CJS/ESM interop: in Node.js ESM the default import is the exports object
+const LokiJSAdapter = (_LokiJSAdapter as any).default ?? _LokiJSAdapter
 
 export type LokiExtensions = {
   onPersistenceError?: (err: Error) => void
 }
 
-export default class LokiPersistenceErrorAwareAdapter extends LokiJSAdapter {
+export default class LokiPersistenceErrorAwareAdapter extends (LokiJSAdapter as typeof _LokiJSAdapter) {
   constructor(options: any, extensions: LokiExtensions = {}) {
     super(options);
     const that = this;
@@ -162,7 +165,7 @@ export function simulateIndexedDBQuotaExceeded() {
   })
 }
 
-export function abortWritesToDatabase(adapter: LokiJSAdapter) {
+export function abortWritesToDatabase(adapter: typeof LokiJSAdapter) {
   // acts as handy helper to disable loki's save methods entirely
   lokiFatalError(adapter._driver.loki)
   return Promise.resolve()
@@ -174,7 +177,7 @@ export function abortWritesToDatabase(adapter: LokiJSAdapter) {
  * Haven't encountered live issues related to this yet, but theoretically provides
  * the cleanest slate for a user to recover from schema issues?
  */
-export function destroyDatabase(dbName: string, adapter: LokiJSAdapter): Promise<void> {
+export function destroyDatabase(dbName: string, adapter: typeof LokiJSAdapter): Promise<void> {
   return new Promise(async (resolve, reject) => {
     if (adapter._driver) {
       try {
