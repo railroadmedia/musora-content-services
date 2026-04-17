@@ -167,8 +167,10 @@ export default {
   setupFilesAfterEnv: [
     'dotenv/config',
     '<rootDir>/test/setupConsole.js',
-    '<rootDir>/test/setupNetworkGuard.js'
+    '<rootDir>/test/setupNetworkGuard.js',
+    '<rootDir>/test/setupTimers.js'
   ],
+
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
   // slowTestThreshold: 5,
