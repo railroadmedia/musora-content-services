@@ -2518,5 +2518,5 @@ export async function hasAnyMethodV2IntroCompleted() {
 
 function applyPermissionSort(sortOrder, permissionIds) {
   const idsString = permissionIds.join(",")
-  return `select(permission_v2 in [${idsString}] => 1, 0) desc, ${sortOrder}`
+  return `select(count(permission_v2[@ in [${idsString}]]) > 0 => 1, 0) desc, ${sortOrder}`
 }
