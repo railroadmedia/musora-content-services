@@ -623,7 +623,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   return response
 }
 
-async function setStartedOrCompletedStatusMany(contentIds, collection, isCompleted, {skipPush = false, skipBubbleTrickle = false} = {}) {
+async function setStartedOrCompletedStatusMany(contentIds, collection, isCompleted, {skipPush = false} = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
   const progress = isCompleted ? 100 : 0
 
@@ -641,19 +641,17 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
 
   let allProgresses = Object.fromEntries(contentIds.map(id => [id, progress]))
 
-  if (!skipBubbleTrickle) {
-    let progresses = {}
-    for (const contentId of contentIds) {
-      progresses = {
-        ...progresses,
-        ...trickleProgress(hierarchy, contentId, collection, progress),
-        ...(await bubbleProgress(hierarchy, contentId, collection)),
-      }
+  let progresses = {}
+  for (const contentId of contentIds) {
+    progresses = {
+      ...progresses,
+      ...trickleProgress(hierarchy, contentId, collection, progress),
+      ...(await bubbleProgress(hierarchy, contentId, collection)),
     }
-    Object.assign(allProgresses, progresses)
-
-    await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
   }
+  Object.assign(allProgresses, progresses)
+
+  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
 
   if (isLP) {
     await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
