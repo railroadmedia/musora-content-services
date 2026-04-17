@@ -19,8 +19,9 @@ const SINGLE_SONG_LESSON_TYPES: string[] = [
   ...jamTrackLessonTypes,
   ...lessonTypesMapping['single lessons'],
 ]
-const COURSE_COMPLETE_CTA: CtaLabels = { primary: 'Play Now', secondary: 'Back to Home' }
-const COUNTDOWN_CTA: CtaLabels = { primary: 'Play Now', secondary: 'Cancel' }
+const COURSE_COMPLETE_CTA: CtaLabels = { primary: 'Play Now', secondary: 'Back to Home'}
+const COUNTDOWN_CTA: CtaLabels = { primary: 'Play Now' }
+const COUNTDOWN_CTA_REPLAY: CtaLabels = { primary: 'Play Now', secondary: 'Replay' }
 
 export async function getEndScreen({
   lesson,
@@ -33,22 +34,22 @@ export async function getEndScreen({
   if (playlist) {
     const nextItemInPlaylist = getNextItemInPlaylistOrNull(lesson.id, playlist)
     if (nextItemInPlaylist) {
-      return buildCountdown(nextItemInPlaylist)
+      return buildCountdown(nextItemInPlaylist, false)
     }
     return buildCourseComplete(await fetchEndScreenRecommendation(brand, lesson.id))
   }
 
   if (SINGLE_SONG_LESSON_TYPES.includes(lesson.type ?? '')) {
-    return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id))
+    return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id), true)
   }
 
   if (!course) {
-    return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id))
+    return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id), false)
   }
 
   const nextLesson = getNextLessonOrNull(lesson.id, course)
   if (nextLesson) {
-    return buildCountdown(nextLesson)
+    return buildCountdown(nextLesson, false)
   }
 
   // TODO: remove internal fetch if FE provides collection.children directly
@@ -68,8 +69,8 @@ export async function getEndScreen({
 
 // ─── Builders ─────────────────────────────────────────────────────────────────
 
-function buildCountdown(upNext: any): EndScreenResult {
-  return { variant: 'countdown-up-next', upNext, countdownAutoplay: true, ctaLabels: COUNTDOWN_CTA }
+function buildCountdown(upNext: any, withReply: boolean): EndScreenResult {
+  return { variant: 'countdown-up-next', upNext, countdownAutoplay: true, ctaLabels: withReply ? COUNTDOWN_CTA_REPLAY :COUNTDOWN_CTA }
 }
 
 function buildCourseComplete(upNext: any): EndScreenResult {

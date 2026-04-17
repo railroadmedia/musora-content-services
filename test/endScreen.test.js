@@ -62,7 +62,7 @@ describe('getEndScreen', () => {
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
-        lesson: { id: 123, type: 'lesson' },
+        lesson: { id: 123, type: 'quick-tips' },
         course: null,
         collection: null,
         brand: 'drumeo'
@@ -72,7 +72,7 @@ describe('getEndScreen', () => {
         variant: 'countdown-up-next',
         upNext: mockRecommendation,
         countdownAutoplay: true,
-        ctaLabels: { primary: 'Play Now', secondary: 'Cancel' }
+        ctaLabels: { primary: 'Play Now', secondary: 'Replay' }
       })
       expect(recommendationsModule.fetchSimilarItems).toHaveBeenCalledWith(123, 'drumeo', 50)
     })
@@ -120,7 +120,7 @@ describe('getEndScreen', () => {
         variant: 'countdown-up-next',
         upNext: mockRecommendation,
         countdownAutoplay: true,
-        ctaLabels: { primary: 'Play Now', secondary: 'Cancel' }
+        ctaLabels: { primary: 'Play Now', secondary: 'Replay' }
       })
     })
 
@@ -138,7 +138,7 @@ describe('getEndScreen', () => {
         variant: 'countdown-up-next',
         upNext: mockRecommendation,
         countdownAutoplay: true,
-        ctaLabels: { primary: 'Play Now', secondary: 'Cancel' }
+        ctaLabels: { primary: 'Play Now', secondary: 'Replay' }
       })
     })
 
@@ -177,7 +177,7 @@ describe('getEndScreen', () => {
         variant: 'countdown-up-next',
         upNext: { id: 201, status: 'published', title: 'Next Lesson' },
         countdownAutoplay: true,
-        ctaLabels: { primary: 'Play Now', secondary: 'Cancel' }
+        ctaLabels: { primary: 'Play Now'}
       })
     })
 
@@ -289,7 +289,7 @@ describe('getEndScreen', () => {
         variant: 'countdown-up-next',
         upNext: { id: 301, status: 'published', title: 'Next in Course' },
         countdownAutoplay: true,
-        ctaLabels: { primary: 'Play Now', secondary: 'Cancel' }
+        ctaLabels: { primary: 'Play Now'}
       })
     })
   })
@@ -407,7 +407,7 @@ describe('getEndScreen', () => {
         variant: 'countdown-up-next',
         upNext: { id: 501, status: 'published', title: 'Next in Playlist' },
         countdownAutoplay: true,
-        ctaLabels: { primary: 'Play Now', secondary: 'Cancel' }
+        ctaLabels: { primary: 'Play Now'}
       })
     })
 

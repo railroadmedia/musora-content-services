@@ -8,7 +8,7 @@ export type EndScreenVariant =
 
 export interface CtaLabels {
   primary: string
-  secondary: string
+  secondary?: string
 }
 
 export interface EndScreenResult {
