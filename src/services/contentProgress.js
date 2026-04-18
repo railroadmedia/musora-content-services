@@ -490,6 +490,7 @@ export async function contentStatusCompletedMany(contentIds, collection = null) 
   )
 }
 
+// skipBubbleTrickle is only for starting enrolled GC's as a hack to get them into the progress row.
 export async function contentStatusStarted(contentId, collection = null, {skipPush = false, skipBubbleTrickle = false} = {}) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   return setStartedOrCompletedStatus(
