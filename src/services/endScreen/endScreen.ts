@@ -28,11 +28,12 @@ export async function getEndScreen({
   course = null,
   collection = null,
   playlist = null,
+  user_playlist_item_index = null,
   brand
 }: GetEndScreenParams): Promise<EndScreenResult> {
 
   if (playlist) {
-    const nextItemInPlaylist = getNextItemInPlaylistOrNull(lesson.id, playlist)
+    const nextItemInPlaylist = getNextItemInPlaylistOrNull(lesson.id, playlist, user_playlist_item_index)
     if (nextItemInPlaylist) {
       return buildCountdown(nextItemInPlaylist, false)
     }
@@ -79,9 +80,9 @@ function buildCourseComplete(upNext: any): EndScreenResult {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getNextItemInPlaylistOrNull(contentId: number, playlist: Playlist): ContentItem | null {
+function getNextItemInPlaylistOrNull(contentId: number, playlist: Playlist, user_playlist_item_index: number|null): ContentItem | null {
   const items = playlist.items ?? []
-  const index = items.findIndex((item) => Number(item.id) === Number(contentId))
+  const index = user_playlist_item_index !== null ? user_playlist_item_index : items.findIndex((item) => Number(item.id) === Number(contentId))
   if (index < 0 || index === items.length - 1) return null
   return items.slice(index + 1).find(isReleasedContent) ?? null
 }
@@ -115,7 +116,7 @@ async function fetchEndScreenRecommendation(
   parentId: number | null = null
 ): Promise<any | null> {
   try {
-    let recData: number[] = await fetchSimilarItems(contentId, brand, 50)
+    let recData: number[] = await fetchSimilarItems(contentId, brand, 20)
     let recommended = null
     if (!Array.isArray(recData) || recData.length === 0) {
       const relatedLesson =  await fetchRelatedLessons(parentId ?? contentId).then((result) =>

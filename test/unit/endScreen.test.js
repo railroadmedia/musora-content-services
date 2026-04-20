@@ -1,35 +1,35 @@
 // Mock sync module to prevent TypeScript compilation errors
-jest.mock('../src/services/sync/index', () => ({}))
-jest.mock('../src/services/sync/manager', () => ({}))
-jest.mock('../src/services/sync/models/index', () => ({}))
-jest.mock('../src/services/sync/repositories/index', () => ({}))
-jest.mock('../src/services/sync/database/factory', () => ({}))
+jest.mock('../../src/services/sync/index.ts', () => ({}))
+jest.mock('../../src/services/sync/manager.ts', () => ({}))
+jest.mock('../../src/services/sync/models/index.ts', () => ({}))
+jest.mock('../../src/services/sync/repositories/index.ts', () => ({}))
+jest.mock('../../src/services/sync/database/factory.ts', () => ({}))
 
 // Mock modules that use sync to prevent compilation errors
-jest.mock('../src/services/user/streakCalculator', () => ({
+jest.mock('../../src/services/user/streakCalculator.ts', () => ({
   calculateStreak: jest.fn(),
   getStreakMessage: jest.fn()
 }))
-jest.mock('../src/services/contentProgress', () => ({
-  ...jest.requireActual('../src/services/contentProgress'),
+jest.mock('../../src/services/contentProgress.js', () => ({
+  ...jest.requireActual('../../src/services/contentProgress'),
 }))
-jest.mock('../src/services/contentLikes', () => ({
-  ...jest.requireActual('../src/services/contentLikes'),
+jest.mock('../../src/services/contentLikes.js', () => ({
+  ...jest.requireActual('../../src/services/contentLikes'),
 }))
-jest.mock('../src/services/userActivity', () => ({
-  ...jest.requireActual('../src/services/userActivity'),
+jest.mock('../../src/services/userActivity.js', () => ({
+  ...jest.requireActual('../../src/services/userActivity'),
 }))
-jest.mock('../src/services/content-org/learning-paths', () => ({
+jest.mock('../../src/services/content-org/learning-paths.ts', () => ({
   enrollInLearningPath: jest.fn(),
   getLearningPathProgress: jest.fn()
 }))
-jest.mock('../src/services/content-org/guided-courses', () => ({
+jest.mock('../../src/services/content-org/guided-courses.ts', () => ({
   enrollInGuidedCourse: jest.fn()
 }))
 
 // Mock getSanityDate before other modules load to avoid circular dependency issues
-jest.mock('../src/services/sanity.js', () => ({
-  ...jest.requireActual('../src/services/sanity.js'),
+jest.mock('../../src/services/sanity.js', () => ({
+  ...jest.requireActual('../../src/services/sanity.js'),
   getSanityDate: jest.fn((date) => date.toISOString()),
   fetchSimilarItems: jest.fn(),
   fetchByRailContentIds: jest.fn(),
@@ -37,19 +37,19 @@ jest.mock('../src/services/sanity.js', () => ({
   fetchRelatedLessons: jest.fn()
 }))
 
-jest.mock('../src/services/recommendations.js', () => ({
-  ...jest.requireActual('../src/services/recommendations.js'),
+jest.mock('../../src/services/recommendations.js', () => ({
+  ...jest.requireActual('../../src/services/recommendations.js'),
   fetchSimilarItems: jest.fn(),
   rankCategories: jest.fn()
 }))
 
-jest.mock('../src/services/contentAggregator.js', () => ({
+jest.mock('../../src/services/contentAggregator.js', () => ({
   addContextToContent: jest.fn(async (getter) => getter()),
 }))
 
-import { getEndScreen } from '../src/services/endScreen/endScreen.ts'
-import * as recommendationsModule from '../src/services/recommendations.js'
-import * as sanityModule from '../src/services/sanity.js'
+import { getEndScreen } from '../../src/services/endScreen/endScreen.ts'
+import * as recommendationsModule from '../../src/services/recommendations.js'
+import * as sanityModule from '../../src/services/sanity.js'
 
 describe('getEndScreen', () => {
   beforeEach(() => {
@@ -74,7 +74,7 @@ describe('getEndScreen', () => {
         countdownAutoplay: true,
         ctaLabels: { primary: 'Play Now', secondary: 'Replay' }
       })
-      expect(recommendationsModule.fetchSimilarItems).toHaveBeenCalledWith(123, 'drumeo', 50)
+      expect(recommendationsModule.fetchSimilarItems).toHaveBeenCalledWith(123, 'drumeo', 20)
     })
 
     test('single lesson uses fallback lesson when RecSys returns empty array', async () => {
@@ -510,6 +510,46 @@ describe('getEndScreen', () => {
       })
 
       expect(result.upNext).toEqual({ id: 501, type: 'transcription', status: 'published', title: 'Transcription Next' })
+    })
+
+    test('uses user_playlist_item_index directly instead of searching by lesson id', async () => {
+      const result = await getEndScreen({
+        lesson: { id: 999, type: 'lesson' },
+        playlist: {
+          id: 10,
+          items: [
+            { id: 500, status: 'published' },
+            { id: 501, status: 'published', title: 'Next in Playlist' },
+            { id: 502, status: 'published' }
+          ]
+        },
+        user_playlist_item_index: 0,
+        brand: 'drumeo'
+      })
+
+      expect(result).toEqual({
+        variant: 'countdown-up-next',
+        upNext: { id: 501, status: 'published', title: 'Next in Playlist' },
+        countdownAutoplay: true,
+        ctaLabels: { primary: 'Play Now'}
+      })
+    })
+
+    test('user_playlist_item_index 0 is treated as valid index, not falsy', async () => {
+      const mockRecommendation = { id: 999, type: 'lesson' }
+      mockFetchRecommendation([mockRecommendation])
+
+      const result = await getEndScreen({
+        lesson: { id: 999, type: 'lesson' },
+        playlist: {
+          id: 10,
+          items: [{ id: 500, status: 'published' }]
+        },
+        user_playlist_item_index: 0,
+        brand: 'drumeo'
+      })
+
+      expect(result.variant).toBe('course-complete')
     })
   })
 

@@ -39,6 +39,7 @@ RecSys fallback: if the recommender returns nothing → related lesson (standalo
   course?:     { id: number, children?: ContentItem[] }
   collection?: { id: number, type: string, children?: { id: number, children?: ContentItem[] }[] }
   playlist?:   { id: number, items?: ContentItem[] }
+  user_playlist_item_index?: number  // current item's index in playlist; skips findIndex lookup when provided
 }
 
 // Return value

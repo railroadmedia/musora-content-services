@@ -53,5 +53,6 @@ export interface GetEndScreenParams {
   course?: Course | null
   collection?: Collection | null
   playlist?: Playlist | null
+  user_playlist_item_index? : number | null
   brand: string
 }
