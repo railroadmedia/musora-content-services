@@ -149,3 +149,25 @@ export async function getOnboardingRecommendedContent(
 ): Promise<OnboardingRecommendationResponse> {
   return POST(`/api/user-management-system/v1/onboardings/${onboardingId}/recommendation`, {})
 }
+
+/**
+ * @param {StartOnboardingParams} params - The parameters for starting the onboarding process.
+ * @param {boolean} sendAccountSetupEmail - Whether to send an account setup email to the user.
+ *
+ * @returns {Promise<Onboarding>} - A promise that resolves when the onboarding process is started.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function initializeOnboardingFlow(
+  { email, brand, flow, steps = {}, marketingOptIn = false }: StartOnboardingParams,
+  sendAccountSetupEmail: boolean = false
+): Promise<Onboarding> {
+  return POST(`/api/user-management-system/v1/onboardings/flows`, {
+    email,
+    brand,
+    flow,
+    steps,
+    is_completed: false,
+    marketing_opt_in: marketingOptIn,
+    send_email: sendAccountSetupEmail,
+  })
+}
