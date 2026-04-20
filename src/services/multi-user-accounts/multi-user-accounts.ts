@@ -18,7 +18,7 @@ export interface InviteResponse {
   id: number
   created_at: string
   expires_at: string
-  existing_user_details: User
+  existing_user_details?: User
   can_be_accepted: boolean
   is_account_valid: boolean
   is_invite_active: boolean
