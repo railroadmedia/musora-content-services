@@ -1,5 +1,5 @@
 import { emitProgressSaved } from '../../../../src/services/progress-events.js'
-import { COLLECTION_TYPE } from '../../../../src/services/sync/models/ContentProgress.ts'
+import { COLLECTION_TYPE } from '../../../../src/services/sync/models/ContentProgress'
 
 export { COLLECTION_TYPE }
 
@@ -9,6 +9,12 @@ export const emitProgress = ({
   collectionId = null,
   progressPercent = 100,
   userId = 123
+}: {
+  contentId: number
+  collectionType?: string | null
+  collectionId?: number | null
+  progressPercent?: number
+  userId?: number
 }) => {
   emitProgressSaved({
     userId,
@@ -23,7 +29,7 @@ export const emitProgress = ({
   })
 }
 
-export const emitLearningPathProgress = (contentId, learningPathId, progressPercent = 100) => {
+export const emitLearningPathProgress = (contentId: number, learningPathId: number, progressPercent = 100) => {
   emitProgress({
     contentId,
     collectionType: COLLECTION_TYPE.LEARNING_PATH,
@@ -32,8 +38,8 @@ export const emitLearningPathProgress = (contentId, learningPathId, progressPerc
   })
 }
 
-export const emitAlaCarteProgress = (contentId, progressPercent = 100) => {
+export const emitAlaCarteProgress = (contentId: number, progressPercent = 100) => {
   emitProgress({ contentId, progressPercent })
 }
 
-export const waitForDebounce = (ms = 100) => new Promise(resolve => setTimeout(resolve, ms))
+export const waitForDebounce = (ms = 100): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))

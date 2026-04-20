@@ -3,8 +3,8 @@ import { awardEvents } from '../../../src/services/awards/internal/award-events.
 import { mockAwardDefinitions, getAwardByContentId } from '../../mockData/award-definitions.js'
 import { globalConfig } from '../../../src/services/config.js'
 import { LocalStorageMock } from '../../localStorageMock.js'
-import { setupDefaultMocks, setupAwardEventListeners } from './helpers/index.js'
-import { mockCompletionStates, mockAllCompleted, mockNoneCompleted } from './helpers/completion-mock.js'
+import { setupDefaultMocks, setupAwardEventListeners } from './helpers/index'
+import { mockCompletionStates, mockAllCompleted, mockNoneCompleted } from './helpers/completion-mock'
 
 jest.mock('../../../src/services/sanity.js', () => ({
   ...jest.requireActual('../../../src/services/sanity'),
@@ -39,7 +39,8 @@ jest.mock('../../../src/services/sync/repository-proxy.ts', () => {
 })
 
 import sanityClient, { fetchSanity } from '../../../src/services/sanity.js'
-import db from '../../../src/services/sync/repository-proxy.ts'
+import db_ from '../../../src/services/sync/repository-proxy'
+const db = db_ as any
 import { awardDefinitions } from '../../../src/services/awards/internal/award-definitions.js'
 
 describe('Award Content Exclusion Handling - E2E Scenarios', () => {

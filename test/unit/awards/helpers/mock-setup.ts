@@ -1,5 +1,7 @@
 import { mockAwardDefinitions } from '../../../mockData/award-definitions.js'
 
+export type RepositoryProxyMock = ReturnType<typeof createRepositoryProxyMock>
+
 export const createRepositoryProxyMock = () => ({
   contentProgress: {
     getOneProgressByContentId: jest.fn(),
@@ -19,7 +21,15 @@ export const createRepositoryProxyMock = () => ({
   }
 })
 
-export const setupDefaultMocks = (db, fetchSanity, options = {}) => {
+export const setupDefaultMocks = (
+  db: any,
+  fetchSanity: jest.Mock,
+  options: {
+    definitions?: typeof mockAwardDefinitions,
+    practiceMinutes?: number,
+    hasCompleted?: boolean
+  } = {}
+) => {
   const {
     definitions = mockAwardDefinitions,
     practiceMinutes = 200,
@@ -56,7 +66,7 @@ export const setupDefaultMocks = (db, fetchSanity, options = {}) => {
   })
 }
 
-export const setupAwardEventListeners = (awardEvents) => {
+export const setupAwardEventListeners = (awardEvents: any) => {
   const listeners = {
     progress: jest.fn(),
     granted: jest.fn()
