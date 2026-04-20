@@ -781,9 +781,9 @@ async function getProgressFilter(progress, progressIds) {
 
 const SORT_STRATEGIES = {
   slug: ({ groupBy, isDesc }) => {
-    if (groupBy) return 'name'
     const dir = isDesc ? 'desc' : 'asc'
-    return `!defined(title_for_sort), title_for_sort ${dir}, !defined(title), lower(title)`
+    if (groupBy) return `name ${dir}`
+    return `!defined(title_for_sort), title_for_sort ${dir}, !defined(title), lower(title) ${dir}`
   },
 
   popularity: ({ brand, groupBy, isDesc }) => {
