@@ -50,7 +50,7 @@ import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 import { query } from '../lib/sanity/query'
 import { Filters as f } from '../lib/sanity/filter'
 import { COLLECTION_TYPE } from './sync/models/ContentProgress'
-import { MEMBERSHIP_PERMISSIONS } from '../constants/membership-permissions.js'
+import { MEMBERSHIP_PERMISSIONS } from '../constants/membership-permissions'
 
 /**
  * Exported functions that are excluded from index generation.

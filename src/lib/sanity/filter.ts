@@ -1,6 +1,6 @@
 import { filtersToGroq } from '../../contentTypeConfig'
 import { getPermissionsAdapter } from '../../services/permissions/index'
-import type { UserPermissions } from '../../services/permissions/PermissionsAdapter'
+import type { UserPermissions } from '../../services/permissions/types'
 import { Brands } from '../brands'
 import { filterOps } from './query'
 
