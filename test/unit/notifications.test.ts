@@ -22,16 +22,13 @@ jest.mock('../../src/services/eventsAPI.js', () => ({
   }
 }))
 
-const { GET, PUT, DELETE } = require('../../src/infrastructure/http/HttpClient.ts')
+import { GET, PUT, DELETE } from '../../src/infrastructure/http/HttpClient'
 
 const baseUrl = `/api/notifications`
 
 describe('UserNotifications module', function () {
   beforeEach(() => {
     initializeTestService()
-    GET.mockReset()
-    PUT.mockReset()
-    DELETE.mockReset()
   })
 
   describe('fetchNotifications', () => {

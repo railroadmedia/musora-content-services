@@ -1,11 +1,9 @@
 import { initializeTestService } from '../initializeTests.js'
 import {getUserWeeklyStats, userActivityContext} from '../../src/services/userActivity.js'
-import { streakCalculator } from '../../src/services/user/streakCalculator.ts'
+import { streakCalculator } from '../../src/services/user/streakCalculator'
 import {log} from '../log.js'
 
-import path from 'path';
-
-let mockPracticeData = []
+let mockPracticeData: { date: string; duration_seconds: number }[] = []
 
 jest.mock('../../src/services/sync/repository-proxy.ts', () => {
   const mockFns = {
@@ -200,15 +198,14 @@ describe('Streak Messages', function () {
   })
 })
 
-function incrementFakeDate(nDays = 1){
+function incrementFakeDate(nDays = 1) {
   let today = new Date();
   today.setFullYear(today.getFullYear(), today.getMonth(), (today.getDate() + nDays));
   jest.useFakeTimers();
   jest.setSystemTime(today);
 }
 
-function sliceExampleData(startDate, nDays, includeToday, activeDays)
-{
+function sliceExampleData(startDate, nDays, includeToday, activeDays) {
   if (nDays === 0 && !includeToday) {
     return []
   }

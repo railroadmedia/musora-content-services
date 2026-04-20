@@ -1,7 +1,13 @@
 import { initializeTestService } from '../initializeTests.js'
-import { getAllStarted, getAllStartedOrCompleted, getProgressState } from '../../src/index.js'
+import { getAllStarted, getAllStartedOrCompleted, getProgressState } from '../../src/services/contentProgress.js'
 
-let mockProgressRecords = []
+let mockProgressRecords: {
+  content_id: number;
+  state: string;
+  progress_percent: number;
+  updated_at: number;
+  last_interacted_a_la_carte?: number
+}[] = []
 
 jest.mock('../../src/services/sync/repository-proxy', () => {
   const mockFns = {

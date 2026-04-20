@@ -2,7 +2,7 @@ import { initializeTestService } from '../initializeTests.js'
 import { DataContext, verifyLocalDataContext } from '../../src/services/dataContext.js'
 
 describe('dataContext', function () {
-  let mock = null
+  let mock: jest.SpyInstance
   let testVersion = 1
   const dataVersionKey = 1
   const dataContext = new DataContext(dataVersionKey, null)

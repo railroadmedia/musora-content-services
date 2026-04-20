@@ -1,11 +1,7 @@
 import { initializeTestService } from '../initializeTests.js'
-import { log } from '../log.js'
-import {
-  getSortOrder
-} from '../../src/index.js'
+import { getSortOrder } from '../../src/services/sanity.js'
 import { processMetadata } from '../../src/contentMetaData.js'
-
-const { FilterBuilder } = require('../../src/filterBuilder.js')
+import { FilterBuilder } from '../../src/filterBuilder.js'
 
 jest.mock('../../src/services/permissions/index.ts', () => ({
   ...jest.requireActual('../../src/services/permissions/index.ts'),
@@ -137,7 +133,11 @@ describe('Filter Builder', function() {
     expect(clauses[3].operator).toBe('>=')
   })
 
-  function spliceFilterForAnds(filter) {
+  function spliceFilterForAnds(filter: string): {
+    phrase: string;
+    field: string;
+    operator: string;
+    condition: string }[] {
     // this will not correctly split complex filters with && and || conditions.
     let phrases = filter.split(' && ')
     let clauses = []
@@ -152,7 +152,6 @@ describe('Filter Builder', function() {
     })
     return clauses
   }
-
 })
 
 describe('Sanity Queries', function() {

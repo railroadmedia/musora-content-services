@@ -81,22 +81,28 @@ describe('getProgressRows', () => {
       },
     ];
 
-    fetchUserPlaylists.mockResolvedValue({ data: mockPlaylists });
-    fetchByRailContentIds.mockResolvedValue(mockPlaylistContents);
-    getAllStartedOrCompleted.mockResolvedValue([201]);
-    getProgressStateByIds.mockResolvedValue({ '201': 'in_progress' });
+    fetchUserPlaylists.mockResolvedValue({ data: mockPlaylists })
+    fetchByRailContentIds.mockResolvedValue(mockPlaylistContents)
+    getAllStartedOrCompleted.mockResolvedValue([201])
+    getProgressStateByIds.mockResolvedValue({ '201': 'in_progress' })
 
-    const result = await getProgressRows({ brand: 'brand1', limit: 8 });
+    const result = await getProgressRows({ brand: 'brand1', limit: 8 })
 
-    expect(result).toHaveProperty('type', 'progress_rows');
+    expect(result).toHaveProperty('type', 'progress_rows')
     expect(result).toHaveProperty('data');
-    expect(Array.isArray(result.data)).toBe(true);
-    expect(result.data.length).toBe(2);
-    expect(result.data[0]).toHaveProperty('id', 'progressType', 'header', 'body', 'cta');
-    expect(result.data[0].progressType).toBe('playlist');
-    expect(result.data[0].body).toHaveProperty('first_items_thumbnail_url', 'title', 'subtitle');
-    expect(result.data[0].cta).toHaveProperty('text');
-    expect(result.data[0].cta).toHaveProperty('action');
+    expect(Array.isArray(result.data)).toBe(true)
+    expect(result.data.length).toBe(2)
+    expect(result.data[0]).toHaveProperty('id')
+    expect(result.data[0]).toHaveProperty('progressType')
+    expect(result.data[0]).toHaveProperty('header')
+    expect(result.data[0]).toHaveProperty('body')
+    expect(result.data[0]).toHaveProperty('cta')
+    expect(result.data[0].progressType).toBe('playlist')
+    expect(result.data[0].body).toHaveProperty('first_items_thumbnail_url')
+    expect(result.data[0].body).toHaveProperty('title')
+    expect(result.data[0].body).toHaveProperty('subtitle')
+    expect(result.data[0].cta).toHaveProperty('text')
+    expect(result.data[0].cta).toHaveProperty('action')
 
   });
 

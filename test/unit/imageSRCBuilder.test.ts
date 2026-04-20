@@ -1,4 +1,4 @@
-const { buildImageSRC, applySanityTransformations } = require('../../src/services/imageSRCBuilder.js')
+import { buildImageSRC, applySanityTransformations }  from '../../src/services/imageSRCBuilder.js'
 
 describe('imageSRCBuilder', function () {
   beforeEach(() => {})

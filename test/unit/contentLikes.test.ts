@@ -5,7 +5,7 @@ import {
 } from '../../src/services/contentLikes.js'
 import { initializeTestService } from '../initializeTests.js'
 
-let mockLikedIds = new Set()
+let mockLikedIds: Set<number> = new Set()
 
 jest.mock('../../src/services/sync/repository-proxy.ts', () => {
   const mockFns = {
