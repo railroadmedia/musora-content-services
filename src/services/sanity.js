@@ -536,15 +536,18 @@ export async function fetchByRailContentIds(
       }
       return result
     }
+
     const chapterProcess = (result) => {
       const chapters = result.chapters ?? []
-      if (chapters.length === 0) return result
       result.chapters = chapters.map((chapter, index) => ({
         ...chapter,
         chapter_thumbnail_url: `https://musora-web-platform.s3.amazonaws.com/chapters/${result.brand}/Chapter${index + 1}.jpg`,
       }))
+      const children = result.children ?? []
+      result.children = children.map((child) => chapterProcess(child))
       return result
     }
+
     if (contentType === 'download') {
       results = results.map(chapterProcess)
     }
