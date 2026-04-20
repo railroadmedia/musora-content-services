@@ -16,6 +16,7 @@ let lastUpdatedKey = `userPermissions_lastUpdated`
  */
 export async function fetchUserPermissions(): Promise<UserPermissions> {
   if (!userPermissionsPromise || await wasLastUpdateOlderThanXSeconds(10, lastUpdatedKey)) {
+    // TODO: move fetchUserPermissionsData to this file or adjacent
     userPermissionsPromise = fetchUserPermissionsData()
     setLastUpdatedTime(lastUpdatedKey)
   }
