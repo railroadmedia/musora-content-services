@@ -31,7 +31,7 @@ export interface PermissionFilterOptions {
  */
 export interface ContentItem {
   /** Array of permission IDs required to access this content */
-  permission_id?: string[]
+  permission_id?: number[]
   [key: string]: any
 }
 
@@ -84,7 +84,7 @@ export abstract class PermissionsAdapter {
    * @returns Array of permission IDs
    * @abstract
    */
-  abstract getUserPermissionIds(userPermissions: UserPermissions): string[]
+  abstract getUserPermissionIds(userPermissions: UserPermissions): number[]
 
   /**
    * Check if user is an admin.

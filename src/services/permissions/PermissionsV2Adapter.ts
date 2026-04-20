@@ -10,15 +10,15 @@
 
 import {
   PermissionsAdapter,
-  UserPermissions,
   ContentItem,
   PermissionFilterOptions,
 } from './PermissionsAdapter'
+import { UserPermissions } from './types'
 import {
   fetchUserPermissions as fetchUserPermissionsV2,
 } from './permissions'
 import {arrayToRawRepresentation, arrayToStringRepresentation} from '../../filterBuilder.js'
-import {basicMembershipTier, plusMembershipPermissions, plusMembershipTier} from "../../contentTypeConfig";
+import {basicMembershipTier, plusMembershipTier} from "../../contentTypeConfig";
 
 /**
  * V2 Permissions Adapter for the new permissions system.
@@ -145,7 +145,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     // Convert permission IDs to content IDs
     // Permission ID format: 100000000 + railcontent_id
     const ownedContentIds = userPermissionIds
-      .map((permissionId) => parseInt(permissionId) - minContentPermissionId)
+      .map((permissionId) => permissionId - minContentPermissionId)
       .filter((contentId) => contentId > 0)
 
     if (ownedContentIds.length === 0) {
@@ -168,7 +168,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
    * @returns GROQ filter string for standard permissions
    */
   private buildStandardPermissionFilter(
-    userPermissionIds: string[],
+    userPermissionIds: number[],
     prefix: string,
     isDereferencedContext: boolean
   ): string {
@@ -196,7 +196,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
    * @returns GROQ filter string for permission check
    */
   private buildPermissionCheck(
-    permissions: string[],
+    permissions: number[],
     prefix: string,
     isDereferencedContext: boolean
   ): string {
@@ -214,7 +214,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
    * @param userPermissions - The user's permissions
    * @returns Array of permission IDs
    */
-  getUserPermissionIds(userPermissions: UserPermissions): string[] {
+  getUserPermissionIds(userPermissions: UserPermissions): number[] {
     return userPermissions?.permissions ?? []
   }
 }
