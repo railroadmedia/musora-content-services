@@ -1,6 +1,6 @@
 ---
 date: 2026-04-21
-pr: TBD
+pr: railroadmedia/musora-content-services#932
 branch: TMA-239-mcs-sanity-add-a-v2-query-parameter-to-all-sanity-
 status: open
 tags: [[jira]], [[bug-fix]], [[sanity]], [[cache]]
