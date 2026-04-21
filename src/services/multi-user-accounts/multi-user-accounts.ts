@@ -14,15 +14,16 @@ export interface User {
 }
 
 export interface InviteResponse {
-  email: string
   id: number
   created_at: string
   expires_at: string
-  existing_user_details?: User
   can_be_accepted: boolean
   is_account_valid: boolean
   is_invite_active: boolean
   can_user_join: boolean
+  // These fields leak user information and are excluded entirely for the public endpoint
+  existing_user_details?: User
+  email?: string
 }
 
 export interface UsersMultiAccountResponse {
@@ -39,14 +40,15 @@ export interface MultiUserAccountResponse {
   product_name: string
   is_active: boolean
   primary_user: User
-  active_invited_emails: InviteResponse[]
-  available_seats: number
-  available_invites: InviteResponse[]
   total_seats: number
-  active_subs: User[]
   end_time: string
   is_primary_account_holder: boolean
-  show_welcome: boolean
+  // The following fields are not included for public or subaccount users
+  active_invited_emails?: InviteResponse[]
+  available_seats?: number
+  available_invites?: InviteResponse[]
+  active_subs?: User[]
+  show_welcome?: boolean
 }
 
 export interface CreateAccountParams {
@@ -97,7 +99,7 @@ export async function fetchUsersMultiAccountDetails(userId: number): Promise<Use
  */
 export async function fetchInvite(inviteId: number): Promise<InviteResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<InviteResponse>(`${baseUrl}/invite/${inviteId}`)
+  return httpClient.get<InviteResponse>(`${baseUrl}/invites/${inviteId}`)
 }
 
 /**
