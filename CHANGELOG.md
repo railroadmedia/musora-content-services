@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.154.0](https://github.com/railroadmedia/musora-content-services/compare/v2.153.0...v2.154.0) (2026-04-21)
+
+
+### Features
+
+* **BEHLTP-23:** add multi-user account update endpoint ([#914](https://github.com/railroadmedia/musora-content-services/issues/914)) ([98f6c4b](https://github.com/railroadmedia/musora-content-services/commit/98f6c4bb830c7a8a25ba556ca07fc97023667011))
+* muppet - add invite validity/error data ([#923](https://github.com/railroadmedia/musora-content-services/issues/923)) ([3938fa5](https://github.com/railroadmedia/musora-content-services/commit/3938fa56ec9295023b6ba624c5f238d1645a911b))
+
+
+### Bug Fixes
+
+* add typeof before LokiJSAdapter in parameter list ([6a135b5](https://github.com/railroadmedia/musora-content-services/commit/6a135b57c516c277a50d707417544ab2f9eeb194))
+* **BR-632:** dont trickle progress to children when enrolling in GC ([#916](https://github.com/railroadmedia/musora-content-services/issues/916)) ([67a96d6](https://github.com/railroadmedia/musora-content-services/commit/67a96d69bd8b61f12d0efd45475a7b0b08c58813))
+
 ## [2.153.0](https://github.com/railroadmedia/musora-content-services/compare/v2.152.1...v2.153.0) (2026-04-15)
 
 
