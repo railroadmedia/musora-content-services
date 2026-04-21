@@ -34,6 +34,7 @@ export async function reset(): Promise<void> {
 }
 
 
+// todo(MU2-1447): replace internals with BE-provided isAFreeUser
 export function isUserFreeTier(userPermissions: UserPermissions): boolean {
   const permissions = userPermissions.permissions
 
