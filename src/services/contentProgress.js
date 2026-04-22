@@ -651,7 +651,7 @@ async function saveContentProgress(
   return response
 }
 
-async function setStartedOrCompletedStatus(contentId, collection, isCompleted, { isOffline = false, hierarchy = null, skipPush = false, skipBubbleTrickle = false } = {}) {
+export async function setStartedOrCompletedStatus(contentId, collection, isCompleted, { isOffline = false, hierarchy = null, skipPush = false, skipBubbleTrickle = false } = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
   if (!isOffline) {
@@ -668,13 +668,13 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
     null,
     {skipPush: true}
   )
-  
+
   // skip bubbling if offline
   if (isOffline) {
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
   }
-  
+
   let allProgresses = {}
   allProgresses[contentId] = progress
 
@@ -728,7 +728,7 @@ export async function setStartedOrCompletedStatusMany(contentIds, collection, is
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
   }
-  
+
   let allProgresses = Object.fromEntries(contentIds.map(id => [id, progress]))
 
   let progresses = {}
@@ -766,16 +766,16 @@ export async function resetStatus(contentId, collection = null, { isOffline = fa
 
   const progress = 0
   const response = await db.contentProgress.eraseProgress(normalizeContentId(contentId), normalizeCollection(collection), {skipPush: true})
-  
+
   // skip bubbling if offline
   if (isOffline) {
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
   }
-  
+
   hierarchy = await getHierarchy(contentId, collection)
   const metadata = hierarchy.metadata || {}
-  
+
   let allProgresses = {}
   allProgresses[contentId] = progress
 
