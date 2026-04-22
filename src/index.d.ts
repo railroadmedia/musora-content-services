@@ -243,6 +243,18 @@ import {
 } from './services/offline/progress.ts';
 
 import {
+	PermissionsAdapter,
+	PermissionsV1Adapter,
+	PermissionsV2Adapter,
+	doesUserHaveMembership,
+	fetchUserPermissions,
+	getPermissionsAdapter,
+	getPermissionsVersion,
+	isUserFreeTier,
+	reset
+} from './services/permissions/index.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -440,11 +452,6 @@ import {
 } from './services/user/payments.ts';
 
 import {
-	fetchUserPermissions,
-	reset
-} from './services/user/permissions.js';
-
-import {
 	deleteProfilePicture,
 	otherStats
 } from './services/user/profile.js';
@@ -484,6 +491,9 @@ import {
 
 declare module 'musora-content-services' {
 	export {
+		PermissionsAdapter,
+		PermissionsV1Adapter,
+		PermissionsV2Adapter,
 		acceptInvite,
 		addContextToContent,
 		addContextToLearningPaths,
@@ -533,6 +543,7 @@ declare module 'musora-content-services' {
 		deleteProfilePicture,
 		deleteThread,
 		deleteUserActivity,
+		doesUserHaveMembership,
 		duplicatePlaylist,
 		editComment,
 		emitProgressSaved,
@@ -673,6 +684,8 @@ declare module 'musora-content-services' {
 		getNewAndUpcoming,
 		getOnboardingRecommendedContent,
 		getOwnedContent,
+		getPermissionsAdapter,
+		getPermissionsVersion,
 		getPracticeNotes,
 		getPracticeSessions,
 		getPracticeSessionsOffline,
@@ -715,6 +728,7 @@ declare module 'musora-content-services' {
 		isContentLikedByIds,
 		isNextDay,
 		isSameDate,
+		isUserFreeTier,
 		isUsernameAvailable,
 		jumpToContinueContent,
 		jumpToPost,
