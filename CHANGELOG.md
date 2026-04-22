@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.155.2](https://github.com/railroadmedia/musora-content-services/compare/v2.155.1...v2.155.2) (2026-04-22)
+
+
+### Bug Fixes
+
+* remove prevSession args ([#937](https://github.com/railroadmedia/musora-content-services/issues/937)) ([2fe1dc2](https://github.com/railroadmedia/musora-content-services/commit/2fe1dc280a21e060b15567afe60a4cf959cecc90))
+
 ### [2.155.1](https://github.com/railroadmedia/musora-content-services/compare/v2.155.0...v2.155.1) (2026-04-22)
 
 
