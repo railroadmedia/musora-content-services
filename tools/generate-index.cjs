@@ -52,7 +52,7 @@ function extractExportedFunctions(filePath) {
  * @returns {string[]}
  */
 function getExclusionList(fileContent) {
-  const excludeRegex = /const\s+excludeFromGeneratedIndex\s*=\s*\[(.*?)\];/
+  const excludeRegex = /const\s+excludeFromGeneratedIndex\s*=\s*\[(.*?)\];?/
   const excludeMatch = fileContent.match(excludeRegex)
   let excludedFunctions = []
   if (excludeMatch) {
