@@ -230,6 +230,23 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	getRecentActivityOffline
+} from './services/offline/activities.ts';
+
+import {
+	getPracticeSessionsOffline,
+	otherStatsOffline
+} from './services/offline/practices.ts';
+
+import {
+	contentStatusCompletedManyOffline,
+	contentStatusCompletedOffline,
+	contentStatusResetOffline,
+	contentStatusStartedOffline,
+	recordWatchSessionOffline
+} from './services/offline/progress.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -256,7 +273,6 @@ import {
 	fetchLiveStreamData,
 	fetchRecentUserActivities,
 	fetchTopComment,
-	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
@@ -327,6 +343,7 @@ import {
 	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getHierarchies,
 	getHierarchy,
 	getSanityDate,
 	getSongTypesFor,
@@ -448,7 +465,6 @@ import {
 	deletePracticeSession,
 	deleteUserActivity,
 	fetchRecentActivitiesActiveTabs,
-	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
@@ -487,8 +503,12 @@ export {
 	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusCompletedMany,
+	contentStatusCompletedManyOffline,
+	contentStatusCompletedOffline,
 	contentStatusReset,
+	contentStatusResetOffline,
 	contentStatusStarted,
+	contentStatusStartedOffline,
 	convertToTimeZone,
 	createAccount,
 	createComment,
@@ -607,14 +627,12 @@ export {
 	fetchUnreadCount,
 	fetchUpcomingEvents,
 	fetchUserPermissions,
-	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	fetchUsersMultiAccountDetails,
 	filterCoursesInCourseCollections,
-	findIncompleteLesson,
 	flushWatchSession,
 	followThread,
 	generateAuthSessionUrl,
@@ -639,6 +657,7 @@ export {
 	getDailySession,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
+	getHierarchies,
 	getHierarchy,
 	getIdsWhereLastAccessedFromMethod,
 	getInProgressAwards,
@@ -655,6 +674,7 @@ export {
 	getOwnedContent,
 	getPracticeNotes,
 	getPracticeSessions,
+	getPracticeSessionsOffline,
 	getProgressDataByIds,
 	getProgressDataByRecordIds,
 	getProgressRows,
@@ -663,6 +683,7 @@ export {
 	getProgressStateByRecordIds,
 	getRecent,
 	getRecentActivity,
+	getRecentActivityOffline,
 	getRecommendedForYou,
 	getReportIssueOptions,
 	getResumeTimeSecondsByIds,
@@ -717,6 +738,7 @@ export {
 	onProgressSaved,
 	openComment,
 	otherStats,
+	otherStatsOffline,
 	pauseLiveEventPolling,
 	pinProgressRow,
 	pinThread,
@@ -727,6 +749,7 @@ export {
 	recordUserActivity,
 	recordUserPractice,
 	recordWatchSession,
+	recordWatchSessionOffline,
 	registerAwardCallback,
 	registerProgressCallback,
 	removeContentAsInterested,

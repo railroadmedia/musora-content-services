@@ -226,6 +226,23 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	getRecentActivityOffline
+} from './services/offline/activities.ts';
+
+import {
+	getPracticeSessionsOffline,
+	otherStatsOffline
+} from './services/offline/practices.ts';
+
+import {
+	contentStatusCompletedManyOffline,
+	contentStatusCompletedOffline,
+	contentStatusResetOffline,
+	contentStatusStartedOffline,
+	recordWatchSessionOffline
+} from './services/offline/progress.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -252,7 +269,6 @@ import {
 	fetchLiveStreamData,
 	fetchRecentUserActivities,
 	fetchTopComment,
-	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
@@ -323,6 +339,7 @@ import {
 	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getHierarchies,
 	getHierarchy,
 	getSanityDate,
 	getSongTypesFor,
@@ -444,7 +461,6 @@ import {
 	deletePracticeSession,
 	deleteUserActivity,
 	fetchRecentActivitiesActiveTabs,
-	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
@@ -488,8 +504,12 @@ declare module 'musora-content-services' {
 		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusCompletedMany,
+		contentStatusCompletedManyOffline,
+		contentStatusCompletedOffline,
 		contentStatusReset,
+		contentStatusResetOffline,
 		contentStatusStarted,
+		contentStatusStartedOffline,
 		convertToTimeZone,
 		createAccount,
 		createComment,
@@ -608,14 +628,12 @@ declare module 'musora-content-services' {
 		fetchUnreadCount,
 		fetchUpcomingEvents,
 		fetchUserPermissions,
-		fetchUserPermissionsData,
 		fetchUserPlaylists,
 		fetchUserPracticeMeta,
 		fetchUserPracticeNotes,
 		fetchUserPractices,
 		fetchUsersMultiAccountDetails,
 		filterCoursesInCourseCollections,
-		findIncompleteLesson,
 		flushWatchSession,
 		followThread,
 		generateAuthSessionUrl,
@@ -640,6 +658,7 @@ declare module 'musora-content-services' {
 		getDailySession,
 		getEnrichedLearningPath,
 		getEnrichedLearningPaths,
+		getHierarchies,
 		getHierarchy,
 		getIdsWhereLastAccessedFromMethod,
 		getInProgressAwards,
@@ -656,6 +675,7 @@ declare module 'musora-content-services' {
 		getOwnedContent,
 		getPracticeNotes,
 		getPracticeSessions,
+		getPracticeSessionsOffline,
 		getProgressDataByIds,
 		getProgressDataByRecordIds,
 		getProgressRows,
@@ -664,6 +684,7 @@ declare module 'musora-content-services' {
 		getProgressStateByRecordIds,
 		getRecent,
 		getRecentActivity,
+		getRecentActivityOffline,
 		getRecommendedForYou,
 		getReportIssueOptions,
 		getResumeTimeSecondsByIds,
@@ -718,6 +739,7 @@ declare module 'musora-content-services' {
 		onProgressSaved,
 		openComment,
 		otherStats,
+		otherStatsOffline,
 		pauseLiveEventPolling,
 		pinProgressRow,
 		pinThread,
@@ -728,6 +750,7 @@ declare module 'musora-content-services' {
 		recordUserActivity,
 		recordUserPractice,
 		recordWatchSession,
+		recordWatchSessionOffline,
 		registerAwardCallback,
 		registerProgressCallback,
 		removeContentAsInterested,
