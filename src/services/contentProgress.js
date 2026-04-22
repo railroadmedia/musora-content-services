@@ -445,7 +445,6 @@ export async function recordWatchSession(
   mediaLengthSeconds,
   currentSeconds,
   secondsPlayed,
-  prevSession = null,
   instrumentId = null,
   categoryId = null,
   isLivestream = false,
@@ -500,32 +499,14 @@ export async function _recordWatchSession(
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
 
-  if (!prevSession) {
-    prevSession = {
-      pushInterval: null
-    }
-  }
-
   // Track practice and progress locally (no immediate push)
   await Promise.all([
     trackPractice(contentId, secondsPlayed, { instrumentId, categoryId }),
     trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream, isOffline, hierarchy),
   ])
-
-  if (!prevSession.pushInterval) {
-    prevSession.pushInterval = setInterval(() => {
-      flushWatchSession()
-    }, PUSH_INTERVAL)
-  }
-  return prevSession
 }
 
-export async function flushWatchSession(sessionToFlush = null, shouldClearInterval = true) {
-  if (shouldClearInterval && sessionToFlush?.pushInterval) {
-    clearInterval(sessionToFlush.pushInterval)
-    sessionToFlush.pushInterval = null
-  }
-
+export async function flushWatchSession() {
   db.contentProgress.requestPushUnsynced('flush-watch-session')
   db.practices.requestPushUnsynced('flush-watch-session')
 }
@@ -566,9 +547,15 @@ export async function contentStatusCompletedMany(contentIds, collection = null) 
   return setStartedOrCompletedStatusMany(contentIds, collection, true)
 }
 
-export async function contentStatusStarted(contentId, collection = null) {
+// skipBubbleTrickle is only for starting enrolled GC's as a hack to get them into the progress row.
+export async function contentStatusStarted(contentId, collection = null, {skipPush = false, skipBubbleTrickle = false} = {}) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
-  return setStartedOrCompletedStatus(contentId, collection, false)
+  return setStartedOrCompletedStatus(
+    normalizeContentId(contentId),
+    normalizeCollection(collection),
+    false,
+    {skipPush, skipBubbleTrickle}
+  )
 }
 export async function contentStatusReset(contentId, collection = null, {skipPush = false} = {}) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
@@ -593,9 +580,9 @@ async function saveContentProgress(
 
   // filter out contentIds that are setting progress lower than existing
   const contentIdProgress = await getProgressDataByIds([contentId], collection)
-  const currentProgress = contentIdProgress[contentId].progress;
+  const currentProgress = contentIdProgress[contentId].progress
   if (progress <= currentProgress) {
-    progress = currentProgress;
+    progress = currentProgress
   }
 
   if (!isOffline) {
@@ -664,10 +651,7 @@ async function saveContentProgress(
   return response
 }
 
-export async function setStartedOrCompletedStatus(contentId, collection, isCompleted, { isOffline = false, hierarchy = null, skipPush = false } = {}) {
-  contentId = normalizeContentId(contentId)
-  collection = normalizeCollection(collection)
-
+async function setStartedOrCompletedStatus(contentId, collection, isCompleted, { isOffline = false, hierarchy = null, skipPush = false, skipBubbleTrickle = false } = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
   if (!isOffline) {
@@ -684,30 +668,32 @@ export async function setStartedOrCompletedStatus(contentId, collection, isCompl
     null,
     {skipPush: true}
   )
-
+  
   // skip bubbling if offline
   if (isOffline) {
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
   }
+  
+  let allProgresses = {}
+  allProgresses[contentId] = progress
 
-  let progresses = {
-    ...trickleProgress(hierarchy, contentId, collection, progress),
-    ...await bubbleProgress(hierarchy, contentId, collection)
+  if (!skipBubbleTrickle) {
+    let progresses = {
+      ...trickleProgress(hierarchy, contentId, collection, progress),
+      ...await bubbleProgress(hierarchy, contentId, collection)
+    }
+    Object.assign(allProgresses, progresses)
+
+    await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
   }
-
-  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
 
   if (isLP) {
-    let exportProgresses = progresses
-    exportProgresses[contentId] = progress
-    await duplicateProgressToALaCarte(exportProgresses, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
   }
 
-  if (progress === 100) await onContentCompletedLearningPathActions(contentId, collection)
-
-  for (const [id, progress] of Object.entries(progresses)) {
-    if (progress === 100) {
+  for (const [id, prog] of Object.entries(allProgresses)) {
+    if (prog === 100) {
       await onContentCompletedLearningPathActions(Number(id), collection)
     }
   }
@@ -742,6 +728,8 @@ export async function setStartedOrCompletedStatusMany(contentIds, collection, is
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
   }
+  
+  let allProgresses = Object.fromEntries(contentIds.map(id => [id, progress]))
 
   let progresses = {}
   for (const contentId of contentIds) {
@@ -751,23 +739,16 @@ export async function setStartedOrCompletedStatusMany(contentIds, collection, is
       ...(await bubbleProgress(hierarchy, contentId, collection)),
     }
   }
+  Object.assign(allProgresses, progresses)
+
   await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
 
   if (isLP) {
-    let exportProgresses = progresses
-    for (const contentId of contentIds){
-      exportProgresses[contentId] = progress
-    }
-    await duplicateProgressToALaCarte(exportProgresses, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
   }
 
-  if (progress === 100) {
-    for (const contentId of contentIds) {
-      await onContentCompletedLearningPathActions(contentId, collection)
-    }
-  }
-  for (const [id, progress] of Object.entries(progresses)) {
-    if (progress === 100) {
+  for (const [id, prog] of Object.entries(allProgresses)) {
+    if (prog === 100) {
       await onContentCompletedLearningPathActions(Number(id), collection)
     }
   }
@@ -785,28 +766,30 @@ export async function resetStatus(contentId, collection = null, { isOffline = fa
 
   const progress = 0
   const response = await db.contentProgress.eraseProgress(normalizeContentId(contentId), normalizeCollection(collection), {skipPush: true})
-
-  if (!isOffline) {
-    hierarchy = await getHierarchy(contentId, collection)
-  }
-  const metadata = hierarchy.metadata || {}
-
+  
   // skip bubbling if offline
   if (isOffline) {
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
   }
+  
+  hierarchy = await getHierarchy(contentId, collection)
+  const metadata = hierarchy.metadata || {}
+  
+  let allProgresses = {}
+  allProgresses[contentId] = progress
 
   let progresses = {
     ...trickleProgress(hierarchy, contentId, collection, progress),
     ...await bubbleProgress(hierarchy, contentId, collection)
   }
+  Object.assign(allProgresses, progresses)
 
   await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, true)
 
+
   if (isLP) {
-    progresses[contentId] = progress
-    await duplicateProgressToALaCarte(progresses, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
   }
 
   if (!skipPush) db.contentProgress.requestPushUnsynced('reset-status')

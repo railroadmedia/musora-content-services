@@ -1171,7 +1171,7 @@ export async function fetchRelatedLessons(railContentId) {
 }
 
 export async function fetchLiveEvent(brand, forcedContentId = null) {
-  const LIVE_EXTRA_MINUTES = 30
+  const LIVE_EXTRA_MINUTES = 15
   //calendarIDs taken from addevent.php
   // TODO import instructor calendars to Sanity
   let defaultCalendarID = ''

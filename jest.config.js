@@ -17,19 +17,43 @@ export default {
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,
 
+  testTimeout: 30000,
+
   // Indicates whether the coverage information should be collected while executing the test
   collectCoverage: true,
 
-  // An array of glob patterns indicating a set of files for which coverage information should be collected
-  // collectCoverageFrom: undefined,
+  // Exclude pure transport/adapter layers with no business logic.
+  // Files with business logic stay in even at low coverage — gaps should be visible.
+  collectCoverageFrom: [
+    'src/**/*.{js,ts}',
+    '!src/services/sanity.js',
+    '!src/services/railcontent.js',
+    '!src/services/recommendations.js',
+    '!src/index.js',
+    '!src/index.d.ts',
+    '!src/services/user/account.ts',
+    '!src/services/user/sessions.js',
+    '!src/services/user/profile.js',
+    '!src/services/user/management.js',
+    '!src/services/user/interests.js',
+    '!src/services/user/payments.ts',
+    '!src/services/user/chat.js',
+  ],
 
   // The directory where Jest should output its coverage files
   coverageDirectory: 'coverage',
 
-  // An array of regexp pattern strings used to skip coverage collection
-  // coveragePathIgnorePatterns: [
-  //   "/node_modules/"
-  // ],
+  // Global threshold — set just below current baseline.
+  // Intent is to ratchet up over time as coverage improves.
+  // Do not lower these numbers — raise them as tests are added.
+  coverageThreshold: {
+    global: {
+      statements: 40,
+      branches: 25,
+      functions: 40,
+      lines: 40,
+    },
+  },
 
   // Indicates which provider should be used to instrument code for coverage
   // coverageProvider: "babel",
@@ -92,7 +116,10 @@ export default {
   // moduleNameMapper: {},
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
-  modulePathIgnorePatterns: ['<rootDir>/test/live'],
+  modulePathIgnorePatterns: [
+    '<rootDir>/test/live',
+    '<rootDir>/test/integration'
+  ],
 
   // Activates notifications for test results
   // notify: false,
@@ -136,7 +163,11 @@ export default {
   // setupFiles: [],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
-  setupFilesAfterEnv: ['dotenv/config', '<rootDir>/test/setupConsole.js'],
+  setupFilesAfterEnv: [
+    'dotenv/config',
+    '<rootDir>/test/setupConsole.js',
+    '<rootDir>/test/setupNetworkGuard.js'
+  ],
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
   // slowTestThreshold: 5,

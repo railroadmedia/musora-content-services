@@ -222,9 +222,11 @@ import {
 	acceptInvite,
 	createAccount,
 	createInvites,
+	fetchInvite,
 	fetchUsersMultiAccountDetails,
 	removeUserFromActiveMultiUserAccount,
-	rescindInvite
+	rescindInvite,
+	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
@@ -570,6 +572,7 @@ export {
 	fetchInstructorLessons,
 	fetchInstructors,
 	fetchInterests,
+	fetchInvite,
 	fetchLastSubscriptionPlatform,
 	fetchLatestThreads,
 	fetchLearningPathLessons,
@@ -803,6 +806,7 @@ export {
 	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,
+	updateMultiUserAccount,
 	updateNotificationSetting,
 	updateOnboarding,
 	updatePlaylist,

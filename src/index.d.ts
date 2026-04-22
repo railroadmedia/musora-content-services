@@ -218,9 +218,11 @@ import {
 	acceptInvite,
 	createAccount,
 	createInvites,
+	fetchInvite,
 	fetchUsersMultiAccountDetails,
 	removeUserFromActiveMultiUserAccount,
-	rescindInvite
+	rescindInvite,
+	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
@@ -571,6 +573,7 @@ declare module 'musora-content-services' {
 		fetchInstructorLessons,
 		fetchInstructors,
 		fetchInterests,
+		fetchInvite,
 		fetchLastSubscriptionPlatform,
 		fetchLatestThreads,
 		fetchLearningPathLessons,
@@ -804,6 +807,7 @@ declare module 'musora-content-services' {
 		updateDailySession,
 		updateDisplayName,
 		updateForumCategory,
+		updateMultiUserAccount,
 		updateNotificationSetting,
 		updateOnboarding,
 		updatePlaylist,
