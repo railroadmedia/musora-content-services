@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.155.0](https://github.com/railroadmedia/musora-content-services/compare/v2.154.0...v2.155.0) (2026-04-22)
+
+
+### Features
+
+* **BEHSTP-167:** offline progress tracking support ([#889](https://github.com/railroadmedia/musora-content-services/issues/889)) ([0528597](https://github.com/railroadmedia/musora-content-services/commit/05285977237ccbfa577a5770a1762c31d855e59e))
+* handle late-start active paths, and set up better resetAllLearningPaths ([#928](https://github.com/railroadmedia/musora-content-services/issues/928)) ([5d80430](https://github.com/railroadmedia/musora-content-services/commit/5d80430fbedfb21668882d402c5f6b07c82cfbf9))
+* **MU2-1452:** free tier content sort to front ([#915](https://github.com/railroadmedia/musora-content-services/issues/915)) ([0655e68](https://github.com/railroadmedia/musora-content-services/commit/0655e685f32fe77728d7b8c2505283adbc1a7c97))
+
 ## [2.154.0](https://github.com/railroadmedia/musora-content-services/compare/v2.153.0...v2.154.0) (2026-04-21)
 
 
