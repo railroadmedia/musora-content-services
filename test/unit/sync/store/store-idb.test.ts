@@ -17,10 +17,10 @@
 import { IDBFactory } from 'fake-indexeddb'
 import { makeTelemetry, makeContext, makeUserScope, makePullMock, makePushMock, TEST_USER_ID } from '../helpers/index'
 import TestModel, { makeTestDatabase } from '../helpers/TestModel'
-import SyncStore from '../../../../src/services/sync/store/index'
-import SyncRetry from '../../../../src/services/sync/retry'
-import SyncRunScope from '../../../../src/services/sync/run-scope'
-import type { SyncPullResponse } from '../../../../src/services/sync/fetch'
+import SyncStore from '@/services/sync/store/index'
+import SyncRetry from '@/services/sync/retry'
+import SyncRunScope from '@/services/sync/run-scope'
+import type { SyncPullResponse } from '@/services/sync/fetch'
 
 // Fresh IDB instance per test — prevents cross-test transaction leakage
 beforeEach(() => {

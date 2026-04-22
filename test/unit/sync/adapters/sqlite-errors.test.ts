@@ -27,7 +27,7 @@ jest.mock('@nozbe/watermelondb/adapters/sqlite', () => {
 
 import SQLiteErrorAwareAdapter, {
   FullFailingSQLiteAdapter,
-} from '../../../../src/services/sync/adapters/sqlite'
+} from '@/services/sync/adapters/sqlite'
 
 // ---
 

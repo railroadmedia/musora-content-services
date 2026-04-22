@@ -1,7 +1,7 @@
 // Break circular dep: sync/index → manager → award chain → UserAwardProgressRepository
 // extends SyncRepository before it's defined in the module evaluation order.
-jest.mock('../../../../src/services/sync/manager', () => ({ default: class SyncManager {} }))
-jest.mock('../../../../src/services/sync/repository-proxy', () => ({ db: {} }))
+jest.mock('@/services/sync/manager', () => ({ default: class SyncManager {} }))
+jest.mock('@/services/sync/repository-proxy', () => ({ db: {} }))
 
 import { Database } from '@nozbe/watermelondb'
 import { makeDatabase, makeStore, resetDatabase } from '../helpers/index'
@@ -9,8 +9,8 @@ import ContentProgress, {
   COLLECTION_TYPE,
   COLLECTION_ID_SELF,
   STATE,
-} from '../../../../src/services/sync/models/ContentProgress'
-import ProgressRepository from '../../../../src/services/sync/repositories/content-progress'
+} from '@/services/sync/models/ContentProgress'
+import ProgressRepository from '@/services/sync/repositories/content-progress'
 
 let db: Database
 let repo: ProgressRepository
