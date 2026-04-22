@@ -23,6 +23,7 @@ export interface ContentItem {
   type?: string
   status?: string
   parent_id?: number
+  need_access?: boolean
 }
 
 export interface Course {
@@ -53,6 +54,7 @@ export interface GetEndScreenParams {
   course?: Course | null
   collection?: Collection | null
   playlist?: Playlist | null
-  user_playlist_item_index? : number | null
+  user_playlist_item_index?: number | null
+  next_item?: any | null
   brand: string
 }

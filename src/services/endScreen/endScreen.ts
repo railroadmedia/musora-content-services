@@ -29,15 +29,15 @@ export async function getEndScreen({
   collection = null,
   playlist = null,
   user_playlist_item_index = null,
+  next_item = null,
   brand
 }: GetEndScreenParams): Promise<EndScreenResult> {
 
   if (playlist) {
-    const nextItemInPlaylist = getNextItemInPlaylistOrNull(lesson.id, playlist, user_playlist_item_index)
-    if (nextItemInPlaylist) {
-      return buildCountdown(nextItemInPlaylist, false)
-    }
-    return buildCourseComplete(await fetchEndScreenRecommendation(brand, lesson.id))
+    const nextItem = next_item ??
+      getNextItemInPlaylistOrNull(lesson.id, playlist, user_playlist_item_index)
+
+    return nextItem ? buildCountdown(nextItem, false) : null
   }
 
   if (SINGLE_SONG_LESSON_TYPES.includes(lesson.type ?? '')) {
@@ -71,7 +71,7 @@ export async function getEndScreen({
 // ─── Builders ─────────────────────────────────────────────────────────────────
 
 function buildCountdown(upNext: any, withReply: boolean): EndScreenResult {
-  return { variant: 'countdown-up-next', upNext, countdownAutoplay: true, ctaLabels: withReply ? COUNTDOWN_CTA_REPLAY :COUNTDOWN_CTA }
+  return { variant: 'countdown-up-next', upNext, countdownAutoplay: true, ctaLabels: withReply ? COUNTDOWN_CTA_REPLAY : COUNTDOWN_CTA }
 }
 
 function buildCourseComplete(upNext: any): EndScreenResult {
@@ -96,7 +96,7 @@ function getNextLessonOrNull(lessonId: number, course: Course): ContentItem | nu
 
 function isReleasedContent(content: ContentItem): boolean {
   if (!content?.status) return false
-  return content.status === 'published' || content.status === 'scheduled'
+  return (content.status === 'published' || content.status === 'scheduled') && !content.need_access
 }
 
 function getFirstLessonOfNextCourseOrNull(
