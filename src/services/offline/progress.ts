@@ -23,7 +23,6 @@ interface HierarchyParameter {
  * @param secondsPlayed - Seconds actively watched in this session
  * @param hierarchy - Content hierarchy used to update parent progress offline
  * @param options.collection - Collection context; defaults to self
- * @param options.prevSession - Previous session identifier for continuity
  * @param options.instrumentId - Instrument filter for the session
  * @param options.categoryId - Category filter for the session
  */
@@ -35,12 +34,10 @@ export async function recordWatchSessionOffline(
   hierarchy: HierarchyParameter,
   {
     collection = null,
-    prevSession = null,
     instrumentId = null,
     categoryId = null,
   }: {
     collection?: CollectionParameter|null,
-    prevSession?: string|null,
     instrumentId?: number|null,
     categoryId?: number|null
   } = {}
@@ -52,7 +49,6 @@ export async function recordWatchSessionOffline(
     secondsPlayed,
     {
       collection,
-      prevSession,
       instrumentId,
       categoryId,
       isOffline: true,

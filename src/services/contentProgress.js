@@ -434,7 +434,6 @@ async function _getAllStartedOrCompleted({
  * @param {int} mediaLengthSeconds - total length of video media || live event duration if livestream
  * @param {int} currentSeconds - seconds timestamp relative to beginning of video
  * @param {int} secondsPlayed - seconds played in this watch session (since last pause)
- * @param {string|null} prevSession - This function records a sessionId to pass into future updates to progress on the same video
  * @param {int|null} instrumentId - enum value of instrument id
  * @param {int|null} categoryId - enum value of category id
  * @param {boolean|null} isLivestream - determines livestream-specific progress handling
@@ -456,7 +455,6 @@ export async function recordWatchSession(
     secondsPlayed,
     {
       collection,
-      prevSession,
       instrumentId,
       categoryId,
       isLivestream,
@@ -473,7 +471,6 @@ export async function recordWatchSession(
  * @param {int} mediaLengthSeconds - total length of video media || live event duration if livestream
  * @param {int} currentSeconds - seconds timestamp relative to beginning of video
  * @param {int} secondsPlayed - seconds played in this watch session (since last pause)
- * @param {string|null} prevSession - This function records a sessionId to pass into future updates to progress on the same video
  * @param {int|null} instrumentId - enum value of instrument id
  * @param {int|null} categoryId - enum value of category id
  * @param {boolean|null} isLivestream - determines livestream-specific progress handling
@@ -488,7 +485,6 @@ export async function _recordWatchSession(
   secondsPlayed,
   {
     collection = null,
-    prevSession = null,
     instrumentId = null,
     categoryId = null,
     isLivestream = false,
