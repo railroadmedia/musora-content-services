@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.155.3](https://github.com/railroadmedia/musora-content-services/compare/v2.155.2...v2.155.3) (2026-04-23)
+
+
+### Bug Fixes
+
+* **BR-460:** report option label updates ([#940](https://github.com/railroadmedia/musora-content-services/issues/940)) ([8ad8f72](https://github.com/railroadmedia/musora-content-services/commit/8ad8f72dd9a1284b4098aa00f08962a53a170275))
+
 ### [2.155.2](https://github.com/railroadmedia/musora-content-services/compare/v2.155.1...v2.155.2) (2026-04-22)
 
 
