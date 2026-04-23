@@ -11,9 +11,14 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 import { ReportResponse, ReportableType, IssueTypeMap, ReportIssueOption } from './types'
 import { Brands } from '../../lib/brands'
-import { generateContentUrl, generatePlaylistUrl, generateForumPostUrl, generateCommentUrl } from '../urlBuilder'
-import {fetchByRailContentId, fetchByRailContentIds} from "../sanity";
-import {addContextToContent} from "../contentAggregator";
+import {
+  generateContentUrl,
+  generatePlaylistUrl,
+  generateForumPostUrl,
+  generateCommentUrl,
+} from '../urlBuilder'
+import { fetchByRailContentId, fetchByRailContentIds } from '../sanity'
+import { addContextToContent } from '../contentAggregator'
 
 /**
  * Parameters for submitting a report with type-safe issue values
@@ -100,11 +105,9 @@ export async function report<T extends ReportableType>(
   // Generate content_url for reports (relative URL - backend adds domain)
   if (params.type === 'content') {
     // Fetch content and add navigateTo for courses/packs/etc
-    const contents = await addContextToContent(
-      fetchByRailContentIds,
-      [params.id],
-      { addNavigateTo: true }
-    )
+    const contents = await addContextToContent(fetchByRailContentIds, [params.id], {
+      addNavigateTo: true,
+    })
     const content = contents?.[0]
 
     if (content) {
@@ -113,12 +116,12 @@ export async function report<T extends ReportableType>(
         type: content.type,
         parentId: content.parentId || content.parent_id,
         brand: content.brand,
-        navigateTo: content.navigateTo
+        navigateTo: content.navigateTo,
       })
     }
   } else if (params.type === 'playlist') {
     requestBody.content_url = generatePlaylistUrl({
-      id: params.id
+      id: params.id,
     })
   } else if (params.type === 'forum_post') {
     const { fetchPost } = await import('../forums/posts')
@@ -126,7 +129,7 @@ export async function report<T extends ReportableType>(
 
     if (post?.thread) {
       requestBody.content_url = generateForumPostUrl({
-        brand: params.brand
+        brand: params.brand,
       })
     }
   } else if (params.type === 'comment') {
@@ -144,17 +147,14 @@ export async function report<T extends ReportableType>(
             id: content.id,
             type: content.type,
             parentId: content.parentId || content.parent_id,
-            brand: params.brand
-          }
+            brand: params.brand,
+          },
         })
       }
     }
   }
 
-  return await httpClient.post<ReportResponse>(
-    '/api/user-reports/v1/reports',
-    requestBody
-  )
+  return await httpClient.post<ReportResponse>('/api/user-reports/v1/reports', requestBody)
 }
 
 /**
@@ -224,7 +224,7 @@ export function getReportIssueOptions(
 
       contentOptions.push(
         { value: 'assignment_issue', label: 'An issue with lesson assignment' },
-        { value: 'other', label: 'Other' }
+        { value: 'other', label: 'Other reasons' }
       )
 
       return contentOptions
@@ -245,12 +245,12 @@ export function getReportIssueOptions(
 
       playlistOptions.push(
         { value: 'assignment_issue', label: 'An issue with lesson assignment' },
-        { value: 'other', label: 'Other' }
+        { value: 'other', label: 'Other reasons' }
       )
 
       return playlistOptions
 
     default:
-      return [{ value: 'other', label: 'Other' }]
+      return [{ value: 'other', label: 'Other reasons' }]
   }
 }
