@@ -15,7 +15,6 @@ export async function getPracticeSessionsOffline(
 ) {
 
   const query = await db.practices.queryAll(
-    Q.where('updated_at', Q.gte(offlineTimestamp)),
     Q.where('date', day),
     Q.sortBy('created_at', 'asc'))
   const practices = query.data
