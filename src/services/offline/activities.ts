@@ -20,7 +20,7 @@ interface Activity {
  * @returns `{ currentPage, totalPages, data }` where `data` is a page of `Activity` records
  */
 export async function getRecentActivityOffline(
-  _offlineTimestamp: number,
+  offlineTimestamp: number,
   {
     page = 1,
     limit = 5,
@@ -34,7 +34,7 @@ export async function getRecentActivityOffline(
   // because setting up watermelon user activities table is extremely complicated.
   // Note: this implementation does not persist "activities" beyond when the corresponding record is deleted. That's ok right now.
 
-  const clauses = getClauses(tabName)
+  const clauses = getClauses(offlineTimestamp, tabName)
 
   const query = await db.contentProgress.queryAll(...clauses)
   const progress = query.data
@@ -54,8 +54,9 @@ export async function getRecentActivityOffline(
   }
 }
 
-function getClauses(tabName: string|null) {
+function getClauses(offlineTimestamp: number, tabName: string|null) {
   let clauses: Q.Clause[] = [
+    Q.where('updated_at', Q.gte(offlineTimestamp)),
     Q.sortBy('created_at', 'desc'),
   ]
 
