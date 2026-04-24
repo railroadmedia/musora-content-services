@@ -19,6 +19,9 @@ jobs:
       - name: Run unit tests
         run: npm test -- --coverage
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: railroadmedia/musora-content-services
+          flags: unit
+          fail_ci_if_error: true
