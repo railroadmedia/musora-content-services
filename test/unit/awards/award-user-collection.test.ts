@@ -20,7 +20,8 @@ jest.mock('../../../src/services/sync/repository-proxy.ts', () => {
 })
 
 import sanityClient, { fetchSanity } from '../../../src/services/sanity.js'
-import db from '../../../src/services/sync/repository-proxy.ts'
+import db_ from '../../../src/services/sync/repository-proxy'
+const db = db_ as any
 import { awardDefinitions } from '../../../src/services/awards/internal/award-definitions.js'
 import { getCompletedAwards, getInProgressAwards, getAwardStatistics } from '../../../src/services/awards/award-query.js'
 

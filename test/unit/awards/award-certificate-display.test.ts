@@ -25,7 +25,8 @@ jest.mock('../../../src/services/sync/repository-proxy.ts', () => {
 
 import sanityClient, { fetchSanity } from '../../../src/services/sanity.js'
 import { getUserData } from '../../../src/services/user/management.js'
-import db from '../../../src/services/sync/repository-proxy.ts'
+import db_ from '../../../src/services/sync/repository-proxy'
+const db = db_ as any
 import { awardDefinitions } from '../../../src/services/awards/internal/award-definitions.js'
 
 describe('Award Certificate Display - E2E Scenarios', () => {

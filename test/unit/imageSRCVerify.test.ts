@@ -1,4 +1,3 @@
-// Mock console.warn to avoid cluttering test output and to verify warnings
 import { extractSanityUrl, isBucketUrl, verifyImageSRC } from '../../src/services/imageSRCVerify.js'
 
 const originalConsoleWarn = console.warn
@@ -6,20 +5,16 @@ const originalConsoleError = console.error
 const originalNodeEnv = process.env.NODE_ENV
 
 describe('Image URL Verification', () => {
-  let consoleWarnMock
+  let consoleWarnMock: any
 
   beforeEach(() => {
-    // Mock console.warn and console.error
     consoleWarnMock = jest.fn()
     console.warn = consoleWarnMock
     console.error = jest.fn()
-
-    // Set NODE_ENV to development for all tests
     process.env.NODE_ENV = 'development'
   })
 
   afterEach(() => {
-    // Restore the original console methods and NODE_ENV
     console.warn = originalConsoleWarn
     console.error = originalConsoleError
     process.env.NODE_ENV = originalNodeEnv

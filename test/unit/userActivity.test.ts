@@ -1,7 +1,10 @@
 import { initializeTestService } from '../initializeTests.js'
 import { getUserMonthlyStats, getUserWeeklyStats, recordUserPractice } from '../../src/services/userActivity.js'
 
-let mockPracticesData = []
+let mockPracticesData: {
+  date: string;
+  duration_seconds: number
+}[] = []
 
 jest.mock('../../src/services/sync/repository-proxy.ts', () => {
   const mockFns = {
@@ -33,7 +36,7 @@ jest.mock('../../src/services/railcontent.js', () => ({
   fetchUserPermissionsData: jest.fn(() => ({ permissions: [78, 91, 92], isAdmin: false }))
 }))
 
-const repositoryProxy = require('../../src/services/sync/repository-proxy.ts')
+const repositoryProxy: any = require('../../src/services/sync/repository-proxy.ts')
 
 describe('User Activity API Tests', function () {
   beforeEach(() => {

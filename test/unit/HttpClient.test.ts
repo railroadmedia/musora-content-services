@@ -1,11 +1,9 @@
-import { HttpClient } from '../../src/infrastructure/http/HttpClient.ts'
-import { HeaderProvider } from '../../src/infrastructure/http/interfaces/HeaderProvider.ts'
-import { RequestExecutor } from '../../src/infrastructure/http/interfaces/RequestExecutor.ts'
+import { HeaderProvider, HttpClient, RequestExecutor } from '../../src/infrastructure/http'
 
 describe('HttpClient', () => {
-  let httpClient
-  let mockHeaderProvider
-  let mockRequestExecutor
+  let httpClient: HttpClient
+  let mockHeaderProvider: jest.Mocked<HeaderProvider>
+  let mockRequestExecutor: jest.Mocked<RequestExecutor>
   const baseUrl = 'https://api.example.com'
   const token = 'test-token'
   const headers = { 'Content-Type': 'application/json', Accept: 'application/json' }
@@ -190,23 +188,21 @@ describe('HttpClient', () => {
     })
 
     test('should not add Data-Version header when not provided', async () => {
-      // Log what's happening for debugging
-      console.log('Starting test: should not add Data-Version header when not provided')
 
       const url = '/test'
 
       // Make sure we're using exact null here, not undefined
-      const dataVersion = null
+      const dataVersion: string | null = null
 
       // Create separate mocks for this test to avoid state bleeding
-      const testHeaderProvider = {
+      const testHeaderProvider: jest.Mocked<HeaderProvider> = {
         getHeaders: jest.fn().mockReturnValue({
           'Content-Type': 'application/json',
           Accept: 'application/json',
         }),
       }
 
-      const testRequestExecutor = {
+      const testRequestExecutor: jest.Mocked<RequestExecutor> = {
         execute: jest.fn().mockResolvedValue(responseData),
       }
 
@@ -214,8 +210,6 @@ describe('HttpClient', () => {
       const testClient = new HttpClient(baseUrl, token, testHeaderProvider, testRequestExecutor)
 
       await testClient.get(url, { dataVersion })
-
-      console.log('Headers used in request:', testRequestExecutor.execute.mock.calls[0][1].headers)
 
       // Direct check on the mock to validate Data-Version absence
       const actualHeaders = testRequestExecutor.execute.mock.calls[0][1].headers

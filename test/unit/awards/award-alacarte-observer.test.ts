@@ -1,9 +1,9 @@
 import { contentProgressObserver } from '../../../src/services/awards/internal/content-progress-observer.js'
 import { awardEvents } from '../../../src/services/awards/internal/award-events.js'
 import { mockAwardDefinitions, getAwardByContentId } from '../../mockData/award-definitions.js'
-import { setupDefaultMocks, setupAwardEventListeners } from './helpers/index.js'
-import { mockCompletionStates, mockAllCompleted } from './helpers/completion-mock.js'
-import { COLLECTION_TYPE, emitAlaCarteProgress, emitProgress, waitForDebounce } from './helpers/progress-emitter.js'
+import { setupDefaultMocks, setupAwardEventListeners } from './helpers/index'
+import { mockCompletionStates, mockAllCompleted } from './helpers/completion-mock'
+import { COLLECTION_TYPE, emitAlaCarteProgress, emitProgress, waitForDebounce } from './helpers/progress-emitter'
 
 jest.mock('../../../src/services/sanity.js', () => ({
   ...jest.requireActual('../../../src/services/sanity'),
@@ -32,8 +32,10 @@ jest.mock('../../../src/services/sync/repository-proxy.ts', () => {
 })
 
 import sanityClient, { fetchSanity } from '../../../src/services/sanity.js'
-import db from '../../../src/services/sync/repository-proxy.ts'
+import db from '../../../src/services/sync/repository-proxy'
 import { awardDefinitions } from '../../../src/services/awards/internal/award-definitions.js'
+
+const mockDb = db as jest.MockedObjectDeep<typeof db>
 
 describe('Award Observer - A La Carte Progress (null collection)', () => {
   let listeners
@@ -43,7 +45,7 @@ describe('Award Observer - A La Carte Progress (null collection)', () => {
     awardEvents.removeAllListeners()
 
     sanityClient.fetch = jest.fn().mockResolvedValue(mockAwardDefinitions)
-    setupDefaultMocks(db, fetchSanity)
+    setupDefaultMocks(mockDb, fetchSanity)
 
     await awardDefinitions.refresh()
 
@@ -71,7 +73,7 @@ describe('Award Observer - A La Carte Progress (null collection)', () => {
     })
 
     test('emits awardProgress for partial completion with null collection', async () => {
-      mockCompletionStates(db, [417045])
+      mockCompletionStates(mockDb, [417045])
 
       emitAlaCarteProgress(417045)
       await waitForDebounce()
@@ -114,18 +116,18 @@ describe('Award Observer - A La Carte Progress (null collection)', () => {
     test('finds all awards containing the child content id', async () => {
       const sharedChildId = 418003
 
-      mockAllCompleted(db)
+      mockAllCompleted(mockDb)
 
       emitAlaCarteProgress(sharedChildId)
       await waitForDebounce()
 
-      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalled()
+      expect(mockDb.userAwardProgress.recordAwardProgress).toHaveBeenCalled()
     })
   })
 
   describe('A la carte debouncing', () => {
     beforeEach(() => {
-      mockCompletionStates(db, [])
+      mockCompletionStates(mockDb, [])
     })
 
     test('debounces multiple rapid a la carte updates', async () => {
@@ -135,7 +137,7 @@ describe('Award Observer - A La Carte Progress (null collection)', () => {
 
       await waitForDebounce()
 
-      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledTimes(1)
+      expect(mockDb.userAwardProgress.recordAwardProgress).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -151,7 +153,7 @@ describe('Award Observer - A La Carte Progress (null collection)', () => {
 
   describe('A la carte already completed award', () => {
     beforeEach(() => {
-      db.userAwardProgress.hasCompletedAward.mockResolvedValue(true)
+      mockDb.userAwardProgress.hasCompletedAward.mockResolvedValue(true)
     })
 
     test('does not re-grant already completed award', async () => {

@@ -1,7 +1,7 @@
 import { mockAwardDefinitions, getAwardByContentId } from '../../mockData/award-definitions.js'
-import { setupDefaultMocks, setupAwardEventListeners } from './helpers/index.js'
-import { COLLECTION_TYPE, emitLearningPathProgress, emitAlaCarteProgress, waitForDebounce } from './helpers/progress-emitter.js'
-import { mockCollectionAwareCompletion } from './helpers/completion-mock.js'
+import { setupDefaultMocks, setupAwardEventListeners } from './helpers/index'
+import { COLLECTION_TYPE, emitLearningPathProgress, emitAlaCarteProgress, waitForDebounce } from './helpers/progress-emitter'
+import { mockCollectionAwareCompletion } from './helpers/completion-mock'
 
 jest.mock('../../../src/services/sanity.js', () => ({
   ...jest.requireActual('../../../src/services/sanity'),
@@ -30,7 +30,8 @@ jest.mock('../../../src/services/sync/repository-proxy.ts', () => {
 })
 
 import sanityClient, { fetchSanity } from '../../../src/services/sanity.js'
-import db from '../../../src/services/sync/repository-proxy.ts'
+import db_ from '../../../src/services/sync/repository-proxy'
+const db = db_ as any
 import { awardDefinitions } from '../../../src/services/awards/internal/award-definitions.js'
 import { awardEvents } from '../../../src/services/awards/internal/award-events.js'
 import { contentProgressObserver } from '../../../src/services/awards/internal/content-progress-observer.js'

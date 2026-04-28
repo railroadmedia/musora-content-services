@@ -8,7 +8,7 @@ import {
   getToday,
 } from '../../src/services/dateUtils.js'
 
-const mockTimezone = (tz) => {
+const mockTimezone = (tz: string): void => {
   const RealDateTimeFormat = Intl.DateTimeFormat
   jest.spyOn(Intl, 'DateTimeFormat').mockImplementation((...args) => {
     const instance = new RealDateTimeFormat(...args)
@@ -16,7 +16,7 @@ const mockTimezone = (tz) => {
       format: instance.format.bind(instance),
       formatToParts: instance.formatToParts.bind(instance),
       resolvedOptions: () => ({ ...instance.resolvedOptions(), timeZone: tz }),
-    }
+    } as unknown as Intl.DateTimeFormat
   })
 }
 
