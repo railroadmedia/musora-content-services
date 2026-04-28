@@ -14,10 +14,13 @@ interface Activity {
 
 /**
  * @param offlineTimestamp - Minimum `updated_at` epoch ms to include
+ * @param page
+ * @param limit
+ * @param tabName
  * @param options.page - Page number (default 1)
  * @param options.limit - Results per page (default 5)
  * @param options.tabName - Restrict to `'lessons'`, `'songs'`, or both when `null`
- * @returns `{ currentPage, totalPages, data }` where `data` is a page of `Activity` records
+ * @returns {Promise<{currentPage: number, totalPages: number, data: Activity[]}>}
  */
 export async function getRecentActivityOffline(
   offlineTimestamp: number,

@@ -1296,8 +1296,8 @@ export async function fetchTopLevelParentId(railcontentId) {
  * Ignores learning-path-v2 parents.
  * ex: if railcontentId is of type 'skill-pack-lesson', return the corresponding 'skill-pack' railcontent_id
  *
- * @param {int[]} railcontentId
- * @returns {Promise<Record<[railcontentId: int],[topLevelParentId: int]>|null>}
+ * @param {int[]} railcontentIds
+ * @returns {Promise<Object.<number, object>|null>}
  */
 async function fetchTopLevelParentIds(railcontentIds) {
   const idsString = railcontentIds.join(',')
@@ -1460,7 +1460,7 @@ async function fetchALaCarteHierarchyData(railcontentId) {
 /**
  * returns a map of railcontentId to hierarchy data.
  * @param {int[]} railcontentIds
- * @returns {Promise<Record<[topLevelParentId: int],object>|null>}
+ * @returns {Promise<Object.<number, object>|null>}
  */
 async function fetchALaCarteHierarchyDataForIds(railcontentIds) {
   const topLevelIds = await fetchTopLevelParentIds(railcontentIds)
