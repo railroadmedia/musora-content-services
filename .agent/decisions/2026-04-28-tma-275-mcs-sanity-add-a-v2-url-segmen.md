@@ -1,6 +1,6 @@
 ---
 date: 2026-04-28
-pr: TBD
+pr: railroadmedia/musora-content-services#946
 branch: TMA-275-mcs-sanity-add-a-v2-url-segment-to-to-all-sanity-r
 status: open
 tags: [[jira]], [[bug-fix]]
