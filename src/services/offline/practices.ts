@@ -6,12 +6,13 @@ import { calculateLongestStreaks } from '../userActivity.js'
 
 /**
  * @param offlineTimestamp - Minimum `updated_at` epoch ms to include
+ * @param day
  * @param options.day - Date in YYYY-MM-DD format, defaults to today
- * @returns `{ data: { practices, practiceDuration } }` where `practiceDuration` is total seconds
+ * @returns {Promise<{data: {practices: object[], practiceDuration: number}}>}
  */
 export async function getPracticeSessionsOffline(
-  offlineTimestamp: number,
-  { day = dayjs().format('YYYY-MM-DD') }: { day?: string } = {}
+  offlineTimestamp: number, {
+    day = dayjs().format('YYYY-MM-DD') }: { day?: string } = {}
 ) {
 
   const query = await db.practices.queryAll(
