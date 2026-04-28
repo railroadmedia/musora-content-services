@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.155.11](https://github.com/railroadmedia/musora-content-services/compare/v2.155.10...v2.155.11) (2026-04-28)
+
+
+### Bug Fixes
+
+* **TMA-275:** MCS - Sanity - Add a v2 url segment to to all sanity requests to force a cache refresh ([#946](https://github.com/railroadmedia/musora-content-services/issues/946)) ([b5df1dc](https://github.com/railroadmedia/musora-content-services/commit/b5df1dc943cc9d477dcac5879daaf0725fa60f76))
+
 ### [2.155.10](https://github.com/railroadmedia/musora-content-services/compare/v2.155.9...v2.155.10) (2026-04-28)
 
 ### [2.155.9](https://github.com/railroadmedia/musora-content-services/compare/v2.155.8...v2.155.9) (2026-04-28)
