@@ -8,24 +8,6 @@ import { getProgressState } from '../../contentProgress'
 import { COLLECTION_TYPE, STATE } from '../../sync/models/ContentProgress'
 
 export async function getMethodCard(brand) {
-  let introVideo
-  try {
-    introVideo = await fetchMethodV2IntroVideo(brand)
-  } catch (error) {
-    console.error('Error fetching method intro video:', error)
-    return null
-  }
-
-  if (!introVideo) return null
-
-  let introVideoProgressState
-  try {
-    introVideoProgressState = await getProgressState(introVideo?.id)
-  } catch (error) {
-    console.error('Error fetching progress state for method intro video:', error)
-    return null
-  }
-
   let activeLearningPath
   try {
     activeLearningPath = await getActivePath(brand)
@@ -34,7 +16,17 @@ export async function getMethodCard(brand) {
     return null
   }
 
-  if (introVideoProgressState !== STATE.COMPLETED || !activeLearningPath) {
+  // only check if has active path, because method intro video may have been completed elsewhere
+  if (!activeLearningPath) {
+    let introVideo
+    try {
+      introVideo = await fetchMethodV2IntroVideo(brand)
+      if (!introVideo) return null
+    } catch (error) {
+      console.error('Error fetching method intro video:', error)
+      return null
+    }
+
     const timestamp = Math.floor(Date.now())
     const instructorText =
       introVideo.instructor?.length > 1

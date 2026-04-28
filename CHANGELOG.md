@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.155.7](https://github.com/railroadmedia/musora-content-services/compare/v2.155.6...v2.155.7) (2026-04-23)
+
+
+### Bug Fixes
+
+* remove timestamp filtering of practice records in offline mode ([#938](https://github.com/railroadmedia/musora-content-services/issues/938)) ([1a8ac03](https://github.com/railroadmedia/musora-content-services/commit/1a8ac03bfa1b9b3670c45049adb9b833263ef871))
+
+### [2.155.6](https://github.com/railroadmedia/musora-content-services/compare/v2.155.5...v2.155.6) (2026-04-23)
+
+### [2.155.5](https://github.com/railroadmedia/musora-content-services/compare/v2.155.4...v2.155.5) (2026-04-23)
+
+### [2.155.4](https://github.com/railroadmedia/musora-content-services/compare/v2.155.3...v2.155.4) (2026-04-23)
+
+### [2.155.3](https://github.com/railroadmedia/musora-content-services/compare/v2.155.2...v2.155.3) (2026-04-23)
+
+
+### Bug Fixes
+
+* **BR-460:** report option label updates ([#940](https://github.com/railroadmedia/musora-content-services/issues/940)) ([8ad8f72](https://github.com/railroadmedia/musora-content-services/commit/8ad8f72dd9a1284b4098aa00f08962a53a170275))
+
+### [2.155.2](https://github.com/railroadmedia/musora-content-services/compare/v2.155.1...v2.155.2) (2026-04-22)
+
+
+### Bug Fixes
+
+* remove prevSession args ([#937](https://github.com/railroadmedia/musora-content-services/issues/937)) ([2fe1dc2](https://github.com/railroadmedia/musora-content-services/commit/2fe1dc280a21e060b15567afe60a4cf959cecc90))
+
+### [2.155.1](https://github.com/railroadmedia/musora-content-services/compare/v2.155.0...v2.155.1) (2026-04-22)
+
+
+### Bug Fixes
+
+* export ([#936](https://github.com/railroadmedia/musora-content-services/issues/936)) ([16b78be](https://github.com/railroadmedia/musora-content-services/commit/16b78be3dca3cee8981f1347a37f1b1b00ffe691))
+
+## [2.155.0](https://github.com/railroadmedia/musora-content-services/compare/v2.154.0...v2.155.0) (2026-04-22)
+
+
+### Features
+
+* **BEHSTP-167:** offline progress tracking support ([#889](https://github.com/railroadmedia/musora-content-services/issues/889)) ([0528597](https://github.com/railroadmedia/musora-content-services/commit/05285977237ccbfa577a5770a1762c31d855e59e))
+* handle late-start active paths, and set up better resetAllLearningPaths ([#928](https://github.com/railroadmedia/musora-content-services/issues/928)) ([5d80430](https://github.com/railroadmedia/musora-content-services/commit/5d80430fbedfb21668882d402c5f6b07c82cfbf9))
+* **MU2-1452:** free tier content sort to front ([#915](https://github.com/railroadmedia/musora-content-services/issues/915)) ([0655e68](https://github.com/railroadmedia/musora-content-services/commit/0655e685f32fe77728d7b8c2505283adbc1a7c97))
+
+## [2.154.0](https://github.com/railroadmedia/musora-content-services/compare/v2.153.0...v2.154.0) (2026-04-21)
+
+
+### Features
+
+* **BEHLTP-23:** add multi-user account update endpoint ([#914](https://github.com/railroadmedia/musora-content-services/issues/914)) ([98f6c4b](https://github.com/railroadmedia/musora-content-services/commit/98f6c4bb830c7a8a25ba556ca07fc97023667011))
+* muppet - add invite validity/error data ([#923](https://github.com/railroadmedia/musora-content-services/issues/923)) ([3938fa5](https://github.com/railroadmedia/musora-content-services/commit/3938fa56ec9295023b6ba624c5f238d1645a911b))
+
+
+### Bug Fixes
+
+* add typeof before LokiJSAdapter in parameter list ([6a135b5](https://github.com/railroadmedia/musora-content-services/commit/6a135b57c516c277a50d707417544ab2f9eeb194))
+* **BR-632:** dont trickle progress to children when enrolling in GC ([#916](https://github.com/railroadmedia/musora-content-services/issues/916)) ([67a96d6](https://github.com/railroadmedia/musora-content-services/commit/67a96d69bd8b61f12d0efd45475a7b0b08c58813))
+
 ## [2.153.0](https://github.com/railroadmedia/musora-content-services/compare/v2.152.1...v2.153.0) (2026-04-15)
 
 

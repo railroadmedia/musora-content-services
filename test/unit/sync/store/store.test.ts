@@ -1,9 +1,9 @@
 import { Database } from '@nozbe/watermelondb'
 import { makeTelemetry, makeContext, makeUserScope, makePullMock, makePushMock } from '../helpers/index'
 import TestModel, { makeTestDatabase } from '../helpers/TestModel'
-import SyncStore from '../../../../src/services/sync/store/index'
-import SyncRetry from '../../../../src/services/sync/retry'
-import SyncRunScope from '../../../../src/services/sync/run-scope'
+import SyncStore from '@/services/sync/store/index'
+import SyncRetry from '@/services/sync/retry'
+import SyncRunScope from '@/services/sync/run-scope'
 
 let db: Database
 
@@ -93,6 +93,53 @@ describe('upsert', () => {
     store.destroy()
 
     expect(result).toEqual([])
+  })
+
+  test('upsertOne over deleted tombstone recreates the record', async () => {
+    const store = makeStore()
+    await store.upsertOne('tomb-1', r => { r.value = 'original'; r.score = 1 })
+    await store.deleteOne('tomb-1')
+    expect(await store.readOne('tomb-1')).toBeNull()
+
+    await store.upsertOne('tomb-1', r => { r.value = 'resurrected'; r.score = 2 })
+    const record = await store.readOne('tomb-1')
+    store.destroy()
+
+    expect(record).not.toBeNull()
+    expect(record!.value).toBe('resurrected')
+    expect(record!.score).toBe(2)
+  })
+})
+
+describe('updateOneId', () => {
+  test('updates existing record fields', async () => {
+    const store = makeStore()
+    await store.upsertOne('upd-1', r => { r.value = 'original'; r.score = 10 })
+    await store.updateOneId('upd-1', r => { r.value = 'changed'; r.score = 99 })
+    const record = await store.readOne('upd-1')
+    store.destroy()
+
+    expect(record!.value).toBe('changed')
+    expect(record!.score).toBe(99)
+  })
+
+  test('throws SyncError when record does not exist', async () => {
+    const store = makeStore()
+
+    await expect(store.updateOneId('ghost', r => { r.value = 'x' })).rejects.toThrow('Record not found')
+    store.destroy()
+  })
+
+  test('fires upserted event', async () => {
+    const store = makeStore()
+    await store.upsertOne('upd-evt', r => { r.value = 'v'; r.score = 0 })
+    const handler = jest.fn()
+    store.on('upserted', handler)
+    await store.updateOneId('upd-evt', r => { r.value = 'updated' })
+    store.destroy()
+
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect(handler.mock.calls[0][0][0].value).toBe('updated')
   })
 })
 
@@ -231,6 +278,46 @@ describe('events', () => {
   })
 })
 
+describe('pull token', () => {
+  test('second pull sends token from first pull as previousFetchToken', async () => {
+    const syncToken = 1700000001234
+    const pullMock = jest.fn().mockResolvedValue({
+      ok: true,
+      entries: [],
+      token: syncToken,
+      previousToken: null,
+      intendedUserId: 1,
+    })
+    const store = makeStore({ pull: pullMock })
+
+    await store.pull('first')
+    await store.pull('second')
+    store.destroy()
+
+    const secondCallArgs = pullMock.mock.calls[1]
+    const previousFetchToken = secondCallArgs[secondCallArgs.length - 1]
+    expect(previousFetchToken).toBe(syncToken)
+  })
+
+  test('first pull sends null previousFetchToken', async () => {
+    const pullMock = jest.fn().mockResolvedValue({
+      ok: true,
+      entries: [],
+      token: Date.now(),
+      previousToken: null,
+      intendedUserId: 1,
+    })
+    const store = makeStore({ pull: pullMock })
+
+    await store.pull('first')
+    store.destroy()
+
+    const firstCallArgs = pullMock.mock.calls[0]
+    const previousFetchToken = firstCallArgs[firstCallArgs.length - 1]
+    expect(previousFetchToken).toBeNull()
+  })
+})
+
 describe('push coalescing', () => {
   test('concurrent pushes for same record resolve to same response', async () => {
     const pushMock = jest.fn().mockResolvedValue({ ok: true, results: [] })
@@ -252,7 +339,7 @@ describe('importUpsert / importDeletion', () => {
     const now = Date.now()
 
     await store.importUpsert([
-      { id: 'import-1', value: 'imported', score: 99, server_record_id: 0, created_at: now, updated_at: now, _status: 'synced', _changed: '' } as any,
+      { id: 'import-1', value: 'imported', score: 99, server_record_id: 0, created_at: now, updated_at: now, _status: 'synced', _changed: '' } as unknown as TestModel['_raw'],
     ])
 
     const record = await store.readOne('import-1')

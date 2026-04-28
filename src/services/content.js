@@ -16,14 +16,12 @@ import {
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {recommendations, rankCategories, rankItems} from "./recommendations";
 import {addContextToContent} from "./contentAggregator.js";
-import {globalConfig} from "./config";
 import {getUserData} from "./user/management";
 import {
   lessonTypesMapping,
   ownedContentTypes
 } from "../contentTypeConfig";
-import {getPermissionsAdapter} from "./permissions/index.ts";
-import {MEMBERSHIP_PERMISSIONS} from "../constants/membership-permissions.ts";
+import { fetchUserPermissions, getPermissionsAdapter, isUserFreeTier, doesUserHaveMembership } from './permissions/index.ts'
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
@@ -93,8 +91,11 @@ export async function getTabResults(brand, pageName, tabName, {
   sort = 'recommended',
   selectedFilters = []
 } = {}) {
-
   if (!tabName && ['lessons', 'songs'].includes(pageName)) return { type: TabResponseType.CATALOG, data: [], meta: { filters: [], sort: {} } }
+
+  const userPermissions = await fetchUserPermissions()
+  const permissions = userPermissions.permissions || []
+  const isFreeTier = isUserFreeTier(userPermissions)
 
   // Extract and handle 'progress' filter separately
   const progressFilter = selectedFilters.find(f => f.startsWith('progress,')) || 'progress,all';
@@ -131,6 +132,10 @@ export async function getTabResults(brand, pageName, tabName, {
 
       recommendedContent = filterCoursesInCourseCollections(recommendedContent)
 
+      if (isFreeTier) {
+        recommendedContent = applyPermissionsPostSort(recommendedContent, permissions)
+      }
+
       const start = (page - 1) * limit
       const end = start + limit
       const pagesFilledByRec = Math.floor(recommendedContent.length / limit)
@@ -143,7 +148,8 @@ export async function getTabResults(brand, pageName, tabName, {
           sort: '-published_on',
           includedFields: mergedIncludedFields,
           progress: progressValue,
-          excludeIds: recommendedContent.map(c => c.id)
+          excludeIds: recommendedContent.map(c => c.id),
+          sortPermissions: permissions,
         })
 
         // Filter out duplicates and combine
@@ -163,7 +169,8 @@ export async function getTabResults(brand, pageName, tabName, {
         limit,
         sort: '-published_on',
         includedFields: mergedIncludedFields,
-        progress: progressValue
+        progress: progressValue,
+        sortPermissions: permissions,
       })
       contentToDisplay = temp.entity
     }
@@ -175,7 +182,17 @@ export async function getTabResults(brand, pageName, tabName, {
       addProgressStatus: true
     })
   } else {
-    let temp = await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+    let temp = await fetchTabData(
+      brand,
+      pageName,
+      {
+        page,
+        limit,
+        sort,
+        includedFields: mergedIncludedFields,
+        progress: progressValue,
+        sortPermissions: permissions,
+      });
     const [ranking, contextResults] = await Promise.all([
       sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.id)) : [],
       addContextToContent(() => temp.entity, {
@@ -550,9 +567,7 @@ export async function getLegacyMethods(brand)
   const userPermissions = userPermissionsData.permissions
   // Users should only have access to this if they have an active membership AS WELL as the content access
   // This is hardcoded behaviour and isn't found elsewhere
-  const hasMembership = userPermissionsData.isAdmin
-    || userPermissions.includes(MEMBERSHIP_PERMISSIONS.base)
-    || userPermissions.includes(MEMBERSHIP_PERMISSIONS.plus)
+  const hasMembership = doesUserHaveMembership(userPermissionsData)
   const hasContentPermission = userPermissions.includes(100000000 + ids[0])
   if (hasMembership && hasContentPermission) {
    return Promise.all(ids.map(id => fetchCourseCollectionData(id)))
@@ -624,4 +639,15 @@ export async function getOwnedContent(brand, {
 
 export function filterCoursesInCourseCollections(data) {
   return data.filter(c => !(c.type === 'course' && c.parent_id))
+}
+
+function applyPermissionsPostSort(contentList, permissionIds) {
+  contentList.sort((a, b) => {
+    const hasAccess = (item) =>
+      item.permission_id?.includes(permissionIds)
+
+    return hasAccess(b) - hasAccess(a);
+  });
+
+  return contentList;
 }

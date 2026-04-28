@@ -7,14 +7,14 @@
 
 import {
   PermissionsAdapter,
-  UserPermissions,
   ContentItem,
   PermissionFilterOptions,
 } from './PermissionsAdapter'
+import { UserPermissions } from './types'
 import {
   fetchUserPermissions as fetchUserPermissionsV1,
-} from '../user/permissions.js'
-import { plusMembershipPermissions, membershipPermissions } from '../../contentTypeConfig.js'
+} from './permissions'
+import { membershipPermissions } from '../../contentTypeConfig.js'
 import { arrayToRawRepresentation } from '../../filterBuilder.js'
 
 /**
@@ -130,13 +130,13 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
    * @returns GROQ filter string for owned content
    */
   private buildOwnedContentFilter(
-    userPermissionIds: string[],
+    userPermissionIds: number[],
     prefix: string,
     isDereferencedContext: boolean
   ): string {
     // Filter out membership permissions to get only owned permissions
     const ownedPermissions = userPermissionIds.filter(
-      permId => !membershipPermissions.includes(parseInt(permId))
+      permId => !membershipPermissions.includes(permId)
     )
 
     if (ownedPermissions.length === 0) {
@@ -169,7 +169,7 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
    * @returns GROQ filter string for standard permissions
    */
   private buildStandardPermissionFilter(
-    userPermissionIds: string[],
+    userPermissionIds: number[],
     prefix: string,
     isDereferencedContext: boolean,
     showMembershipRestrictedContent: boolean
@@ -208,7 +208,7 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
    * @returns GROQ filter string for permission check
    */
   private buildPermissionCheck(
-    permissions: string[],
+    permissions: number[],
     prefix: string,
     isDereferencedContext: boolean
   ): string {
@@ -226,7 +226,7 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
    * @param userPermissions - The user's permissions
    * @returns Array of permission IDs
    */
-  getUserPermissionIds(userPermissions: UserPermissions): string[] {
+  getUserPermissionIds(userPermissions: UserPermissions): number[] {
     return userPermissions?.permissions ?? []
   }
 }

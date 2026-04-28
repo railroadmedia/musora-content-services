@@ -1,9 +1,16 @@
-import { getHierarchy } from './sanity.js'
+import { getHierarchy, getHierarchies } from './sanity.js'
 import { db } from './sync'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
-import { trackUserPractice, findIncompleteLesson } from './userActivity'
+import { trackUserPractice } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 import { getDailySession, onContentCompletedLearningPathActions } from './content-org/learning-paths.ts'
+
+/**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = ['_recordWatchSession', 'setStartedOrCompletedStatus', 'setStartedOrCompletedStatusMany', 'resetStatus']
 
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
@@ -46,7 +53,7 @@ export async function getNavigateToForMethod(data) {
   for (const content of data) {
     if (!content) continue
 
-    const { _, collection } = extractFromRecordId(content.record_id)
+    const { collection } = extractFromRecordId(content.record_id)
 
     const findFirstIncomplete = (ids, progresses) =>
       ids.find(id => progresses.get(id) !== STATE_COMPLETED) || ids[0]
@@ -179,6 +186,28 @@ export async function getNavigateTo(data) {
     }
   }
   return navigateToData
+}
+
+function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
+  const isMap = progressOnItems instanceof Map
+  const ids = isMap ? Array.from(progressOnItems.keys()) : Object.keys(progressOnItems).map(Number)
+  const getProgress = (id) => isMap ? progressOnItems.get(id) : progressOnItems[id]
+
+  if (contentType === 'guided-course' || contentType === COLLECTION_TYPE.LEARNING_PATH) {
+    return ids.find((id) => getProgress(id) !== 'completed') || ids.at(0)
+  }
+
+  const currentIndex = ids.indexOf(Number(currentContentId))
+  if (currentIndex === -1) return null
+
+  for (let i = currentIndex + 1; i < ids.length; i++) {
+    const id = ids[i]
+    if (getProgress(id) !== 'completed') {
+      return id
+    }
+  }
+
+  return ids[0]
 }
 
 function buildNavigateTo(content, child = null, collection = null) {
@@ -405,10 +434,9 @@ async function _getAllStartedOrCompleted({
  * @param {int} mediaLengthSeconds - total length of video media || live event duration if livestream
  * @param {int} currentSeconds - seconds timestamp relative to beginning of video
  * @param {int} secondsPlayed - seconds played in this watch session (since last pause)
- * @param {any} prevSession - This function records a sessionId to pass into future updates to progress on the same video
  * @param {int|null} instrumentId - enum value of instrument id
  * @param {int|null} categoryId - enum value of category id
- * @param {boolean} isLivestream - determines livestream-specific progress handling
+ * @param {boolean|null} isLivestream - determines livestream-specific progress handling
  */
 export async function recordWatchSession(
   contentId,
@@ -420,13 +448,57 @@ export async function recordWatchSession(
   categoryId = null,
   isLivestream = false,
 ) {
+  return _recordWatchSession(
+    contentId,
+    mediaLengthSeconds,
+    currentSeconds,
+    secondsPlayed,
+    {
+      collection,
+      instrumentId,
+      categoryId,
+      isLivestream,
+    })
+}
+
+/**
+ * internal function to be called by only or offline version of recordWatchSession
+ * @return {string} sessionId - provide in future calls to update progress
+ * @param {int} contentId
+ * @param {any} collection - progress collection context, null if a-la-carte
+ * @param {string} collection.type - enum value of collection type
+ * @param {int} collection.id - content_id of parent collection (e.g. learning path content_id)
+ * @param {int} mediaLengthSeconds - total length of video media || live event duration if livestream
+ * @param {int} currentSeconds - seconds timestamp relative to beginning of video
+ * @param {int} secondsPlayed - seconds played in this watch session (since last pause)
+ * @param {int|null} instrumentId - enum value of instrument id
+ * @param {int|null} categoryId - enum value of category id
+ * @param {boolean|null} isLivestream - determines livestream-specific progress handling
+ * @param {boolean} isOffline - whether this watch session is being recorded in offline mode, which affects how progress is tracked and pushed
+ * @param {object|null} hierarchy - response from getHierarchy, passed in to avoid redundant calls within the same session
+ * @private
+ */
+export async function _recordWatchSession(
+  contentId,
+  mediaLengthSeconds,
+  currentSeconds,
+  secondsPlayed,
+  {
+    collection = null,
+    instrumentId = null,
+    categoryId = null,
+    isLivestream = false,
+    isOffline = false,
+    hierarchy = null,
+  } = {}
+) {
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
 
   // Track practice and progress locally (no immediate push)
   await Promise.all([
     trackPractice(contentId, secondsPlayed, { instrumentId, categoryId }),
-    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream),
+    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream, isOffline, hierarchy),
   ])
 }
 
@@ -439,7 +511,15 @@ async function trackPractice(contentId, secondsPlayed, details = {}) {
   return trackUserPractice(contentId, secondsPlayed, details)
 }
 
-async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream = false) {
+async function trackProgress(
+  contentId,
+  collection,
+  currentSeconds,
+  mediaLengthSeconds,
+  isLivestream = false,
+  isOffline = false,
+  hierarchy = null,
+) {
   const progress = Math.max(1, Math.min(
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
@@ -450,25 +530,17 @@ async function trackProgress(contentId, collection, currentSeconds, mediaLengthS
     // doesn't affect livestream resumeTime, but will send users to 0 seconds in VOD
     currentSeconds = 0
   }
-  return saveContentProgress(contentId, collection, progress, currentSeconds, { skipPush: true })
+  return saveContentProgress(contentId, collection, progress, currentSeconds, { isOffline, hierarchy, skipPush: true })
 }
 
 export async function contentStatusCompleted(contentId, collection = null) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
-  return setStartedOrCompletedStatus(
-    normalizeContentId(contentId),
-    normalizeCollection(collection),
-    true
-  )
+  return setStartedOrCompletedStatus(contentId, collection, true)
 }
 
 export async function contentStatusCompletedMany(contentIds, collection = null) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
-  return setStartedOrCompletedStatusMany(
-    normalizeContentIds(contentIds),
-    normalizeCollection(collection),
-    true
-  )
+  return setStartedOrCompletedStatusMany(contentIds, collection, true)
 }
 
 // skipBubbleTrickle is only for starting enrolled GC's as a hack to get them into the progress row.
@@ -486,7 +558,18 @@ export async function contentStatusReset(contentId, collection = null, {skipPush
   return resetStatus(contentId, collection, {skipPush})
 }
 
-async function saveContentProgress(contentId, collection, progress, currentSeconds, {skipPush = false, accessedDirectly = true} = {}) {
+async function saveContentProgress(
+  contentId,
+  collection,
+  progress,
+  currentSeconds,
+  {
+    isOffline = false,
+    hierarchy = null,
+    skipPush = false,
+    accessedDirectly = true,
+  } = {}
+) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
   const isPlaylist = collection?.type === COLLECTION_TYPE.PLAYLIST
@@ -498,7 +581,9 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     progress = currentProgress
   }
 
-  const hierarchy = await getHierarchy(contentId, collection)
+  if (!isOffline) {
+    hierarchy = await getHierarchy(contentId, collection)
+  }
   const metadata = hierarchy.metadata || {}
 
   if (isPlaylist) {
@@ -518,10 +603,10 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
-  // skip bubbling if progress hasnt changed
-  if (progress === currentProgress) {
+  // skip bubbling if progress hasnt changed, or if offline
+  if (progress === currentProgress || offline) {
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
-    return
+    return response
   }
 
   const bubbledProgresses = await bubbleProgress(hierarchy, contentId, collection)
@@ -542,6 +627,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
       {skipPush: true, accessedDirectly})
   }
 
+  // there are problems if we allow downloading LPs, since we require 2 different hierarchies for this.
   if (isLP) {
     let exportIds = bubbledProgresses
     exportIds[contentId] = progress
@@ -561,10 +647,12 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   return response
 }
 
-async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {skipPush = false, skipBubbleTrickle = false} = {}) {
+export async function setStartedOrCompletedStatus(contentId, collection, isCompleted, { isOffline = false, hierarchy = null, skipPush = false, skipBubbleTrickle = false } = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
-  const hierarchy = await getHierarchy(contentId, collection)
+  if (!isOffline) {
+    hierarchy = await getHierarchy(contentId, collection)
+  }
   const metadata = hierarchy.metadata || {}
 
   const progress = isCompleted ? 100 : 0
@@ -576,6 +664,12 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
     null,
     {skipPush: true}
   )
+
+  // skip bubbling if offline
+  if (isOffline) {
+    if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
+    return response
+  }
 
   let allProgresses = {}
   allProgresses[contentId] = progress
@@ -605,12 +699,16 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   return response
 }
 
-async function setStartedOrCompletedStatusMany(contentIds, collection, isCompleted, {skipPush = false} = {}) {
+export async function setStartedOrCompletedStatusMany(contentIds, collection, isCompleted, { isOffline = false, hierarchy = null, skipPush = false } = {}) {
+  contentIds = normalizeContentIds(contentIds)
+  collection = normalizeCollection(collection)
+
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
   const progress = isCompleted ? 100 : 0
 
-  // we assume this is used only for contents within the same hierarchy
-  const hierarchy = await getHierarchy(collection.id, collection)
+  if (!isOffline) {
+    hierarchy = await getHierarchies(contentIds, collection)
+  }
   const metadata = hierarchy.metadata || {}
 
   const contents = Object.fromEntries(contentIds.map((id) => [id, progress]))
@@ -620,6 +718,12 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
     metadata,
     {skipPush: true}
   )
+
+  // skip bubbling if offline
+  if (isOffline) {
+    if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
+    return response
+  }
 
   let allProgresses = Object.fromEntries(contentIds.map(id => [id, progress]))
 
@@ -650,13 +754,22 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
   return response
 }
 
-async function resetStatus(contentId, collection = null, {skipPush = false} = {}) {
+export async function resetStatus(contentId, collection = null, { isOffline = false, hierarchy = null, skipPush = false } = {}) {
+  contentId = normalizeContentId(contentId)
+  collection = normalizeCollection(collection)
+
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
   const progress = 0
   const response = await db.contentProgress.eraseProgress(normalizeContentId(contentId), normalizeCollection(collection), {skipPush: true})
 
-  const hierarchy = await getHierarchy(contentId, collection)
+  // skip bubbling if offline
+  if (isOffline) {
+    if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
+    return response
+  }
+
+  hierarchy = await getHierarchy(contentId, collection)
   const metadata = hierarchy.metadata || {}
 
   let allProgresses = {}
