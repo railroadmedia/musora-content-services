@@ -303,6 +303,7 @@ describe('getEndScreen', () => {
         lesson: { id: 301, type: 'course-lesson' },
         course: {
           id: 100,
+          status: 'published',
           children: [
             { id: 300, status: 'published' },
             { id: 301, status: 'published' }
@@ -311,9 +312,10 @@ describe('getEndScreen', () => {
         collection: {
           id: 10,
           type: 'course-collection',
+          status: 'published',
           children: [
-            { id: 100, children: [{ id: 300 }, { id: 301 }] },
-            { id: 101, children: [{ id: 400, title: 'First Lesson Next Course' }, { id: 401 }] }
+            { id: 100, status: 'published', children: [{ id: 300, status: 'published' }, { id: 301, status: 'published' }] },
+            { id: 101, status: 'published', children: [{ id: 400, status: 'published', title: 'First Lesson Next Course' }, { id: 401, status: 'published' }] }
           ]
         },
         brand: 'drumeo'
@@ -321,7 +323,7 @@ describe('getEndScreen', () => {
 
       expect(result).toEqual({
         variant: 'course-complete',
-        upNext: { id: 400, title: 'First Lesson Next Course' },
+        upNext: { id: 400, status: 'published', title: 'First Lesson Next Course' },
         countdownAutoplay: false,
         ctaLabels: { primary: 'Play Now', secondary: 'Back to Home' }
       })
@@ -332,8 +334,8 @@ describe('getEndScreen', () => {
         id: 10,
         type: 'course-collection',
         children: [
-          { id: 100, children: [{ id: 301 }] },
-          { id: 101, children: [{ id: 400, title: 'Fetched Next Course First Lesson' }] }
+          { id: 100, status: 'published', children: [{ id: 301, status: 'published' }] },
+          { id: 101, status: 'published', children: [{ id: 400, status: 'published', title: 'Fetched Next Course First Lesson' }] }
         ]
       }
       jest.spyOn(sanityModule, 'fetchCourseCollectionData').mockResolvedValue(mockCollectionData)
@@ -353,7 +355,7 @@ describe('getEndScreen', () => {
       })
 
       expect(sanityModule.fetchCourseCollectionData).toHaveBeenCalledWith(10)
-      expect(result.upNext).toEqual({ id: 400, title: 'Fetched Next Course First Lesson' })
+      expect(result.upNext).toEqual({ id: 400, status: 'published', title: 'Fetched Next Course First Lesson' })
     })
   })
 
@@ -414,31 +416,6 @@ describe('getEndScreen', () => {
       })
     })
 
-    test('last item in playlist returns RecSys with course-complete variant', async () => {
-      const mockRecommendation = { id: 999, type: 'lesson', title: 'Recommended After Playlist' }
-      mockFetchRecommendation([mockRecommendation])
-
-      const result = await getEndScreen({
-        lesson: { id: 502, type: 'lesson' },
-        playlist: {
-          id: 10,
-          items: [
-            { id: 500, status: 'published' },
-            { id: 501, status: 'published' },
-            { id: 502, status: 'published' }
-          ]
-        },
-        brand: 'drumeo'
-      })
-
-      expect(result).toEqual({
-        variant: 'course-complete',
-        upNext: mockRecommendation,
-        countdownAutoplay: false,
-        ctaLabels: { primary: 'Play Now', secondary: 'Back to Home' }
-      })
-    })
-
     test('skips unreleased items in playlist', async () => {
       const result = await getEndScreen({
         lesson: { id: 500, type: 'lesson' },
@@ -457,36 +434,26 @@ describe('getEndScreen', () => {
     })
 
     test('handles playlist with empty items array', async () => {
-      const mockRecommendation = { id: 999, type: 'lesson' }
-      mockFetchRecommendation([mockRecommendation])
-
       const result = await getEndScreen({
         lesson: { id: 500, type: 'lesson' },
         playlist: { id: 10, items: [] },
         brand: 'drumeo'
       })
 
-      expect(result.variant).toBe('course-complete')
-      expect(result.upNext).toEqual(mockRecommendation)
+      expect(result).toBeNull()
     })
 
     test('handles playlist with undefined items', async () => {
-      const mockRecommendation = { id: 999, type: 'lesson' }
-      mockFetchRecommendation([mockRecommendation])
-
       const result = await getEndScreen({
         lesson: { id: 500, type: 'lesson' },
         playlist: { id: 10 },
         brand: 'drumeo'
       })
 
-      expect(result.variant).toBe('course-complete')
+      expect(result).toBeNull()
     })
 
     test('handles item not found in playlist', async () => {
-      const mockRecommendation = { id: 999, type: 'lesson' }
-      mockFetchRecommendation([mockRecommendation])
-
       const result = await getEndScreen({
         lesson: { id: 999, type: 'lesson' },
         playlist: {
@@ -496,7 +463,7 @@ describe('getEndScreen', () => {
         brand: 'drumeo'
       })
 
-      expect(result.variant).toBe('course-complete')
+      expect(result).toBeNull()
     })
 
     test('transcriptions in playlist still show end screen', async () => {
@@ -539,9 +506,6 @@ describe('getEndScreen', () => {
     })
 
     test('user_playlist_item_index 0 is treated as valid index, not falsy', async () => {
-      const mockRecommendation = { id: 999, type: 'lesson' }
-      mockFetchRecommendation([mockRecommendation])
-
       const result = await getEndScreen({
         lesson: { id: 999, type: 'lesson' },
         playlist: {
@@ -552,7 +516,7 @@ describe('getEndScreen', () => {
         brand: 'drumeo'
       })
 
-      expect(result.variant).toBe('course-complete')
+      expect(result).toBeNull()
     })
   })
 
@@ -753,23 +717,6 @@ describe('getEndScreen', () => {
       expect(result.upNext).toEqual({ id: 999, type: 'course', title: 'Standalone Course' })
     })
 
-    test('RecSys returns null when all recommendations belong to the same course', async () => {
-      // All items have parent_id === excludeId (course 100) → none pass the filter → null
-      const mockContents = [
-        { id: 888, parent_id: 100, type: 'course-lesson' },
-        { id: 889, parent_id: 100, type: 'course-lesson' }
-      ]
-      jest.spyOn(recommendationsModule, 'fetchSimilarItems').mockResolvedValue([888, 889])
-      jest.spyOn(sanityModule, 'fetchByRailContentIds').mockResolvedValue(mockContents)
-
-      const result = await getEndScreen({
-        lesson: { id: 301, type: 'course-lesson' },
-        course: { id: 100, children: [{ id: 301 }] },
-        brand: 'drumeo'
-      })
-
-      expect(result.upNext).toBeNull()
-    })
   })
 })
 

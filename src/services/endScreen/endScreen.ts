@@ -133,10 +133,10 @@ async function fetchEndScreenRecommendation(
     }
 
     const contents: ContentItem[] = await fetchByRailContentIds(recData)
-       recommended =
-         contents?.find((c) => c.id !== parentId && (!c.parent_id || c.parent_id !== parentId)) ??
-         contents?.find((c) => c.id !== parentId) ??
-         null
+    recommended =
+      contents?.find((c) => c.id !== parentId && (!c.parent_id || c.parent_id !== parentId)) ??
+      contents?.find((c) => c.id !== parentId) ??
+      null
 
     return await addContextToContent(() => recommended, {
       addProgressPercentage: true,

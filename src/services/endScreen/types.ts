@@ -29,17 +29,20 @@ export interface ContentItem {
 export interface Course {
   id: number
   type?: string
+  status?: string
   children?: ContentItem[]
 }
 
 export interface CourseInCollection {
   id: number
+  status?: string
   children?: ContentItem[]
 }
 
 export interface Collection {
   id: number
   type: string
+  status?: string
   parent_id?: number
   children?: CourseInCollection[]
 }
