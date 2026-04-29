@@ -31,7 +31,6 @@ jest.mock('../../src/services/content-org/guided-courses.ts', () => ({
 jest.mock('../../src/services/sanity.js', () => ({
   ...jest.requireActual('../../src/services/sanity.js'),
   getSanityDate: jest.fn((date) => date.toISOString()),
-  fetchSimilarItems: jest.fn(),
   fetchByRailContentIds: jest.fn(),
   fetchCourseCollectionData: jest.fn(),
   fetchRelatedLessons: jest.fn()
@@ -45,6 +44,10 @@ jest.mock('../../src/services/recommendations.js', () => ({
 
 jest.mock('../../src/services/contentAggregator.js', () => ({
   addContextToContent: jest.fn(async (getter) => getter()),
+}))
+
+jest.mock('../../src/services/user/management.js', () => ({
+  getUserData: jest.fn(async () => ({ is_admin: false }))
 }))
 
 import { getEndScreen } from '../../src/services/endScreen/endScreen.ts'
