@@ -28,7 +28,7 @@ export async function otherStats(userId = globalConfig.sessionConfig.userId) {
       type: 'week',
       length: longestStreaks.longestWeeklyStreak,
     },
-    total_practice_time: longestStreaks.totalPracticeSeconds,
+    total_practice_time: longestStreaks.totalPracticeSeconds + (stats.v1_practice_time ?? 0),
   }
 }
 
