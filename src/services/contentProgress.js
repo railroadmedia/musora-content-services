@@ -604,7 +604,7 @@ async function saveContentProgress(
   // (only to siblings/parents via le bubbles)
 
   // skip bubbling if progress hasnt changed, or if offline
-  if (progress === currentProgress || offline) {
+  if (progress === currentProgress || isOffline) {
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
   }
