@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.156.0](https://github.com/railroadmedia/musora-content-services/compare/v2.155.11...v2.156.0) (2026-04-29)
+
+
+### Features
+
+* **MU2-1384:** enable related lessons for non-members ([#943](https://github.com/railroadmedia/musora-content-services/issues/943)) ([f091bd7](https://github.com/railroadmedia/musora-content-services/commit/f091bd7e7edfcfe8808684d97faff22f62ef6fe0))
+
 ### [2.155.11](https://github.com/railroadmedia/musora-content-services/compare/v2.155.10...v2.155.11) (2026-04-28)
 
 
