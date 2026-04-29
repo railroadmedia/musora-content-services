@@ -184,18 +184,29 @@ export async function unlockThread(threadId: number, brand: string): Promise<voi
   return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/lock?brand=${brand}`)
 }
 
+export interface FetchFollowedThreadsParams {
+  page?: number,
+  limit?: number,
+}
+
 /**
  * Fetches followed forum Threads for the given brand and current user.
  *
  * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @param {FetchFollowedThreadsParams} params - Optional pagination parameters.
  * @returns {Promise<PaginatedResponse<ForumThread>>} - A promise that resolves to the list of forum threads.
  * @throws {HttpError} - If the request fails.
  */
 export async function fetchFollowedThreads(
-  brand: string
+  brand: string,
+  params: FetchFollowedThreadsParams = {}
 ): Promise<PaginatedResponse<ForumThread>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads?brand=${brand}`)
+  const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null).map(([k, v]) => [k, String(v)])
+    )}
+  const query = new URLSearchParams(queryObj).toString()
+  return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads?${query}`)
 }
 
 export interface FetchLatestThreadParams {
