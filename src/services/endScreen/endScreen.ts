@@ -2,6 +2,7 @@ import {fetchSimilarItems, rankCategories} from '../recommendations.js'
 import {fetchByRailContentIds, fetchCourseCollectionData, fetchRelatedLessons} from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import { playAlongLessonTypes, jamTrackLessonTypes, lessonTypesMapping } from '../../contentTypeConfig.js'
+import {getUserData} from "../user/management.js";
 import type {
   ContentItem,
   Collection,
@@ -32,10 +33,12 @@ export async function getEndScreen({
   next_item = null,
   brand
 }: GetEndScreenParams): Promise<EndScreenResult> {
+  const userData = await getUserData()
+  const isAdmin = userData?.is_admin ?? false
 
   if (playlist) {
     const nextItem = next_item ??
-      getNextItemInPlaylistOrNull(lesson.id, playlist, user_playlist_item_index)
+      getNextItemInPlaylistOrNull(lesson.id, playlist, user_playlist_item_index, isAdmin)
 
     return nextItem ? buildCountdown(nextItem, false) : null
   }
@@ -48,7 +51,7 @@ export async function getEndScreen({
     return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id), false)
   }
 
-  const nextLesson = getNextLessonOrNull(lesson.id, course)
+  const nextLesson = getNextLessonOrNull(lesson.id, course, isAdmin)
   if (nextLesson) {
     return buildCountdown(nextLesson, false)
   }
@@ -60,7 +63,7 @@ export async function getEndScreen({
       ? await fetchCourseCollectionData(collection.parent_id)
       : collection
 
-  const nextCourseFirstLesson = getFirstLessonOfNextCourseOrNull(course.id, resolvedCollection)
+  const nextCourseFirstLesson = getFirstLessonOfNextCourseOrNull(course.id, resolvedCollection, isAdmin)
   if (nextCourseFirstLesson) {
     return buildCourseComplete(nextCourseFirstLesson)
   }
@@ -80,34 +83,38 @@ function buildCourseComplete(upNext: any): EndScreenResult {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getNextItemInPlaylistOrNull(contentId: number, playlist: Playlist, user_playlist_item_index: number|null): ContentItem | null {
+function getNextItemInPlaylistOrNull(contentId: number, playlist: Playlist, user_playlist_item_index: number|null, isAdmin: boolean): ContentItem | null {
   const items = playlist.items ?? []
   const index = user_playlist_item_index !== null ? user_playlist_item_index : items.findIndex((item) => Number(item.id) === Number(contentId))
   if (index < 0 || index === items.length - 1) return null
-  return items.slice(index + 1).find(isReleasedContent) ?? null
+  return items.slice(index + 1).find(item => isReleasedContent(item, isAdmin)) ?? null
 }
 
-function getNextLessonOrNull(lessonId: number, course: Course): ContentItem | null {
+function getNextLessonOrNull(lessonId: number, course: Course, isAdmin: boolean): ContentItem | null {
   const children = course.children ?? []
   const index = children.findIndex((child) => Number(child.id) === Number(lessonId))
   if (index < 0 || index === children.length - 1) return null
-  return children.slice(index + 1).find(isReleasedContent) ?? null
+  return children.slice(index + 1).find(child => isReleasedContent(child, isAdmin)) ?? null
 }
 
-function isReleasedContent(content: ContentItem): boolean {
+function isReleasedContent(content: ContentItem, isAdmin: boolean): boolean {
+  if (isAdmin) return true
   if (!content?.status) return false
   return (content.status === 'published' || content.status === 'scheduled') && !content.need_access
 }
 
 function getFirstLessonOfNextCourseOrNull(
   courseId: number,
-  collection: Collection | null
+  collection: Collection | null,
+  isAdmin: boolean
 ): ContentItem | null {
   if (!collection) return null
   const courses = collection.children ?? []
   const index = courses.findIndex((course) => Number(course.id) === Number(courseId))
-  const nextCourse = (index >= 0 && index < courses.length - 1) ? courses[index + 1] : null
-  return nextCourse?.children?.[0] ?? null
+  if (index < 0 || index === courses.length - 1) return null
+  const nextCourse = courses.slice(index + 1).find(course => isReleasedContent(course, isAdmin))
+  if (!nextCourse?.children) return null
+  return nextCourse.children.find(lesson => isReleasedContent(lesson, isAdmin)) ?? null
 }
 
 async function fetchEndScreenRecommendation(
@@ -127,8 +134,9 @@ async function fetchEndScreenRecommendation(
 
     const contents: ContentItem[] = await fetchByRailContentIds(recData)
        recommended =
-        contents?.find((c) => c.id !== parentId && (!c.parent_id || c.parent_id !== parentId)) ??
-        null
+         contents?.find((c) => c.id !== parentId && (!c.parent_id || c.parent_id !== parentId)) ??
+         contents?.find((c) => c.id !== parentId) ??
+         null
 
     return await addContextToContent(() => recommended, {
       addProgressPercentage: true,
