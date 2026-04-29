@@ -26,7 +26,7 @@ export interface InviteResponse {
   email?: string
 }
 
-export interface UsersMultiAccountResponse {
+export interface UsersDataForMultiUserAccount {
   user_id: number
   active_multi_user_account: MultiUserAccountResponse
   last_cancelled_multi_user_account: MultiUserAccountResponse
@@ -40,13 +40,13 @@ export interface MultiUserAccountResponse {
   product_name: string
   is_active: boolean
   primary_user: User
-  total_seats: number
   end_time: string
   is_primary_account_holder: boolean
   // The following fields are not included for public or subaccount users
-  active_invited_emails?: InviteResponse[]
+  active_invites?: InviteResponse[]
   available_seats?: number
-  available_invites?: InviteResponse[]
+  available_invites?: number
+  total_seats?: number
   active_subs?: User[]
   show_welcome?: boolean
 }
@@ -81,12 +81,12 @@ export async function createAccount(params: CreateAccountParams): Promise<MultiU
  * Fetches multi-user account details for a specific user.
  *
  * @param {number} userId - The ID of the user to fetch account details for.
- * @returns {Promise<UsersMultiAccountResponse>} - A promise that resolves to the account details.
+ * @returns {Promise<UsersDataForMultiUserAccount>} - A promise that resolves to the account details.
  * @throws {HttpError} - If the HTTP request fails.
  */
-export async function fetchUsersMultiAccountDetails(userId: number): Promise<UsersMultiAccountResponse> {
+export async function fetchUsersMultiAccountDetails(userId: number): Promise<UsersDataForMultiUserAccount> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<UsersMultiAccountResponse>(`${baseUrl}/${userId}/details`)
+  return httpClient.get<UsersDataForMultiUserAccount>(`${baseUrl}/${userId}/details`)
 }
 
 
