@@ -48,22 +48,22 @@ describe('generateContentUrl', () => {
     const result = await generateContentUrl({ id: 123, type: 'course-collection', brand: 'drumeo' })
     expect(result).toBe('/drumeo/lessons/course-collection/overview/123')
   })
-  test('returns /{brand}/lessons/pack/overview/{id} for type pack', async () => {
+  test('returns /{brand}/lessons/pack/{id} for type pack', async () => {
     const result = await generateContentUrl({ id: 123, type: 'pack', brand: 'drumeo' })
-    expect(result).toBe('/drumeo/lessons/pack/overview/123')
+    expect(result).toBe('/drumeo/lessons/pack/123')
   })
-  test('returns /{brand}/lessons/pack/{id}/{navigateTo.id} for pack-bundle with navigateTo', async () => {
+  test('returns /{brand}/lessons/pack-bundle/{id}/{navigateTo.id} for pack-bundle with navigateTo', async () => {
     const result = await generateContentUrl({
       id: 123,
       type: 'pack-bundle',
       brand: 'drumeo',
       navigateTo: { id: 456 }
     })
-    expect(result).toBe('/drumeo/lessons/pack/123/456')
+    expect(result).toBe('/drumeo/lessons/pack-bundle/123/456')
   })
-  test('returns /{brand}/lessons/pack/overview/{id} for pack-bundle without navigateTo', async () => {
+  test('returns /{brand}/lessons/pack-bundle/{id} for pack-bundle without navigateTo', async () => {
     const result = await generateContentUrl({ id: 123, type: 'pack-bundle', brand: 'drumeo' })
-    expect(result).toBe('/drumeo/lessons/pack/overview/123')
+    expect(result).toBe('/drumeo/lessons/pack-bundle/123')
   })
   test('returns /{brand}/songs/transcription/{id} for type song', async () => {
     const result = await generateContentUrl({ id: 123, type: 'song', brand: 'drumeo' })
