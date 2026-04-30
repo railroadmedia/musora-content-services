@@ -27,7 +27,7 @@ const mockPlaylistItem = {
         artist_name: 'Kiss',
         title: "Mwaa"
      }
-    ] 
+    ],
     navigateTo: { id: 42, content_id: 99 },
     user: { display_name: 'John Doe' },
   },
