@@ -44,19 +44,17 @@ describe('SyncTelemetry', () => {
     })
   })
   describe('capture', () => {
-    // BUG: condition checks `err instanceof SyncUnexpectedError` but err is the original Error,
-    // not the wrapped one. mechanism: { handled: false } is never triggered for plain Errors.
-    // Should be checking `wrapped instanceof SyncUnexpectedError` instead.
-    test('calls captureException with undefined when err is a plain Error', () => {
+    test('calls captureException with mechanism handled:false when err is a plain Error', () => {
       const { telemetry, sentry } = makeTelemetry()
       const error = new Error('raw error')
       telemetry.capture(error)
-      expect(sentry.captureException).toHaveBeenCalledWith(error, undefined)
+      expect(sentry.captureException).toHaveBeenCalledWith(expect.any(SyncUnexpectedError), { mechanism: { handled: false } })
     })
-    test('passes mechanism handled:false when err is SyncUnexpectedError', () => {
-      const { telemetry, sentry } = makeTelemetry()
-      const error = new SyncUnexpectedError('unexpected')
-      telemetry.capture(error)
+  test('passes mechanism handled:false when err is SyncUnexpectedError', () => {
+    const { telemetry, sentry } = makeTelemetry()
+    const error = new SyncUnexpectedError('unexpected')
+    telemetry.capture(error)
+
       expect(sentry.captureException).toHaveBeenCalledWith(error, { mechanism: { handled: false } })
     })
     test('passes SyncError directly without wrapping', () => {

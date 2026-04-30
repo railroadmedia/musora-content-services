@@ -120,8 +120,8 @@ export class SyncTelemetry {
 
     wrapped.markReported()
     this.Sentry.captureException(
-      err,
-      err instanceof SyncUnexpectedError
+      wrapped,
+      wrapped instanceof SyncUnexpectedError
         ? {
             mechanism: {
               handled: false,
