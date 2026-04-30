@@ -37,6 +37,9 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
       brand: brand,
       content_ids: content_id,
       num_similar: count + 1,
+      page_size: count + 1,
+      page: 1,
+      exclude_interacted: true
     }
     const url = `/similar_items/`
     try {

@@ -1,0 +1,63 @@
+/**
+ * @module EndScreen Types
+ */
+
+export type EndScreenVariant =
+  | 'countdown-up-next'
+  | 'course-complete'
+
+export interface CtaLabels {
+  primary: string
+  secondary?: string
+}
+
+export interface EndScreenResult {
+  variant: EndScreenVariant
+  upNext: any | null
+  countdownAutoplay: boolean
+  ctaLabels: CtaLabels
+}
+
+export interface ContentItem {
+  id: number
+  type?: string
+  status?: string
+  parent_id?: number
+  need_access?: boolean
+}
+
+export interface Course {
+  id: number
+  type?: string
+  status?: string
+  children?: ContentItem[]
+}
+
+export interface CourseInCollection {
+  id: number
+  status?: string
+  children?: ContentItem[]
+}
+
+export interface Collection {
+  id: number
+  type: string
+  status?: string
+  parent_id?: number
+  children?: CourseInCollection[]
+}
+
+export interface Playlist {
+  id: number
+  items?: ContentItem[]
+}
+
+export interface GetEndScreenParams {
+  lesson: ContentItem
+  course?: Course | null
+  collection?: Collection | null
+  playlist?: Playlist | null
+  user_playlist_item_index?: number | null
+  next_item?: any | null
+  brand: string
+}
