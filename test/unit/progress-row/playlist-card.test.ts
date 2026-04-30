@@ -20,7 +20,14 @@ const mockPlaylistItem = {
     duration_formated: '1h 30m',
     total_items: 10,
     likes: 5,
-    first_items_thumbnail_url: 'https://cdn.example.com/thumb.jpg',
+    first_items_thumbnail_url: [
+    {
+        thumbnail: 'https://cdn.example.com/thumb.jpg',
+        type: 'song',
+        artist_name: 'Kiss',
+        title: "Mwaa"
+     }
+    ] 
     navigateTo: { id: 42, content_id: 99 },
     user: { display_name: 'John Doe' },
   },
