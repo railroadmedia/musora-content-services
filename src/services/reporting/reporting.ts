@@ -224,7 +224,7 @@ export function getReportIssueOptions(
 
       contentOptions.push(
         { value: 'assignment_issue', label: 'An issue with lesson assignment' },
-        { value: 'other', label: 'Other' }
+        { value: 'other', label: 'Other reasons' }
       )
 
       return contentOptions
@@ -245,12 +245,12 @@ export function getReportIssueOptions(
 
       playlistOptions.push(
         { value: 'assignment_issue', label: 'An issue with lesson assignment' },
-        { value: 'other', label: 'Other' }
+        { value: 'other', label: 'Other reasons' }
       )
 
       return playlistOptions
 
     default:
-      return [{ value: 'other', label: 'Other' }]
+      return [{ value: 'other', label: 'Other reasons' }]
   }
 }

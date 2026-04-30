@@ -112,8 +112,9 @@ export default {
   //   "node"
   // ],
 
-  // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
-  // moduleNameMapper: {},
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   modulePathIgnorePatterns: [
@@ -166,8 +167,10 @@ export default {
   setupFilesAfterEnv: [
     'dotenv/config',
     '<rootDir>/test/setupConsole.js',
-    '<rootDir>/test/setupNetworkGuard.js'
+    '<rootDir>/test/setupNetworkGuard.js',
+    '<rootDir>/test/setupTimers.js'
   ],
+
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
   // slowTestThreshold: 5,

@@ -400,7 +400,7 @@ describe('Filters - Pure Synchronous Functions', () => {
 // ASYNC TESTS - MOCK SETUP
 // ============================================
 import { getPermissionsAdapter } from '../../../src/services/permissions'
-import type { UserPermissions } from '../../../src/services/permissions/PermissionsAdapter'
+import type { UserPermissions } from '../../../src/services/permissions/types'
 
 // Mock the permissions module
 jest.mock('../../../src/services/permissions')
@@ -422,19 +422,19 @@ const mockUsers = {
   basicMember: {
     isAdmin: false,
     isModerator: false,
-    permissions: ['78', '91', '92'],
+    permissions: [78, 91, 92],
     isABasicMember: true,
   },
   plusMember: {
     isAdmin: false,
     isModerator: false,
-    permissions: ['78', '108', '91', '92'],
+    permissions: [78, 108, 91, 92],
     isABasicMember: true,
   },
   ownedOnly: {
     isAdmin: false,
     isModerator: false,
-    permissions: ['100000234', '100000567'], // Owned content IDs: 234, 567
+    permissions: [100000234, 100000567], // Owned content IDs: 234, 567
     isABasicMember: false,
   },
 }

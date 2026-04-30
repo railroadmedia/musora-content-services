@@ -25,6 +25,7 @@ export default class LokiPersistenceErrorAwareAdapter extends (LokiJSAdapter as 
   }
 
   _overrideSaveDatabase(onPersistenceError?: (err: Error) => void) {
+    if (!this._driver) return
     const driver = this._driver
     const persistenceAdapter = driver.loki.persistenceAdapter
     const oldSaveDatabase = persistenceAdapter.saveDatabase;

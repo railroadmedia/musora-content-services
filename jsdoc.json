@@ -15,6 +15,7 @@
       "src/services/userActivity.js",
       "src/services/railcontent.js",
       "src/services/liveTesting.ts",
+      "src/services/offline",
       "src/services/forums",
       "src/index.js"
     ],

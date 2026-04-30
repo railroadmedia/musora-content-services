@@ -3,12 +3,9 @@
  */
 import {
   artistOrInstructorName,
-  assignmentsField,
-  chapterField,
   coachLessonsTypes,
   contentTypeConfig,
   DEFAULT_FIELDS,
-  descriptionField,
   filtersToGroq,
   getChildFieldsForContentType,
   getFieldsForContentType,
@@ -27,36 +24,49 @@ import {
   transcriptionsLessonTypes,
   playAlongLessonTypes,
   jamTrackLessonTypes,
-  resourcesField,
   showsTypes,
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
-  liveFields,
   postProcessBadge,
   parentRecentTypes,
   parentReferenceField,
   grandParentReferenceField,
+  getLiveFields,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
-import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
+import {
+  getSongType,
+  processMetadata,
+  ALWAYS_VISIBLE_TABS,
+  CONTENT_STATUSES,
+} from '../contentMetaData.js'
 import { GET } from '../infrastructure/http/HttpClient.ts'
 
 import { globalConfig } from './config.js'
 
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
-import {getAllCompleted, getAllCompletedByIds, getAllStarted, getAllStartedOrCompleted} from './contentProgress.js'
+import {
+  getAllCompleted,
+  getAllCompletedByIds,
+  getAllStarted,
+  getAllStartedOrCompleted,
+} from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 import { query } from '../lib/sanity/query'
 import { Filters as f } from '../lib/sanity/filter'
 import { COLLECTION_TYPE } from './sync/models/ContentProgress'
+import { MEMBERSHIP_PERMISSIONS } from '../constants/membership-permissions'
 
 /**
  * Exported functions that are excluded from index generation.
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['fetchRelatedByLicense']
+const excludeFromGeneratedIndex = [
+  'fetchRelatedByLicense',
+  'devFetchAllLearningPathsAndIntroVideoIdsForDelete',
+]
 
 /**
  * Mapping from tab names to their underlying Sanity content types.
@@ -75,6 +85,12 @@ const TAB_TO_CONTENT_TYPES = {
   'Play-Alongs': playAlongLessonTypes,
   'Jam Tracks': jamTrackLessonTypes,
 }
+
+// parent_id must coalesce to 0 here for progress tracking reasons.
+const HIERARCHY_NODE_FIELDS = `
+  railcontent_id,
+  'metadata': { brand, 'type': _type, 'parent_id': coalesce(${parentReferenceField}->railcontent_id, 0) }
+`
 
 /**
  * Fetch a song by its document ID from Sanity.
@@ -534,12 +550,31 @@ export async function fetchByRailContentIds(
       }
       return result
     }
+
+    const chapterProcess = (result) => {
+      const chapters = result.chapters ?? []
+      result.chapters = chapters.map((chapter, index) => ({
+        ...chapter,
+        chapter_thumbnail_url: `https://musora-web-platform.s3.amazonaws.com/chapters/${result.brand}/Chapter${index + 1}.jpg`,
+      }))
+      const children = result.children ?? []
+      result.children = children.map((child) => chapterProcess(child))
+      return result
+    }
+
+    if (contentType === 'download') {
+      results = results.map(chapterProcess)
+    }
     return results.map(liveProcess)
   }
-  const results = await fetchSanity(query, true, {
-    customPostProcess: customPostProcess,
-    processNeedAccess: true,
-  })
+  let [results, hierarchies] = await Promise.all([
+    fetchSanity(query, true, { customPostProcess: customPostProcess, processNeedAccess: true }),
+    contentType === 'download' ? getHierarchies(ids) : Promise.resolve(null),
+  ])
+
+  if (hierarchies) {
+    results.forEach((r) => (r.hierarchy = hierarchies[r.id] ?? null))
+  }
 
   const sortFuction = function compare(a, b) {
     const indexA = ids.indexOf(a['id'])
@@ -627,7 +662,7 @@ export async function fetchAll(
     useDefaultFields = true,
     customFields = [],
     progress = 'all',
-    onlyPublished = true
+    onlyPublished = true,
   } = {}
 ) {
   let config = contentTypeConfig[type] ?? {}
@@ -778,44 +813,32 @@ async function getProgressFilter(progress, progressIds) {
   }
 }
 
+const SORT_STRATEGIES = {
+  slug: ({ groupBy, isDesc }) => {
+    const dir = isDesc ? 'desc' : 'asc'
+    if (groupBy) return `name ${dir}`
+    return `!defined(title_for_sort), title_for_sort ${dir}, !defined(title), lower(title) ${dir}`
+  },
+
+  popularity: ({ brand, groupBy, isDesc }) => {
+    const field = groupBy === 'artist' || groupBy === 'genre' ? `popularity.${brand}` : 'popularity'
+    return isDesc ? `coalesce(${field}, -1) desc` : `${field} asc`
+  },
+
+  recommended: () => 'published_on desc',
+}
+
 export function getSortOrder(sort = '-published_on', brand, groupBy) {
-  const sanitizedSort = sort?.trim() || '-published_on'
-  let isDesc = sanitizedSort.startsWith('-')
-  const sortField = isDesc ? sanitizedSort.substring(1) : sanitizedSort
+  const sanitized = sort?.trim() || '-published_on'
+  const isDesc = sanitized.startsWith('-')
+  const field = isDesc ? sanitized.slice(1) : sanitized
 
-  let sortOrder = ''
-
-  switch (sortField) {
-    case 'slug':
-      if (groupBy) {
-        sortOrder = 'name'
-      } else {
-        sortOrder = '!defined(title_for_sort), title_for_sort'
-        sortOrder += isDesc ? ' desc' : ' asc'
-        sortOrder += ', !defined(title), lower(title)' // title fallback
-      }
-      break
-
-    case 'popularity':
-      if (groupBy == 'artist' || groupBy == 'genre') {
-        sortOrder = isDesc ? `coalesce(popularity.${brand}, -1)` : 'popularity'
-      } else {
-        sortOrder = isDesc ? 'coalesce(popularity, -1)' : 'popularity'
-      }
-      break
-
-    case 'recommended':
-      sortOrder = 'published_on'
-      isDesc = true
-      break
-
-    default:
-      sortOrder = sortField
-      break
+  const strategy = SORT_STRATEGIES[field]
+  if (strategy) {
+    return strategy({ brand, groupBy, isDesc })
   }
 
-  sortOrder += isDesc ? ' desc' : ' asc'
-  return sortOrder
+  return `${field} ${isDesc ? 'desc' : 'asc'}`
 }
 
 /**
@@ -938,6 +961,7 @@ export async function jumpToContinueContent(railcontentId) {
  * Fetch the page data for a specific lesson by Railcontent ID.
  * @param {string} railContentId - The Railcontent ID of the current lesson.
  * @parent {boolean} addParent - Whether to include parent content data in the response.
+ * @forDownload {boolean} forDownload - Whether the content is being fetched for download, which includes hierarchy data.
  * @returns {Promise<Object|null>} - The fetched page data or null if found.
  *
  * @example
@@ -945,59 +969,14 @@ export async function jumpToContinueContent(railcontentId) {
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
-export async function fetchLessonContent(railContentId, { addParent = false } = {}) {
+export async function fetchLessonContent(railContentId, { forDownload = false } = {}) {
   const filterParams = {
     isSingle: true,
     pullFutureContent: true,
     showMembershipRestrictedContent: true,
   }
 
-  const parentQuery = addParent
-    ? `"parent_content_data": parent_content_reference[]->{
-        "id": railcontent_id,
-        title,
-        slug,
-        "type": _type,
-        "logo" : logo_image_url.asset->url,
-        "dark_mode_logo": dark_mode_logo_url.asset->url,
-        "light_mode_logo": light_mode_logo_url.asset->url,
-        ...*[references(^._id) && _type == 'content-award'][0]{
-          "badge": badge.asset->url,
-          "badge_rear": badge_rear.asset->url,
-          "badge_logo": logo.asset->url,
-        }
-      },`
-    : ''
-
-  const fields = `${getFieldsForContentType()}
-    "resources": ${resourcesField},
-    soundslice,
-    instrumentless,
-    soundslice_slug,
-    "description": ${descriptionField},
-    "chapters": ${chapterField},
-    "instructors":instructor[]->name,
-    "instructor": ${instructorField},
-    ${assignmentsField}
-    video,
-    "length_in_seconds": coalesce(soundslice[0].soundslice_length_in_second, length_in_seconds),
-    mp3_no_drums_no_click_url,
-    mp3_no_drums_yes_click_url,
-    mp3_yes_drums_no_click_url,
-    mp3_yes_drums_yes_click_url,
-    "permission_id": permission_v2,
-    ${parentQuery}
-    ...select(
-      defined(live_event_start_time) => {
-        live_event_start_time,
-        live_event_end_time,
-        live_event_stream_id,
-        "vimeo_live_event_id": vimeo_live_event_id,
-        "videoId": coalesce(live_event_stream_id, video.external_id),
-        "live_event_is_global": live_global_event == true
-      }
-    )
-  `
+  const fields = getFieldsForContentType('download')
 
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
@@ -1016,7 +995,17 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     return result
   }
 
-  let contents = await fetchSanity(query, false, { customPostProcess: chapterProcess, processNeedAccess: true })
+  let [contents, hierarchy] = await Promise.all([
+    fetchSanity(query, false, { customPostProcess: chapterProcess, processNeedAccess: true }),
+    forDownload ? getHierarchy(railContentId) : Promise.resolve(null),
+  ])
+
+  if (forDownload) {
+    // even though we are not allowing bubbling offline and therefore dont need hierarchy, if we ever do, we have to
+    // ensure that downloaded content has hierarchy data as well as metadata
+    contents.hierarchy = hierarchy
+  }
+
   contents = postProcessBadge(contents)
 
   return contents
@@ -1034,7 +1023,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
 export async function fetchRelatedRecommendedContent(railContentId, brand, count = 10) {
   const recommendedItems = await fetchSimilarItems(railContentId, brand, count)
   if (recommendedItems && recommendedItems.length > 0) {
-    return fetchByRailContentIds(recommendedItems, 'tab-data', brand, true)
+    return fetchByRailContentIds(recommendedItems, 'tab-data', brand)
   }
 
   return await fetchRelatedLessons(railContentId, brand).then((result) =>
@@ -1115,7 +1104,8 @@ export async function fetchSiblingContent(railContentId, brand = null) {
 
   const brandString = brand ? ` && brand == "${brand}"` : ''
   const queryFields = getFieldsForContentType()
-  const courseCollectionFields = await getFieldsForContentTypeWithFilteredChildren('course-collection')
+  const courseCollectionFields =
+    await getFieldsForContentTypeWithFilteredChildren('course-collection')
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
     _type,
     parent_type,
@@ -1172,7 +1162,7 @@ export async function fetchRelatedLessons(railContentId) {
 
   const queryFields = getFieldsForContentType()
 
-  const query = `*[railcontent_id == ${railContentId} && (!defined(permission) || references(*[_type=='permission']._id))]{
+  const query = `*[railcontent_id == ${railContentId}]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
       ...(*[${filterSameArtist}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
@@ -1210,7 +1200,10 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
 
   const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString()
 
-  const liveEventFields = liveFields + `, 'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}')`
+  const liveEventFields = getLiveFields().concat(
+    `'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}')`
+  )
+  const fieldsString = liveEventFields.join(',')
 
   const baseFilter =
     forcedContentId !== null
@@ -1220,7 +1213,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       && defined(live_event_start_time)
       && live_event_start_time >= '${startOfToday}'`
 
-  const filter = await new FilterBuilder(baseFilter, {bypassPermissions: true}).buildFilter()
+  const filter = await new FilterBuilder(baseFilter, { bypassPermissions: true }).buildFilter()
 
   const events = await fetchSanity(
     `*[${filter}]{${liveEventFields}} | order(live_event_start_time asc)`,
@@ -1303,7 +1296,6 @@ export async function fetchByReference(
 }
 
 /**
- *
  * Return the top level parent content railcontent_id.
  * Ignores learning-path-v2 parents.
  * ex: if railcontentId is of type 'skill-pack-lesson', return the corresponding 'skill-pack' railcontent_id
@@ -1320,6 +1312,35 @@ export async function fetchTopLevelParentId(railcontentId) {
   return response['top_parent'] ?? railcontentId
 }
 
+/**
+ * Return the top level parent content railcontent_id for a set of ids.
+ * Ignores learning-path-v2 parents.
+ * ex: if railcontentId is of type 'skill-pack-lesson', return the corresponding 'skill-pack' railcontent_id
+ *
+ * @param {int[]} railcontentIds
+ * @returns {Promise<Object.<number, object>|null>}
+ */
+async function fetchTopLevelParentIds(railcontentIds) {
+  const idsString = railcontentIds.join(',')
+  const query = `*[railcontent_id in [${idsString}]]{
+    railcontent_id,
+    'top_parent': coalesce(
+      ${grandParentReferenceField}->railcontent_id,
+      ${parentReferenceField}->railcontent_id,
+      railcontent_id
+      ),
+  }`
+  let response = await fetchSanity(query, true, { processNeedAccess: false })
+  if (!response) return null
+
+  let responseMap = {}
+  response.forEach((item) => {
+    responseMap[item.railcontent_id] = item.top_parent ?? item.railcontent_id
+  })
+
+  return responseMap
+}
+
 export async function getHierarchy(contentId, collection) {
   let response
   if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
@@ -1329,24 +1350,69 @@ export async function getHierarchy(contentId, collection) {
   }
   if (!response) return null
 
-  const topLevelId = response.railcontent_id ?? response.id
+  return getHierarchyLookupsAndMetadata(response)
+}
+
+export async function getHierarchies(contentIds, collection) {
+  let response
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    response = await fetchLearningPathHierarchyDataForIds(contentIds, collection)
+  } else {
+    response = await fetchALaCarteHierarchyDataForIds(contentIds)
+  }
+  if (!response) return null
+
+  const hierarchyData = getHierarchyLookupsAndMetadataMany(response)
+
+  return mapHierarchyDataToContentIds(hierarchyData, contentIds)
+}
+
+function getHierarchyLookupsAndMetadataMany(hierarchies) {
+  let hierarchyData = {}
+  Object.values(hierarchies).forEach((hierarchy) => {
+    const topLevelId = hierarchy.railcontent_id ?? hierarchy.id
+    hierarchyData[topLevelId] = getHierarchyLookupsAndMetadata(hierarchy)
+  })
+  return hierarchyData
+}
+
+function getHierarchyLookupsAndMetadata(hierarchy) {
+  const topLevelId = hierarchy.railcontent_id ?? hierarchy.id
 
   if (!topLevelId) {
-    console.error('Top level ID not found in hierarchy response', response)
+    console.error('Top level ID not found in hierarchy response', hierarchy)
     return null
   }
 
-  let data = {
+  let datum = {
     topLevelId: topLevelId,
     parents: {},
     children: {},
     metadata: {},
   }
-  populateHierarchyLookups(response, data, null)
-  data.metadata = extractMetadataFromHierarchy(response)
 
+  populateHierarchyLookups(hierarchy, datum, null)
+  datum.metadata = extractMetadataFromHierarchy(hierarchy)
+
+  return datum
+}
+
+function mapHierarchyDataToContentIds(hierarchyData, contentIds) {
+  let data = {}
+  // because of single parent rule we can simply find first hierarchy that contains the contentId in parent or children lookups
+  contentIds.forEach((contentId) => {
+    for (let key in hierarchyData) {
+      if (
+        key === contentId ||
+        hierarchyData[key].parents[contentId] ||
+        hierarchyData[key].children[contentId]
+      ) {
+        data[contentId] = hierarchyData[key]
+        break
+      }
+    }
+  })
   return data
-
 }
 
 function extractMetadataFromHierarchy(hierarchyData) {
@@ -1386,25 +1452,60 @@ async function fetchLearningPathHierarchyData(railcontentId, collection) {
   return (await fetchByRailContentIds([topLevelId], 'hierarchy-data'))[0]
 }
 
+async function fetchLearningPathHierarchyDataForIds(railcontentIds, collection) {
+  if (!collection) {
+    return null
+  }
+  const topLevelId = collection.id
+
+  const response = await fetchByRailContentIds([topLevelId], 'hierarchy-data')
+  if (!response) return null
+
+  let responseMap = {}
+  response.forEach((item) => {
+    responseMap[item.railcontent_id] = item
+  })
+
+  return responseMap
+}
+
+/**
+ * returns hierarchy data for the given railcontentId
+ * @param {int} railcontentId
+ * @returns {Promise<object|null>}
+ */
 async function fetchALaCarteHierarchyData(railcontentId) {
-  let topLevelId = await fetchTopLevelParentId(railcontentId)
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  const query = `*[railcontent_id == ${topLevelId}]{
-      railcontent_id,
-      'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
-      'assignments': assignment[]{railcontent_id},
-      'children': child[${childrenFilter}]->{
-        railcontent_id,
-        'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
-        'assignments': assignment[]{railcontent_id},
-        'children': child[${childrenFilter}]->{
-            railcontent_id,
-            'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
-            'assignments': assignment[]{railcontent_id},
-        }
-      }
-    }`
-  return await fetchSanity(query, false, { processNeedAccess: false })
+  const topLevelId = await fetchTopLevelParentId(railcontentId)
+  const childrenFilter = await new FilterBuilder('', { isChildrenFilter: true }).buildFilter()
+  const query = buildHierarchyQuery(childrenFilter, `railcontent_id == ${topLevelId}`)
+
+  return fetchSanity(query, false, { processNeedAccess: false })
+}
+
+/**
+ * returns a map of railcontentId to hierarchy data.
+ * @param {int[]} railcontentIds
+ * @returns {Promise<Object.<number, object>|null>}
+ */
+async function fetchALaCarteHierarchyDataForIds(railcontentIds) {
+  const topLevelIds = await fetchTopLevelParentIds(railcontentIds)
+  const idsString = Object.values(topLevelIds).join(',')
+  const childrenFilter = await new FilterBuilder('', { isChildrenFilter: true }).buildFilter()
+  const query = buildHierarchyQuery(childrenFilter, `railcontent_id in [${idsString}]`)
+
+  const response = await fetchSanity(query, true, { processNeedAccess: false })
+  if (!response) return null
+
+  return Object.fromEntries(response.map((item) => [item.railcontent_id, item]))
+}
+
+function buildHierarchyQuery(filter, rootSelector) {
+  const node = (depth) =>
+    depth === 0
+      ? HIERARCHY_NODE_FIELDS
+      : `${HIERARCHY_NODE_FIELDS}, 'children': child[${filter}]->{${node(depth - 1)}}`
+
+  return `*[${rootSelector}]{ ${node(3)} }`
 }
 
 function populateHierarchyLookups(currentLevel, data, parentId) {
@@ -1425,7 +1526,9 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
 
   let assignments = currentLevel['assignments']
   if (assignments) {
-    let assignmentIds = assignments.map((assignment) => assignment[railcontentIdField]).filter(Boolean)
+    let assignmentIds = assignments
+      .map((assignment) => assignment[railcontentIdField])
+      .filter(Boolean)
     if (assignmentIds.length > 0) {
       data.children[contentId] = (data.children[contentId] ?? []).concat(assignmentIds)
       assignmentIds.forEach((assignmentId) => {
@@ -1492,7 +1595,7 @@ export async function fetchSanity(
   }
   const perspective = globalConfig.sanityConfig.perspective ?? 'published'
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api'
-  const baseUrl = `https://sanity.musora.com/${globalConfig.sanityConfig.projectId}/${api}/v${globalConfig.sanityConfig.version}/${globalConfig.sanityConfig.dataset}?perspective=${perspective}`
+  const baseUrl = `https://sanity.musora.com/${globalConfig.sanityConfig.projectId}/${api}/v${globalConfig.sanityConfig.version}/${globalConfig.sanityConfig.dataset}/v2?perspective=${perspective}`
 
   try {
     const encodedQuery = encodeURIComponent(query)
@@ -1549,7 +1652,8 @@ function contentResultsDecorator(results, fieldName, callback) {
   const processChildren = (result, depth = 0) => {
     if (result.children && Array.isArray(result.children)) {
       result.children.forEach((child) => {
-        if (child && depth < 3) { // course-collections are only 3 depth
+        if (child && depth < 3) {
+          // course-collections are only 3 depth
           child[fieldName] = callback(child)
           processChildren(child, depth + 1)
         }
@@ -1598,7 +1702,7 @@ function contentResultsDecorator(results, fieldName, callback) {
     })
   } else if (results.lessons && results.livestreams && results.songs) {
     // `fetchScheduledAndNewReleases` response structure
-    ['lessons', 'livestreams', 'songs'].forEach((key) => {
+    ;['lessons', 'livestreams', 'songs'].forEach((key) => {
       if (results[key] && Array.isArray(results[key])) {
         results[key].forEach((item) => {
           item[fieldName] = callback(item)
@@ -1606,7 +1710,6 @@ function contentResultsDecorator(results, fieldName, callback) {
         })
       }
     })
-
   } else {
     results[fieldName] = callback(results)
     processChildren(results) // this on was always true
@@ -1930,10 +2033,10 @@ export async function fetchTabData(
     page = 1,
     limit = 10,
     sort = '-published_on',
+    sortPermissions = [],
     includedFields = [],
     progressIds = undefined,
     progress = 'all',
-    showMembershipRestrictedContent = false,
     excludeIds = [],
   } = {}
 ) {
@@ -1944,6 +2047,10 @@ export async function fetchTabData(
     includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName) : ''
 
   let sortOrder = getSortOrder(sort, brand, '')
+
+  if (sortPermissions.length > 0) {
+    sortOrder = applyPermissionSort(sortOrder, sortPermissions)
+  }
 
   switch (progress) {
     case 'recent':
@@ -2061,36 +2168,33 @@ export async function fetchScheduledAndNewReleases(
   const now = getSanityDate(rawNow)
   const fifteenDaysAgo = getSanityDate(new Date(rawNow - 15 * 24 * 60 * 60 * 1000))
 
-  const parentsWithoutSong = parentRecentTypes.filter(type => type !== 'song')
+  const parentsWithoutSong = parentRecentTypes.filter((type) => type !== 'song')
 
   const fields = await getFieldsForContentTypeWithFilteredChildren('new-and-scheduled')
 
   const lessonFilter = f.combine(
-    "show_in_new_feed == true",
+    'show_in_new_feed == true',
     f.brand(brand),
     f.typeIn(parentsWithoutSong),
     f.statusIn(['published']),
     f.publishedBefore(now),
-    f.publishedAfter(fifteenDaysAgo),
+    f.publishedAfter(fifteenDaysAgo)
   )
 
   const songFilter = f.combine(
-    "show_in_new_feed == true",
+    'show_in_new_feed == true',
     f.brand(brand),
     f.type('song'),
     f.statusIn(['published']),
     f.publishedBefore(now),
-    f.publishedAfter(fifteenDaysAgo),
+    f.publishedAfter(fifteenDaysAgo)
   )
 
   const livestreamFilter = f.combine(
-    "show_in_new_feed == true",
-    f.combineOr(
-      f.brand(brand),
-      'live_global_event == true'
-    ),
+    'show_in_new_feed == true',
+    f.combineOr(f.brand(brand), 'live_global_event == true'),
     f.statusIn(['scheduled']),
-    `live_event_start_time >= '${now}'`,
+    `live_event_start_time >= '${now}'`
   )
 
   const lessonQuery = query()
@@ -2148,19 +2252,19 @@ function reorderScheduledAndNewReleases(r, limit) {
     livestreamLimit = 1
     songLimit = limit - lessonLimit - livestreamLimit
   } else {
-    lessonLimit = (limit > 0) ? 1 : 0
+    lessonLimit = limit > 0 ? 1 : 0
     livestreamLimit = 0
     songLimit = limit - lessonLimit
   }
 
   const lessons = r.lessons.slice(0, lessonLimit)
   if (lessons.length < lessonLimit) {
-    songLimit += (lessonLimit - lessons.length)
+    songLimit += lessonLimit - lessons.length
   }
 
   const livestreams = r.livestreams.slice(0, livestreamLimit)
   if (livestreams.length < livestreamLimit) {
-    songLimit += (livestreamLimit - livestreams.length)
+    songLimit += livestreamLimit - livestreams.length
   }
 
   const songs = r.songs.slice(0, songLimit)
@@ -2214,6 +2318,14 @@ export async function fetchMethodV2Structure(brand) {
     }
   }`
   return await fetchSanity(query, false)
+}
+
+export async function devFetchAllLearningPathsAndIntroVideoIdsForDelete() {
+  const query = `{
+    'intros': *[_type in ['method-intro', 'learning-path-intro']].railcontent_id,
+    'learning_paths': *[_type == 'learning-path-v2'].railcontent_id
+  }`
+  return await fetchSanity(query, true)
 }
 
 /**
@@ -2528,9 +2640,14 @@ export async function hasAnyMethodV2IntroCompleted() {
   const filter = `_type == '${type}'`
 
   const query = `*[${filter}] { railcontent_id }`
-  const videos = await fetchSanity(query, true);
+  const videos = await fetchSanity(query, true)
   const ids = (videos || []).map((v) => v.railcontent_id)
 
   const completedVideos = await getAllCompletedByIds(ids)
   return (completedVideos?.data?.length || 0) > 0
+}
+
+function applyPermissionSort(sortOrder, permissionIds) {
+  const idsString = permissionIds.join(',')
+  return `select(count(permission_v2[@ in [${idsString}]]) > 0 => 1, 0) desc, ${sortOrder}`
 }

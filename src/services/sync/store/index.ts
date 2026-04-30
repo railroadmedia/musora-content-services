@@ -184,12 +184,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async pushRecordIdsImpatiently(ids: RecordId[], span?: Span) {
     const records = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
 
-    return await this.pushCoalescer.push(
-      records,
-      queueThrottle({ state: this.pushThrottleState }, () => {
-        return this.executePush(records, span)
-      })
-    )
+    // don't use coalescer or throttle - otherwise it could pick up on currently in-flight retrying (i.e., not impatient) requests
+    return this.executePush(records, span)
   }
 
   async readAll() {
@@ -999,11 +995,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         }, 'sync.cleanup')
       })
     }, SyncStore.CLEANUP_INTERVAL)
-
-    // in tests in node env, prevents the timer from keeping the process alive
-    if (typeof (this.cleanupTimer as any).unref === 'function') {
-      (this.cleanupTimer as any).unref()
-    }
   }
 
   private stopCleanupTimer() {

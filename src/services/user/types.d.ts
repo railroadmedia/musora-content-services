@@ -96,12 +96,6 @@ export interface AuthResponse {
   user: User
 }
 
-export interface UserPermissions {
-  permissions: string[]
-  isAdmin: boolean
-  isABasicMember: boolean
-}
-
 export interface StreakDTO {
   type: 'week' | 'day'
   length: number

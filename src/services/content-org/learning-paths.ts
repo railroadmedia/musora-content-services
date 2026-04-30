@@ -4,10 +4,12 @@
 
 import { GET, POST } from '../../infrastructure/http/HttpClient'
 import {
+  devFetchAllLearningPathsAndIntroVideoIdsForDelete,
   fetchByRailContentId,
   fetchByRailContentIds,
   fetchMethodV2Structure,
-  fetchParentChildRelationshipsFor
+  fetchParentChildRelationshipsFor,
+  hasAnyMethodV2IntroCompleted,
 } from '../sanity.js'
 import { addContextToLearningPaths } from '../contentAggregator.js'
 import {
@@ -18,12 +20,11 @@ import {
   getIdsWhereLastAccessedFromMethod,
   getProgressState,
 } from '../contentProgress.js'
-import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
-import { SyncWriteDTO } from '../sync'
+import { COLLECTION_ID_SELF, COLLECTION_TYPE, CollectionParameter, STATE } from '../sync/models/ContentProgress'
+import { db, SyncWriteDTO } from '../sync'
 import { ContentProgress } from '../sync/models'
-import { CollectionParameter } from '../sync/models/ContentProgress'
 import dayjs from 'dayjs'
-import { LEARNING_PATH_LESSON } from "../../contentTypeConfig";
+import { LEARNING_PATH_LESSON } from '../../contentTypeConfig'
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
@@ -196,7 +197,18 @@ async function dataPromiseGET(
  */
 export async function resetAllLearningPaths() {
   const url: string = `${LEARNING_PATHS_PATH}/reset`
-  return await POST(url, {})
+
+  return await Promise.all([
+    devFetchAllLearningPathsAndIntroVideoIdsForDelete().then(async (all) => {
+      await Promise.all([
+        db.contentProgress.eraseProgressMany(all.intros, null),
+        ...all.learning_paths.map((id) =>
+          db.contentProgress.eraseProgress(id, {id, type: COLLECTION_TYPE.LEARNING_PATH})
+        )
+      ])
+    }),
+    POST(url, {}),
+  ])
 }
 
 /**
@@ -457,20 +469,20 @@ interface completeMethodIntroVideo {
 }
 /**
  * Handles completion of method intro video and other related actions.
- * @param introVideoId - The method intro video content ID.
+ * @param introVideoId - The method intro video content ID. If not provided, does not `complete` intro video.
  * @param brand
  * @returns {Promise<Array>} response - The response object.
  * @returns {Promise<Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
  * @returns {Promise<Object>} response.active_path_response - The set active learning path response.
  */
 export async function completeMethodIntroVideo(
-  introVideoId: number,
+  introVideoId: number|null,
   brand: string
 ): Promise<completeMethodIntroVideo> {
   let response = {} as completeMethodIntroVideo
 
   const [intro_video_response, methodStructure] = await Promise.all([
-    completeIfNotCompleted(introVideoId),
+    introVideoId ? completeIfNotCompleted(introVideoId) : Promise.resolve(null),
     fetchMethodV2Structure(brand)
   ])
   response.intro_video_response = intro_video_response
@@ -520,13 +532,25 @@ export async function completeLearningPathIntroVideo(
   let response = {} as completeLearningPathIntroVideo
   const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
 
+  const [anyIntroComplete, activePath] = await Promise.all([
+    hasAnyMethodV2IntroCompleted(),
+    getActivePath(brand)
+  ])
+
+  let lateMethodSetup = false
+  // check if the method intro was watched elsewhere; then we have to give user active path for this brand.
+  if (anyIntroComplete && !activePath) {
+    completeMethodIntroVideo(null, brand) // no need to await.
+    lateMethodSetup = true
+  }
+
   if (!lessonsToImport) {
     response.learning_path_reset_response = await resetIfPossible(learningPathId, collection)
   } else {
     response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
 
     const activePath = await getActivePath(brand)
-    if (activePath.active_learning_path_id === learningPathId) {
+    if (activePath.active_learning_path_id === learningPathId && !lateMethodSetup) { // don't update dailies if they were just set by completeMethodIntroVideoCompleteActions.
       response.update_dailies_response = await updateDailySession(brand, new Date(), true)
     }
   }

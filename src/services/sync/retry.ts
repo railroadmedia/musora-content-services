@@ -3,9 +3,10 @@ import { SyncResponse } from "./fetch"
 import { SyncTelemetry } from "./telemetry/index"
 
 export default class SyncRetry {
-  private readonly BASE_BACKOFF = 1_000
-  private readonly MAX_BACKOFF = 8_000
-  private readonly MAX_ATTEMPTS = 4
+  static readonly BASE_BACKOFF = 1_000
+  static readonly MAX_BACKOFF = 8_000
+  static readonly MAX_ATTEMPTS = 4
+
 
   private paused = false
   private backoffUntil = 0
@@ -62,7 +63,7 @@ export default class SyncRetry {
       } else {
         if ('isRetryable' in result && result.isRetryable) {
           this.scheduleBackoff()
-          if (attempt >= this.MAX_ATTEMPTS) {
+          if (attempt >= SyncRetry.MAX_ATTEMPTS) {
             options.onFail?.()
             return result
           }
@@ -84,16 +85,16 @@ export default class SyncRetry {
   private scheduleBackoff() {
     this.failureCount++
 
-    const exponentialDelay = this.BASE_BACKOFF * Math.pow(2, this.failureCount - 1)
+    const exponentialDelay = SyncRetry.BASE_BACKOFF * Math.pow(2, this.failureCount - 1)
     const jitter = exponentialDelay * 0.25 * (Math.random() - 0.5)
     const delayWithJitter = exponentialDelay + jitter
 
-    this.backoffUntil = Date.now() + Math.min(this.MAX_BACKOFF, delayWithJitter)
+    this.backoffUntil = Date.now() + Math.min(SyncRetry.MAX_BACKOFF, delayWithJitter)
 
     this.telemetry.debug('[Retry] Scheduling backoff', { failureCount: this.failureCount, backoffUntil: this.backoffUntil })
   }
 
-  private sleep(ms: number) {
+  protected sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 }

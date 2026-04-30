@@ -14,7 +14,7 @@ export async function enrollUserInGuidedCourse(guidedCourse, { notifications_ena
   const response = await POST(url, { notifications_enabled })
   const state = await getProgressState(guidedCourse)
   if (!state) {
-    await contentStatusStarted(guidedCourse)
+    await contentStatusStarted(guidedCourse, null, { skipBubbleTrickle: true })
   }
   return response
 }

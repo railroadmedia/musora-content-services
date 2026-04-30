@@ -97,10 +97,6 @@ const CONTENT_TYPES_WITHOUT_OVERVIEW = ['course', 'guided-course']
  * @example
  * generateContentUrl({ id: 456, type: 'course-part', parentId: 789, brand: 'pianote' })
  * // Returns: "/pianote/lessons/course/789/456"
- *
- * @example
- * generateContentUrl({ id: 123, type: 'pack-bundle', navigateTo: { id: 456 }, brand: 'guitareo' })
- * // Returns: "/guitareo/lessons/pack/123/456"
  */
 export async function generateContentUrl({
   id,
@@ -126,18 +122,6 @@ export async function generateContentUrl({
 
   if (type === 'course-collection') {
     return `/${brand}/lessons/course-collection/overview/${id}`
-  }
-
-  if (type === 'pack') {
-    return `/${brand}/lessons/pack/overview/${id}`
-  }
-
-  if (type === 'pack-bundle') {
-    if (navigateTo?.id) {
-      return `/${brand}/lessons/pack/${id}/${navigateTo.id}`
-    }
-    // Fallback to overview if navigateTo is missing
-    return `/${brand}/lessons/pack/overview/${id}`
   }
 
   // Recursive helper to fetch navigateTo with optional deep fetching
@@ -209,7 +193,6 @@ export async function generateContentUrl({
     'course-lesson': 'course',
     'guided-course-lesson': 'course',
     'guided-course': 'course',
-    'pack-bundle-lesson': 'pack',
     'documentary-lesson': 'documentary',
     'skill-pack-lesson': 'skill-pack',
 

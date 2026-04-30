@@ -222,11 +222,41 @@ import {
 	acceptInvite,
 	createAccount,
 	createInvites,
+	fetchInvite,
 	fetchUsersMultiAccountDetails,
 	removeUserFromActiveMultiUserAccount,
 	rescindInvite,
 	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
+	getRecentActivityOffline
+} from './services/offline/activities.ts';
+
+import {
+	getPracticeSessionsOffline,
+	otherStatsOffline
+} from './services/offline/practices.ts';
+
+import {
+	contentStatusCompletedManyOffline,
+	contentStatusCompletedOffline,
+	contentStatusResetOffline,
+	contentStatusStartedOffline,
+	recordWatchSessionOffline
+} from './services/offline/progress.ts';
+
+import {
+	PermissionsAdapter,
+	PermissionsV1Adapter,
+	PermissionsV2Adapter,
+	doesUserHaveMembership,
+	fetchUserPermissions,
+	getPermissionsAdapter,
+	getPermissionsVersion,
+	isUserFreeTier,
+	reset
+} from './services/permissions/index.ts';
 
 import {
 	emitProgressSaved,
@@ -255,7 +285,6 @@ import {
 	fetchLiveStreamData,
 	fetchRecentUserActivities,
 	fetchTopComment,
-	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
@@ -326,6 +355,7 @@ import {
 	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getHierarchies,
 	getHierarchy,
 	getSanityDate,
 	getSongTypesFor,
@@ -426,11 +456,6 @@ import {
 } from './services/user/payments.ts';
 
 import {
-	fetchUserPermissions,
-	reset
-} from './services/user/permissions.js';
-
-import {
 	deleteProfilePicture,
 	otherStats
 } from './services/user/profile.js';
@@ -447,7 +472,6 @@ import {
 	deletePracticeSession,
 	deleteUserActivity,
 	fetchRecentActivitiesActiveTabs,
-	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
@@ -466,6 +490,9 @@ import {
 } from './services/userActivity.js';
 
 export {
+	PermissionsAdapter,
+	PermissionsV1Adapter,
+	PermissionsV2Adapter,
 	acceptInvite,
 	addContextToContent,
 	addContextToLearningPaths,
@@ -486,8 +513,12 @@ export {
 	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusCompletedMany,
+	contentStatusCompletedManyOffline,
+	contentStatusCompletedOffline,
 	contentStatusReset,
+	contentStatusResetOffline,
 	contentStatusStarted,
+	contentStatusStartedOffline,
 	convertToTimeZone,
 	createAccount,
 	createComment,
@@ -511,6 +542,7 @@ export {
 	deleteProfilePicture,
 	deleteThread,
 	deleteUserActivity,
+	doesUserHaveMembership,
 	duplicatePlaylist,
 	editComment,
 	emitProgressSaved,
@@ -551,6 +583,7 @@ export {
 	fetchInstructorLessons,
 	fetchInstructors,
 	fetchInterests,
+	fetchInvite,
 	fetchLastSubscriptionPlatform,
 	fetchLatestThreads,
 	fetchLearningPathLessons,
@@ -605,14 +638,12 @@ export {
 	fetchUnreadCount,
 	fetchUpcomingEvents,
 	fetchUserPermissions,
-	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	fetchUsersMultiAccountDetails,
 	filterCoursesInCourseCollections,
-	findIncompleteLesson,
 	flushWatchSession,
 	followThread,
 	generateAuthSessionUrl,
@@ -637,6 +668,7 @@ export {
 	getDailySession,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
+	getHierarchies,
 	getHierarchy,
 	getIdsWhereLastAccessedFromMethod,
 	getInProgressAwards,
@@ -651,8 +683,11 @@ export {
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
 	getOwnedContent,
+	getPermissionsAdapter,
+	getPermissionsVersion,
 	getPracticeNotes,
 	getPracticeSessions,
+	getPracticeSessionsOffline,
 	getProgressDataByIds,
 	getProgressDataByRecordIds,
 	getProgressRows,
@@ -661,6 +696,7 @@ export {
 	getProgressStateByRecordIds,
 	getRecent,
 	getRecentActivity,
+	getRecentActivityOffline,
 	getRecommendedForYou,
 	getReportIssueOptions,
 	getResumeTimeSecondsByIds,
@@ -691,6 +727,7 @@ export {
 	isContentLikedByIds,
 	isNextDay,
 	isSameDate,
+	isUserFreeTier,
 	isUsernameAvailable,
 	jumpToContinueContent,
 	jumpToPost,
@@ -715,6 +752,7 @@ export {
 	onProgressSaved,
 	openComment,
 	otherStats,
+	otherStatsOffline,
 	pauseLiveEventPolling,
 	pinProgressRow,
 	pinThread,
@@ -725,6 +763,7 @@ export {
 	recordUserActivity,
 	recordUserPractice,
 	recordWatchSession,
+	recordWatchSessionOffline,
 	registerAwardCallback,
 	registerProgressCallback,
 	removeContentAsInterested,

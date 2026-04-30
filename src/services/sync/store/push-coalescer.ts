@@ -38,7 +38,7 @@ export default class PushCoalescer {
     }
 
     const cleanup = () => this.intents.splice(this.intents.indexOf(intent), 1)
-    intent.promise.finally(cleanup)
+    intent.promise.finally(cleanup).catch(() => {})
 
     this.intents.push(intent)
 
