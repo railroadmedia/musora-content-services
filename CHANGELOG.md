@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.157.1](https://github.com/railroadmedia/musora-content-services/compare/v2.157.0...v2.157.1) (2026-04-30)
+
+
+### Bug Fixes
+
+* add missing vimeo_live_event_id field to downloads field list ([#948](https://github.com/railroadmedia/musora-content-services/issues/948)) ([2b54208](https://github.com/railroadmedia/musora-content-services/commit/2b5420838f200ee061dc7af27029df8a3c38f87c))
+
 ## [2.157.0](https://github.com/railroadmedia/musora-content-services/compare/v2.155.11...v2.157.0) (2026-04-29)
 
 
