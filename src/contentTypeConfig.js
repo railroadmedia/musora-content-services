@@ -116,7 +116,7 @@ export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
 export const resourcesField = `[
           ... resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
-          ... coalesce(parent_content_reference[defined(count(@->resource) > 0]->resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )}, []),
+          ... coalesce(parent_content_reference[count(@->resource) > 0]->resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )}, []),
           ]`
 
 export const contentAwardField = "*[references(^._id) && _type == 'content-award'][0]"
