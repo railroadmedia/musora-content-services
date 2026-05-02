@@ -558,6 +558,7 @@ export async function contentStatusReset(contentId, collection = null, {skipPush
   return resetStatus(contentId, collection, {skipPush})
 }
 
+//todo: this fn
 async function saveContentProgress(
   contentId,
   collection,
@@ -647,6 +648,7 @@ async function saveContentProgress(
   return response
 }
 
+//todo: this fn
 export async function setStartedOrCompletedStatus(contentId, collection, isCompleted, { isOffline = false, hierarchy = null, skipPush = false, skipBubbleTrickle = false } = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
@@ -665,14 +667,18 @@ export async function setStartedOrCompletedStatus(contentId, collection, isCompl
     {skipPush: true}
   )
 
+  let allProgresses = {}
+  allProgresses[contentId] = progress
+
   // skip bubbling if offline
   if (isOffline) {
+    if (isLP) {
+      await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
+    }
+
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
   }
-
-  let allProgresses = {}
-  allProgresses[contentId] = progress
 
   if (!skipBubbleTrickle) {
     let progresses = {
@@ -681,7 +687,7 @@ export async function setStartedOrCompletedStatus(contentId, collection, isCompl
     }
     Object.assign(allProgresses, progresses)
 
-    await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
+    await bubbleAndTrickleProgressesSafely(allProgresses, collection, metadata, false)
   }
 
   if (isLP) {
@@ -699,6 +705,7 @@ export async function setStartedOrCompletedStatus(contentId, collection, isCompl
   return response
 }
 
+//todo: this fn
 export async function setStartedOrCompletedStatusMany(contentIds, collection, isCompleted, { isOffline = false, hierarchy = null, skipPush = false } = {}) {
   contentIds = normalizeContentIds(contentIds)
   collection = normalizeCollection(collection)
@@ -719,13 +726,17 @@ export async function setStartedOrCompletedStatusMany(contentIds, collection, is
     {skipPush: true}
   )
 
+  let allProgresses = Object.fromEntries(contentIds.map(id => [id, progress]))
+
   // skip bubbling if offline
   if (isOffline) {
+    if (isLP) {
+      await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
+    }
+
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
   }
-
-  let allProgresses = Object.fromEntries(contentIds.map(id => [id, progress]))
 
   let progresses = {}
   for (const contentId of contentIds) {
@@ -737,7 +748,7 @@ export async function setStartedOrCompletedStatusMany(contentIds, collection, is
   }
   Object.assign(allProgresses, progresses)
 
-  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
+  await bubbleAndTrickleProgressesSafely(allProgresses, collection, metadata, false)
 
   if (isLP) {
     await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
@@ -754,6 +765,7 @@ export async function setStartedOrCompletedStatusMany(contentIds, collection, is
   return response
 }
 
+//todo: this fn
 export async function resetStatus(contentId, collection = null, { isOffline = false, hierarchy = null, skipPush = false } = {}) {
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
@@ -763,8 +775,15 @@ export async function resetStatus(contentId, collection = null, { isOffline = fa
   const progress = 0
   const response = await db.contentProgress.eraseProgress(normalizeContentId(contentId), normalizeCollection(collection), {skipPush: true})
 
+  let allProgresses = {}
+  allProgresses[contentId] = progress
+
   // skip bubbling if offline
   if (isOffline) {
+    if (isLP) {
+      await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
+    }
+
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
   }
@@ -772,16 +791,13 @@ export async function resetStatus(contentId, collection = null, { isOffline = fa
   hierarchy = await getHierarchy(contentId, collection)
   const metadata = hierarchy.metadata || {}
 
-  let allProgresses = {}
-  allProgresses[contentId] = progress
-
   let progresses = {
     ...trickleProgress(hierarchy, contentId, collection, progress),
     ...await bubbleProgress(hierarchy, contentId, collection)
   }
   Object.assign(allProgresses, progresses)
 
-  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, true)
+  await bubbleAndTrickleProgressesSafely(allProgresses, collection, metadata, true)
 
 
   if (isLP) {
@@ -793,6 +809,7 @@ export async function resetStatus(contentId, collection = null, { isOffline = fa
   return response
 }
 
+//todo: this fn
 async function duplicateProgressToALaCarte(progresses, collection, {skipPush = false} = {}) {
 
   // a-la-cart LPs not set up.
