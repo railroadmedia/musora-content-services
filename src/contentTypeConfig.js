@@ -498,6 +498,7 @@ export let contentTypeConfig = {
   'course-lesson': {
     fields: [`"resources": ${resourcesField}`],
   },
+  // todo: refactor this into something like `playback` with an additional `download` option. check prev version
   download: {
     fields: [
       `"resources": ${resourcesField}`,
@@ -512,6 +513,7 @@ export let contentTypeConfig = {
       'video',
       ...playAlongMp3sFields,
       pcdForDownloadField,
+      '"learning_path_parent_id": *[_type == "learning-path-v2" && references(^._id)][0].railcontent_id',
       `...select(
         defined(live_event_start_time) => {
           ${getLiveFields(true).join(',')}
@@ -531,6 +533,7 @@ export let contentTypeConfig = {
       'video',
       ...playAlongMp3sFields,
       pcdForDownloadField,
+      '"learning_path_parent_id": *[_type == "learning-path-v2" && references(^._id)][0].railcontent_id',
       `...select(
         defined(live_event_start_time) => {
           ${getLiveFields(true).join(',')}
