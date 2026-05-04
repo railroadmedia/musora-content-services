@@ -1146,20 +1146,22 @@ export async function fetchSiblingContent(railContentId, brand = null) {
  */
 export async function fetchRelatedLessons(railContentId) {
   const defaultFilterFields = `_type==^._type && brand == ^.brand && railcontent_id != ${railContentId}`
-
+  const params = {
+    showMembershipRestrictedContent: true,
+    availableContentStatuses: ['published']
+  }
   const filterSameArtist = await new FilterBuilder(
     `${defaultFilterFields} && references(^.artist->_id)`,
-    { showMembershipRestrictedContent: true }
+    params
   ).buildFilter()
   const filterSameGenre = await new FilterBuilder(
     `${defaultFilterFields} && references(^.genre[]->_id)`,
-    { showMembershipRestrictedContent: true }
+    params
   ).buildFilter()
   const filterSameDifficulty = await new FilterBuilder(
     `${defaultFilterFields} && difficulty == ^.difficulty`,
-    { showMembershipRestrictedContent: true }
+    params
   ).buildFilter()
-
   const queryFields = getFieldsForContentType()
 
   const query = `*[railcontent_id == ${railContentId}]{
@@ -1169,7 +1171,6 @@ export async function fetchRelatedLessons(railContentId) {
       ...(*[${filterSameGenre}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
       ...(*[${filterSameDifficulty}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
       ])[0...10]}`
-
   return await fetchSanity(query, false, { processNeedAccess: true })
 }
 
