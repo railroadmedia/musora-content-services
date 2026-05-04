@@ -1162,7 +1162,6 @@ export async function fetchRelatedLessons(railContentId) {
     `${defaultFilterFields} && difficulty == ^.difficulty`,
     params
   ).buildFilter()
-  console.log(filterSameArtist)
   const queryFields = getFieldsForContentType()
 
   const query = `*[railcontent_id == ${railContentId}]{
@@ -1172,7 +1171,6 @@ export async function fetchRelatedLessons(railContentId) {
       ...(*[${filterSameGenre}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
       ...(*[${filterSameDifficulty}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
       ])[0...10]}`
-  console.log(query);
   return await fetchSanity(query, false, { processNeedAccess: true })
 }
 
