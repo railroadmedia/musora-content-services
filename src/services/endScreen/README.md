@@ -17,7 +17,7 @@ Determines what content to show after a user finishes a lesson.
 ```
 single-song / play-along / jam →  countdown-up-next  +  RecSys recommendation
 playlist (not last item)       →  countdown-up-next  +  next item
-playlist (last item)           →  course-complete    +  RecSys recommendation
+playlist (last item)           →  null
 no course                      →  countdown-up-next  +  RecSys recommendation
 course (not last lesson)       →  countdown-up-next  +  next lesson
 course (last, has next course) →  course-complete    +  first lesson of next course

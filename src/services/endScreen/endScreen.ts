@@ -1,4 +1,4 @@
-import {fetchSimilarItems, rankCategories} from '../recommendations.js'
+import {fetchSimilarItems} from '../recommendations.js'
 import {fetchByRailContentIds, fetchCourseCollectionData, fetchRelatedLessons} from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import { playAlongLessonTypes, jamTrackLessonTypes, lessonTypesMapping } from '../../contentTypeConfig.js'
@@ -44,11 +44,11 @@ export async function getEndScreen({
   }
 
   if (SINGLE_SONG_LESSON_TYPES.includes(lesson.type ?? '')) {
-    return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id), true)
+    return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id, null, isAdmin), true)
   }
 
   if (!course) {
-    return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id), false)
+    return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id, null, isAdmin), false)
   }
 
   const nextLesson = getNextLessonOrNull(lesson.id, course, isAdmin)
@@ -68,7 +68,7 @@ export async function getEndScreen({
     return buildCourseComplete(nextCourseFirstLesson)
   }
 
-  return buildCourseComplete(await fetchEndScreenRecommendation(brand, lesson.id, course.id))
+  return buildCourseComplete(await fetchEndScreenRecommendation(brand, lesson.id, course.id, isAdmin))
 }
 
 // ─── Builders ─────────────────────────────────────────────────────────────────
@@ -100,7 +100,7 @@ function getNextLessonOrNull(lessonId: number, course: Course, isAdmin: boolean)
 function isReleasedContent(content: ContentItem, isAdmin: boolean): boolean {
   if (isAdmin) return true
   if (!content?.status) return false
-  return (content.status === 'published' || content.status === 'scheduled') && !content.need_access
+  return (content.status === 'published') && !content.need_access
 }
 
 function getFirstLessonOfNextCourseOrNull(
@@ -120,23 +120,27 @@ function getFirstLessonOfNextCourseOrNull(
 async function fetchEndScreenRecommendation(
   brand: string,
   contentId: number,
-  parentId: number | null = null
+  parentId: number | null = null,
+  isAdmin: boolean
 ): Promise<any | null> {
   try {
     let recData: number[] = await fetchSimilarItems(contentId, brand, 20)
-    let recommended = null
-    if (!Array.isArray(recData) || recData.length === 0) {
-      const relatedLesson =  await fetchRelatedLessons(parentId ?? contentId).then((result) =>
-        result.related_lessons?.[0] ?? null
+    const contents: ContentItem[] = recData.length > 0 ? await fetchByRailContentIds(recData) : []
+    let recommended =
+      contents?.find((c) => isReleasedContent(c, isAdmin) && c.id !== parentId && (!c.parent_id || c.parent_id !== parentId)) ??
+      contents?.find((c) => isReleasedContent(c, isAdmin) && c.id !== parentId) ??
+      null
+
+    if (!recommended) {
+      const relatedLesson = await fetchRelatedLessons(parentId ?? contentId).then((r) =>
+        r.related_lessons?.[0] ?? null
       )
-      recData = relatedLesson?.id ? [relatedLesson.id] : []
+      recommended = isReleasedContent(relatedLesson, isAdmin) ? relatedLesson : null
     }
 
-    const contents: ContentItem[] = await fetchByRailContentIds(recData)
-    recommended =
-      contents?.find((c) => c.id !== parentId && (!c.parent_id || c.parent_id !== parentId)) ??
-      contents?.find((c) => c.id !== parentId) ??
-      null
+    if (!recommended) {
+      return null
+    }
 
     return await addContextToContent(() => recommended, {
       addProgressPercentage: true,

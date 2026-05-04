@@ -13,7 +13,7 @@ export interface CtaLabels {
 
 export interface EndScreenResult {
   variant: EndScreenVariant
-  upNext: any | null
+  upNext: object | null
   countdownAutoplay: boolean
   ctaLabels: CtaLabels
 }
