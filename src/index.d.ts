@@ -442,6 +442,7 @@ import {
 
 import {
 	getOnboardingRecommendedContent,
+	initializeOnboardingFlow,
 	startOnboarding,
 	updateOnboarding,
 	userOnboardingForBrand
@@ -722,6 +723,7 @@ declare module 'musora-content-services' {
 		guidedCourses,
 		hasAnyMethodV2IntroCompleted,
 		initializeEnvVar,
+		initializeOnboardingFlow,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,

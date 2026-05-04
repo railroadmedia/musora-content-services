@@ -446,6 +446,7 @@ import {
 
 import {
 	getOnboardingRecommendedContent,
+	initializeOnboardingFlow,
 	startOnboarding,
 	updateOnboarding,
 	userOnboardingForBrand
@@ -721,6 +722,7 @@ export {
 	guidedCourses,
 	hasAnyMethodV2IntroCompleted,
 	initializeEnvVar,
+	initializeOnboardingFlow,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
