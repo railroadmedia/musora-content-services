@@ -976,7 +976,7 @@ export async function fetchLessonContent(railContentId, { forDownload = false } 
     showMembershipRestrictedContent: true,
   }
 
-  const fields = getFieldsForContentType('download')
+  const fields = getFieldsForContentType('download') // a later refactor can make this 'playback'.
 
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,

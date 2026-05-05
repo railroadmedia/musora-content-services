@@ -498,7 +498,7 @@ export let contentTypeConfig = {
   'course-lesson': {
     fields: [`"resources": ${resourcesField}`],
   },
-  // todo: refactor this into something like `playback` with an additional `download` option. check prev version
+
   download: {
     fields: [
       `"resources": ${resourcesField}`,
