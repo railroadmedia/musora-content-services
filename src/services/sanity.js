@@ -1148,7 +1148,7 @@ export async function fetchRelatedLessons(railContentId) {
   const defaultFilterFields = `_type==^._type && brand == ^.brand && railcontent_id != ${railContentId}`
   const params = {
     showMembershipRestrictedContent: true,
-    availableContentStatuses: ['published']
+    availableContentStatuses: ['published'],
   }
   const filterSameArtist = await new FilterBuilder(
     `${defaultFilterFields} && references(^.artist->_id)`,
@@ -1589,7 +1589,7 @@ export async function fetchSanity(
   }
   const perspective = globalConfig.sanityConfig.perspective ?? 'published'
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api'
-  const baseUrl = `https://sanity.musora.com/${globalConfig.sanityConfig.projectId}/${api}/v${globalConfig.sanityConfig.version}/${globalConfig.sanityConfig.dataset}/v2?perspective=${perspective}`
+  const baseUrl = `https://sanity.musora.com/${globalConfig.sanityConfig.projectId}/${api}/v${globalConfig.sanityConfig.version}/${globalConfig.sanityConfig.dataset}/v3?perspective=${perspective}`
 
   try {
     const encodedQuery = encodeURIComponent(query)
