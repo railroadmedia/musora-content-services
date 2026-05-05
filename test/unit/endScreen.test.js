@@ -61,7 +61,7 @@ describe('getEndScreen', () => {
 
   describe('Single Lessons', () => {
     test('single lesson without course returns countdown with RecSys recommendation', async () => {
-      const mockRecommendation = { id: 999, type: 'lesson', title: 'Recommended Lesson' }
+      const mockRecommendation = { id: 999, type: 'lesson', title: 'Recommended Lesson',  status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -81,9 +81,9 @@ describe('getEndScreen', () => {
     })
 
     test('single lesson uses fallback lesson when RecSys returns empty array', async () => {
-      const fallbackLesson = { id: 373201, type: 'lesson', title: 'Fallback Lesson' }
+      const fallbackLesson = { id: 373201, type: 'lesson', title: 'Fallback Lesson',  status: 'published' }
       jest.spyOn(recommendationsModule, 'fetchSimilarItems').mockResolvedValue([])
-      jest.spyOn(sanityModule, 'fetchRelatedLessons').mockResolvedValue({ related_lessons: [{ id: 373201 }] })
+      jest.spyOn(sanityModule, 'fetchRelatedLessons').mockResolvedValue({ related_lessons: [{ id: 373201,  status: 'published', type: 'lesson', title: 'Fallback Lesson' }] })
       jest.spyOn(sanityModule, 'fetchByRailContentIds').mockResolvedValue([fallbackLesson])
 
       const result = await getEndScreen({
@@ -110,7 +110,7 @@ describe('getEndScreen', () => {
 
   describe('Single Song Lessons (Play-Along and Jam Tracks)', () => {
     test('play-along lesson returns countdown with RecSys recommendation', async () => {
-      const mockRecommendation = { id: 888, type: 'play-along', title: 'Recommended Play-Along' }
+      const mockRecommendation = { id: 888, type: 'play-along', title: 'Recommended Play-Along',  status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -128,7 +128,7 @@ describe('getEndScreen', () => {
     })
 
     test('jam track lesson returns countdown with RecSys recommendation', async () => {
-      const mockRecommendation = { id: 777, type: 'jam-track', title: 'Recommended Jam Track' }
+      const mockRecommendation = { id: 777, type: 'jam-track', title: 'Recommended Jam Track',  status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -146,7 +146,7 @@ describe('getEndScreen', () => {
     })
 
     test('play-along inside course still uses RecSys (ignores course context)', async () => {
-      const mockRecommendation = { id: 999, type: 'play-along' }
+      const mockRecommendation = { id: 999, type: 'play-along',  status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -200,27 +200,11 @@ describe('getEndScreen', () => {
 
       expect(result.upNext).toEqual({ id: 202, status: 'published', title: 'Next Published Lesson' })
     })
-
-    test('returns scheduled lessons as valid next lesson', async () => {
-      const result = await getEndScreen({
-        lesson: { id: 200, type: 'course-lesson' },
-        course: {
-          id: 100,
-          children: [
-            { id: 200, status: 'published' },
-            { id: 201, status: 'scheduled', title: 'Scheduled Lesson' }
-          ]
-        },
-        brand: 'drumeo'
-      })
-
-      expect(result.upNext).toEqual({ id: 201, status: 'scheduled', title: 'Scheduled Lesson' })
-    })
   })
 
   describe('Course - Last Lesson (Not in Collection)', () => {
     test('returns RecSys recommendation with course-complete variant', async () => {
-      const mockRecommendation = { id: 888, type: 'course', title: 'Recommended Course' }
+      const mockRecommendation = { id: 888, type: 'course', title: 'Recommended Course', status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -245,7 +229,7 @@ describe('getEndScreen', () => {
     })
 
     test('last lesson with all remaining lessons being drafts uses RecSys', async () => {
-      const mockRecommendation = { id: 999, type: 'course' }
+      const mockRecommendation = { id: 999, type: 'course',  status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -361,7 +345,7 @@ describe('getEndScreen', () => {
 
   describe('Course Collection - Last Lesson, Last Course', () => {
     test('returns RecSys recommendation with course-complete', async () => {
-      const mockRecommendation = { id: 999, type: 'course', title: 'Recommended After Collection' }
+      const mockRecommendation = { id: 999, type: 'course', title: 'Recommended After Collection',  status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -522,7 +506,7 @@ describe('getEndScreen', () => {
 
   describe('Edge Cases', () => {
     test('handles course with empty children array', async () => {
-      const mockRecommendation = { id: 999, type: 'course' }
+      const mockRecommendation = { id: 999, type: 'course',  status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -536,7 +520,7 @@ describe('getEndScreen', () => {
     })
 
     test('handles course with undefined children', async () => {
-      const mockRecommendation = { id: 999, type: 'course' }
+      const mockRecommendation = { id: 999, type: 'course',  status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -549,7 +533,7 @@ describe('getEndScreen', () => {
     })
 
     test('handles lesson not found in course children', async () => {
-      const mockRecommendation = { id: 999, type: 'course' }
+      const mockRecommendation = { id: 999, type: 'course', status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -566,7 +550,7 @@ describe('getEndScreen', () => {
     })
 
     test('handles collection with empty children', async () => {
-      const mockRecommendation = { id: 999, type: 'course' }
+      const mockRecommendation = { id: 999, type: 'course',  status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -587,7 +571,7 @@ describe('getEndScreen', () => {
     })
 
     test('handles collection with undefined children', async () => {
-      const mockRecommendation = { id: 999, type: 'course' }
+      const mockRecommendation = { id: 999, type: 'course',  status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -607,7 +591,7 @@ describe('getEndScreen', () => {
     })
 
     test('handles course not found in collection children', async () => {
-      const mockRecommendation = { id: 999, type: 'course' }
+      const mockRecommendation = { id: 999, type: 'course',  status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -628,7 +612,7 @@ describe('getEndScreen', () => {
     })
 
     test('handles next course with empty children', async () => {
-      const mockRecommendation = { id: 999, type: 'course' }
+      const mockRecommendation = { id: 999, type: 'course', status: 'published' }
       mockFetchRecommendation([mockRecommendation])
 
       const result = await getEndScreen({
@@ -702,7 +686,7 @@ describe('getEndScreen', () => {
       // id 888 belongs to course 100 → filtered out. id 999 has no parent → returned.
       const mockContents = [
         { id: 888, parent_id: 100, type: 'course-lesson' },
-        { id: 999, type: 'course', title: 'Standalone Course' }
+        { id: 999, type: 'course', title: 'Standalone Course', status: 'published' }
       ]
       jest.spyOn(recommendationsModule, 'fetchSimilarItems').mockResolvedValue([888, 999])
       jest.spyOn(sanityModule, 'fetchByRailContentIds').mockResolvedValue(mockContents)
@@ -714,7 +698,7 @@ describe('getEndScreen', () => {
       })
 
       expect(result.variant).toBe('course-complete')
-      expect(result.upNext).toEqual({ id: 999, type: 'course', title: 'Standalone Course' })
+      expect(result.upNext).toEqual({ id: 999, type: 'course', title: 'Standalone Course', status: 'published'})
     })
 
   })
