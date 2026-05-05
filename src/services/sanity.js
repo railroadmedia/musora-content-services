@@ -1588,7 +1588,7 @@ export async function fetchSanity(
   }
   const perspective = globalConfig.sanityConfig.perspective ?? 'published'
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api'
-  const baseUrl = `https://sanity.musora.com/${globalConfig.sanityConfig.projectId}/${api}/v${globalConfig.sanityConfig.version}/${globalConfig.sanityConfig.dataset}/v2?perspective=${perspective}`
+  const baseUrl = `https://sanity.musora.com/${globalConfig.sanityConfig.projectId}/${api}/v${globalConfig.sanityConfig.version}/${globalConfig.sanityConfig.dataset}/v3?perspective=${perspective}`
 
   try {
     const encodedQuery = encodeURIComponent(query)
