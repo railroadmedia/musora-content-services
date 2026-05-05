@@ -12,10 +12,7 @@ import { getDailySession, onContentCompletedLearningPathActions } from './conten
  */
 const excludeFromGeneratedIndex = [
   '_recordWatchSession',
-  'bubbleAndTrickleProgressesSafely',
-  'computeBubbleTrickleProgresses',
   'duplicateProgressToALaCarte',
-  'filterOutNegativeProgress',
   'handleLearningPathProgressActions',
   'normalizeCollection',
   'normalizeContentId',
@@ -594,7 +591,8 @@ async function saveContentProgress(
   let allProgresses = {}
   allProgresses[contentId] = progress
 
-  await filterOutNegativeProgress(allProgresses, collection)
+  const existingProgress = await getProgressDataByIds(Object.keys(allProgresses), collection)
+  filterOutNegativeProgress(allProgresses, existingProgress)
   if (Object.keys(allProgresses).length === 0) {
     return
   }
@@ -628,7 +626,8 @@ async function saveContentProgress(
   const bubbledProgresses = await computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy, { trickle: false })
   Object.assign(allProgresses, bubbledProgresses)
 
-  await filterOutNegativeProgress(bubbledProgresses, collection)
+  const existingProgresses = await getProgressDataByIds(Object.keys(bubbledProgresses), collection)
+  filterOutNegativeProgress(bubbledProgresses, existingProgresses)
 
   await bubbleAndTrickleProgressesSafely(bubbledProgresses, collection, metadata, { accessedDirectly })
 
@@ -727,7 +726,6 @@ export async function setStartedOrCompletedStatusMany(contentIds, collection, is
   return response
 }
 
-//todo: this fn
 export async function resetStatus(contentId, collection = null, { skipPush = false } = {}) {
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
@@ -753,8 +751,7 @@ export async function resetStatus(contentId, collection = null, { skipPush = fal
   return response
 }
 
-export async function filterOutNegativeProgress(progresses, collection) {
-  const existingProgresses = await getProgressDataByIds(Object.keys(progresses), collection)
+function filterOutNegativeProgress(progresses, existingProgresses) {
   for (const [id, progress] of Object.entries(progresses)) {
     if (progress < existingProgresses[id].progress) {
       delete progresses[id]
@@ -762,7 +759,7 @@ export async function filterOutNegativeProgress(progresses, collection) {
   }
 }
 
-export async function computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy, {
+async function computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy, {
   bubble = true,
   trickle = true,
 } = {}) {
@@ -797,7 +794,7 @@ export async function duplicateProgressToALaCarte(progresses, collection, { skip
 
   const externalProgresses = await getProgressDataByIds(Object.keys(filteredProgresses), null)
 
-  filteredProgresses = filterGreaterThanProgress(filteredProgresses, externalProgresses)
+  filterOutNegativeProgress(filteredProgresses, externalProgresses)
 
   await duplicateProgressForIds(filteredProgresses, skipPush)
 }
@@ -815,20 +812,11 @@ function filterOutLearningPathsForDuplication(progresses, collection) {
   )
 }
 
-function filterGreaterThanProgress(progresses, external) {
-  // overwrite if LP progress greater, unless LP progress was reset to 0
-  return Object.entries(progresses).filter(([id, pct]) => {
-    const extPct = external[id]?.progress
-    return (pct !== 0)
-      ? pct > extPct
-      : false
-  })
-}
-
 async function duplicateProgressForIds(ids, skipPush) {
-  ids.forEach(([id, pct], index) => {
+  const entries = Object.entries(ids)
+  entries.forEach(([id, pct], index) => {
     let skip = true
-    if (index === ids.length - 1) {
+    if (index === entries.length - 1) {
       // only allow push on last call, to group into one push
       skip = skipPush
     }
@@ -903,7 +891,7 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
   return allChildrenIds
 }
 
-export async function bubbleAndTrickleProgressesSafely(progresses, collection, metadata, {
+async function bubbleAndTrickleProgressesSafely(progresses, collection, metadata, {
   isResetAction = false,
   accessedDirectly = true,
 } = {}) {
