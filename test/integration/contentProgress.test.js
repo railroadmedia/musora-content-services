@@ -1,6 +1,12 @@
 import { initializeTestService } from '../initializeTests.js'
 import {getTabResults} from '../../src/index.js';
 import {tutorialsLessonTypes, transcriptionsLessonTypes, playAlongLessonTypes} from "../../src/contentTypeConfig.js";
+import { bubbleAndTrickleProgressesSafely } from '../../src/services/contentProgress.js'
+
+// bubbleAndTrickleProgressesSafely
+// duplicateProgressToALaCarte
+// handleLearningPathProgressActions
+
 
 let mockProgressRecords = []
 
