@@ -802,7 +802,7 @@ async function duplicateProgressToALaCarte(progresses, collection, {skipPush = f
 
   filteredProgresses = filterGreaterThanProgress(filteredProgresses, externalProgresses)
 
-  duplicateProgressForIds(filteredProgresses, skipPush)
+  await duplicateProgressForIds(filteredProgresses, skipPush)
 }
 
 function filterOutLearningPathsForDuplication(progresses, collection) {
@@ -829,14 +829,14 @@ function filterGreaterThanProgress(progresses, external) {
 }
 
 async function duplicateProgressForIds(ids, skipPush) {
-  ids.forEach(([id, pct], index) => {
+  return Promise.all(ids.map(([id, pct], index) => {
     let skip = true
     if (index === ids.length - 1) {
       // only allow push on last call, to group into one push
       skip = skipPush
     }
-    saveContentProgress(parseInt(id), null, pct, null, {skipPush: skip, accessedDirectly: false})
-  })
+    return saveContentProgress(parseInt(id), null, pct, null, {skipPush: skip, accessedDirectly: false})
+  }))
 }
 
 
