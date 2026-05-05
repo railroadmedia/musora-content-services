@@ -12,6 +12,7 @@ import { getDailySession, onContentCompletedLearningPathActions } from './conten
  */
 const excludeFromGeneratedIndex = [
   '_recordWatchSession',
+  'computeBubbleTrickleProgresses',
   'duplicateProgressToALaCarte',
   'handleLearningPathProgressActions',
   'normalizeCollection',
@@ -759,7 +760,7 @@ function filterOutNegativeProgress(progresses, existingProgresses) {
   }
 }
 
-async function computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy, {
+export async function computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy, {
   bubble = true,
   trickle = true,
 } = {}) {
