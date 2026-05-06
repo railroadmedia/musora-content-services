@@ -811,7 +811,7 @@ function filterOutLearningPathsForDuplication(progresses, collection) {
     Object.entries(progresses).filter(([id]) => {
       if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
         // dont want progress on a-la-carte LPs (not supported)
-        return id !== collection.id
+        return (+id) !== collection.id
       } else {
         return true
       }
