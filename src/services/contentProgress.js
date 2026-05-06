@@ -588,7 +588,8 @@ async function saveContentProgress(
 
   if (isPlaylist) {
     const exportIds = { [contentId]: progress }
-    await duplicateProgressToALaCarte(exportIds, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(exportIds, collection)
+    if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return
   }
 
@@ -631,7 +632,7 @@ async function saveContentProgress(
   if (isLP) {
     let exportIds = bubbledProgresses
     exportIds[contentId] = progress
-    await duplicateProgressToALaCarte(exportIds, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(exportIds, collection)
   }
 
   if (progress === 100) await onContentCompletedLearningPathActions(contentId, collection)
@@ -685,7 +686,7 @@ export async function setStartedOrCompletedStatus(contentId, collection, isCompl
   }
 
   if (isLP) {
-    await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(allProgresses, collection)
   }
 
   for (const [id, prog] of Object.entries(allProgresses)) {
@@ -740,7 +741,7 @@ export async function setStartedOrCompletedStatusMany(contentIds, collection, is
   await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
 
   if (isLP) {
-    await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(allProgresses, collection)
   }
 
   for (const [id, prog] of Object.entries(allProgresses)) {
@@ -785,7 +786,7 @@ export async function resetStatus(contentId, collection = null, { isOffline = fa
 
 
   if (isLP) {
-    await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(allProgresses, collection)
   }
 
   if (!skipPush) db.contentProgress.requestPushUnsynced('reset-status')
@@ -793,7 +794,7 @@ export async function resetStatus(contentId, collection = null, { isOffline = fa
   return response
 }
 
-async function duplicateProgressToALaCarte(progresses, collection, {skipPush = false} = {}) {
+async function duplicateProgressToALaCarte(progresses, collection) {
 
   // a-la-cart LPs not set up.
   let filteredProgresses = filterOutLearningPathsForDuplication(progresses, collection)
@@ -802,7 +803,7 @@ async function duplicateProgressToALaCarte(progresses, collection, {skipPush = f
 
   filteredProgresses = filterGreaterThanProgress(filteredProgresses, externalProgresses)
 
-  await duplicateProgressForIds(filteredProgresses, skipPush)
+  await duplicateProgressForIds(filteredProgresses)
 }
 
 function filterOutLearningPathsForDuplication(progresses, collection) {
@@ -828,14 +829,9 @@ function filterGreaterThanProgress(progresses, external) {
   })
 }
 
-async function duplicateProgressForIds(ids, skipPush) {
-  return Promise.all(ids.map(([id, pct], index) => {
-    let skip = true
-    if (index === ids.length - 1) {
-      // only allow push on last call, to group into one push
-      skip = skipPush
-    }
-    return saveContentProgress(parseInt(id), null, pct, null, {skipPush: skip, accessedDirectly: false})
+async function duplicateProgressForIds(ids) {
+  return Promise.all(ids.map(([id, pct]) => {
+    return saveContentProgress(parseInt(id), null, pct, null, { accessedDirectly: false })
   }))
 }
 
