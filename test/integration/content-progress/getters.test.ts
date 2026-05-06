@@ -8,11 +8,10 @@ import {
   getAllStartedOrCompleted, getStartedOrCompletedProgressOnly, _getAllStartedOrCompleted,
 } from '@/services/contentProgress'
 import db from '@/services/sync/repository-proxy'
-import { mockContentProgressObserver, mockLearningPaths, mockSanity } from './__mocks__/mocks'
-
-jest.mock('../../../src/services/sanity.js', mockSanity)
-jest.mock('../../../src/services/content-org/learning-paths.ts', mockLearningPaths)
-jest.mock('../../../src/services/awards/internal/content-progress-observer', mockContentProgressObserver)
+jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
+jest.mock('../../../src/services/content-org/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
+jest.mock('../../../src/services/awards/internal/content-progress-observer', () => require('./__mocks__/mocks').mockContentProgressObserver())
+jest.mock('../../../src/services/progress-events', () => require('./__mocks__/mocks').mockProgressEvents())
 
 const meta = { brand: 'drumeo', type: 'lesson', parent_id: 0 }
 

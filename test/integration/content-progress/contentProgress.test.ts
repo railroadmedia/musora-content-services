@@ -16,11 +16,10 @@ import {
 } from '@/services/contentProgress'
 import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '@/services/sync/models/ContentProgress'
 import db from '@/services/sync/repository-proxy'
-import { mockContentProgressObserver, mockLearningPaths, mockSanity } from './__mocks__/mocks'
-
-jest.mock('../../../src/services/sanity.js', mockSanity)
-jest.mock('../../../src/services/content-org/learning-paths.ts', mockLearningPaths)
-jest.mock('../../../src/services/awards/internal/content-progress-observer', mockContentProgressObserver)
+jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
+jest.mock('../../../src/services/content-org/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
+jest.mock('../../../src/services/awards/internal/content-progress-observer', () => require('./__mocks__/mocks').mockContentProgressObserver())
+jest.mock('../../../src/services/progress-events', () => require('./__mocks__/mocks').mockProgressEvents())
 
 jest.mock('../../../src/services/userActivity', () => ({
   trackUserPractice: jest.fn().mockResolvedValue(undefined),
@@ -195,7 +194,7 @@ describe('resetStatus', () => {
 describe('trackProgress', () => {
   test('50 of 200 seconds records progress ~25 to DB', async () => {
     const hierarchy = { metadata: { 100: meta }, parents: {}, children: {} }
-    await trackProgress(100, collectionSelf, 100, 200, false, true, hierarchy)
+    await trackProgress(100, collectionSelf, 50, 200, false, true, hierarchy)
     const record = await db.contentProgress.getOneProgressByContentId(100, null)
     expect(record.data?.progress_percent).toBe(25)
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()

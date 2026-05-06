@@ -16,6 +16,18 @@ export interface TestDBContext {
   pushSpies: PushSpies
 }
 
+export const waitForPushCall = async (
+  spy: jest.SpyInstance,
+  cause: string,
+  timeoutMs = 2000,
+): Promise<void> => {
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    if (spy.mock.calls.some(c => c[0] === cause)) return
+    await new Promise(resolve => setImmediate(resolve))
+  }
+}
+
 export function initializeMockPushes(): PushSpies {
   return {
     contentProgress: jest.spyOn(db.contentProgress, 'requestPushUnsynced').mockImplementation(() => {}),
@@ -52,6 +64,7 @@ export function initializeTestDB(): TestDBContext {
   })
 
   afterEach(async () => {
+    for (let i = 0; i < 200; i++) await new Promise(resolve => setImmediate(resolve))
     await teardown?.('reset')
     teardown = null
     SyncTelemetry.clearInstance()

@@ -1,3 +1,5 @@
+// note: could move these to a src/services/__mocks__/ dir with sanity.mock.ts & content-progress-observer.mock.ts
+//  & learning-paths.mock.ts if these are used across multiple test files
 export const mockContentProgressObserver = () => ({
   contentProgressObserver: {
     start: jest.fn().mockResolvedValue(undefined),
@@ -24,4 +26,8 @@ export const mockSanity = () => ({
 export const mockLearningPaths = () => ({
   getDailySession: jest.fn().mockResolvedValue(null),
   onContentCompletedLearningPathActions: jest.fn().mockResolvedValue(undefined),
+})
+
+export const mockProgressEvents = () => ({
+  emitProgressSaved: jest.fn(),
 })

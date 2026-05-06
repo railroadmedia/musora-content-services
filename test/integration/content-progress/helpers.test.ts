@@ -1,4 +1,4 @@
-import { initializeTestDB } from '../initializeTestDB'
+import { initializeTestDB, waitForPushCall } from '../initializeTestDB'
 import {
   bubbleAndTrickleProgressesSafely,
   handleLearningPathProgressActions,
@@ -8,11 +8,10 @@ import {
 } from '@/services/contentProgress'
 import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '@/services/sync/models/ContentProgress'
 import db from '@/services/sync/repository-proxy'
-import { mockContentProgressObserver, mockLearningPaths, mockSanity } from './__mocks__/mocks'
-
-jest.mock('../../../src/services/sanity.js', mockSanity)
-jest.mock('../../../src/services/content-org/learning-paths.ts', mockLearningPaths)
-jest.mock('../../../src/services/awards/internal/content-progress-observer', mockContentProgressObserver)
+jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
+jest.mock('../../../src/services/content-org/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
+jest.mock('../../../src/services/awards/internal/content-progress-observer', () => require('./__mocks__/mocks').mockContentProgressObserver())
+jest.mock('../../../src/services/progress-events', () => require('./__mocks__/mocks').mockProgressEvents())
 
 const meta = { brand: 'drumeo', type: 'lesson', parent_id: 0 }
 const collectionSelf = { type: COLLECTION_TYPE.SELF, id: COLLECTION_ID_SELF }
@@ -21,7 +20,7 @@ const collectionLP = (id: number) => ({ type: COLLECTION_TYPE.LEARNING_PATH, id 
 const ctx = initializeTestDB()
 
 const flushPromises = async () => {
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 200; i++) {
     await new Promise(resolve => setImmediate(resolve))
   }
 }
@@ -152,7 +151,7 @@ describe('handleLearningPathProgressActions', () => {
 describe('duplicateProgressToALaCarte', () => {
   test('writes SELF records for a-la-carte collection', async () => {
     await duplicateProgressToALaCarte({ 101: 50 }, collectionSelf)
-    await flushPromises()
+    await waitForPushCall(ctx.pushSpies.contentProgress, 'save-content-progress')
     const record = await db.contentProgress.getOneProgressByContentId(101, null)
     expect(record.data?.collection_type).toBe(COLLECTION_TYPE.SELF)
     expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
@@ -160,7 +159,7 @@ describe('duplicateProgressToALaCarte', () => {
 
   test('LP collection excludes the LP id itself from duplication', async () => {
     await duplicateProgressToALaCarte({ 200: 50, 101: 75 }, collectionLP(200))
-    await flushPromises()
+    await waitForPushCall(ctx.pushSpies.contentProgress, 'save-content-progress')
     const lpRecord = await db.contentProgress.getOneProgressByContentId(200, null)
     const lessonRecord = await db.contentProgress.getOneProgressByContentId(101, null)
     expect(lpRecord.data).toBeNull()
@@ -180,7 +179,7 @@ describe('duplicateProgressToALaCarte', () => {
   test('equal progress passes and record is updated', async () => {
     await db.contentProgress.recordProgress(101, null, 50, meta, undefined, { skipPush: true })
     await duplicateProgressToALaCarte({ 101: 50 }, collectionSelf)
-    await flushPromises()
+    await waitForPushCall(ctx.pushSpies.contentProgress, 'save-content-progress')
     const record = await db.contentProgress.getOneProgressByContentId(101, null)
     expect(record.data?.progress_percent).toBe(50)
     expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
