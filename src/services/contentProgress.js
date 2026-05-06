@@ -11,16 +11,33 @@ import { getDailySession, onContentCompletedLearningPathActions } from './conten
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = [
+  '_getAllStartedOrCompleted',
   '_recordWatchSession',
+  'averageProgressesFor',
+  'bubbleAndTrickleProgressesSafely',
+  'bubbleProgress',
+  'buildNavigateTo',
   'computeBubbleTrickleProgresses',
+  'duplicateProgressForIds',
   'duplicateProgressToALaCarte',
+  'filterOutLearningPathsForDuplication',
+  'filterOutNegativeProgress',
+  'findIncompleteLesson',
+  'getAncestorAndSiblingIds',
+  'getById',
+  'getByIds',
+  'getByRecordIds',
+  'getChildrenToDepth',
   'handleLearningPathProgressActions',
   'normalizeCollection',
   'normalizeContentId',
   'normalizeContentIds',
   'resetStatus',
+  'saveContentProgress',
   'setStartedOrCompletedStatus',
   'setStartedOrCompletedStatusMany',
+  'trackProgress',
+  'trickleProgress',
 ]
 
 const STATE_STARTED = STATE.STARTED
@@ -199,7 +216,7 @@ export async function getNavigateTo(data) {
   return navigateToData
 }
 
-function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
+export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
   const isMap = progressOnItems instanceof Map
   const ids = isMap ? Array.from(progressOnItems.keys()) : Object.keys(progressOnItems).map(Number)
   const getProgress = (id) => isMap ? progressOnItems.get(id) : progressOnItems[id]
@@ -221,7 +238,7 @@ function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
   return ids[0]
 }
 
-function buildNavigateTo(content, child = null, collection = null) {
+export function buildNavigateTo(content, child = null, collection = null) {
   if (!content) {
     return null
   }
@@ -314,14 +331,14 @@ export async function getProgressDataByRecordIds(ids) {
   return progress
 }
 
-async function getById(contentId, collection, dataKey, defaultValue) {
+export async function getById(contentId, collection, dataKey, defaultValue) {
   if (!contentId) return defaultValue
   return db.contentProgress
     .getOneProgressByContentId(contentId, collection)
     .then((r) => r.data?.[dataKey] ?? defaultValue)
 }
 
-async function getByIds(contentIds, collection, dataKey, defaultValue) {
+export async function getByIds(contentIds, collection, dataKey, defaultValue) {
   if (contentIds.length === 0) return new Map()
 
   const progress = new Map(contentIds.map((id) => [id, defaultValue]))
@@ -333,7 +350,7 @@ async function getByIds(contentIds, collection, dataKey, defaultValue) {
   return progress
 }
 
-async function getByRecordIds(ids, dataKey, defaultValue) {
+export async function getByRecordIds(ids, dataKey, defaultValue) {
   const progress = Object.fromEntries(ids.map(id => [id, defaultValue]))
 
   await db.contentProgress.getSomeProgressByRecordIds(ids).then(r => {
@@ -418,7 +435,7 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
  * @returns {Promise<any[]>}
  * @private
  */
-async function _getAllStartedOrCompleted({
+export async function _getAllStartedOrCompleted({
                                            metadata = null,
                                            limit = null,
                                            include = { aLaCarte: true, learningPaths: false },
@@ -522,7 +539,7 @@ async function trackPractice(contentId, secondsPlayed, details = {}) {
   return trackUserPractice(contentId, secondsPlayed, details)
 }
 
-async function trackProgress(
+export async function trackProgress(
   contentId,
   collection,
   currentSeconds,
@@ -574,7 +591,7 @@ export async function contentStatusReset(contentId, collection = null, { skipPus
 }
 
 // does not have an offline variant because it's too deeply nested within the watch session flow.
-async function saveContentProgress(
+export async function saveContentProgress(
   contentId,
   collection,
   progress,
@@ -752,7 +769,7 @@ export async function resetStatus(contentId, collection = null, { skipPush = fal
   return response
 }
 
-function filterOutNegativeProgress(progresses, existingProgresses) {
+export function filterOutNegativeProgress(progresses, existingProgresses) {
   for (const [id, progress] of Object.entries(progresses)) {
     if (progress < existingProgresses[id].progress) {
       delete progresses[id]
@@ -800,7 +817,7 @@ export async function duplicateProgressToALaCarte(progresses, collection, { skip
   await duplicateProgressForIds(filteredProgresses, skipPush)
 }
 
-function filterOutLearningPathsForDuplication(progresses, collection) {
+export function filterOutLearningPathsForDuplication(progresses, collection) {
   return Object.fromEntries(
     Object.entries(progresses).filter(([id]) => {
       if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
@@ -813,7 +830,7 @@ function filterOutLearningPathsForDuplication(progresses, collection) {
   )
 }
 
-async function duplicateProgressForIds(ids, skipPush) {
+export async function duplicateProgressForIds(ids, skipPush) {
   const entries = Object.entries(ids)
   entries.forEach(([id, pct], index) => {
     let skip = true
@@ -828,18 +845,18 @@ async function duplicateProgressForIds(ids, skipPush) {
 
 // agnostic to collection - makes returned data structure simpler,
 // as long as callers remember to pass collection where needed
-function trickleProgress(hierarchy, contentId, _collection, progress) {
+export function trickleProgress(hierarchy, contentId, _collection, progress) {
   const descendantIds = getChildrenToDepth(contentId, hierarchy, MAX_DEPTH)
   return Object.fromEntries(descendantIds.map((id) => [id, progress]))
 }
 
-async function bubbleProgress(hierarchy, contentId, collection = null) {
+export async function bubbleProgress(hierarchy, contentId, collection = null) {
   const ids = getAncestorAndSiblingIds(hierarchy, contentId)
   const progresses = await getByIds(ids, collection, 'progress_percent', 0)
   return averageProgressesFor(hierarchy, contentId, progresses)
 }
 
-function getAncestorAndSiblingIds(hierarchy, contentId, depth = 1) {
+export function getAncestorAndSiblingIds(hierarchy, contentId, depth = 1) {
   if (depth > MAX_DEPTH) return []
 
   const parentId = hierarchy?.parents?.[contentId]
@@ -863,7 +880,7 @@ function getAncestorAndSiblingIds(hierarchy, contentId, depth = 1) {
 
 // doesn't accept collection - assumes progresses are already filtered appropriately
 // caller would do well to remember this, i doth say
-function averageProgressesFor(hierarchy, contentId, progressData, depth = 1) {
+export function averageProgressesFor(hierarchy, contentId, progressData, depth = 1) {
   if (depth > MAX_DEPTH) return {}
 
   const parentId = hierarchy?.parents?.[contentId]
@@ -883,7 +900,7 @@ function averageProgressesFor(hierarchy, contentId, progressData, depth = 1) {
   }
 }
 
-function getChildrenToDepth(parentId, hierarchy, depth = 1) {
+export function getChildrenToDepth(parentId, hierarchy, depth = 1) {
   let childIds = hierarchy.children[parentId] ?? []
   let allChildrenIds = childIds
   childIds.forEach((id) => {
@@ -892,7 +909,7 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
   return allChildrenIds
 }
 
-async function bubbleAndTrickleProgressesSafely(progresses, collection, metadata, {
+export async function bubbleAndTrickleProgressesSafely(progresses, collection, metadata, {
   isResetAction = false,
   accessedDirectly = true,
 } = {}) {
