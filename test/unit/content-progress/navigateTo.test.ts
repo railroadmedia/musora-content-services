@@ -273,6 +273,34 @@ describe('getNavigateTo', () => {
     expect(result[1]).toMatchObject({ id: 102 })
   })
 
+  describe.each(['course', 'skill-pack', 'song-tutorial'])('course-flow type %s', (type) => {
+    test('lastInteracted completed → first incomplete after lastInteracted', async () => {
+      mockProgressRecords = [
+        { content_id: 1,   state: 'started',   progress_percent: 50,  updated_at: 1000 },
+        { content_id: 101, state: '',          progress_percent: 0,   updated_at: 0 },
+        { content_id: 102, state: 'completed', progress_percent: 100, updated_at: 1000 },
+        { content_id: 103, state: '',          progress_percent: 0,   updated_at: 0 },
+      ]
+      mockLastInteracted = 102
+      const result = await getNavigateTo([{ id: 1, type, children: [child(101), child(102), child(103)] }])
+      expect(result[1]).toMatchObject({ id: 103 })
+    })
+  })
+
+  describe.each(['guided-course', COLLECTION_TYPE.LEARNING_PATH])('guided-course-flow type %s', (type) => {
+    test('finds first incomplete regardless of lastInteracted position', async () => {
+      mockProgressRecords = [
+        { content_id: 1,   state: 'started',   progress_percent: 50,  updated_at: 1000 },
+        { content_id: 101, state: '',          progress_percent: 0,   updated_at: 0 },
+        { content_id: 102, state: 'completed', progress_percent: 100, updated_at: 1000 },
+        { content_id: 103, state: '',          progress_percent: 0,   updated_at: 0 },
+      ]
+      mockLastInteracted = 102
+      const result = await getNavigateTo([{ id: 1, type, children: [child(101), child(102), child(103)] }])
+      expect(result[1]).toMatchObject({ id: 101 })
+    })
+  })
+
   // need more tests to support other types and potentially other logic branches.
 })
 
