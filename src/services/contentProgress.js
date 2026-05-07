@@ -444,6 +444,7 @@ export async function recordWatchSession(
   mediaLengthSeconds,
   currentSeconds,
   secondsPlayed,
+  _prevSesssion = null,
   instrumentId = null,
   categoryId = null,
   isLivestream = false,
