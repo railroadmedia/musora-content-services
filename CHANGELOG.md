@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.158.2](https://github.com/railroadmedia/musora-content-services/compare/v2.158.1...v2.158.2) (2026-05-07)
+
+
+### Bug Fixes
+
+* revert recordWatchSesssion signature ([#958](https://github.com/railroadmedia/musora-content-services/issues/958)) ([569b9d2](https://github.com/railroadmedia/musora-content-services/commit/569b9d244042d2857989c686fd8ec6b3d0269cd2))
+
 ### [2.158.1](https://github.com/railroadmedia/musora-content-services/compare/v2.158.0...v2.158.1) (2026-05-07)
 
 
