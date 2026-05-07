@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.158.1](https://github.com/railroadmedia/musora-content-services/compare/v2.158.0...v2.158.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* increment sanity url version ([#953](https://github.com/railroadmedia/musora-content-services/issues/953)) ([61c36c9](https://github.com/railroadmedia/musora-content-services/commit/61c36c962473294e6dfe67d3d688105649e3d79f))
+* pass collection to getProgressDataByIds ([#957](https://github.com/railroadmedia/musora-content-services/issues/957)) ([2ad1620](https://github.com/railroadmedia/musora-content-services/commit/2ad162085f45b35f617c0ba4d2cc32e7be4a3708))
+* Revert "add resolver condition to ensure seen records always get marked sync" ([#956](https://github.com/railroadmedia/musora-content-services/issues/956)) ([56741d3](https://github.com/railroadmedia/musora-content-services/commit/56741d3f49c97e4034e7841deb4aef1f938168c5))
+* update sanity url to v4 ([c567d22](https://github.com/railroadmedia/musora-content-services/commit/c567d227a4f3bdb9f2f1c95364d423e67b1b214f))
+
 ## [2.158.0](https://github.com/railroadmedia/musora-content-services/compare/v2.153.0...v2.158.0) (2026-05-05)
 
 
