@@ -107,6 +107,7 @@ export async function getNavigateToForMethod(data) {
       return incompleteId ? findChildById(content.children, incompleteId) : null
     }
 
+    // todo(BEHSTP-325): consider de-nesting this logic with early returns, for code clarity.
     // does not support passing in 'method-v2' type yet
     if (content.type === COLLECTION_TYPE.LEARNING_PATH) {
       let navigateTo = null
@@ -138,6 +139,7 @@ export async function getNavigateTo(data) {
     // Skip null/undefined entries (can happen when GROQ dereference doesn't match filter)
     if (!content) continue
 
+    // todo(BEHSTP-325): consider de-nesting this logic with early returns, for code clarity.
     //only calculate nextLesson if needed, based on content type
     if (!getNextLessonLessonParentTypes.includes(content.type) || !content.children) {
       navigateToData[content.id] = null
@@ -171,6 +173,7 @@ export async function getNavigateTo(data) {
         const lastInteractedStatus = childrenStates.get(lastInteracted)
 
         if (['course', 'skill-pack', 'song-tutorial'].includes(content.type)) {
+          // todo(BEHSTP-325): remove if/else and make findIncompleteLesson able to return current lesson if `started`
           if (lastInteractedStatus === STATE_STARTED) {
             // send to last interacted
             navigateToData[content.id] = buildNavigateTo(

@@ -6,7 +6,7 @@ import {
   trickleProgress,
   bubbleProgress,
   computeBubbleTrickleProgresses,
-} from '@/services/contentProgress'
+} from '@/services/contentProgress.js'
 import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '@/services/sync/models/ContentProgress'
 
 let mockProgressRecords: any[] = []
@@ -39,14 +39,28 @@ jest.mock('../../../src/services/content-org/learning-paths', () => ({
 }))
 
 const flatHierarchy = {
-  parents: { 200: 100, 201: 100, 202: 100 },
-  children: { 100: [200, 201, 202] },
+  parents: {
+    200: 100,
+    201: 100,
+    202: 100,
+  },
+  children: {
+    100: [200, 201, 202],
+  },
   metadata: {},
 }
 
 const deepHierarchy = {
-  parents: { 300: 200, 301: 200, 200: 100, 201: 100 },
-  children: { 100: [200, 201], 200: [300, 301] },
+  parents: {
+    300: 200,
+    301: 200,
+    200: 100,
+    201: 100,
+  },
+  children: {
+    100: [200, 201],
+    200: [300, 301],
+  },
   metadata: {},
 }
 
@@ -98,13 +112,13 @@ describe('getAncestorAndSiblingIds', () => {
     expect(result).toContain(202)
   })
 
-  test('returns siblings, parent, grandparent siblings, and grandparent for nested child', () => {
+  test('returns siblings, parent, parent siblings, and grandparent for nested child', () => {
     const result = getAncestorAndSiblingIds(deepHierarchy, 300)
     expect(result).toContain(300)
     expect(result).toContain(301)
     expect(result).toContain(200)
-    expect(result).toContain(100)
     expect(result).toContain(201)
+    expect(result).toContain(100)
   })
 
   test('circular ref returns empty array and logs error', () => {
@@ -122,8 +136,18 @@ describe('getAncestorAndSiblingIds', () => {
 
   test('stops at MAX_DEPTH of 3', () => {
     const fourLevelHierarchy = {
-      parents: { 400: 300, 300: 200, 200: 100, 100: 50 },
-      children: { 50: [100], 100: [200], 200: [300], 300: [400] },
+      parents: {
+        400: 300,
+        300: 200,
+        200: 100,
+        100: 50,
+      },
+      children: {
+        50: [100],
+        100: [200],
+        200: [300],
+        300: [400],
+      },
       metadata: {},
     }
     const result = getAncestorAndSiblingIds(fourLevelHierarchy, 400)

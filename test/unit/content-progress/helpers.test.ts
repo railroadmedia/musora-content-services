@@ -8,7 +8,7 @@ import {
   normalizeCollection,
   generateRecordId,
   extractFromRecordId,
-} from '@/services/contentProgress'
+} from '@/services/contentProgress.js'
 import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '@/services/sync/models/ContentProgress'
 
 let mockProgressRecords: any[] = []
@@ -111,32 +111,13 @@ describe('filterOutLearningPathsForDuplication', () => {
   })
 
   test('LP collection — excludes entry whose id matches collection id', () => {
-    const progresses = { 200: 50, 101: 30 }
-    const result = filterOutLearningPathsForDuplication(progresses, {
-      type: COLLECTION_TYPE.LEARNING_PATH,
-      id: 200,
-    })
-    expect(result).not.toHaveProperty('200')
-    expect(result).toHaveProperty('101')
-  })
-
-  test('LP collection — non-matching entries pass through', () => {
-    const progresses = { 101: 30, 102: 60 }
-    const result = filterOutLearningPathsForDuplication(progresses, {
-      type: COLLECTION_TYPE.LEARNING_PATH,
-      id: 200,
-    })
-    expect(result).toEqual({ 101: 30, 102: 60 })
-  })
-
-  test('LP collection — multiple entries, only matching one excluded', () => {
     const progresses = { 200: 50, 101: 30, 102: 60 }
     const result = filterOutLearningPathsForDuplication(progresses, {
       type: COLLECTION_TYPE.LEARNING_PATH,
       id: 200,
     })
-    expect(Object.keys(result)).toHaveLength(2)
     expect(result).not.toHaveProperty('200')
+    expect(result).toEqual({ 101: 30, 102: 60 })
   })
 
   test('LP collection — string key is coerced via +id comparison', () => {

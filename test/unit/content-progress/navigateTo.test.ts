@@ -4,8 +4,7 @@ import {
   getNavigateTo,
   findIncompleteLesson,
   buildNavigateTo,
-  extractFromRecordId,
-} from '@/services/contentProgress'
+} from '@/services/contentProgress.js'
 import { COLLECTION_TYPE } from '@/services/sync/models/ContentProgress'
 
 let mockProgressRecords: any[] = []
@@ -123,13 +122,16 @@ describe('findIncompleteLesson', () => {
       expect(findIncompleteLesson(progresses, 102, 'course')).toBe(103)
     })
 
-    test('wraps to first when all after current are completed', () => {
+    // todo(BEHSTP-325): add a test "returns currentContentId if it's incomplete"
+
+    test('wraps to first when all after current are completed, even if some before are incomplete', () => {
       const progresses = new Map([
-        [101, 'started'],
-        [102, 'completed'],
+        [101, 'completed'],
+        [102, 'started'],
         [103, 'completed'],
+        [104, 'completed'],
       ])
-      expect(findIncompleteLesson(progresses, 102, 'course')).toBe(101)
+      expect(findIncompleteLesson(progresses, 103, 'course')).toBe(101)
     })
 
     test('returns null when currentContentId not in ids', () => {
@@ -139,25 +141,16 @@ describe('findIncompleteLesson', () => {
       ])
       expect(findIncompleteLesson(progresses, 999, 'course')).toBeNull()
     })
-
-    test('works with all completed — wraps to first', () => {
-      const progresses = new Map([
-        [101, 'completed'],
-        [102, 'completed'],
-        [103, 'completed'],
-      ])
-      expect(findIncompleteLesson(progresses, 102, 'course')).toBe(101)
-    })
   })
 
   describe('guided-course type', () => {
-    test('finds first non-completed regardless of position', () => {
+    test('finds first incomplete regardless of position', () => {
       const progresses = new Map([
         [101, 'completed'],
         [102, ''],
         [103, 'started'],
       ])
-      expect(findIncompleteLesson(progresses, 101, 'guided-course')).toBe(102)
+      expect(findIncompleteLesson(progresses, 103, 'guided-course')).toBe(102)
     })
 
     test('returns first id when all completed', () => {
@@ -166,16 +159,16 @@ describe('findIncompleteLesson', () => {
         [102, 'completed'],
         [103, 'completed'],
       ])
-      expect(findIncompleteLesson(progresses, 103, 'guided-course')).toBe(101)
+      expect(findIncompleteLesson(progresses, 102, 'guided-course')).toBe(101)
     })
   })
 
   describe('learning-path-v2 type', () => {
-    test('finds first non-completed like guided-course', () => {
+    test('finds first incomplete regardless of position', () => {
       const progresses = new Map([
         [101, 'completed'],
-        [102, 'started'],
-        [103, ''],
+        [102, ''],
+        [103, 'started'],
       ])
       expect(findIncompleteLesson(progresses, 103, 'learning-path-v2')).toBe(102)
     })
@@ -184,8 +177,9 @@ describe('findIncompleteLesson', () => {
       const progresses = new Map([
         [101, 'completed'],
         [102, 'completed'],
+        [103, 'completed'],
       ])
-      expect(findIncompleteLesson(progresses, 101, 'learning-path-v2')).toBe(101)
+      expect(findIncompleteLesson(progresses, 102, 'learning-path-v2')).toBe(101)
     })
   })
 
@@ -238,12 +232,12 @@ describe('getNavigateTo', () => {
   test('course started lastInteracted started navigates to lastInteracted child', async () => {
     mockProgressRecords = [
       { content_id: 1,   state: 'started',  progress_percent: 50,  updated_at: 1000 },
-      { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+      { content_id: 101, state: 'started', progress_percent: 100, updated_at: 900 },
       { content_id: 102, state: 'started',  progress_percent: 30,  updated_at: 1000 },
     ]
-    mockLastInteracted = 102
+    mockLastInteracted = 101
     const result = await getNavigateTo([{ id: 1, type: 'course', children: [child(101), child(102)] }])
-    expect(result[1]).toMatchObject({ id: 102 })
+    expect(result[1]).toMatchObject({ id: 101 })
   })
 
   test('course started lastInteracted completed navigates to first incomplete after lastInteracted', async () => {
@@ -253,7 +247,7 @@ describe('getNavigateTo', () => {
       { content_id: 102, state: 'completed', progress_percent: 100, updated_at: 1000 },
       { content_id: 103, state: 'started',  progress_percent: 20,  updated_at: 800 },
     ]
-    mockLastInteracted = 102
+    mockLastInteracted = 101
     const result = await getNavigateTo([{ id: 1, type: 'course', children: [child(101), child(102), child(103)] }])
     expect(result[1]).toMatchObject({ id: 103 })
   })
@@ -278,6 +272,8 @@ describe('getNavigateTo', () => {
     const result = await getNavigateTo([{ id: 1, type: 'guided-course', children: [child(101), child(102), child(103)] }])
     expect(result[1]).toMatchObject({ id: 102 })
   })
+
+  // need more tests to support other types and potentially other logic branches.
 })
 
 // ─── getNavigateToForMethod ───────────────────────────────────────────────────
@@ -310,13 +306,13 @@ describe('getNavigateToForMethod', () => {
     expect(result[1]).toBeNull()
   })
 
-  test('LP type no daily session navigates to first incomplete child', async () => {
+  test('LP type with no daily session navigates to first incomplete child', async () => {
     getDailySession.mockResolvedValueOnce(null)
     const result = await getNavigateToForMethod([lpContent(10, [child(301), child(302), child(303)])])
     expect(result[10]).toMatchObject({ id: 301 })
   })
 
-  test('LP type active learning path with daily session navigates using daily session', async () => {
+  test('LP type with active learning path and daily session navigates using daily session', async () => {
     mockProgressRecords = [
       { content_id: 301, state: 'completed', progress_percent: 100, updated_at: 900 },
     ]
@@ -324,7 +320,7 @@ describe('getNavigateToForMethod', () => {
       active_learning_path_id: 10,
       daily_session: [{ content_ids: [301, 302] }],
     })
-    const result = await getNavigateToForMethod([lpContent(10, [child(301), child(302), child(303)])])
+    const result = await getNavigateToForMethod([lpContent(10, [child(300), child(301), child(302)])])
     expect(result[10]).toMatchObject({ id: 302 })
   })
 
