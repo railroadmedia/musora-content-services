@@ -1,7 +1,6 @@
 import baseConfig from './jest.config.js'
 export default {
   ...baseConfig,
-  modulePathIgnorePatterns: [],
-  testMatch: ['<rootDir>/test/live/**/*.[jt]s?(x)'],
+  testMatch: ['<rootDir>/test/live/**/*.test.[jt]s?(x)'],
   collectCoverage: false,
 }
