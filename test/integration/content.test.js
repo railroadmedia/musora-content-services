@@ -83,8 +83,17 @@ describe('content', function () {
 //   })
   test('getNewAndUpcoming', async () => {
     const results = await getNewAndUpcoming('drumeo')
-    console.log(results)
-    //expect(results.data).toBeDefined()
+    expect(results).not.toBeNull()
+    expect(Array.isArray(results.data)).toBe(true)
+
+    const childAwareParentTypes = ['course', 'song-tutorial', 'skill-pack']
+    const parentItems = results.data.filter((item) => childAwareParentTypes.includes(item.type))
+
+    parentItems.forEach((item) => {
+      expect(item.navigateTo).not.toBeNull()
+      expect(item.navigateTo.child).not.toBeNull()
+      expect(typeof item.navigateTo.child.id).toBe('number')
+    })
   })
 
   test('getScheduleContentRows', async () => {
