@@ -13,7 +13,7 @@ import {
   setStartedOrCompletedStatusMany,
   resetStatus,
   getProgressState,
-} from '@/services/contentProgress'
+} from '@/services/contentProgress.js'
 import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '@/services/sync/models/ContentProgress'
 import db from '@/services/sync/repository-proxy'
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())

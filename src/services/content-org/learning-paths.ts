@@ -26,6 +26,12 @@ import { ContentProgress } from '../sync/models'
 import dayjs from 'dayjs'
 import { LEARNING_PATH_LESSON } from '../../contentTypeConfig'
 
+const excludeFromGeneratedIndex = [
+  'onLearningPathCompletedActions',
+  'mapContentsThatWereLastProgressedFromMethod',
+  'mapLearningPathParentsTo',
+]
+
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
 let dailySessionPromise: Promise<DailySessionResponse|""> | null = null
@@ -577,13 +583,7 @@ async function resetIfPossible(
   return status !== '' ? await contentStatusReset(contentId, collection) : null
 }
 
-export async function onContentCompletedLearningPathActions(
-  contentId: number,
-  collection: CollectionObject | null
-) {
-  if (collection?.type !== COLLECTION_TYPE.LEARNING_PATH) return
-  if (contentId !== collection?.id) return
-
+export async function onLearningPathCompletedActions(contentId: number) {
   const learningPathId = contentId
   const learningPath = await getEnrichedLearningPath(learningPathId)
 

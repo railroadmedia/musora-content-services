@@ -3,7 +3,7 @@ import { db } from './sync'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
-import { getDailySession, onContentCompletedLearningPathActions } from './content-org/learning-paths.ts'
+import { getDailySession, onLearningPathCompletedActions } from './content-org/learning-paths.ts'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -805,8 +805,12 @@ export async function handleLearningPathProgressActions(progresses, collection, 
   }
 
   for (const [id, prog] of Object.entries(progresses)) {
-    if (prog === 100) {
-      await onContentCompletedLearningPathActions(Number(id), collection)
+    if (
+      prog === 100
+      && collection?.type === COLLECTION_TYPE.LEARNING_PATH
+      && Number(id) === collection?.id
+    ) {
+      await onLearningPathCompletedActions(Number(id))
     }
   }
 }

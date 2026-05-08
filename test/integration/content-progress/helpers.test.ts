@@ -105,34 +105,45 @@ describe('handleLearningPathProgressActions', () => {
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
-  test('LP collection with 100% item calls onContentCompletedLearningPathActions', async () => {
-    await handleLearningPathProgressActions({ 101: 100 }, collectionLP(200))
+  test('LP id at 100% calls onContentCompletedLearningPathActions', async () => {
+    await handleLearningPathProgressActions({ 200: 100 }, collectionLP(200))
     await flushPromises()
     expect(mockLearningPaths.onContentCompletedLearningPathActions).toHaveBeenCalledWith(
-      101,
+      200,
       expect.objectContaining({ type: COLLECTION_TYPE.LEARNING_PATH, id: 200 }),
     )
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
-  test('LP collection with <100% item does not call onContentCompletedLearningPathActions', async () => {
-    await handleLearningPathProgressActions({ 101: 50 }, collectionLP(200))
+  test('non-LP-id child at 100% does not call onContentCompletedLearningPathActions', async () => {
+    await handleLearningPathProgressActions({ 101: 100 }, collectionLP(200))
     await flushPromises()
     expect(mockLearningPaths.onContentCompletedLearningPathActions).not.toHaveBeenCalled()
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
-  test('LP collection with isOffline=true does not call onContentCompletedLearningPathActions', async () => {
-    await handleLearningPathProgressActions({ 101: 100 }, collectionLP(200), { isOffline: true })
+  test('LP id at <100% does not call onContentCompletedLearningPathActions', async () => {
+    await handleLearningPathProgressActions({ 200: 50 }, collectionLP(200))
     await flushPromises()
     expect(mockLearningPaths.onContentCompletedLearningPathActions).not.toHaveBeenCalled()
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
-  test('multiple 100% items call onContentCompletedLearningPathActions once per item', async () => {
-    await handleLearningPathProgressActions({ 101: 100, 102: 100 }, collectionLP(200))
+  test('LP id at 100% with isOffline=true does not call onContentCompletedLearningPathActions', async () => {
+    await handleLearningPathProgressActions({ 200: 100 }, collectionLP(200), { isOffline: true })
     await flushPromises()
-    expect(mockLearningPaths.onContentCompletedLearningPathActions).toHaveBeenCalledTimes(2)
+    expect(mockLearningPaths.onContentCompletedLearningPathActions).not.toHaveBeenCalled()
+    expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
+  })
+
+  test('LP id + children at 100% calls onContentCompletedLearningPathActions once for LP id only', async () => {
+    await handleLearningPathProgressActions({ 200: 100, 101: 100, 102: 100 }, collectionLP(200))
+    await flushPromises()
+    expect(mockLearningPaths.onContentCompletedLearningPathActions).toHaveBeenCalledTimes(1)
+    expect(mockLearningPaths.onContentCompletedLearningPathActions).toHaveBeenCalledWith(
+      200,
+      expect.objectContaining({ type: COLLECTION_TYPE.LEARNING_PATH, id: 200 }),
+    )
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
