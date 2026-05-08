@@ -610,7 +610,7 @@ export async function saveContentProgress(
   allProgresses[contentId] = progress
 
   const existingProgress = await getProgressDataByIds(Object.keys(allProgresses), collection)
-  filterOutNegativeProgress(allProgresses, existingProgress)
+  allProgresses = filterOutNegativeProgress(allProgresses, existingProgress)
   if (Object.keys(allProgresses).length === 0) {
     return
   }
@@ -646,7 +646,7 @@ export async function saveContentProgress(
   Object.assign(allProgresses, bubbledProgresses)
 
   const existingProgresses = await getProgressDataByIds(Object.keys(bubbledProgresses), collection)
-  filterOutNegativeProgress(bubbledProgresses, existingProgresses)
+  bubbledProgresses = filterOutNegativeProgress(bubbledProgresses, existingProgresses)
 
   await bubbleAndTrickleProgressesSafely(bubbledProgresses, collection, metadata, { accessedDirectly })
 
@@ -773,11 +773,11 @@ export async function resetStatus(contentId, collection = null, { skipPush = fal
 }
 
 export function filterOutNegativeProgress(progresses, existingProgresses) {
-  for (const [id, progress] of Object.entries(progresses)) {
-    if (progress < existingProgresses[id].progress) {
-      delete progresses[id]
-    }
-  }
+  return Object.fromEntries(
+    Object.entries(progresses).filter(
+      ([id, progress]) => progress >= (existingProgresses[id]?.progress ?? 0)
+    )
+  )
 }
 
 export async function computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy, {
@@ -815,7 +815,7 @@ export async function duplicateProgressToALaCarte(progresses, collection) {
 
   const externalProgresses = await getProgressDataByIds(Object.keys(filteredProgresses), null)
 
-  filterOutNegativeProgress(filteredProgresses, externalProgresses)
+  filteredProgresses = filterOutNegativeProgress(filteredProgresses, externalProgresses)
 
   await duplicateProgressForIds(filteredProgresses)
 }
@@ -833,8 +833,8 @@ export function filterOutLearningPathsForDuplication(progresses, collection) {
   )
 }
 
-export async function duplicateProgressForIds(ids) {
-  return Promise.all(ids.map(([id, pct]) => {
+export async function duplicateProgressForIds(data) {
+  return Promise.all(Object.entries(data).map(([id, pct]) => {
     return saveContentProgress(parseInt(id), null, pct, null, { accessedDirectly: false })
   }))
 }
