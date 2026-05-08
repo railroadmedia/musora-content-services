@@ -1,4 +1,4 @@
-import { initializeTestDB, waitForPushCall } from '../initializeTestDB'
+import { initializeTestDB } from '../initializeTestDB'
 import {
   bubbleAndTrickleProgressesSafely,
   handleLearningPathProgressActions,
@@ -151,20 +151,20 @@ describe('handleLearningPathProgressActions', () => {
 describe('duplicateProgressToALaCarte', () => {
   test('writes SELF records for a-la-carte collection', async () => {
     await duplicateProgressToALaCarte({ 101: 50 }, collectionSelf)
-    await waitForPushCall(ctx.pushSpies.contentProgress, 'save-content-progress')
+    await flushPromises()
     const record = await db.contentProgress.getOneProgressByContentId(101, null)
     expect(record.data?.collection_type).toBe(COLLECTION_TYPE.SELF)
-    expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
+    expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
   test('LP collection excludes the LP id itself from duplication', async () => {
     await duplicateProgressToALaCarte({ 200: 50, 101: 75 }, collectionLP(200))
-    await waitForPushCall(ctx.pushSpies.contentProgress, 'save-content-progress')
+    await flushPromises()
     const lpRecord = await db.contentProgress.getOneProgressByContentId(200, null)
     const lessonRecord = await db.contentProgress.getOneProgressByContentId(101, null)
     expect(lpRecord.data).toBeNull()
     expect(lessonRecord.data?.progress_percent).toBe(75)
-    expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
+    expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
   test('lower progress than existing is filtered — existing stays unchanged', async () => {
@@ -179,10 +179,10 @@ describe('duplicateProgressToALaCarte', () => {
   test('equal progress passes and record is updated', async () => {
     await db.contentProgress.recordProgress(101, null, 50, meta, undefined, { skipPush: true })
     await duplicateProgressToALaCarte({ 101: 50 }, collectionSelf)
-    await waitForPushCall(ctx.pushSpies.contentProgress, 'save-content-progress')
+    await flushPromises()
     const record = await db.contentProgress.getOneProgressByContentId(101, null)
     expect(record.data?.progress_percent).toBe(50)
-    expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
+    expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
   test('empty progresses results in no new records', async () => {

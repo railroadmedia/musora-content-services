@@ -56,48 +56,42 @@ describe('filterOutNegativeProgress', () => {
     mockProgressRecords = []
   })
 
-  test('deletes entry when new progress is less than existing', () => {
-    const progresses: Record<string, number> = { 101: 30 }
-    filterOutNegativeProgress(progresses, { 101: { progress: 70 } })
-    expect(progresses).not.toHaveProperty('101')
+  test('drops entry when new progress is less than existing', () => {
+    const result = filterOutNegativeProgress({ 101: 30 }, { 101: { progress: 70 } })
+    expect(result).not.toHaveProperty('101')
   })
 
   test('keeps entry when new progress equals existing', () => {
-    const progresses: Record<string, number> = { 101: 50 }
-    filterOutNegativeProgress(progresses, { 101: { progress: 50 } })
-    expect(progresses).toHaveProperty('101')
+    const result = filterOutNegativeProgress({ 101: 50 }, { 101: { progress: 50 } })
+    expect(result).toHaveProperty('101', 50)
   })
 
   test('keeps entry when new progress is greater than existing', () => {
-    const progresses: Record<string, number> = { 101: 80 }
-    filterOutNegativeProgress(progresses, { 101: { progress: 50 } })
-    expect(progresses).toHaveProperty('101')
+    const result = filterOutNegativeProgress({ 101: 80 }, { 101: { progress: 50 } })
+    expect(result).toHaveProperty('101', 80)
   })
 
   test('keeps entry when existing progress is 0 and new is also 0', () => {
-    const progresses: Record<string, number> = { 101: 0 }
-    filterOutNegativeProgress(progresses, { 101: { progress: 0 } })
-    expect(progresses).toHaveProperty('101')
+    const result = filterOutNegativeProgress({ 101: 0 }, { 101: { progress: 0 } })
+    expect(result).toHaveProperty('101', 0)
   })
 
-  test('deletes only entries below existing, keeps others in mixed set', () => {
-    const progresses: Record<string, number> = { 101: 20, 102: 80, 103: 40 }
-    filterOutNegativeProgress(progresses, {
-      101: { progress: 70 },
-      102: { progress: 20 },
-      103: { progress: 0 },
-    })
-    expect(progresses).not.toHaveProperty('101')
-    expect(progresses).toHaveProperty('102')
-    expect(progresses).toHaveProperty('103')
+  test('drops only entries below existing, keeps others in mixed set', () => {
+    const result = filterOutNegativeProgress(
+      { 101: 20, 102: 80, 103: 40 },
+      { 101: { progress: 70 }, 102: { progress: 20 }, 103: { progress: 0 } },
+    )
+    expect(result).not.toHaveProperty('101')
+    expect(result).toHaveProperty('102')
+    expect(result).toHaveProperty('103')
   })
 
-  test('mutates the input object in place', () => {
+  test('returns a new object and does not mutate input', () => {
     const progresses: Record<string, number> = { 101: 10 }
-    const ref = progresses
-    filterOutNegativeProgress(progresses, { 101: { progress: 50 } })
-    expect(ref).toBe(progresses)
-    expect(ref).not.toHaveProperty('101')
+    const result = filterOutNegativeProgress(progresses, { 101: { progress: 50 } })
+    expect(result).not.toBe(progresses)
+    expect(progresses).toHaveProperty('101', 10)
+    expect(result).not.toHaveProperty('101')
   })
 })
 
@@ -169,36 +163,28 @@ describe('duplicateProgressForIds', () => {
   beforeEach(() => {
     initializeTestService()
     mockProgressRecords = []
+    jest.clearAllMocks()
   })
 
-  test('single entry, skipPush=false — requestPushUnsynced called once', async () => {
-    await duplicateProgressForIds({ 101: 50 }, false)
+  test('empty object — no recordProgress and no requestPushUnsynced', async () => {
+    await duplicateProgressForIds({})
     await flushPromises()
-    expect(mockRepo.contentProgress.requestPushUnsynced).toHaveBeenCalledTimes(1)
-  })
-
-  test('single entry, skipPush=true — requestPushUnsynced not called', async () => {
-    await duplicateProgressForIds({ 101: 50 }, true)
-    await flushPromises()
+    expect(mockRepo.contentProgress.recordProgress).not.toHaveBeenCalled()
     expect(mockRepo.contentProgress.requestPushUnsynced).not.toHaveBeenCalled()
   })
 
-  test('multiple entries, skipPush=false — requestPushUnsynced called exactly once', async () => {
-    await duplicateProgressForIds({ 101: 30, 102: 50, 103: 70 }, false)
+  test('single entry — calls recordProgress once and skips push', async () => {
+    await duplicateProgressForIds({ 101: 50 })
     await flushPromises()
-    expect(mockRepo.contentProgress.requestPushUnsynced).toHaveBeenCalledTimes(1)
-  })
-
-  test('multiple entries, skipPush=true — requestPushUnsynced not called', async () => {
-    await duplicateProgressForIds({ 101: 30, 102: 50, 103: 70 }, true)
-    await flushPromises()
+    expect(mockRepo.contentProgress.recordProgress).toHaveBeenCalledTimes(1)
     expect(mockRepo.contentProgress.requestPushUnsynced).not.toHaveBeenCalled()
   })
 
-  test('calls recordProgress for each entry', async () => {
-    await duplicateProgressForIds({ 101: 30, 102: 50 }, true)
+  test('multiple entries — calls recordProgress per entry and skips push', async () => {
+    await duplicateProgressForIds({ 101: 30, 102: 50, 103: 70 })
     await flushPromises()
-    expect(mockRepo.contentProgress.recordProgress).toHaveBeenCalledTimes(2)
+    expect(mockRepo.contentProgress.recordProgress).toHaveBeenCalledTimes(3)
+    expect(mockRepo.contentProgress.requestPushUnsynced).not.toHaveBeenCalled()
   })
 })
 
