@@ -829,9 +829,9 @@ function filterGreaterThanProgress(progresses, external) {
   })
 }
 
-async function duplicateProgressForIds(ids) {
-  return Promise.all(ids.map(([id, pct]) => {
-    return saveContentProgress(parseInt(id), null, pct, null, { accessedDirectly: false })
+async function duplicateProgressForIds(entries) {
+  return Promise.all(entries.map(([id, pct]) => {
+    return saveContentProgress(parseInt(id), null, pct, null, { skipPush: true, accessedDirectly: false })
   }))
 }
 
