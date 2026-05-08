@@ -92,28 +92,12 @@ function lookupFor(contentId: number, collection?: any): HierarchyLookups {
   }
 }
 
-function mergeLookups(contentIds: number[], collection?: any): HierarchyLookups {
-  const merged: HierarchyLookups = {
-    topLevelId: contentIds[0],
-    parents: {},
-    children: {},
-    metadata: {},
-  }
-  for (const id of contentIds) {
-    const lookup = lookupFor(id, collection)
-    Object.assign(merged.parents, lookup.parents)
-    Object.assign(merged.children, lookup.children)
-    Object.assign(merged.metadata, lookup.metadata)
-  }
-  return merged
-}
-
 export const mockSanity = () => ({
   getHierarchy: jest.fn((contentId: number, collection?: any) =>
     Promise.resolve(lookupFor(contentId, collection))
   ),
   getHierarchies: jest.fn((contentIds: number[], collection?: any) =>
-    Promise.resolve(mergeLookups(contentIds, collection))
+    Promise.resolve(Object.fromEntries(contentIds.map(id => [id, lookupFor(id, collection)])))
   ),
   getSanityDate: jest.fn((date: Date) => date.toISOString()),
 })

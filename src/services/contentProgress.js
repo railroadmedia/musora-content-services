@@ -713,8 +713,9 @@ export async function setStartedOrCompletedStatusMany(contentIds, collection, is
   collection = normalizeCollection(collection) ?? { id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF }
   const isPlaylist = collection?.type === COLLECTION_TYPE.PLAYLIST
 
-  const hierarchy = await getHierarchies(contentIds, collection)
-  const metadata = hierarchy.metadata || {}
+  const hierarchies = await getHierarchies(contentIds, collection)
+  // need to get all metadata into one object
+  const metadata = Object.assign({}, ...Object.values(hierarchies).map(h => h.metadata));
 
   const progress = isCompleted ? 100 : 0
   let allProgresses = Object.fromEntries(contentIds.map(id => [id, progress]))
@@ -736,7 +737,7 @@ export async function setStartedOrCompletedStatusMany(contentIds, collection, is
   for (const contentId of contentIds) {
     progresses = {
       ...progresses,
-      ...await computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy),
+      ...await computeBubbleTrickleProgresses(contentId, progress, collection, hierarchies[contentId]),
     }
   }
   Object.assign(allProgresses, progresses)
@@ -928,7 +929,7 @@ export async function bubbleAndTrickleProgressesSafely(progresses, collection, m
   }
 
   if (Object.keys(progresses).length > 0) {
-    await db.contentProgress.recordProgressMany(
+    await db.contentProgress.recordProgressMany( // add flag here, only in this caller, `allowRegression` which bypassess the positive-progress constraint
       progresses,
       normalizeCollection(collection),
       metadata,
