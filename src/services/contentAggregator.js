@@ -65,6 +65,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
 
   // todo: merge addProgressData with addResumeTimeSeconds to one watermelon call
   const {
+    collection = null,
     dataField = null,
     dataField_includeParent = false,
     addProgressPercentage = false,
@@ -98,7 +99,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     awards,
   ] = await Promise.all([
     addProgressPercentage || addProgressStatus || addProgressTimestamp
-      ? getProgressDataByIds(ids) : Promise.resolve(null),
+      ? getProgressDataByIds(ids, collection) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
