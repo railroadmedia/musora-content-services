@@ -642,7 +642,7 @@ export async function saveContentProgress(
     return response
   }
 
-  const bubbledProgresses = await computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy, { trickle: false })
+  let bubbledProgresses = await computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy, { trickle: false })
   Object.assign(allProgresses, bubbledProgresses)
 
   const existingProgresses = await getProgressDataByIds(Object.keys(bubbledProgresses), collection)
@@ -835,7 +835,7 @@ export function filterOutLearningPathsForDuplication(progresses, collection) {
 
 export async function duplicateProgressForIds(data) {
   return Promise.all(Object.entries(data).map(([id, pct]) => {
-    return saveContentProgress(parseInt(id), null, pct, null, { accessedDirectly: false })
+    return saveContentProgress(parseInt(id), null, pct, null, { skipPush: true, accessedDirectly: false })
   }))
 }
 
