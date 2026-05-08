@@ -95,55 +95,49 @@ describe('handleLearningPathProgressActions', () => {
   const mockLearningPaths = jest.requireMock('../../../src/services/content-org/learning-paths.ts')
 
   beforeEach(() => {
-    mockLearningPaths.onContentCompletedLearningPathActions.mockClear()
+    mockLearningPaths.onLearningPathCompletedActions.mockClear()
   })
 
   test('non-LP collection returns without action', async () => {
     await handleLearningPathProgressActions({ 101: 100 }, collectionSelf)
     await flushPromises()
-    expect(mockLearningPaths.onContentCompletedLearningPathActions).not.toHaveBeenCalled()
+    expect(mockLearningPaths.onLearningPathCompletedActions).not.toHaveBeenCalled()
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
-  test('LP id at 100% calls onContentCompletedLearningPathActions', async () => {
+  test('LP id at 100% calls onLearningPathCompletedActions', async () => {
     await handleLearningPathProgressActions({ 200: 100 }, collectionLP(200))
     await flushPromises()
-    expect(mockLearningPaths.onContentCompletedLearningPathActions).toHaveBeenCalledWith(
-      200,
-      expect.objectContaining({ type: COLLECTION_TYPE.LEARNING_PATH, id: 200 }),
-    )
+    expect(mockLearningPaths.onLearningPathCompletedActions).toHaveBeenCalledWith(200)
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
-  test('non-LP-id child at 100% does not call onContentCompletedLearningPathActions', async () => {
+  test('non-LP-id child at 100% does not call onLearningPathCompletedActions', async () => {
     await handleLearningPathProgressActions({ 101: 100 }, collectionLP(200))
     await flushPromises()
-    expect(mockLearningPaths.onContentCompletedLearningPathActions).not.toHaveBeenCalled()
+    expect(mockLearningPaths.onLearningPathCompletedActions).not.toHaveBeenCalled()
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
-  test('LP id at <100% does not call onContentCompletedLearningPathActions', async () => {
+  test('LP id at <100% does not call onLearningPathCompletedActions', async () => {
     await handleLearningPathProgressActions({ 200: 50 }, collectionLP(200))
     await flushPromises()
-    expect(mockLearningPaths.onContentCompletedLearningPathActions).not.toHaveBeenCalled()
+    expect(mockLearningPaths.onLearningPathCompletedActions).not.toHaveBeenCalled()
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
-  test('LP id at 100% with isOffline=true does not call onContentCompletedLearningPathActions', async () => {
+  test('LP id at 100% with isOffline=true does not call onLearningPathCompletedActions', async () => {
     await handleLearningPathProgressActions({ 200: 100 }, collectionLP(200), { isOffline: true })
     await flushPromises()
-    expect(mockLearningPaths.onContentCompletedLearningPathActions).not.toHaveBeenCalled()
+    expect(mockLearningPaths.onLearningPathCompletedActions).not.toHaveBeenCalled()
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
-  test('LP id + children at 100% calls onContentCompletedLearningPathActions once for LP id only', async () => {
+  test('LP id + children at 100% calls onLearningPathCompletedActions once for LP id only', async () => {
     await handleLearningPathProgressActions({ 200: 100, 101: 100, 102: 100 }, collectionLP(200))
     await flushPromises()
-    expect(mockLearningPaths.onContentCompletedLearningPathActions).toHaveBeenCalledTimes(1)
-    expect(mockLearningPaths.onContentCompletedLearningPathActions).toHaveBeenCalledWith(
-      200,
-      expect.objectContaining({ type: COLLECTION_TYPE.LEARNING_PATH, id: 200 }),
-    )
+    expect(mockLearningPaths.onLearningPathCompletedActions).toHaveBeenCalledTimes(1)
+    expect(mockLearningPaths.onLearningPathCompletedActions).toHaveBeenCalledWith(200)
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
@@ -232,16 +226,14 @@ describe('Scenario: LP lesson at 100% triggers completion and duplicates to a-la
   const mockLearningPaths = jest.requireMock('../../../src/services/content-org/learning-paths.ts')
 
   beforeEach(() => {
-    mockLearningPaths.onContentCompletedLearningPathActions.mockClear()
+    mockLearningPaths.onLearningPathCompletedActions.mockClear()
   })
 
-  test('lesson 101 at 100% in LP 200 calls onContentCompleted and writes SELF record', async () => {
-    await handleLearningPathProgressActions({ 101: 100 }, collectionLP(200))
+  test('LP id 200 at 100% calls onLearningPathCompletedActions; lesson at 100% writes SELF record', async () => {
+    await handleLearningPathProgressActions({ 200: 100, 101: 100 }, collectionLP(200))
     await flushPromises()
-    expect(mockLearningPaths.onContentCompletedLearningPathActions).toHaveBeenCalledWith(
-      101,
-      expect.objectContaining({ type: COLLECTION_TYPE.LEARNING_PATH, id: 200 }),
-    )
+    expect(mockLearningPaths.onLearningPathCompletedActions).toHaveBeenCalledTimes(1)
+    expect(mockLearningPaths.onLearningPathCompletedActions).toHaveBeenCalledWith(200)
     const selfRecord = await db.contentProgress.getOneProgressByContentId(101, null)
     expect(selfRecord.data?.progress_percent).toBe(100)
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
@@ -252,13 +244,13 @@ describe('Scenario: Offline LP progress skips award check', () => {
   const mockLearningPaths = jest.requireMock('../../../src/services/content-org/learning-paths.ts')
 
   beforeEach(() => {
-    mockLearningPaths.onContentCompletedLearningPathActions.mockClear()
+    mockLearningPaths.onLearningPathCompletedActions.mockClear()
   })
 
-  test('isOffline=true writes SELF record but skips onContentCompletedLearningPathActions', async () => {
+  test('isOffline=true writes SELF record but skips onLearningPathCompletedActions', async () => {
     await handleLearningPathProgressActions({ 101: 100 }, collectionLP(200), { isOffline: true })
     await flushPromises()
-    expect(mockLearningPaths.onContentCompletedLearningPathActions).not.toHaveBeenCalled()
+    expect(mockLearningPaths.onLearningPathCompletedActions).not.toHaveBeenCalled()
     const selfRecord = await db.contentProgress.getOneProgressByContentId(101, null)
     expect(selfRecord.data?.progress_percent).toBe(100)
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()

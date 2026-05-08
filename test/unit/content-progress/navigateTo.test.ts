@@ -35,7 +35,7 @@ jest.mock('../../../src/services/sync/repository-proxy', () => {
 
 jest.mock('../../../src/services/content-org/learning-paths', () => ({
   getDailySession: jest.fn().mockResolvedValue(null),
-  onContentCompletedLearningPathActions: jest.fn().mockResolvedValue(undefined),
+  onLearningPathCompletedActions: jest.fn().mockResolvedValue(undefined),
 }))
 
 jest.mock('../../../src/services/sanity.js', () => ({

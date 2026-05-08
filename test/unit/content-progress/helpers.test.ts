@@ -43,7 +43,7 @@ jest.mock('../../../src/services/sanity.js', () => ({
 
 jest.mock('../../../src/services/content-org/learning-paths', () => ({
   getDailySession: jest.fn(),
-  onContentCompletedLearningPathActions: jest.fn(),
+  onLearningPathCompletedActions: jest.fn(),
 }))
 
 const flushPromises = () => new Promise(resolve => setImmediate(resolve))

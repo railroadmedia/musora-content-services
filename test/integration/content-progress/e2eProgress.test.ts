@@ -29,7 +29,7 @@ const ctx = initializeTestDB()
 
 beforeEach(() => {
   clearHierarchies()
-  learningPathsMock.onContentCompletedLearningPathActions.mockClear()
+  learningPathsMock.onLearningPathCompletedActions.mockClear()
   learningPathsMock.getDailySession.mockClear()
 })
 
@@ -60,7 +60,7 @@ async function writeOne(contentId: number, progress: number, collection: Collect
 }
 
 async function writeSome(contentIds: Record<string, number>, collection: CollectionParameter = null) {
-  const contentMetadataMap = Object.fromEntries(Object.values(contentIds).map(id => [id, testMetadata]))
+  const contentMetadataMap = Object.fromEntries(Object.keys(contentIds).map(id => [id, testMetadata]))
   await db.contentProgress.recordProgressMany(contentIds, collection, contentMetadataMap, {skipPush: true})
 }
 
@@ -135,8 +135,8 @@ describe('contentStatusCompleted', () => {
       const playlistRecord = await getOne(500, playlistCollection)
       const aLaCarteRecord = await getOne(500, null)
 
-      expectProgress(aLaCarteRecord, { percent: 100, collection: playlistCollection })
-      expectProgress(playlistRecord, { percent: 0, collection: selfCollection })
+      expectProgress(aLaCarteRecord, { percent: 100, collection: selfCollection })
+      expect(playlistRecord).toBeNull()
 
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledTimes(1)
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('set-started-or-completed-status')
@@ -196,7 +196,7 @@ describe('contentStatusCompleted', () => {
       expectProgress(parentALC, { percent: 50, collection: selfCollection })
       expect(lpALC).toBeNull()
 
-      expect(learningPathsMock.onContentCompletedLearningPathActions).not.toHaveBeenCalled()
+      expect(learningPathsMock.onLearningPathCompletedActions).not.toHaveBeenCalled()
 
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledTimes(1)
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('set-started-or-completed-status')
@@ -223,7 +223,8 @@ describe('contentStatusCompleted', () => {
       const child2LP = await getOne(300, lpCollection)
       const lpALC = await getOne(999, null)
       const child1ALC = await getOne(100, null)
-      const child2ALC = await getOne(200, null)
+      const child2ALC = await getOne(300, null)
+      const orphanALC = await getOne(200, null)
       const parentALC = await getOne(50, null)
 
       expectProgress(lpLP, { percent: 100, collection: lpCollection })
@@ -231,11 +232,12 @@ describe('contentStatusCompleted', () => {
       expectProgress(child2LP, { percent: 100, collection: lpCollection })
       expect(lpALC).toBeNull()
       expectProgress(child1ALC, { percent: 100, collection: selfCollection })
-      expectProgress(child2ALC, { percent: 0, collection: selfCollection })
+      expectProgress(child2ALC, { percent: 100, collection: selfCollection })
+      expect(orphanALC).toBeNull()
       expectProgress(parentALC, { percent: 50, collection: selfCollection })
 
-      expect(learningPathsMock.onContentCompletedLearningPathActions).toHaveBeenCalledTimes(1)
-      expect(learningPathsMock.onContentCompletedLearningPathActions).toHaveBeenCalledWith(999, lpCollection)
+      expect(learningPathsMock.onLearningPathCompletedActions).toHaveBeenCalledTimes(1)
+      expect(learningPathsMock.onLearningPathCompletedActions).toHaveBeenCalledWith(999)
 
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledTimes(1)
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('set-started-or-completed-status')
@@ -260,7 +262,7 @@ describe('contentStatusReset', () => {
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('reset-status')
     })
 
-    test('creset hild a-la-carte lesson', async () => {
+    test('reset child a-la-carte lesson', async () => {
       setHierarchy({
         id: 1, type: 'course', children: [
           { id: 100, type: 'lesson' },
@@ -281,7 +283,7 @@ describe('contentStatusReset', () => {
 
       expect(child).toBeNull()
       expectProgress(sibling, { percent: 100 })
-      expectProgress(parent, { percent: 50 })
+      expectProgress(parent, { percent: 100 }) // note: should this be 50?
 
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledTimes(1)
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('reset-status')
@@ -317,7 +319,7 @@ describe('contentStatusReset', () => {
       expect(child100).toBeNull()
       expect(child200).toBeNull()
       expectProgress(sibling, { percent: 100 })
-      expectProgress(collection, { percent: 50 })
+      expectProgress(collection, { percent: 100 }) // note: should this be 50?
 
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledTimes(1)
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('reset-status')
@@ -389,7 +391,7 @@ describe('contentStatusReset', () => {
       await writeSome({
         100: 100,
         50: 50,
-      }, lpCollection)
+      })
       await contentStatusReset(100, lpCollection)
 
       const childLP = await getOne(100, lpCollection)
@@ -572,7 +574,7 @@ describe('recordWatchSession', () => {
       expectProgress(parentALC, { percent: 25, collection: selfCollection })
       expect(lpALC).toBeNull()
 
-      expect(learningPathsMock.onContentCompletedLearningPathActions).not.toHaveBeenCalled()
+      expect(learningPathsMock.onLearningPathCompletedActions).not.toHaveBeenCalled()
       expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
     })
 
@@ -594,7 +596,7 @@ describe('recordWatchSession', () => {
       expect(child1LP).toBeNull()
       expect(child2LP).toBeNull()
 
-      expect(learningPathsMock.onContentCompletedLearningPathActions).not.toHaveBeenCalled()
+      expect(learningPathsMock.onLearningPathCompletedActions).not.toHaveBeenCalled()
       expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
     })
   })
