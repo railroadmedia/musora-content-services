@@ -155,6 +155,10 @@ import {
 } from './services/dateUtils.js';
 
 import {
+	getEndScreen
+} from './services/endScreen/endScreen.ts';
+
+import {
 	createForumCategory,
 	deleteForumCategory,
 	fetchForumCategories,
@@ -664,6 +668,7 @@ export {
 	getContentAwardsByIds,
 	getContentRows,
 	getDailySession,
+	getEndScreen,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
 	getHierarchies,

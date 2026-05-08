@@ -2,6 +2,60 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.158.3](https://github.com/railroadmedia/musora-content-services/compare/v2.158.2...v2.158.3) (2026-05-07)
+
+
+### Bug Fixes
+
+* pass collection to resumetime fetchers ([#959](https://github.com/railroadmedia/musora-content-services/issues/959)) ([cf61471](https://github.com/railroadmedia/musora-content-services/commit/cf6147117767e8f42dd5a3b1aa6a120173844150))
+
+### [2.158.2](https://github.com/railroadmedia/musora-content-services/compare/v2.158.1...v2.158.2) (2026-05-07)
+
+
+### Bug Fixes
+
+* revert recordWatchSesssion signature ([#958](https://github.com/railroadmedia/musora-content-services/issues/958)) ([569b9d2](https://github.com/railroadmedia/musora-content-services/commit/569b9d244042d2857989c686fd8ec6b3d0269cd2))
+
+### [2.158.1](https://github.com/railroadmedia/musora-content-services/compare/v2.158.0...v2.158.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* increment sanity url version ([#953](https://github.com/railroadmedia/musora-content-services/issues/953)) ([61c36c9](https://github.com/railroadmedia/musora-content-services/commit/61c36c962473294e6dfe67d3d688105649e3d79f))
+* pass collection to getProgressDataByIds ([#957](https://github.com/railroadmedia/musora-content-services/issues/957)) ([2ad1620](https://github.com/railroadmedia/musora-content-services/commit/2ad162085f45b35f617c0ba4d2cc32e7be4a3708))
+* Revert "add resolver condition to ensure seen records always get marked sync" ([#956](https://github.com/railroadmedia/musora-content-services/issues/956)) ([56741d3](https://github.com/railroadmedia/musora-content-services/commit/56741d3f49c97e4034e7841deb4aef1f938168c5))
+* update sanity url to v4 ([c567d22](https://github.com/railroadmedia/musora-content-services/commit/c567d227a4f3bdb9f2f1c95364d423e67b1b214f))
+
+## [2.158.0](https://github.com/railroadmedia/musora-content-services/compare/v2.153.0...v2.158.0) (2026-05-05)
+
+
+### Features
+
+* **BEHLTP-23:** add multi-user account update endpoint ([#914](https://github.com/railroadmedia/musora-content-services/issues/914)) ([98f6c4b](https://github.com/railroadmedia/musora-content-services/commit/98f6c4bb830c7a8a25ba556ca07fc97023667011))
+* **BEHSTP-167:** offline progress tracking support ([#889](https://github.com/railroadmedia/musora-content-services/issues/889)) ([0528597](https://github.com/railroadmedia/musora-content-services/commit/05285977237ccbfa577a5770a1762c31d855e59e))
+* handle late-start active paths, and set up better resetAllLearningPaths ([#928](https://github.com/railroadmedia/musora-content-services/issues/928)) ([5d80430](https://github.com/railroadmedia/musora-content-services/commit/5d80430fbedfb21668882d402c5f6b07c82cfbf9))
+* **MU2-1384:** enable related lessons for non-members ([#943](https://github.com/railroadmedia/musora-content-services/issues/943)) ([f091bd7](https://github.com/railroadmedia/musora-content-services/commit/f091bd7e7edfcfe8808684d97faff22f62ef6fe0))
+* **MU2-1452:** free tier content sort to front ([#915](https://github.com/railroadmedia/musora-content-services/issues/915)) ([0655e68](https://github.com/railroadmedia/musora-content-services/commit/0655e685f32fe77728d7b8c2505283adbc1a7c97))
+* **MU2-1463:** initialize onboarding flow ([#929](https://github.com/railroadmedia/musora-content-services/issues/929)) ([4daae5f](https://github.com/railroadmedia/musora-content-services/commit/4daae5ff28599b53fa9ee5b9bea8bdb08b706978))
+* muppet - add invite validity/error data ([#923](https://github.com/railroadmedia/musora-content-services/issues/923)) ([3938fa5](https://github.com/railroadmedia/musora-content-services/commit/3938fa56ec9295023b6ba624c5f238d1645a911b))
+
+
+### Bug Fixes
+
+* add missing vimeo_live_event_id field to downloads field list ([#948](https://github.com/railroadmedia/musora-content-services/issues/948)) ([2b54208](https://github.com/railroadmedia/musora-content-services/commit/2b5420838f200ee061dc7af27029df8a3c38f87c))
+* add typeof before LokiJSAdapter in parameter list ([6a135b5](https://github.com/railroadmedia/musora-content-services/commit/6a135b57c516c277a50d707417544ab2f9eeb194))
+* **BEHSTP-160:** hide future content in related lessons ([#952](https://github.com/railroadmedia/musora-content-services/issues/952)) ([b8d5e06](https://github.com/railroadmedia/musora-content-services/commit/b8d5e0662fae47285978ed1c2d641cc514f25ecd))
+* **BR-460:** report option label updates ([#940](https://github.com/railroadmedia/musora-content-services/issues/940)) ([8ad8f72](https://github.com/railroadmedia/musora-content-services/commit/8ad8f72dd9a1284b4098aa00f08962a53a170275))
+* **BR-627:** add pagination support to fetch followed threads method ([779e308](https://github.com/railroadmedia/musora-content-services/commit/779e30881e76b17e17124852c4d2ee02d62ccf87))
+* **BR-632:** dont trickle progress to children when enrolling in GC ([#916](https://github.com/railroadmedia/musora-content-services/issues/916)) ([67a96d6](https://github.com/railroadmedia/musora-content-services/commit/67a96d69bd8b61f12d0efd45475a7b0b08c58813))
+* **BR-659:** fix resources for null parents ([#951](https://github.com/railroadmedia/musora-content-services/issues/951)) ([b78157b](https://github.com/railroadmedia/musora-content-services/commit/b78157b9dbb9f4d8861bca9546eab79a1c04c01e))
+* export ([#936](https://github.com/railroadmedia/musora-content-services/issues/936)) ([16b78be](https://github.com/railroadmedia/musora-content-services/commit/16b78be3dca3cee8981f1347a37f1b1b00ffe691))
+* remove prevSession args ([#937](https://github.com/railroadmedia/musora-content-services/issues/937)) ([2fe1dc2](https://github.com/railroadmedia/musora-content-services/commit/2fe1dc280a21e060b15567afe60a4cf959cecc90))
+* remove timestamp filtering of practice records in offline mode ([#938](https://github.com/railroadmedia/musora-content-services/issues/938)) ([1a8ac03](https://github.com/railroadmedia/musora-content-services/commit/1a8ac03bfa1b9b3670c45049adb9b833263ef871))
+* revert activity timestamp changes ([#942](https://github.com/railroadmedia/musora-content-services/issues/942)) ([bd9f97d](https://github.com/railroadmedia/musora-content-services/commit/bd9f97d6547409b7f2856bf716c90d6723306c36))
+* **TMA-239:** MCS - Sanity - Add a v=2 query parameter to all sanity requests to force a cache refresh ([#933](https://github.com/railroadmedia/musora-content-services/issues/933)) ([eac5a2c](https://github.com/railroadmedia/musora-content-services/commit/eac5a2c6848aee80c462ba0ccbeba52a92652fa9))
+* **TMA-275:** MCS - Sanity - Add a v2 url segment to to all sanity requests to force a cache refresh ([#946](https://github.com/railroadmedia/musora-content-services/issues/946)) ([b5df1dc](https://github.com/railroadmedia/musora-content-services/commit/b5df1dc943cc9d477dcac5879daaf0725fa60f76))
+
 ### [2.157.2](https://github.com/railroadmedia/musora-content-services/compare/v2.157.0...v2.157.2) (2026-04-30)
 
 
