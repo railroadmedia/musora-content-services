@@ -119,6 +119,8 @@ export default {
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   modulePathIgnorePatterns: [
     '<rootDir>/test/live',
+    // add this back before merge. will use davids changes.
+    // '<rootDir>/test/live',
   ],
 
   // Activates notifications for test results
