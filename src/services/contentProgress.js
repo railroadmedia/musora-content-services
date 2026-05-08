@@ -833,8 +833,8 @@ export function filterOutLearningPathsForDuplication(progresses, collection) {
   )
 }
 
-export async function duplicateProgressForIds(data) {
-  return Promise.all(Object.entries(data).map(([id, pct]) => {
+export async function duplicateProgressForIds(entries) {
+  return Promise.all(Object.entries(entries).map(([id, pct]) => {
     return saveContentProgress(parseInt(id), null, pct, null, { skipPush: true, accessedDirectly: false })
   }))
 }
