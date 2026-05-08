@@ -8,7 +8,9 @@
     "build-index": "node tools/generate-index.cjs",
     "release": "standard-version",
     "doc": "jsdoc -c jsdoc.json --verbose",
-    "test": "jest"
+    "test": "jest",
+    "test:integration": "jest --config=jest.integration.config.js",
+    "test:live": "jest --config=jest.live.config.js"
   },
   "repository": {
     "type": "git",
