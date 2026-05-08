@@ -930,11 +930,12 @@ export async function bubbleAndTrickleProgressesSafely(progresses, collection, m
   }
 
   if (Object.keys(progresses).length > 0) {
-    await db.contentProgress.recordProgressMany( // add flag here, only in this caller, `allowRegression` which bypassess the positive-progress constraint
+    // we allow regression for bubbling so parents can have progress lowered (for eg, if children are reset)
+    await db.contentProgress.recordProgressMany(
       progresses,
       normalizeCollection(collection),
       metadata,
-      { skipPush: true, accessedDirectly },
+      { skipPush: true, accessedDirectly, allowRegression: true },
     )
   }
   if (Object.keys(eraseProgresses).length > 0) {

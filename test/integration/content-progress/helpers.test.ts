@@ -87,6 +87,17 @@ describe('bubbleAndTrickleProgressesSafely', () => {
     expect(record.data?.collection_type).toBe(COLLECTION_TYPE.SELF)
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
+
+  test('bubble lowers parent from 100% to 50% via allowRegression', async () => {
+    await db.contentProgress.recordProgress(1, null, 100, meta, undefined, { skipPush: true })
+    expect((await db.contentProgress.getOneProgressByContentId(1, null)).data?.progress_percent).toBe(100)
+
+    await bubbleAndTrickleProgressesSafely({ 1: 50 }, collectionSelf, { 1: meta })
+
+    const record = await db.contentProgress.getOneProgressByContentId(1, null)
+    expect(record.data?.progress_percent).toBe(50)
+    expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
+  })
 })
 
 // ─── handleLearningPathProgressActions ────────────────────────────────────────

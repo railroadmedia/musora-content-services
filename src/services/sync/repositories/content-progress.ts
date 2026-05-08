@@ -229,7 +229,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
     metadata: Record<string, MetadataParameter>,
-    { skipPush = false, accessedDirectly = true }: { skipPush?: boolean; accessedDirectly?: boolean } = {}
+    { skipPush = false, accessedDirectly = true, allowRegression = false }: { skipPush?: boolean; accessedDirectly?: boolean, allowRegression?: boolean } = {}
   ) {
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
       accessedDirectly = false
@@ -243,7 +243,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
           r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
-          r.progress_percent = progressPct
+          if (allowRegression) {
+            r.setProgressForceRegression(progressPct)
+          } else {
+            r.progress_percent = progressPct
+          }
 
           r.content_brand = metadata[contentId].brand
           r.content_type = metadata[contentId].type

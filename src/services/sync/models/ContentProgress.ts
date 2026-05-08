@@ -108,6 +108,12 @@ export default class ContentProgress extends BaseModel {
     this._setRaw('last_interacted_a_la_carte', value)
   }
 
+  setProgressForceRegression(value: number) {
+    const validated = percent(value)
+    this._setRaw('progress_percent', validated)
+    this._setRaw('state', validated === 100 ? STATE.COMPLETED : STATE.STARTED)
+  }
+
   static generateId(
     contentId: number,
     collection: CollectionParameter | null

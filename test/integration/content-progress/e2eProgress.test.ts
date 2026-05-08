@@ -283,7 +283,7 @@ describe('contentStatusReset', () => {
 
       expect(child).toBeNull()
       expectProgress(sibling, { percent: 100 })
-      expectProgress(parent, { percent: 100 }) // note: should this be 50?
+      expectProgress(parent, { percent: 50 })
 
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledTimes(1)
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('reset-status')
@@ -319,7 +319,7 @@ describe('contentStatusReset', () => {
       expect(child100).toBeNull()
       expect(child200).toBeNull()
       expectProgress(sibling, { percent: 100 })
-      expectProgress(collection, { percent: 100 }) // note: should this be 50?
+      expectProgress(collection, { percent: 50 })
 
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledTimes(1)
       expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('reset-status')
