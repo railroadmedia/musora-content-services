@@ -4,9 +4,9 @@ import {
   flushWatchSession,
   contentStatusCompleted,
   contentStatusReset,
-} from '@/services/contentProgress.js'
-import { COLLECTION_TYPE, COLLECTION_ID_SELF, CollectionParameter } from '@/services/sync/models/ContentProgress'
-import db from '@/services/sync/repository-proxy'
+} from '../../../src/services/contentProgress.js'
+import { COLLECTION_TYPE, COLLECTION_ID_SELF, CollectionParameter } from '../../../src/services/sync/models/ContentProgress'
+import db from '../../../src/services/sync/repository-proxy'
 import { setHierarchy, clearHierarchies } from './__mocks__/mocks'
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
 jest.mock('../../../src/services/content-org/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())

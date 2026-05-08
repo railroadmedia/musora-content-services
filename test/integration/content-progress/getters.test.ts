@@ -6,8 +6,8 @@ import {
   getLastInteractedOf, getProgressDataByIds, getProgressDataByRecordIds,
   getAllStarted, getAllCompleted, getAllCompletedByIds,
   getAllStartedOrCompleted, getStartedOrCompletedProgressOnly, _getAllStartedOrCompleted,
-} from '@/services/contentProgress'
-import db from '@/services/sync/repository-proxy'
+} from '../../../src/services/contentProgress'
+import db from '../../../src/services/sync/repository-proxy'
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
 jest.mock('../../../src/services/content-org/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
 jest.mock('../../../src/services/awards/internal/content-progress-observer', () => require('./__mocks__/mocks').mockContentProgressObserver())

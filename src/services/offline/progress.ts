@@ -3,9 +3,9 @@ import {
   handleLearningPathProgressActions,
   normalizeCollection,
   normalizeContentId,
-} from '@/services/contentProgress.js'
+} from '../../services/contentProgress'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, CollectionParameter } from '../sync/models/ContentProgress'
-import { db } from '@/services/sync'
+import { db } from '../../services/sync'
 
 interface HierarchyParameter {
   topLevelId: number

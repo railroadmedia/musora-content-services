@@ -5,9 +5,9 @@ import {
   duplicateProgressToALaCarte,
   getIdsWhereLastAccessedFromMethod,
   getProgressState,
-} from '@/services/contentProgress'
-import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '@/services/sync/models/ContentProgress'
-import db from '@/services/sync/repository-proxy'
+} from '../../../src/services/contentProgress'
+import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '../../../src/services/sync/models/ContentProgress'
+import db from '../../../src/services/sync/repository-proxy'
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
 jest.mock('../../../src/services/content-org/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
 jest.mock('../../../src/services/awards/internal/content-progress-observer', () => require('./__mocks__/mocks').mockContentProgressObserver())

@@ -6,8 +6,8 @@ import {
   trickleProgress,
   bubbleProgress,
   computeBubbleTrickleProgresses,
-} from '@/services/contentProgress.js'
-import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '@/services/sync/models/ContentProgress'
+} from '../../../src/services/contentProgress.js'
+import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '../../../src/services/sync/models/ContentProgress'
 
 let mockProgressRecords: any[] = []
 

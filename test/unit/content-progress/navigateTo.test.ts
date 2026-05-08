@@ -4,8 +4,8 @@ import {
   getNavigateTo,
   findIncompleteLesson,
   buildNavigateTo,
-} from '@/services/contentProgress.js'
-import { COLLECTION_TYPE } from '@/services/sync/models/ContentProgress'
+} from '../../../src/services/contentProgress.js'
+import { COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 
 let mockProgressRecords: any[] = []
 let mockLastInteracted: number | null = null
