@@ -1,15 +1,15 @@
 import { initializeTestService } from '../../initializeTests.js'
 import {
-  filterOutNegativeProgress,
-  filterOutLearningPathsForDuplication,
   duplicateProgressForIds,
+  extractFromRecordId,
+  filterOutLearningPathsForDuplication,
+  filterOutNegativeProgress,
+  generateRecordId,
+  normalizeCollection,
   normalizeContentId,
   normalizeContentIds,
-  normalizeCollection,
-  generateRecordId,
-  extractFromRecordId,
 } from '../../../src/services/contentProgress.js'
-import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '../../../src/services/sync/models/ContentProgress'
+import { COLLECTION_ID_SELF, COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 
 let mockProgressRecords: any[] = []
 

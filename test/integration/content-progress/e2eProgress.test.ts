@@ -1,13 +1,18 @@
 import { initializeTestDB } from '../initializeTestDB'
 import {
-  recordWatchSession,
-  flushWatchSession,
   contentStatusCompleted,
   contentStatusReset,
+  flushWatchSession,
+  recordWatchSession,
 } from '../../../src/services/contentProgress.js'
-import { COLLECTION_TYPE, COLLECTION_ID_SELF, CollectionParameter } from '../../../src/services/sync/models/ContentProgress'
+import {
+  COLLECTION_ID_SELF,
+  COLLECTION_TYPE,
+  CollectionParameter,
+} from '../../../src/services/sync/models/ContentProgress'
 import db from '../../../src/services/sync/repository-proxy'
-import { setHierarchy, clearHierarchies } from './__mocks__/mocks'
+import { clearHierarchies, setHierarchy } from './__mocks__/mocks'
+
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
 jest.mock('../../../src/services/content-org/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
 jest.mock('../../../src/services/awards/internal/content-progress-observer', () => require('./__mocks__/mocks').mockContentProgressObserver())
@@ -40,7 +45,6 @@ type ExpectedProgress = {
 }
 
 
-
 function expectProgress(data: any, expected: ExpectedProgress) {
   const expectedState = expected.state ?? (expected.percent === 100 ? 'completed' : 'started')
   expect(data).not.toBeNull()
@@ -56,12 +60,12 @@ async function getOne(contentId: number, collection: CollectionParameter = null)
 }
 
 async function writeOne(contentId: number, progress: number, collection: CollectionParameter = null) {
-  await db.contentProgress.recordProgress(contentId, collection, progress, testMetadata, 0, {skipPush: true})
+  await db.contentProgress.recordProgress(contentId, collection, progress, testMetadata, 0, { skipPush: true })
 }
 
 async function writeSome(contentIds: Record<string, number>, collection: CollectionParameter = null) {
   const contentMetadataMap = Object.fromEntries(Object.keys(contentIds).map(id => [id, testMetadata]))
-  await db.contentProgress.recordProgressMany(contentIds, collection, contentMetadataMap, {skipPush: true})
+  await db.contentProgress.recordProgressMany(contentIds, collection, contentMetadataMap, { skipPush: true })
 }
 
 describe('contentStatusCompleted', () => {
@@ -101,10 +105,12 @@ describe('contentStatusCompleted', () => {
     test('a-la-carte course within a course-collection', async () => {
       setHierarchy({
         id: 1, type: 'course-collection', children: [
-          { id: 10, type: 'course', children: [
-            { id: 100, type: 'lesson' },
-            { id: 200, type: 'lesson' },
-          ]},
+          {
+            id: 10, type: 'course', children: [
+              { id: 100, type: 'lesson' },
+              { id: 200, type: 'lesson' },
+            ],
+          },
           { id: 20, type: 'course' },
         ],
       })
@@ -245,7 +251,8 @@ describe('contentStatusCompleted', () => {
   })
 })
 
-describe('contentStatusStarted', () => {})
+describe('contentStatusStarted', () => {
+})
 // less important bcs very similar to `complete`. do later.
 
 describe('contentStatusReset', () => {
@@ -273,7 +280,7 @@ describe('contentStatusReset', () => {
       await writeSome({
         100: 100,
         200: 100,
-        1: 100
+        1: 100,
       })
       await contentStatusReset(100)
 
@@ -292,10 +299,12 @@ describe('contentStatusReset', () => {
     test('reset a-la-carte course within a course-collection', async () => {
       setHierarchy({
         id: 1, type: 'course-collection', children: [
-          { id: 10, type: 'course', children: [
-            { id: 100, type: 'lesson' },
-            { id: 200, type: 'lesson' },
-          ]},
+          {
+            id: 10, type: 'course', children: [
+              { id: 100, type: 'lesson' },
+              { id: 200, type: 'lesson' },
+            ],
+          },
           { id: 20, type: 'course' },
         ],
       })

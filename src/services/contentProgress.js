@@ -1,4 +1,4 @@
-import { getHierarchy, getHierarchies } from './sanity.js'
+import { getHierarchies, getHierarchy } from './sanity.js'
 import { db } from './sync'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice } from './userActivity'
@@ -440,10 +440,10 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
  * @private
  */
 export async function _getAllStartedOrCompleted({
-                                           metadata = null,
-                                           limit = null,
-                                           include = { aLaCarte: true, learningPaths: false },
-                                         } = {}) {
+                                                  metadata = null,
+                                                  limit = null,
+                                                  include = { aLaCarte: true, learningPaths: false },
+                                                } = {}) {
   const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
   const baseFilters = {
     updatedAfter: agoInSeconds,
@@ -721,7 +721,7 @@ export async function setStartedOrCompletedStatusMany(contentIds, collection, is
 
   const hierarchies = await getHierarchies(contentIds, collection)
   // need to get all metadata into one object
-  const metadata = Object.assign({}, ...Object.values(hierarchies).map(h => h.metadata));
+  const metadata = Object.assign({}, ...Object.values(hierarchies).map(h => h.metadata))
 
   const progress = isCompleted ? 100 : 0
   let allProgresses = Object.fromEntries(contentIds.map(id => [id, progress]))
@@ -785,8 +785,8 @@ export async function resetStatus(contentId, collection = null, { skipPush = fal
 export function filterOutNegativeProgress(progresses, existingProgresses) {
   return Object.fromEntries(
     Object.entries(progresses).filter(
-      ([id, progress]) => progress >= (existingProgresses[id]?.progress ?? 0)
-    )
+      ([id, progress]) => progress >= (existingProgresses[id]?.progress ?? 0),
+    ),
   )
 }
 

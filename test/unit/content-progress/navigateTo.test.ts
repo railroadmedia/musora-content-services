@@ -1,9 +1,9 @@
 import { initializeTestService } from '../../initializeTests.js'
 import {
-  getNavigateToForMethod,
-  getNavigateTo,
-  findIncompleteLesson,
   buildNavigateTo,
+  findIncompleteLesson,
+  getNavigateTo,
+  getNavigateToForMethod,
 } from '../../../src/services/contentProgress.js'
 import { COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 
@@ -71,7 +71,14 @@ describe('buildNavigateTo', () => {
   })
 
   test('valid content returns correct shape', () => {
-    const content = { id: 101, brand: 'drumeo', thumbnail: 'thumb.jpg', type: 'lesson', published_on: '2024-01-01', status: 'published' }
+    const content = {
+      id: 101,
+      brand: 'drumeo',
+      thumbnail: 'thumb.jpg',
+      type: 'lesson',
+      published_on: '2024-01-01',
+      status: 'published',
+    }
     const result = buildNavigateTo(content)
     expect(result).toEqual({
       brand: 'drumeo',
@@ -100,7 +107,14 @@ describe('buildNavigateTo', () => {
   })
 
   test('child and collection args pass through', () => {
-    const childObj = { id: 200, brand: 'drumeo', thumbnail: '', type: 'lesson', published_on: null, status: 'published' }
+    const childObj = {
+      id: 200,
+      brand: 'drumeo',
+      thumbnail: '',
+      type: 'lesson',
+      published_on: null,
+      status: 'published',
+    }
     const collection = { type: COLLECTION_TYPE.LEARNING_PATH, id: 999 }
     const result = buildNavigateTo({ id: 100 }, childObj, collection)
     expect(result?.child).toBe(childObj)
@@ -231,9 +245,9 @@ describe('getNavigateTo', () => {
 
   test('course started lastInteracted started navigates to lastInteracted child', async () => {
     mockProgressRecords = [
-      { content_id: 1,   state: 'started',  progress_percent: 50,  updated_at: 1000 },
+      { content_id: 1, state: 'started', progress_percent: 50, updated_at: 1000 },
       { content_id: 101, state: 'started', progress_percent: 100, updated_at: 900 },
-      { content_id: 102, state: 'started',  progress_percent: 30,  updated_at: 1000 },
+      { content_id: 102, state: 'started', progress_percent: 30, updated_at: 1000 },
     ]
     mockLastInteracted = 101
     const result = await getNavigateTo([{ id: 1, type: 'course', children: [child(101), child(102)] }])
@@ -242,10 +256,10 @@ describe('getNavigateTo', () => {
 
   test('course started lastInteracted completed navigates to first incomplete after lastInteracted', async () => {
     mockProgressRecords = [
-      { content_id: 1,   state: 'started',  progress_percent: 60,  updated_at: 1000 },
+      { content_id: 1, state: 'started', progress_percent: 60, updated_at: 1000 },
       { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
       { content_id: 102, state: 'completed', progress_percent: 100, updated_at: 1000 },
-      { content_id: 103, state: 'started',  progress_percent: 20,  updated_at: 800 },
+      { content_id: 103, state: 'started', progress_percent: 20, updated_at: 800 },
     ]
     mockLastInteracted = 101
     const result = await getNavigateTo([{ id: 1, type: 'course', children: [child(101), child(102), child(103)] }])
@@ -254,7 +268,7 @@ describe('getNavigateTo', () => {
 
   test('course started all children completed wraps to first child', async () => {
     mockProgressRecords = [
-      { content_id: 1,   state: 'started',  progress_percent: 100, updated_at: 1000 },
+      { content_id: 1, state: 'started', progress_percent: 100, updated_at: 1000 },
       { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
       { content_id: 102, state: 'completed', progress_percent: 100, updated_at: 1000 },
     ]
@@ -265,21 +279,25 @@ describe('getNavigateTo', () => {
 
   test('guided-course started navigates to first incomplete child', async () => {
     mockProgressRecords = [
-      { content_id: 1,   state: 'started',  progress_percent: 50,  updated_at: 1000 },
+      { content_id: 1, state: 'started', progress_percent: 50, updated_at: 1000 },
       { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
     ]
     mockLastInteracted = 101
-    const result = await getNavigateTo([{ id: 1, type: 'guided-course', children: [child(101), child(102), child(103)] }])
+    const result = await getNavigateTo([{
+      id: 1,
+      type: 'guided-course',
+      children: [child(101), child(102), child(103)],
+    }])
     expect(result[1]).toMatchObject({ id: 102 })
   })
 
   describe.each(['course', 'skill-pack', 'song-tutorial'])('course-flow type %s', (type) => {
     test('lastInteracted completed → first incomplete after lastInteracted', async () => {
       mockProgressRecords = [
-        { content_id: 1,   state: 'started',   progress_percent: 50,  updated_at: 1000 },
-        { content_id: 101, state: '',          progress_percent: 0,   updated_at: 0 },
+        { content_id: 1, state: 'started', progress_percent: 50, updated_at: 1000 },
+        { content_id: 101, state: '', progress_percent: 0, updated_at: 0 },
         { content_id: 102, state: 'completed', progress_percent: 100, updated_at: 1000 },
-        { content_id: 103, state: '',          progress_percent: 0,   updated_at: 0 },
+        { content_id: 103, state: '', progress_percent: 0, updated_at: 0 },
       ]
       mockLastInteracted = 102
       const result = await getNavigateTo([{ id: 1, type, children: [child(101), child(102), child(103)] }])
@@ -290,10 +308,10 @@ describe('getNavigateTo', () => {
   describe.each(['guided-course', COLLECTION_TYPE.LEARNING_PATH])('guided-course-flow type %s', (type) => {
     test('finds first incomplete regardless of lastInteracted position', async () => {
       mockProgressRecords = [
-        { content_id: 1,   state: 'started',   progress_percent: 50,  updated_at: 1000 },
-        { content_id: 101, state: '',          progress_percent: 0,   updated_at: 0 },
+        { content_id: 1, state: 'started', progress_percent: 50, updated_at: 1000 },
+        { content_id: 101, state: '', progress_percent: 0, updated_at: 0 },
         { content_id: 102, state: 'completed', progress_percent: 100, updated_at: 1000 },
-        { content_id: 103, state: '',          progress_percent: 0,   updated_at: 0 },
+        { content_id: 103, state: '', progress_percent: 0, updated_at: 0 },
       ]
       mockLastInteracted = 102
       const result = await getNavigateTo([{ id: 1, type, children: [child(101), child(102), child(103)] }])

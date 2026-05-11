@@ -1,11 +1,11 @@
 import {
   _recordWatchSession,
-  normalizeCollection,
-  normalizeContentId,
   filterOutLearningPathsForDuplication,
   filterOutNegativeProgress,
   getProgressDataByIds,
-} from '../../services/contentProgress'
+  normalizeCollection,
+  normalizeContentId,
+} from '../../services/contentProgress.js'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, CollectionParameter } from '../sync/models/ContentProgress'
 import { db } from '../../services/sync'
 

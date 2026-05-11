@@ -1,13 +1,13 @@
 import { initializeTestService } from '../../initializeTests.js'
 import {
-  getChildrenToDepth,
-  getAncestorAndSiblingIds,
   averageProgressesFor,
-  trickleProgress,
   bubbleProgress,
   computeBubbleTrickleProgresses,
+  getAncestorAndSiblingIds,
+  getChildrenToDepth,
+  trickleProgress,
 } from '../../../src/services/contentProgress.js'
-import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '../../../src/services/sync/models/ContentProgress'
+import { COLLECTION_ID_SELF, COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 
 let mockProgressRecords: any[] = []
 
@@ -127,7 +127,8 @@ describe('getAncestorAndSiblingIds', () => {
       children: { 100: [100] },
       metadata: {},
     }
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {
+    })
     const result = getAncestorAndSiblingIds(circularHierarchy, 100)
     expect(result).toEqual([])
     expect(errorSpy).toHaveBeenCalled()
@@ -277,14 +278,20 @@ describe('computeBubbleTrickleProgresses', () => {
       { content_id: 201, progress_percent: 100 },
       { content_id: 202, progress_percent: 100 },
     ]
-    const result = await computeBubbleTrickleProgresses(100, 100, collectionSelf, flatHierarchy, { bubble: true, trickle: true })
+    const result = await computeBubbleTrickleProgresses(100, 100, collectionSelf, flatHierarchy, {
+      bubble: true,
+      trickle: true,
+    })
     expect(result[200]).toBe(100)
     expect(result[201]).toBe(100)
     expect(result[202]).toBe(100)
   })
 
   test('bubble=false returns only trickled descendants', async () => {
-    const result = await computeBubbleTrickleProgresses(100, 75, collectionSelf, flatHierarchy, { bubble: false, trickle: true })
+    const result = await computeBubbleTrickleProgresses(100, 75, collectionSelf, flatHierarchy, {
+      bubble: false,
+      trickle: true,
+    })
     expect(result[200]).toBe(75)
     expect(result[201]).toBe(75)
     expect(result[202]).toBe(75)
@@ -295,7 +302,10 @@ describe('computeBubbleTrickleProgresses', () => {
     mockProgressRecords = [
       { content_id: 200, progress_percent: 60 },
     ]
-    const result = await computeBubbleTrickleProgresses(200, 60, collectionSelf, flatHierarchy, { bubble: true, trickle: false })
+    const result = await computeBubbleTrickleProgresses(200, 60, collectionSelf, flatHierarchy, {
+      bubble: true,
+      trickle: false,
+    })
     expect(result[100]).toBeDefined()
     expect(result[200]).toBeUndefined()
     expect(result[201]).toBeUndefined()
@@ -303,7 +313,10 @@ describe('computeBubbleTrickleProgresses', () => {
 
   test('empty hierarchy returns empty object', async () => {
     const emptyHierarchy = { parents: {}, children: {}, metadata: {} }
-    const result = await computeBubbleTrickleProgresses(100, 50, collectionSelf, emptyHierarchy, { bubble: true, trickle: true })
+    const result = await computeBubbleTrickleProgresses(100, 50, collectionSelf, emptyHierarchy, {
+      bubble: true,
+      trickle: true,
+    })
     expect(result).toEqual({})
   })
 })

@@ -69,6 +69,7 @@ function treeToLookups(root: HierarchyTreeNode): HierarchyLookups {
     if (childIds.length > 0) children[node.id] = childIds
     for (const c of node.children ?? []) walk(c, node.id)
   }
+
   walk(root, 0)
 
   return { topLevelId: root.id, parents, children, metadata }
@@ -94,10 +95,10 @@ function lookupFor(contentId: number, collection?: any): HierarchyLookups {
 
 export const mockSanity = () => ({
   getHierarchy: jest.fn((contentId: number, collection?: any) =>
-    Promise.resolve(lookupFor(contentId, collection))
+    Promise.resolve(lookupFor(contentId, collection)),
   ),
   getHierarchies: jest.fn((contentIds: number[], collection?: any) =>
-    Promise.resolve(Object.fromEntries(contentIds.map(id => [id, lookupFor(id, collection)])))
+    Promise.resolve(Object.fromEntries(contentIds.map(id => [id, lookupFor(id, collection)]))),
   ),
   getSanityDate: jest.fn((date: Date) => date.toISOString()),
 })

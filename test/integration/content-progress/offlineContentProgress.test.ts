@@ -1,15 +1,16 @@
 import { initializeTestDB } from '../initializeTestDB'
 import {
-  recordWatchSessionOffline,
-  contentStatusCompletedOffline,
   contentStatusCompletedManyOffline,
-  contentStatusStartedOffline,
+  contentStatusCompletedOffline,
   contentStatusResetOffline,
+  contentStatusStartedOffline,
   duplicateProgressToALaCarteOffline,
+  recordWatchSessionOffline,
 } from '../../../src/services/offline/progress'
 import { getProgressState } from '../../../src/services/contentProgress.js'
-import { COLLECTION_TYPE, COLLECTION_ID_SELF } from '../../../src/services/sync/models/ContentProgress'
+import { COLLECTION_ID_SELF, COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 import db from '../../../src/services/sync/repository-proxy'
+
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
 jest.mock('../../../src/services/content-org/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
 jest.mock('../../../src/services/awards/internal/content-progress-observer', () => require('./__mocks__/mocks').mockContentProgressObserver())

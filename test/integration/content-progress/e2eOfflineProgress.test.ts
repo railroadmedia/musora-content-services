@@ -1,15 +1,20 @@
 import { initializeTestDB } from '../initializeTestDB'
 import {
-  recordWatchSessionOffline,
-  contentStatusCompletedOffline,
   contentStatusCompletedManyOffline,
-  contentStatusStartedOffline,
+  contentStatusCompletedOffline,
   contentStatusResetOffline,
+  contentStatusStartedOffline,
+  recordWatchSessionOffline,
 } from '../../../src/services/offline/progress'
 import { flushWatchSession } from '../../../src/services/contentProgress.js'
-import { COLLECTION_TYPE, COLLECTION_ID_SELF, CollectionParameter } from '../../../src/services/sync/models/ContentProgress'
+import {
+  COLLECTION_ID_SELF,
+  COLLECTION_TYPE,
+  CollectionParameter,
+} from '../../../src/services/sync/models/ContentProgress'
 import db from '../../../src/services/sync/repository-proxy'
-import { setHierarchy, clearHierarchies, HierarchyTreeNode } from './__mocks__/mocks'
+import { clearHierarchies, HierarchyTreeNode } from './__mocks__/mocks'
+
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
 jest.mock('../../../src/services/content-org/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
 jest.mock('../../../src/services/awards/internal/content-progress-observer', () => require('./__mocks__/mocks').mockContentProgressObserver())
@@ -66,7 +71,7 @@ async function getOne(contentId: number, collection: CollectionParameter = null)
 }
 
 async function writeOne(contentId: number, progress: number, collection: CollectionParameter = null) {
-  await db.contentProgress.recordProgress(contentId, collection, progress, testMetadata, 0, {skipPush: true})
+  await db.contentProgress.recordProgress(contentId, collection, progress, testMetadata, 0, { skipPush: true })
 }
 
 function buildHierarchy(tree: HierarchyTreeNode) {
@@ -85,6 +90,7 @@ function buildHierarchy(tree: HierarchyTreeNode) {
     if (childIds.length > 0) children[node.id] = childIds
     for (const c of node.children ?? []) walk(c, node.id)
   }
+
   walk(tree, 0)
 
   return { topLevelId: tree.id, parents, children, metadata }

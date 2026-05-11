@@ -144,7 +144,7 @@ Object.entries(fileExports).forEach(([file, functionNames]) => {
 
 dtsContent += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
 
-dtsContent += "\ndeclare module 'musora-content-services' {\n"
+dtsContent += '\ndeclare module \'musora-content-services\' {\n'
 dtsContent += '\texport {\n'
 dtsContent += `\t\t${allFunctionNames.join(',\n\t\t')},\n`
 dtsContent += '\t}\n'

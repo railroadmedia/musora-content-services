@@ -1,7 +1,7 @@
 import { initializeTestService } from '../initializeTests.js'
 import SyncManager from '@/services/sync/manager'
 import { SyncTelemetry } from '@/services/sync/telemetry'
-import { makeDatabase, makeUserScope, makeContext, makeTelemetry } from '../unit/sync/helpers'
+import { makeContext, makeDatabase, makeTelemetry, makeUserScope } from '../unit/sync/helpers'
 import db from '@/services/sync/repository-proxy'
 
 export interface PushSpies {
@@ -30,11 +30,16 @@ export const waitForPushCall = async (
 
 export function initializeMockPushes(): PushSpies {
   return {
-    contentProgress: jest.spyOn(db.contentProgress, 'requestPushUnsynced').mockImplementation(() => {}),
-    practices: jest.spyOn(db.practices, 'requestPushUnsynced').mockImplementation(() => {}),
-    likes: jest.spyOn(db.likes, 'requestPushUnsynced').mockImplementation(() => {}),
-    userAwardProgress: jest.spyOn(db.userAwardProgress, 'requestPushUnsynced').mockImplementation(() => {}),
-    practiceDayNotes: jest.spyOn(db.practiceDayNotes, 'requestPushUnsynced').mockImplementation(() => {}),
+    contentProgress: jest.spyOn(db.contentProgress, 'requestPushUnsynced').mockImplementation(() => {
+    }),
+    practices: jest.spyOn(db.practices, 'requestPushUnsynced').mockImplementation(() => {
+    }),
+    likes: jest.spyOn(db.likes, 'requestPushUnsynced').mockImplementation(() => {
+    }),
+    userAwardProgress: jest.spyOn(db.userAwardProgress, 'requestPushUnsynced').mockImplementation(() => {
+    }),
+    practiceDayNotes: jest.spyOn(db.practiceDayNotes, 'requestPushUnsynced').mockImplementation(() => {
+    }),
   }
 }
 
