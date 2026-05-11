@@ -2,7 +2,7 @@ jest.mock('@/services/sync/manager', () => ({ default: class SyncManager {} }))
 jest.mock('@/services/sync/repository-proxy', () => ({ db: {} }))
 
 import { Database } from '@nozbe/watermelondb'
-import { makeDatabase, makeStore, resetDatabase } from '../helpers/index'
+import { makeDatabase, makeStore, resetDatabase } from '../../../unit/sync/helpers/index'
 import Practice from '@/services/sync/models/Practice'
 import PracticesRepository from '@/services/sync/repositories/practices'
 
