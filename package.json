@@ -10,6 +10,7 @@
     "doc": "jsdoc -c jsdoc.json --verbose",
     "test": "jest",
     "test:integration": "jest --config=jest.integration.config.js",
+    "test:all": "jest --config=jest.config.js; jest --config=jest.integration.config.js",
     "test:live": "jest --config=jest.live.config.js"
   },
   "repository": {
