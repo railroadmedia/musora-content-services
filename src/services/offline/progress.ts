@@ -1,21 +1,29 @@
 import {
   _recordWatchSession,
-  handleLearningPathProgressActions,
   normalizeCollection,
   normalizeContentId,
+  filterOutLearningPathsForDuplication,
+  filterOutNegativeProgress,
+  getProgressDataByIds,
 } from '../../services/contentProgress'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, CollectionParameter } from '../sync/models/ContentProgress'
 import { db } from '../../services/sync'
 
+const excludeFromGeneratedIndex = [
+  'duplicateProgressToALaCarteOffline',
+]
+
 interface HierarchyParameter {
   topLevelId: number
-  parents: { [contentId: number]: [parentId: number] }
-  children: { [contentId: number]: [childId: number] }
-  metadata: {
-    brand: string
-    parent_id: number
-    type: string
-  }
+  parents: Record<string, number>
+  children: Record<string, number[]>
+  metadata: Record<string, MetadataParameter>
+}
+
+interface MetadataParameter {
+  brand: string
+  parent_id: number
+  type: string
 }
 
 /**
@@ -112,7 +120,9 @@ async function setStartedOrCompletedStatusOffline(contentId: number, collection:
 
   let allProgresses = { [contentId]: progress }
 
-  await handleLearningPathProgressActions(allProgresses, collection, { isOffline: true })
+  if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
+    await duplicateProgressToALaCarteOffline(allProgresses, metadata, collection)
+  }
 
   db.contentProgress.requestPushUnsynced('save-content-progress')
   return response
@@ -131,7 +141,9 @@ async function setStartedOrCompletedStatusManyOffline(contentIds: number[], coll
     { skipPush: true },
   )
 
-  await handleLearningPathProgressActions(allProgresses, collection, { isOffline: true })
+  if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
+    await duplicateProgressToALaCarteOffline(allProgresses, metadata, collection)
+  }
 
   db.contentProgress.requestPushUnsynced('save-content-progress')
   return response
@@ -147,8 +159,22 @@ async function resetStatusOffline(contentId: number, collection: CollectionParam
   let allProgresses = {}
   allProgresses[contentId] = progress
 
-  await handleLearningPathProgressActions(allProgresses, collection, { isOffline: true })
-
   db.contentProgress.requestPushUnsynced('reset-status')
   return response
+}
+
+// todo: move getters and helper functions into separate file to unwind circular dependencies with ofline/progress.ts
+export async function duplicateProgressToALaCarteOffline(progresses: Record<string, number>, metadata: Record<string, MetadataParameter>, collection: CollectionParameter) {
+  let filteredProgresses = filterOutLearningPathsForDuplication(progresses, collection)
+
+  const externalProgresses = await getProgressDataByIds(Object.keys(filteredProgresses), null)
+
+  filteredProgresses = filterOutNegativeProgress(filteredProgresses, externalProgresses)
+
+  await db.contentProgress.recordProgressMany(
+    filteredProgresses,
+    null,
+    metadata,
+    { skipPush: true },
+  )
 }

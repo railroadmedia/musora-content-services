@@ -4,6 +4,7 @@ import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/Conten
 import { trackUserPractice } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 import { getDailySession, onLearningPathCompletedActions } from './content-org/learning-paths.ts'
+import { duplicateProgressToALaCarteOffline } from './offline/progress.ts'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -625,7 +626,11 @@ export async function saveContentProgress(
   const metadata = hierarchy.metadata || {}
 
   if (isPlaylist) {
-    await duplicateProgressToALaCarte(allProgresses, collection)
+    if (isOffline) {
+      await duplicateProgressToALaCarteOffline(allProgresses, metadata, collection)
+    } else {
+      await duplicateProgressToALaCarte(allProgresses, collection)
+    }
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return
   }
@@ -640,7 +645,7 @@ export async function saveContentProgress(
   )
 
   if (isOffline) {
-    await handleLearningPathProgressActions(allProgresses, collection, { isOffline: true })
+    await duplicateProgressToALaCarteOffline(allProgresses, metadata, collection)
 
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
@@ -795,16 +800,12 @@ export async function computeBubbleTrickleProgresses(contentId, progress, collec
   }
 }
 
-export async function handleLearningPathProgressActions(progresses, collection, { isOffline = false } = {}) {
+export async function handleLearningPathProgressActions(progresses, collection) {
   if (collection?.type !== COLLECTION_TYPE.LEARNING_PATH) {
     return
   }
 
   await duplicateProgressToALaCarte(progresses, collection)
-
-  if (isOffline) {
-    return
-  }
 
   for (const [id, prog] of Object.entries(progresses)) {
     if (

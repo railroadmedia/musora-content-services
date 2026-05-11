@@ -137,13 +137,6 @@ describe('handleLearningPathProgressActions', () => {
     expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 
-  test('LP id at 100% with isOffline=true does not call onLearningPathCompletedActions', async () => {
-    await handleLearningPathProgressActions({ 200: 100 }, collectionLP(200), { isOffline: true })
-    await flushPromises()
-    expect(mockLearningPaths.onLearningPathCompletedActions).not.toHaveBeenCalled()
-    expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
-  })
-
   test('LP id + children at 100% calls onLearningPathCompletedActions once for LP id only', async () => {
     await handleLearningPathProgressActions({ 200: 100, 101: 100, 102: 100 }, collectionLP(200))
     await flushPromises()
