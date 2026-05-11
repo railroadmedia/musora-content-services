@@ -3,6 +3,7 @@ import { POST } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 import BaseModel from './models/Base'
 import type { default as SyncStore } from './store'
+import type { EpochMs } from './index'
 import { SyncTelemetry } from './telemetry/index'
 
 const CLEANUP_FLAG_KEY = 'stale_synced_cleanup_v1'
@@ -27,7 +28,7 @@ export async function repairStaleSyncedRecords(storesRegistry: Record<string, Sy
   if (await getCleanupFlag()) return
 
   const cutoff = Date.now() - STALE_CUTOFF_MS
-  const payload: Record<string, [id: string, updated_at: number][]> = {}
+  const payload: Record<string, [id: string, updated_at: EpochMs][]> = {}
   const recordsByTable: Record<string, BaseModel[]> = {}
 
   for (const table of SYNC_TABLES) {
@@ -51,14 +52,14 @@ export async function repairStaleSyncedRecords(storesRegistry: Record<string, Sy
 
   const staleEntries: Record<string, [id: string, serverUpdatedAt: number][]> = await POST('/api/sync/v1/stale-record-check', payload)
 
-  const repairedByTable: Record<string, [id: string, localUpdatedAt: number, serverUpdatedAt: number][]> = {}
+  const repairedByTable: Record<string, [id: string, localUpdatedAt: EpochMs, serverUpdatedAt: number][]> = {}
   const preparedUpdates = Object.entries(staleEntries).flatMap(([table, entries]) => {
     const records = recordsByTable[table] ?? []
     const serverTimestampById = new Map(entries.map(([id, serverTs]) => [id, serverTs]))
     return records
       .filter((r) => serverTimestampById.has(r._raw.id))
       .map((record) => {
-        const savedUpdatedAt = record._raw.updated_at as number
+        const savedUpdatedAt = record._raw.updated_at as EpochMs
         repairedByTable[table] ??= []
         repairedByTable[table].push([record._raw.id, savedUpdatedAt, serverTimestampById.get(record._raw.id)!])
         return record.prepareUpdate((r) => {
