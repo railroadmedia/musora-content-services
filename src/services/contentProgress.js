@@ -808,11 +808,7 @@ export async function handleLearningPathProgressActions(progresses, collection) 
   await duplicateProgressToALaCarte(progresses, collection)
 
   for (const [id, prog] of Object.entries(progresses)) {
-    if (
-      prog === 100
-      && collection?.type === COLLECTION_TYPE.LEARNING_PATH
-      && Number(id) === collection?.id
-    ) {
+    if (prog === 100 && Number(id) === collection?.id) {
       await onLearningPathCompletedActions(Number(id))
     }
   }
