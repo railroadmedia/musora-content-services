@@ -1,6 +1,6 @@
 import { Database } from '@nozbe/watermelondb'
-import { makeTelemetry, makeContext, makeUserScope, makePullMock, makePushMock } from '../helpers/index'
-import TestModel, { makeTestDatabase } from '../helpers/TestModel'
+import { makeTelemetry, makeContext, makeUserScope, makePullMock, makePushMock } from '../../../unit/sync/helpers/index'
+import TestModel, { makeTestDatabase } from '../../../unit/sync/helpers/TestModel'
 import SyncStore from '@/services/sync/store/index'
 import SyncRetry from '@/services/sync/retry'
 import SyncRunScope from '@/services/sync/run-scope'

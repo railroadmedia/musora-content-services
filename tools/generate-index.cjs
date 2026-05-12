@@ -52,11 +52,14 @@ function extractExportedFunctions(filePath) {
  * @returns {string[]}
  */
 function getExclusionList(fileContent) {
-  const excludeRegex = /const\s+excludeFromGeneratedIndex\s*=\s*\[(.*?)\];?/
+  const excludeRegex = /const\s+excludeFromGeneratedIndex\s*=\s*\[([\s\S]*?)\]/
   const excludeMatch = fileContent.match(excludeRegex)
   let excludedFunctions = []
   if (excludeMatch) {
-    excludedFunctions = excludeMatch[1].split(',').map((name) => name.trim().replace(/['"`]/g, ''))
+    excludedFunctions = excludeMatch[1]
+      .split(',')
+      .map((name) => name.trim().replace(/['"`]/g, ''))
+      .filter(Boolean)
   }
   return excludedFunctions
 }
@@ -80,7 +83,7 @@ treeElements.forEach((treeNode) => {
     addFunctionsToFileExports(filePath, treeNode)
   } else if (fs.lstatSync(filePath).isDirectory()) {
 
-    // Check for .indexignore file to skip this directory
+    // Check for .= file to skip this directory
     if (fs.existsSync(path.join(filePath, '.indexignore'))) {
       console.log(`Skipping directory: ${treeNode} due to .indexignore`)
       return

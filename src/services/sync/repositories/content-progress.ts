@@ -1,5 +1,10 @@
-import SyncRepository, {Q} from './base'
-import ContentProgress, {COLLECTION_ID_SELF, COLLECTION_TYPE, STATE, CollectionParameter} from '../models/ContentProgress'
+import SyncRepository, { Q } from './base'
+import ContentProgress, {
+  COLLECTION_ID_SELF,
+  COLLECTION_TYPE,
+  CollectionParameter,
+  STATE,
+} from '../models/ContentProgress'
 
 interface MetadataParameter {
   brand: string
@@ -9,13 +14,43 @@ interface MetadataParameter {
 
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
 
+  static collectionTypeFilter(
+    params: {
+      aLaCarte?: boolean;
+      learningPaths?: boolean
+    } = {}) {
+    let clauses: Q.Where[] = []
+
+    if (params.aLaCarte) {
+      clauses.push(
+        Q.and( // a-la-carte content that's been accessed directly
+          Q.where('collection_type', COLLECTION_TYPE.SELF),
+          Q.where('collection_id', COLLECTION_ID_SELF),
+          Q.where('last_interacted_a_la_carte', Q.notEq(null)),
+        ),
+      )
+    }
+
+    if (params.learningPaths) {
+      clauses.push(
+        Q.and( // just parents
+          Q.where('collection_type', COLLECTION_TYPE.LEARNING_PATH),
+          Q.where('content_id', Q.eq(Q.column('collection_id'))),
+        ),
+      )
+    }
+
+    if (clauses.length === 0) return
+    return Q.or(...clauses)
+  }
+
   async started(
     limit?: number,
     opts: {
       onlyIds?: boolean
       include?: { aLaCarte?: boolean, learningPaths?: boolean }
-    } = {}
-    ) {
+    } = {},
+  ) {
     const results = await this.queryAll(...[
       ProgressRepository.collectionTypeFilter(opts.include),
 
@@ -26,8 +61,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     ].filter(Boolean) as Q.Clause[])
 
     return opts.onlyIds
-        ? results.data.map((r) => r.content_id)
-        : results.data
+      ? results.data.map((r) => r.content_id)
+      : results.data
   }
 
   async completed(
@@ -35,7 +70,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     opts: {
       onlyIds?: boolean
       include?: { aLaCarte?: boolean, learningPaths?: boolean }
-    } = {}
+    } = {},
   ) {
     const results = await this.queryAll(...[
       ProgressRepository.collectionTypeFilter(opts.include),
@@ -55,52 +90,12 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   async completedByContentIds(contentIds: number[]) {
     return this.queryAll(
       Q.where('content_id', Q.oneOf(contentIds)),
-      Q.where('state', STATE.COMPLETED)
+      Q.where('state', STATE.COMPLETED),
     )
   }
 
   async startedOrCompleted(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
     return this.queryAll(...this.startedOrCompletedClauses(opts))
-  }
-
-  private startedOrCompletedClauses(
-    opts: {
-      brand?: string | null
-      contentTypes?: string[] | null
-      parentId?: number | null
-      include?: { aLaCarte?: boolean, learningPaths?: boolean }
-      updatedAfter?: number
-      limit?: number
-    } = {}
-  ) {
-    const clauses: Q.Clause[] = [
-      ProgressRepository.collectionTypeFilter(opts.include),
-
-      Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
-      Q.sortBy('updated_at', 'desc'),
-    ].filter(Boolean) as Q.Clause[]
-
-    if (opts.updatedAfter) {
-      clauses.push(Q.where('updated_at', Q.gte(opts.updatedAfter)))
-    }
-
-    if (opts.brand) {
-      clauses.push(Q.where('content_brand', opts.brand))
-    }
-
-    if (opts.contentTypes) {
-      clauses.push(Q.where('content_type', Q.oneOf(opts.contentTypes)))
-    }
-
-    if (opts.parentId || opts.parentId === 0) {
-      clauses.push(Q.where('content_parent_id', opts.parentId))
-    }
-
-    if (opts.limit) {
-      clauses.push(Q.take(opts.limit))
-    }
-
-    return clauses
   }
 
   async mostRecentlyUpdatedId(contentIds: number[], collection: CollectionParameter | null = null) {
@@ -109,13 +104,13 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.where('collection_type', collection?.type ?? COLLECTION_TYPE.SELF),
       Q.where('collection_id', collection?.id ?? COLLECTION_ID_SELF),
 
-      Q.sortBy('updated_at', 'desc')
+      Q.sortBy('updated_at', 'desc'),
     )
   }
 
   async getOneProgressByContentId(
     contentId: number,
-    collection: CollectionParameter | null = null
+    collection: CollectionParameter | null = null,
   ) {
     const clauses = [
       Q.where('content_id', contentId),
@@ -128,7 +123,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   async getSomeProgressByContentIds(
     contentIds: number[],
-    collection: CollectionParameter | null = null
+    collection: CollectionParameter | null = null,
   ) {
     const clauses = [
       Q.where('content_id', Q.oneOf(contentIds)),
@@ -147,16 +142,16 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
       Q.or(
-          Q.and(
-              Q.where('updated_at', Q.notEq(null)),
-              Q.where('last_interacted_a_la_carte', null)
-          ),
-          Q.and(
-              Q.where('updated_at', Q.notEq(null)),
-              Q.where('last_interacted_a_la_carte', Q.notEq(null)),
-              Q.where('updated_at', Q.gt(Q.column('last_interacted_a_la_carte')))
-          )
-      )
+        Q.and(
+          Q.where('updated_at', Q.notEq(null)),
+          Q.where('last_interacted_a_la_carte', null),
+        ),
+        Q.and(
+          Q.where('updated_at', Q.notEq(null)),
+          Q.where('last_interacted_a_la_carte', Q.notEq(null)),
+          Q.where('updated_at', Q.gt(Q.column('last_interacted_a_la_carte'))),
+        ),
+      ),
     ]
 
     return await this.queryAll(...clauses)
@@ -172,7 +167,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     progressPct: number,
     metadata: MetadataParameter,
     resumeTime?: number,
-    {skipPush = false, accessedDirectly = true} = {}) {
+    { skipPush = false, accessedDirectly = true } = {}) {
     const id = ContentProgress.generateId(contentId, collection)
 
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
@@ -205,7 +200,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     // Emit event AFTER database write completes (don't let emit failures affect the result)
     Promise.all([
       import('../../progress-events'),
-      import('../../config')
+      import('../../config'),
     ]).then(([progressEventsModule, { globalConfig }]) => {
       progressEventsModule.emitProgressSaved({
         userId: Number(globalConfig.railcontentConfig?.userId) || 0,
@@ -216,7 +211,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         collectionType: collection?.type ?? COLLECTION_TYPE.SELF,
         collectionId: collection?.id ?? COLLECTION_ID_SELF,
         resumeTimeSeconds: resumeTime ?? null,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }).catch(error => {
       console.error('Failed to emit progress saved event:', error)
@@ -229,7 +224,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
     metadata: Record<string, MetadataParameter>,
-    { skipPush = false, accessedDirectly = true }: { skipPush?: boolean; accessedDirectly?: boolean } = {}
+    { skipPush = false, accessedDirectly = true, allowRegression = false }: {
+      skipPush?: boolean;
+      accessedDirectly?: boolean,
+      allowRegression?: boolean
+    } = {},
   ) {
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
       accessedDirectly = false
@@ -243,7 +242,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
           r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
-          r.progress_percent = progressPct
+          if (allowRegression) {
+            r.setProgressForceRegression(progressPct)
+          } else {
+            r.progress_percent = progressPct
+          }
 
           r.content_brand = metadata[contentId].brand
           r.content_type = metadata[contentId].type
@@ -253,49 +256,59 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
             r.last_interacted_a_la_carte = r.updated_at
           }
         },
-      ])
+      ]),
     )
     return await this.upsertSome(data, { skipPush })
 
     //todo add event emitting for bulk updates?
   }
 
-  eraseProgress(contentId: number, collection: CollectionParameter | null, {skipPush = false} = {}) {
+  eraseProgress(contentId: number, collection: CollectionParameter | null, { skipPush = false } = {}) {
     return this.deleteOne(ContentProgress.generateId(contentId, collection), { skipPush })
   }
 
-  eraseProgressMany(contentIds: number[], collection: CollectionParameter | null, {skipPush = false} = {}) {
+  eraseProgressMany(contentIds: number[], collection: CollectionParameter | null, { skipPush = false } = {}) {
     const ids = contentIds.map((id) => ContentProgress.generateId(id, collection))
     return this.deleteSome(ids, { skipPush })
   }
 
-  static collectionTypeFilter(
-    params: {
-      aLaCarte?: boolean;
-      learningPaths?: boolean
-    } = {}) {
-    let clauses: Q.Where[] = []
+  private startedOrCompletedClauses(
+    opts: {
+      brand?: string | null
+      contentTypes?: string[] | null
+      parentId?: number | null
+      include?: { aLaCarte?: boolean, learningPaths?: boolean }
+      updatedAfter?: number
+      limit?: number
+    } = {},
+  ) {
+    const clauses: Q.Clause[] = [
+      ProgressRepository.collectionTypeFilter(opts.include),
 
-    if (params.aLaCarte) {
-      clauses.push(
-        Q.and( // a-la-carte content that's been accessed directly
-          Q.where('collection_type', COLLECTION_TYPE.SELF),
-          Q.where('collection_id', COLLECTION_ID_SELF),
-          Q.where('last_interacted_a_la_carte', Q.notEq(null)),
-        ),
-      )
+      Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
+      Q.sortBy('updated_at', 'desc'),
+    ].filter(Boolean) as Q.Clause[]
+
+    if (opts.updatedAfter) {
+      clauses.push(Q.where('updated_at', Q.gte(opts.updatedAfter)))
     }
 
-    if (params.learningPaths) {
-      clauses.push(
-        Q.and( // just parents
-          Q.where('collection_type', COLLECTION_TYPE.LEARNING_PATH),
-          Q.where('content_id', Q.eq(Q.column('collection_id')))
-        )
-      )
+    if (opts.brand) {
+      clauses.push(Q.where('content_brand', opts.brand))
     }
 
-    if (clauses.length === 0) return
-    return Q.or(...clauses)
+    if (opts.contentTypes) {
+      clauses.push(Q.where('content_type', Q.oneOf(opts.contentTypes)))
+    }
+
+    if (opts.parentId || opts.parentId === 0) {
+      clauses.push(Q.where('content_parent_id', opts.parentId))
+    }
+
+    if (opts.limit) {
+      clauses.push(Q.take(opts.limit))
+    }
+
+    return clauses
   }
 }

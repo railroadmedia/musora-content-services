@@ -116,7 +116,7 @@ export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
 export const resourcesField = `[
           ... resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
-          ... coalesce(parent_content_reference[]->resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )}, []),
+          ... coalesce(parent_content_reference[count(@->resource) > 0]->resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )}, []),
           ]`
 
 export const contentAwardField = "*[references(^._id) && _type == 'content-award'][0]"
@@ -437,7 +437,7 @@ export let contentTypeConfig = {
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
       `"metadata": { brand, "type": _type, "parent_id":  coalesce(${parentReferenceField}->railcontent_id, 0) }`,
-      ],
+    ],
     childFields: [
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
@@ -498,6 +498,7 @@ export let contentTypeConfig = {
   'course-lesson': {
     fields: [`"resources": ${resourcesField}`],
   },
+
   download: {
     fields: [
       `"resources": ${resourcesField}`,
@@ -512,6 +513,7 @@ export let contentTypeConfig = {
       'video',
       ...playAlongMp3sFields,
       pcdForDownloadField,
+      '"learning_path_parent_id": *[_type == "learning-path-v2" && references(^._id)][0].railcontent_id',
       `...select(
         defined(live_event_start_time) => {
           ${getLiveFields(true).join(',')}
@@ -531,6 +533,7 @@ export let contentTypeConfig = {
       'video',
       ...playAlongMp3sFields,
       pcdForDownloadField,
+      '"learning_path_parent_id": *[_type == "learning-path-v2" && references(^._id)][0].railcontent_id',
       `...select(
         defined(live_event_start_time) => {
           ${getLiveFields(true).join(',')}
@@ -811,7 +814,7 @@ export function artistOrInstructorNameAsArray(key = 'artists') {
 
 export async function getFieldsForContentTypeWithFilteredChildren(
   contentType,
-  asQueryString = true
+  asQueryString = true,
 ) {
   const childFields = getChildFieldsForContentType(contentType, true)
   const parentFields = getFieldsForContentType(contentType, false)
@@ -826,7 +829,7 @@ export async function getFieldsForContentTypeWithFilteredChildren(
         "children": child[${childFilter}]->{
           ${childFields}
         },
-      }`
+      }`,
     )
   }
   return asQueryString ? parentFields.toString() + ',' : parentFields
@@ -916,7 +919,7 @@ const filterHandlers = {
   length: (value) => {
     // Find the matching length option by name
     const lengthOption = Object.values(LengthFilterOptions).find(
-      (opt) => typeof opt === 'object' && opt.name === value
+      (opt) => typeof opt === 'object' && opt.name === value,
     )
 
     if (!lengthOption) return ''

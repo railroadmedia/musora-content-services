@@ -57,9 +57,6 @@ import {
 	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
-	mapContentsThatWereLastProgressedFromMethod,
-	mapLearningPathParentsTo,
-	onContentCompletedLearningPathActions,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -152,6 +149,10 @@ import {
 	toDayjs,
 	toLocalDay
 } from './services/dateUtils.js';
+
+import {
+	getEndScreen
+} from './services/endScreen/endScreen.ts';
 
 import {
 	createForumCategory,
@@ -442,6 +443,7 @@ import {
 
 import {
 	getOnboardingRecommendedContent,
+	initializeOnboardingFlow,
 	startOnboarding,
 	updateOnboarding,
 	userOnboardingForBrand
@@ -667,6 +669,7 @@ declare module 'musora-content-services' {
 		getContentAwardsByIds,
 		getContentRows,
 		getDailySession,
+		getEndScreen,
 		getEnrichedLearningPath,
 		getEnrichedLearningPaths,
 		getHierarchies,
@@ -722,6 +725,7 @@ declare module 'musora-content-services' {
 		guidedCourses,
 		hasAnyMethodV2IntroCompleted,
 		initializeEnvVar,
+		initializeOnboardingFlow,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
@@ -740,8 +744,6 @@ declare module 'musora-content-services' {
 		login,
 		logout,
 		mapContentToParent,
-		mapContentsThatWereLastProgressedFromMethod,
-		mapLearningPathParentsTo,
 		markAllNotificationsAsRead,
 		markContentAsInterested,
 		markContentAsNotInterested,
@@ -749,7 +751,6 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		markThreadAsRead,
 		numberOfActiveUsers,
-		onContentCompletedLearningPathActions,
 		onProgressSaved,
 		openComment,
 		otherStats,

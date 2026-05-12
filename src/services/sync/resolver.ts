@@ -7,7 +7,6 @@ export type SyncResolution = {
   tuplesForUpdate: [BaseModel, SyncEntry][]
   tuplesForRestore: [BaseModel, SyncEntry][]
   idsForDestroy: RecordId[]
-  recordsForSynced: BaseModel[]
 }
 
 export type SyncResolverComparator<T extends BaseModel = BaseModel> = (serverEntry: SyncEntryNonDeleted<T>, localModel: T) => 'SERVER' | 'LOCAL'
@@ -25,8 +24,7 @@ export default class SyncResolver {
       entriesForCreate: [],
       tuplesForUpdate: [],
       tuplesForRestore: [],
-      idsForDestroy: [],
-      recordsForSynced: []
+      idsForDestroy: []
     }
   }
 
@@ -60,9 +58,6 @@ export default class SyncResolver {
     } else if (this.comparator(server as SyncEntryNonDeleted<BaseModel>, local) !== 'LOCAL') {
       // local is older, so update it with server's
       this.resolution.tuplesForUpdate.push([local, server])
-    } else {
-      // server is older - can happen with clock skew - just mark as synced
-      this.resolution.recordsForSynced.push(local)
     }
   }
 
@@ -74,9 +69,6 @@ export default class SyncResolver {
     } else if (this.comparator(server as SyncEntryNonDeleted<BaseModel>, local) !== 'LOCAL') {
       // local is older, so update it with server's
       this.resolution.tuplesForUpdate.push([local, server])
-    } else {
-      // server is older - can happen with clock skew - just mark as synced
-      this.resolution.recordsForSynced.push(local)
     }
   }
 

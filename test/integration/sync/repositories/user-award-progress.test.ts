@@ -8,7 +8,7 @@ jest.mock('../../../../src/services/awards/internal/award-definitions', () => ({
 }))
 
 import { Database } from '@nozbe/watermelondb'
-import { makeDatabase, makeStore, resetDatabase } from '../helpers/index'
+import { makeDatabase, makeStore, resetDatabase } from '../../../unit/sync/helpers/index'
 import UserAwardProgress from '@/services/sync/models/UserAwardProgress'
 import UserAwardProgressRepository from '@/services/sync/repositories/user-award-progress'
 import type { CompletionData, AwardDefinition } from '../../../../src/services/awards/types'

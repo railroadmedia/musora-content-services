@@ -61,9 +61,6 @@ import {
 	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
-	mapContentsThatWereLastProgressedFromMethod,
-	mapLearningPathParentsTo,
-	onContentCompletedLearningPathActions,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -156,6 +153,10 @@ import {
 	toDayjs,
 	toLocalDay
 } from './services/dateUtils.js';
+
+import {
+	getEndScreen
+} from './services/endScreen/endScreen.ts';
 
 import {
 	createForumCategory,
@@ -446,6 +447,7 @@ import {
 
 import {
 	getOnboardingRecommendedContent,
+	initializeOnboardingFlow,
 	startOnboarding,
 	updateOnboarding,
 	userOnboardingForBrand
@@ -666,6 +668,7 @@ export {
 	getContentAwardsByIds,
 	getContentRows,
 	getDailySession,
+	getEndScreen,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
 	getHierarchies,
@@ -721,6 +724,7 @@ export {
 	guidedCourses,
 	hasAnyMethodV2IntroCompleted,
 	initializeEnvVar,
+	initializeOnboardingFlow,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
@@ -739,8 +743,6 @@ export {
 	login,
 	logout,
 	mapContentToParent,
-	mapContentsThatWereLastProgressedFromMethod,
-	mapLearningPathParentsTo,
 	markAllNotificationsAsRead,
 	markContentAsInterested,
 	markContentAsNotInterested,
@@ -748,7 +750,6 @@ export {
 	markNotificationAsUnread,
 	markThreadAsRead,
 	numberOfActiveUsers,
-	onContentCompletedLearningPathActions,
 	onProgressSaved,
 	openComment,
 	otherStats,
