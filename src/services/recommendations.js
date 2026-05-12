@@ -3,7 +3,8 @@
  */
 
 import { globalConfig } from './config.js'
-import { HttpClient } from '../infrastructure/http/HttpClient'
+import { GET, HttpClient } from '../infrastructure/http/HttpClient.ts'
+import { fetchByRailContentIds } from './sanity.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -11,6 +12,9 @@ import { HttpClient } from '../infrastructure/http/HttpClient'
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = []
+
+const RECOMMENDER_URL = 'https://recommender.musora.com'
+const recommenderClient = new HttpClient(RECOMMENDER_URL)
 
 /**
  * Fetches similar content to the provided content id
@@ -28,25 +32,23 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
   if (!content_id) {
     return []
   }
-  content_id = parseInt(content_id)
-  let data = {
-    brand: brand,
-    content_ids: content_id,
-    num_similar: count + 1, // because the content itself is sometimes returned
-  }
-  const url = `/similar_items/`
-  try {
-    const httpClient = new HttpClient(
-      globalConfig.recommendationsConfig.baseUrl,
-      globalConfig.recommendationsConfig.token
-    )
-    const response = await httpClient.post(url, data)
-    // we requested count + 1 then filtered out the extra potential value, so we need slice to the correct size if necessary
-    return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
-  } catch (error) {
-    console.error('Fetch error:', error)
-    return null
-  }
+    content_id = parseInt(content_id)
+    const data = {
+      brand: brand,
+      content_ids: content_id,
+      num_similar: count + 1,
+      page_size: count + 1,
+      page: 1,
+      exclude_interacted: true
+    }
+    const url = `/similar_items/`
+    try {
+      const response = await recommenderClient.post(url, data)
+      return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
+    } catch (error) {
+      console.error('Fetch error:', error)
+      return null
+    }
 }
 
 /**
@@ -68,28 +70,35 @@ export async function rankCategories(brand, categories) {
   if (categories.length === 0) {
     return []
   }
-  let data = {
+  const data = {
     brand: brand,
     user_id: globalConfig.sessionConfig.userId,
     playlists: categories,
   }
   const url = `/rank_each_list/`
   try {
-    const httpClient = new HttpClient(
-      globalConfig.recommendationsConfig.baseUrl,
-      globalConfig.recommendationsConfig.token
-    )
-    const response = await httpClient.post(url, data)
-    let rankedCategories = {}
-    response['ranked_playlists'].forEach(
-      (category) =>
-        (rankedCategories[category['playlist_id']] = categories[category['playlist_id']])
-    )
+    const response = await recommenderClient.post(url, data)
+    const rankedCategories = []
+
+    for (const rankedPlaylist of response['ranked_playlists']) {
+      rankedCategories.push({
+        slug: rankedPlaylist.playlist_id,
+        items: rankedPlaylist.ranked_items,
+      })
+    }
     return rankedCategories
   } catch (error) {
-    console.error('Fetch error:', error)
-    return null
+    console.error('RankCategories fetch error:', error)
   }
+
+  const defaultSorting = []
+  for (const slug in categories) {
+    defaultSorting.push({
+      slug: slug,
+      items: categories[slug],
+    })
+  }
+  return defaultSorting
 }
 
 /**
@@ -107,34 +116,27 @@ export async function rankItems(brand, content_ids) {
   if (content_ids.length === 0) {
     return []
   }
-  let data = {
+  const data = {
     brand: brand,
     user_id: globalConfig.sessionConfig.userId,
     content_ids: content_ids,
   }
   const url = `/rank_items/`
   try {
-    const httpClient = new HttpClient(
-      globalConfig.recommendationsConfig.baseUrl,
-      globalConfig.recommendationsConfig.token
-    )
-    const response = await httpClient.post(url, data)
+    const response = await recommenderClient.post(url, data)
     return response['ranked_content_ids']
   } catch (error) {
-    console.error('Fetch error:', error)
-    return null
+    console.error('rankItems fetch error:', error)
+    return content_ids
   }
 }
 
-export async function recommendations(brand, { section = '' } = {}) {
+export async function recommendations(brand, { section = '', contentTypes = [] } = {}) {
   section = section.toUpperCase().replace('-', '_')
   const sectionString = section ? `&section=${section}` : ''
-  const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}`
-  try {
-    const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-    return httpClient.get(url)
-  } catch (error) {
-    console.error('Fetch error:', error)
-    return null
-  }
+  const contentTypesString = contentTypes.length > 0
+    ? contentTypes.map(type => `&content_types[]=${encodeURIComponent(type)}`).join('')
+    : ''
+  const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}${contentTypesString}`
+  return await GET(url)
 }

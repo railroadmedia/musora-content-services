@@ -46,9 +46,7 @@
  * @property {string|null} revenuecat_origin_app_user_id
  * @property {number} is_drumeo_lifetime_member
  * @property {string} access_level
- * @property {number} total_xp
  * @property {BrandMethodLevels} brand_method_levels
- * @property {BrandTotalXp} brand_total_xp
  * @property {BrandTimePracticed} brand_minutes_practiced
  * @property {BrandTimePracticed} brand_seconds_practiced
  * @property {number|null} guitar_playing_since_year
@@ -73,6 +71,8 @@
  * @property {number} send_mobile_app_push_notifications
  * @property {number} send_email_notifications
  * @property {number} use_legacy_video_player
+ * @property {boolean} use_student_view
+ * @property {boolean} show_admin_toggle
  * @property {number} drumeo_ship_magazine
  * @property {string|null} magazine_shipping_address_id
  * @property {string|null} ios_latest_review_display_date
@@ -108,6 +108,12 @@
  */
 
 /**
+ * @typedef {Object} AuthKeyResponse
+ * @property {number} user_id
+ * @property {string} auth_key
+ */
+
+/**
  * @typedef {Object} UserPermissions
  *
  * @property {string[]} permissions
@@ -134,3 +140,17 @@
  * @property {number} forum_post_likes
  * @property {number} experience_points
  */
+
+/**
+ * @typedef {Object} BlockedUsersDTO
+ *
+ * @property {number} id
+ * @property {string} display_name
+ * @property {string|null} profile_picture_url
+ */
+
+/**
+ * @typedef {Object} SetUserSignatureParams
+ * @property {string} signature - The signature text to set for the user.
+ */
+

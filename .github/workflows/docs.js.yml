@@ -1,0 +1,60 @@
+name: Deploy Docs to GitHub Pages
+on:
+  push:
+    branches: [main]
+
+# Required permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy-docs:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-content
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies for v2
+        working-directory: main-content
+        run: npm ci
+
+      - name: Generate v2 documentation
+        working-directory: main-content
+        run: npm run doc
+
+      - name: Combine v1 and v2 docs into deployment structure
+        run: |
+          mkdir -p _site
+          cp -r main-content/docs/* _site/
+          echo "✅ Copied existing docs from main branch"
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload combined documentation artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

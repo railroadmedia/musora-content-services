@@ -8,9 +8,8 @@ import { globalConfig } from './config.js'
 const excludeFromGeneratedIndex = []
 
 //These constants need to match MWP UserDataVersionKeyEnum enum
-export const ContentLikesVersionKey = 0
-export const ContentProgressVersionKey = 1
 export const UserActivityVersionKey = 2
+export const PollingStateVersionKey = 3
 
 let cache = null
 
@@ -145,6 +144,47 @@ export class DataContext {
       let data = JSON.stringify(this.context)
       cache.setItem(this.localStorageKey, data)
       this.setLastUpdatedTime()
+    }
+  }
+}
+
+/**
+ * Clears all dataContext cached data from localStorage.
+ * Should be called on logout to prevent data leakage between users.
+ * Note: Does not clear user_pin_progress_row keys as they are user-specific.
+ */
+export async function clearAllCachedData() {
+  const storage = globalConfig.localStorage
+
+  if (storage) {
+    const keysToRemove = []
+
+    // For React Native AsyncStorage
+    if (globalConfig.isMA && storage.getAllKeys) {
+      const allKeys = await storage.getAllKeys()
+      keysToRemove.push(...allKeys.filter(key =>
+        key.startsWith('dataContext_')
+      ))
+    }
+    // For web localStorage
+    else if (typeof storage.length !== 'undefined') {
+      const allKeys = []
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i)
+        if (key) {
+          allKeys.push(key)
+        }
+      }
+      keysToRemove.push(...allKeys.filter(key =>
+        key.startsWith('dataContext_')
+      ))
+    }
+
+    // Use multiRemove for React Native AsyncStorage, removeItem for web localStorage
+    if (storage.multiRemove && typeof storage.multiRemove === 'function') {
+      await storage.multiRemove(keysToRemove)
+    } else {
+      keysToRemove.forEach(key => storage.removeItem(key))
     }
   }
 }

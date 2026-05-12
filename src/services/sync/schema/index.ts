@@ -1,0 +1,89 @@
+import { appSchema, tableSchema } from '@nozbe/watermelondb'
+
+export const SYNC_TABLES = {
+  CONTENT_LIKES: 'content_likes',
+  CONTENT_PROGRESS: 'progress',
+  PRACTICES: 'practices',
+  PRACTICE_DAY_NOTES: 'practice_day_notes',
+  USER_AWARD_PROGRESS: 'user_award_progress'
+}
+
+const contentLikesTable = tableSchema({
+  name: SYNC_TABLES.CONTENT_LIKES,
+  columns: [
+    { name: 'server_record_id', type: 'number', isIndexed: true },
+    { name: 'content_id', type: 'number', isIndexed: true },
+    { name: 'created_at', type: 'number' },
+    { name: 'updated_at', type: 'number' }
+  ]
+})
+const contentProgressTable = tableSchema({
+  name: SYNC_TABLES.CONTENT_PROGRESS,
+  columns: [
+    { name: 'server_record_id', type: 'number', isIndexed: true },
+    { name: 'content_id', type: 'number', isIndexed: true },
+    { name: 'content_brand', type: 'string', isIndexed: true },
+    { name: 'content_type', type: 'string', isIndexed: true },
+    { name: 'content_parent_id', type: 'number', isIndexed: true },
+    { name: 'collection_type', type: 'string', isIndexed: true },
+    { name: 'collection_id', type: 'number', isIndexed: true },
+    { name: 'state', type: 'string', isIndexed: true },
+    { name: 'progress_percent', type: 'number' },
+    { name: 'resume_time_seconds', type: 'number', isOptional: true },
+    { name: 'last_interacted_a_la_carte', type: 'number', isOptional: true },
+    { name: 'created_at', type: 'number' },
+    { name: 'updated_at', type: 'number', isIndexed: true }
+  ]
+})
+const practicesTable = tableSchema({
+  name: SYNC_TABLES.PRACTICES,
+  columns: [
+    { name: 'server_record_id', type: 'number', isIndexed: true },
+    { name: 'manual_id', type: 'string', isOptional: true },
+    { name: 'content_id', type: 'number', isOptional: true, isIndexed: true },
+    { name: 'date', type: 'string', isIndexed: true },
+    { name: 'auto', type: 'boolean', isIndexed: true },
+    { name: 'duration_seconds', type: 'number' },
+    { name: 'title', type: 'string', isOptional: true },
+    { name: 'thumbnail_url', type: 'string', isOptional: true },
+    { name: 'category_id', type: 'number', isOptional: true },
+    { name: 'instrument_id', type: 'number', isOptional: true },
+    { name: 'created_at', type: 'number' },
+    { name: 'updated_at', type: 'number', isIndexed: true }
+  ]
+})
+const practiceDayNotesTable = tableSchema({
+  name: SYNC_TABLES.PRACTICE_DAY_NOTES,
+  columns: [
+    { name: 'server_record_id', type: 'number', isIndexed: true },
+    { name: 'date', type: 'string', isIndexed: true },
+    { name: 'notes', type: 'string' },
+    { name: 'created_at', type: 'number' },
+    { name: 'updated_at', type: 'number', isIndexed: true }
+  ]
+})
+
+const userAwardProgressTable = tableSchema({
+  name: SYNC_TABLES.USER_AWARD_PROGRESS,
+  columns: [
+    { name: 'server_record_id', type: 'number', isIndexed: true },
+    { name: 'award_id', type: 'string', isIndexed: true },
+    { name: 'progress_percentage', type: 'number' },
+    { name: 'completed_at', type: 'string', isOptional: true, isIndexed: true },
+    { name: 'progress_data', type: 'string', isOptional: true },
+    { name: 'completion_data', type: 'string', isOptional: true },
+    { name: 'created_at', type: 'number' },
+    { name: 'updated_at', type: 'number', isIndexed: true }
+  ]
+})
+
+export default appSchema({
+  version: 2, // intentionally no migration for version 1->2, to wipe client db and backfill content_* columns
+  tables: [
+    contentLikesTable,
+    contentProgressTable,
+    practicesTable,
+    practiceDayNotesTable,
+    userAwardProgressTable
+  ]
+})

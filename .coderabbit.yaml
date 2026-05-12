@@ -9,6 +9,11 @@ reviews:
   review_status: true
   collapse_walkthrough: false
   related_prs: true
+  path_filters:
+    - "!docs/**"
+    - "!coverage/**"
+    - "!tools/**"
+    - "!node_modules/**"
   auto_review:
     enabled: true
     drafts: false

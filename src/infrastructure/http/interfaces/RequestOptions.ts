@@ -1,5 +1,7 @@
 export interface RequestOptions {
   method: string
   headers: Record<string, string>
-  body?: string
+  credentials?:  "omit" | "same-origin" | "include"
+  body?: string | FormData
+  cache?: RequestCache
 }

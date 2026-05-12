@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Filters - Async Methods (Integration) Integration & Edge Cases snapshot: admin complete filter 1`] = `"status in ['draft','scheduled','published','archived','unlisted'] && published_on <= "2024-01-15T14:01:00.000Z" && !defined(deprecated_railcontent_id)"`;
+
+exports[`Filters - Async Methods (Integration) Integration & Edge Cases snapshot: free user complete filter 1`] = `"status in ['scheduled','published'] && ((!defined(permission_v2) || count(permission_v2) == 0)) && published_on <= "2024-01-15T14:01:00.000Z" && !defined(deprecated_railcontent_id)"`;

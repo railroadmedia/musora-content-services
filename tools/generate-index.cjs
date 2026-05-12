@@ -27,6 +27,12 @@ function extractExportedFunctions(filePath) {
   const variableMatches = [...fileContent.matchAll(exportVariableRegex)].map((match) => match[2])
   matches = matches.concat(variableMatches)
 
+  // Match named re-exports: export { foo, bar } from '...' (skip export type { ... })
+  const reExportRegex = /\nexport\s+(?!type\s)\{([\s\S]+?)\}\s*from/g
+  const reExportMatches = [...fileContent.matchAll(reExportRegex)]
+    .flatMap((match) => match[1].split(',').map((name) => name.trim()).filter(Boolean))
+  matches = matches.concat(reExportMatches)
+
   const moduleExportsMatch = moduleExportsRegex.exec(fileContent)
   if (moduleExportsMatch) {
     const exportsList = moduleExportsMatch[1].split(',').map((exp) => exp.split(':')[0].trim())
@@ -46,11 +52,14 @@ function extractExportedFunctions(filePath) {
  * @returns {string[]}
  */
 function getExclusionList(fileContent) {
-  const excludeRegex = /const\s+excludeFromGeneratedIndex\s*=\s*\[(.*?)\];/
+  const excludeRegex = /const\s+excludeFromGeneratedIndex\s*=\s*\[([\s\S]*?)\]/
   const excludeMatch = fileContent.match(excludeRegex)
   let excludedFunctions = []
   if (excludeMatch) {
-    excludedFunctions = excludeMatch[1].split(',').map((name) => name.trim().replace(/['"`]/g, ''))
+    excludedFunctions = excludeMatch[1]
+      .split(',')
+      .map((name) => name.trim().replace(/['"`]/g, ''))
+      .filter(Boolean)
   }
   return excludedFunctions
 }
@@ -73,10 +82,31 @@ treeElements.forEach((treeNode) => {
   if (fs.lstatSync(filePath).isFile()) {
     addFunctionsToFileExports(filePath, treeNode)
   } else if (fs.lstatSync(filePath).isDirectory()) {
+
+    // Check for .= file to skip this directory
+    if (fs.existsSync(path.join(filePath, '.indexignore'))) {
+      console.log(`Skipping directory: ${treeNode} due to .indexignore`)
+      return
+    }
+    // Skip permissions directory except its index.ts barrel export
+    if (treeNode === 'permissions') {
+      addFunctionsToFileExports(path.join(filePath, 'index.ts'), treeNode + '/index.ts')
+      return
+    }
+
     const subDir = fs.readdirSync(filePath)
     subDir.forEach((subFile) => {
-      const filePath = path.join(servicesDir, treeNode, subFile)
-      addFunctionsToFileExports(filePath, treeNode + '/' + subFile)
+      const subFilePath = path.join(servicesDir, treeNode, subFile)
+
+      // Skip directories and check for .indexignore in nested directories
+      if (fs.lstatSync(subFilePath).isDirectory()) {
+        if (fs.existsSync(path.join(subFilePath, '.indexignore'))) {
+          console.log(`Skipping nested directory: ${treeNode}/${subFile} due to .indexignore`)
+        }
+        return
+      }
+
+      addFunctionsToFileExports(subFilePath, treeNode + '/' + subFile)
     })
   }
 })
@@ -84,6 +114,8 @@ treeElements.forEach((treeNode) => {
 // populate the index.js content string with the import/export of all functions
 let content =
   '/*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/\n'
+
+content += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
 
 Object.entries(fileExports).forEach(([file, functionNames]) => {
   content += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
@@ -93,6 +125,8 @@ const allFunctionNames = Object.values(fileExports).flat().sort()
 content += '\nexport {\n'
 content += `\t${allFunctionNames.join(',\n\t')},\n`
 content += '};\n'
+
+content += '\nexport default EventsAPI\n'
 
 // write the generated content to index.js
 const outputPath = path.join(__dirname, '../src/index.js')
@@ -108,11 +142,15 @@ Object.entries(fileExports).forEach(([file, functionNames]) => {
   dtsContent += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
 })
 
+dtsContent += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
+
 dtsContent += "\ndeclare module 'musora-content-services' {\n"
 dtsContent += '\texport {\n'
 dtsContent += `\t\t${allFunctionNames.join(',\n\t\t')},\n`
 dtsContent += '\t}\n'
 dtsContent += '}\n'
+
+dtsContent += '\nexport default EventsAPI\n'
 
 // write the generated content to index.d.ts
 const outputDtsPath = path.join(__dirname, '../src/index.d.ts')

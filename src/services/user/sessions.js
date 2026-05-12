@@ -1,7 +1,10 @@
 /**
  * @module Sessions
  */
+import { DELETE, POST } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
+import { clearAllCachedData } from '../dataContext.js'
+import { setUserPinnedProgressRow } from '../progress-row/base.js'
 import './types.js'
 
 /**
@@ -29,24 +32,50 @@ const excludeFromGeneratedIndex = []
  */
 export async function login(email, password, deviceName, deviceToken, platform) {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  return fetch(`${baseUrl}/v1/sessions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: null,
-    },
-    body: JSON.stringify({
-      email: email,
-      password: password,
-      device_name: deviceName,
-      device_token: deviceToken,
-      platform: platform,
-    }),
+  const data = await POST(`${baseUrl}/v1/sessions`, {
+    email: email,
+    password: password,
+    device_name: deviceName,
+    device_token: deviceToken,
+    platform: platform,
   })
+
+  return data
 }
+//Removing 3rdParty OAuth2 for now => https://musora.atlassian.net/browse/BEH-624?focusedCommentId=21492
+/*export async function loginWithProvider(provider, providerIdToken, deviceToken, deviceName, platform) {
+  const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
+
+  try {
+    const response = await fetch(`${baseUrl}/v1/auth/${provider}/mobile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Client-Platform': 'mobile',
+      },
+      body: JSON.stringify({
+        id_token: providerIdToken,
+        device_name: deviceName,
+        firebase_token: deviceToken,
+        platform,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({}))
+      throw new Error(errorBody.error || `Login failed with status ${response.status}`)
+    }
+
+    return await response.json()
+  } catch (err) {
+    console.error('loginWithProvider failed', err)
+    throw err
+  }
+}*/
 
 /**
  * Logs the user out of the current session.
+ * Clears all cached data to prevent data leakage between users.
  *
  * @returns {Promise<void>}
  *
@@ -57,11 +86,62 @@ export async function login(email, password, deviceName, deviceToken, platform) 
  */
 export async function logout() {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  await fetch(`${baseUrl}/v1/sessions`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${globalConfig.sessionConfig.authToken}`,
-      'Content-Type': 'application/json',
-    },
+  await DELETE(`${baseUrl}/v1/sessions`)
+
+  // Clear all locally cached data to prevent data leakage between users
+  await clearAllCachedData()
+}
+
+/**
+ * @param {number} userId
+ * @param {string} redirectTo
+ * @returns {Promise<string>}
+ *
+ * @example
+ * const authUrl = await generateAuthSessionUrl(592656, 'https://app.musora.com/drumeo')
+ */
+export async function generateAuthSessionUrl(userId, redirectTo) {
+  const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
+
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+
+  if (globalConfig.isMA) {
+    headers.Authorization = `Bearer ${globalConfig.sessionConfig.authToken}`
+  }
+
+  // generate auth key
+  const response = await fetch(`${baseUrl}/v1/auth-key`, {
+    method: 'GET',
+    headers,
+    credentials: globalConfig.isMA ? undefined : 'include',
   })
+
+  if (!response.ok) {
+    throw new Error(`Failed to generate auth key: ${response.status}`)
+  }
+
+  const authKeyResponse = await response.json()
+  const authKey = authKeyResponse.data || authKeyResponse.auth_key
+
+  const absoluteRedirectTo = new URL(redirectTo)
+  const relativeRedirectTo = absoluteRedirectTo.pathname + absoluteRedirectTo.search
+
+  const params = new URLSearchParams({
+    user_id: userId.toString(),
+    auth_key: authKey,
+    redirect_to: relativeRedirectTo,
+  })
+
+  // generate link that will *consume* the auth key
+  if (globalConfig.isMA) {
+    if (!absoluteRedirectTo.hostname.endsWith('.musora.com')) {
+      throw new Error('Bad redirect URL - must be a musora.com domain')
+    }
+
+    return `${absoluteRedirectTo.origin}/auth?${params.toString()}`
+  } else {
+    throw new Error("Not implemented - MA deep links don't accept auth keys")
+  }
 }

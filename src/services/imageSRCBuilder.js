@@ -35,9 +35,16 @@
  * @returns {string} The fully constructed image URL with transformations
  */
 export function buildImageSRC(url, options = {}) {
+  // Return early if url is null, undefined, or empty
+  if (!url) {
+    return url
+  }
+
   // Process Sanity URL first if applicable
   if (url.includes('cdn.sanity.io')) {
     url = applySanityTransformations(url, options)
+  } else if (url.includes('imagedelivery.net')) {
+    return url
   }
 
   // Then apply Cloudflare transformations
@@ -53,14 +60,13 @@ export function buildImageSRC(url, options = {}) {
  * @private
  */
 export function applySanityTransformations(url, options) {
-  const { width, height, quality } = options
+  const { width, height } = options
 
-  const sanityOptions = ['fm=webp']
+  const sanityOptions = ['q=100']
 
   // Dimensions
   if (width) sanityOptions.push(`w=${width}`)
   if (height) sanityOptions.push(`h=${height}`)
-  if (quality) sanityOptions.push(`q=${quality}`)
 
   // Add parameters to Sanity URL
   const sanityQuery = sanityOptions.length > 0 ? `?${sanityOptions.join('&')}` : ''

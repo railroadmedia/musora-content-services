@@ -1,0 +1,324 @@
+import { SyncToken, SyncEntry } from "./index"
+import { EpochMs } from "."
+import * as fflate from 'fflate'
+import { globalConfig } from '../config.js'
+import BaseModel from "./models/Base"
+import SyncContext from "./context"
+import { SyncTelemetry } from "./telemetry"
+
+export type BlockingState = {
+  enabled: boolean
+}
+export type SyncPull = (
+  tableName: string,
+  schemaVersion: number,
+  intendedUserId: number,
+  context: SyncContext,
+  signal: AbortSignal,
+  previousFetchToken: SyncToken | null
+) => Promise<SyncPullResponse>
+export type SyncPush = (
+  tableName: string,
+  schemaVersion: number,
+  intendedUserId: number,
+  context: SyncContext,
+  payload: PushPayload,
+  signal: AbortSignal,
+  blockingState: BlockingState
+) => Promise<SyncPushResponse>
+
+interface RawPullResponse {
+  meta: {
+    since: EpochMs | null
+    max_updated_at: EpochMs | null
+    timestamp: EpochMs
+  }
+  entries: SyncEntry<BaseModel>[]
+}
+
+interface RawPushResponse {
+  meta: {
+    timestamp: EpochMs
+  }
+  results: SyncStorePushResult[]
+}
+
+export type SyncResponse = SyncPushResponse | SyncPullResponse
+export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFetchFailureResponse | SyncPushAbortResponse | SyncPushBlockedResponse | SyncPushFailureResponse
+
+type SyncPushSuccessResponse = SyncResponseBase & {
+  ok: true
+  results: SyncStorePushResult[]
+}
+type SyncPushFetchFailureResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'fetch'
+  isRetryable: boolean
+}
+type SyncPushAbortResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'abort'
+}
+type SyncPushBlockedResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'blocked'
+  isRetryable: boolean
+}
+type SyncPushFailureResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'error'
+  originalError: Error
+}
+
+export type SyncStorePushResult = SyncStorePushResultSuccess | SyncStorePushResultFailure
+export type SyncStorePushResultSuccess = SyncStorePushResultBase & {
+  type: 'success'
+  entry: SyncEntry<BaseModel>
+}
+export type SyncStorePushResultFailure = SyncStorePushResultProcessingFailure | SyncStorePushResultValidationFailure
+type SyncStorePushResultProcessingFailure = SyncStorePushResultFailureBase & {
+  failureType: 'processing'
+  error: any
+}
+type SyncStorePushResultValidationFailure = SyncStorePushResultFailureBase & {
+  failureType: 'validation'
+  errors: Record<string, string[]>
+}
+interface SyncStorePushResultFailureBase extends SyncStorePushResultBase {
+  type: 'failure'
+  failureType: string
+  ids: { id: string }
+}
+interface SyncStorePushResultBase {
+  type: 'success' | 'failure'
+}
+
+export type SyncPullResponse = SyncPullSuccessResponse | SyncPullFailureResponse | SyncPullAbortResponse | SyncPullFetchFailureResponse
+
+type SyncPullSuccessResponse = SyncResponseBase & {
+  ok: true
+  entries: SyncEntry[]
+  token: SyncToken
+  previousToken: SyncToken | null,
+  intendedUserId: number
+}
+export type SyncPullFetchFailureResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'fetch'
+  isRetryable: boolean
+}
+type SyncPullFailureResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'error'
+  originalError: Error
+}
+type SyncPullAbortResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'abort'
+}
+export interface SyncResponseBase {
+  ok: boolean
+}
+
+export type PushPayload = {
+  entries: ({
+    record: Record<string, unknown>
+    meta: {
+      ids: {
+        id: string
+      }
+      deleted_at: null
+    }
+  } | {
+    record: null
+    meta: {
+      ids: {
+        id: string
+      }
+      deleted_at: number
+    }
+  })[]
+}
+
+export function makeFetchRequest(input: RequestInfo, init?: RequestInit) {
+  return (userId: number, context: SyncContext) => new Request(globalConfig.baseUrl + input, {
+    ...init,
+    headers: {
+      ...init?.headers,
+      ...globalConfig.sessionConfig?.token ? {
+        'Authorization': `Bearer ${globalConfig.sessionConfig.token}`
+      } : {},
+      'Content-Type': 'application/json',
+      'X-Sync-Client-Id': context.session.getClientId(),
+      ...(context.session.getSessionId() ? {
+        'X-Sync-Client-Session-Id': context.session.getSessionId()!
+      } : {}),
+      'X-Sync-Intended-User-Id': userId.toString(),
+      'X-Sync-Accept-Encoding': 'gzip-base64'
+    }
+  })
+}
+
+export function handlePull(callback: (userId: number, context: SyncContext) => Request): SyncPull {
+  return async function(_tableName, schemaVersion, userId, context, signal, lastFetchToken) {
+    const generatedRequest = callback(userId, context)
+    const url = serializePullUrlQuery(generatedRequest.url, lastFetchToken)
+    const request = new Request(url, {
+      credentials: 'include',
+      headers: {
+        ...Object.fromEntries(generatedRequest.headers.entries()),
+        'X-Sync-Schema-Version': schemaVersion.toString()
+      },
+      signal
+    });
+
+    let response: Response | null = null
+    try {
+      response = await fetch(request)
+    } catch (e) {
+      if (e.name === 'AbortError') {
+        return {
+          ok: false,
+          failureType: 'abort'
+        }
+      } else if (e instanceof TypeError) {
+        return {
+          ok: false,
+          failureType: 'fetch',
+          isRetryable: context.connectivity.getValue() !== false
+        }
+      }
+
+      return {
+        ok: false,
+        failureType: 'error',
+        originalError: e as Error
+      }
+    }
+
+    if (response.ok === false) {
+      return {
+        ok: false,
+        failureType: 'fetch',
+        isRetryable: (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
+      }
+    }
+
+    if (!response.headers.get('X-Sync-Intended-User-Id')) {
+      throw new Error('Missing X-Sync-Intended-User-Id header')
+    }
+    const intendedUserId = +response.headers.get('X-Sync-Intended-User-Id')!
+
+    const contentEncoding = response.headers.get('X-Sync-Content-Encoding');
+    let json: RawPullResponse;
+
+    if (contentEncoding === 'gzip-base64') {
+      const base64Data = await response.text();
+
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const decompressed = fflate.gunzipSync(bytes);
+
+      const jsonString = fflate.strFromU8(decompressed);
+      json = JSON.parse(jsonString) as RawPullResponse;
+    } else {
+      json = await response.json() as RawPullResponse;
+    }
+
+    const data = json
+
+    // if no max_updated_at, at least use the server's timestamp
+    // useful for recording that we have at least tried fetching even though resultset empty
+    const token = data.meta.max_updated_at || data.meta.timestamp
+    const previousToken = data.meta.since
+
+    const entries = data.entries
+
+    return {
+      ok: true,
+      entries,
+      token,
+      previousToken,
+      intendedUserId
+    }
+  }
+}
+
+export function handlePush(callback: (userId: number, context: SyncContext) => Request): SyncPush {
+  return async function(tableName, schemaVersion, userId, context, payload, signal, blockingState) {
+    const generatedRequest = callback(userId, context)
+    const serverPayload = payload
+    const request = new Request(generatedRequest, {
+      credentials: 'include',
+      body: JSON.stringify(serverPayload),
+      headers: {
+        ...Object.fromEntries(generatedRequest.headers.entries()),
+        'X-Sync-Schema-Version': schemaVersion.toString()
+      },
+      signal
+    })
+
+    if (blockingState.enabled) {
+      SyncTelemetry.getInstance().debug(`[sync:${tableName}] Push blocked`)
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 30))
+      return {
+        ok: false,
+        failureType: 'blocked',
+        isRetryable: true
+      }
+    }
+
+    let response: Response | null = null
+    try {
+      response = await fetch(request)
+    } catch (e) {
+      if (e.name === 'AbortError') {
+        return {
+          ok: false,
+          failureType: 'abort'
+        }
+      } else if (e instanceof TypeError) {
+        return {
+          ok: false,
+          failureType: 'fetch',
+          isRetryable: context.connectivity.getValue() !== false
+        }
+      }
+
+      return {
+        ok: false,
+        failureType: 'error',
+        originalError: e as Error
+      }
+    }
+
+    if (response.ok === false) {
+      return {
+        ok: false,
+        failureType: 'fetch',
+        isRetryable: (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
+      }
+    }
+
+    const json = await response.json() as RawPushResponse
+    const data = json
+
+    return {
+      ok: true,
+      results: data.results
+    }
+  }
+}
+
+function serializePullUrlQuery(url: string, fetchToken: SyncToken | null) {
+  const queryString = url.replace(/^[^?]*\??/, '');
+  const searchParams = new URLSearchParams(queryString);
+  if (fetchToken) {
+    searchParams.set('since', fetchToken.toString())
+  }
+  return url + '?' + searchParams.toString()
+}

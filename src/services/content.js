@@ -11,36 +11,62 @@ import {
   fetchUpcomingEvents,
   fetchScheduledReleases,
   fetchReturning,
-  fetchLeaving, fetchScheduledAndNewReleases
+  fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows, fetchOwnedContent, fetchCourseCollectionData
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {fetchHandler} from "./railcontent";
-import {recommendations} from "./recommendations";
+import {recommendations, rankCategories, rankItems} from "./recommendations";
+import {addContextToContent} from "./contentAggregator.js";
+import {getUserData} from "./user/management";
+import {
+  lessonTypesMapping,
+  ownedContentTypes
+} from "../contentTypeConfig";
+import { fetchUserPermissions, getPermissionsAdapter, isUserFreeTier, doesUserHaveMembership } from './permissions/index.ts'
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
-  let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
+  const [recentContentIds, rawContentRows, userData] = await Promise.all([
+    fetchRecent(brand, pageName, { progress: 'recent', limit: 10 }),
+    getContentRows(brand, pageName),
+    getUserData()
+  ])
 
-  let contentRows = await getContentRows(brand, pageName);
-  contentRows = Array.isArray(contentRows) ? contentRows : [];
+  const contentRows = Array.isArray(rawContentRows) ? rawContentRows : []
+
+  // Only fetch owned content if user has no active membership
+  if (!userData?.has_active_membership) {
+    const type = ownedContentTypes[pageName] || []
+
+    const ownedContent = await fetchOwnedContent(brand, { type })
+    if (ownedContent?.entity && ownedContent.entity.length > 0) {
+      contentRows.unshift({
+        id: 'owned',
+        title: 'Owned ' + capitalizeFirstLetter(pageName),
+        items: ownedContent.entity
+      })
+    }
+  }
+
+  // Add recent content row
   contentRows.unshift({
     id: 'recent',
     title: 'Recent ' + capitalizeFirstLetter(pageName),
     items: recentContentIds || []
-  });
+  })
 
   const results = await Promise.all(
-      contentRows.map(async (row) => {
-        return { id: row.id, title: row.title, items:  row.items }
-      })
+    contentRows.map(async (row) => {
+      return { id: row.id, title: row.title, items:  row.items }
+    })
   )
+
   return results
 }
 
 /**
  * Get data that should be displayed for a specific tab with pagination
  * @param {string} brand - The brand for which to fetch data.
- * @param {string} pageName - The page name (e.g., 'lessons', 'songs','challenges).
+ * @param {string} pageName - The page name (e.g., 'lessons', 'songs').
  * @param {string} tabName - The name for the selected tab. Should be same name received from fetchMetadata (e.g., 'Individuals', 'Collections','For You').
  * @param {Object} params - Parameters for pagination, sorting, and filter.
  * @param {number} [params.page=1] - The page number for pagination.
@@ -65,6 +91,11 @@ export async function getTabResults(brand, pageName, tabName, {
   sort = 'recommended',
   selectedFilters = []
 } = {}) {
+  if (!tabName && ['lessons', 'songs'].includes(pageName)) return { type: TabResponseType.CATALOG, data: [], meta: { filters: [], sort: {} } }
+
+  const userPermissions = await fetchUserPermissions()
+  const permissions = userPermissions.permissions || []
+  const isFreeTier = isUserFreeTier(userPermissions)
 
   // Extract and handle 'progress' filter separately
   const progressFilter = selectedFilters.find(f => f.startsWith('progress,')) || 'progress,all';
@@ -72,15 +103,116 @@ export async function getTabResults(brand, pageName, tabName, {
   const filteredSelectedFilters = selectedFilters.filter(f => !f.startsWith('progress,'));
 
   // Prepare included fields
-  const mergedIncludedFields = [...filteredSelectedFilters, `tab,${tabName.toLowerCase()}`];
+  const tabMatch = Object.values(Tabs).find(
+    tabObj => tabObj.name.toLowerCase() === tabName.toLowerCase()
+  )
+  const tabValue = tabMatch?.value || ''
+  const tabRecSysSection = tabMatch?.recSysSection || ''
+  const mergedIncludedFields = tabValue ? [...filteredSelectedFilters, tabValue] : filteredSelectedFilters;
 
   // Fetch data
-  const results = tabName === Tabs.ForYou.name
-      ? { entity: await getLessonContentRows(brand, pageName) }
-      : await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+  let results
+  if( tabName === Tabs.ForYou.name ) {
+    results = await addContextToContent(getLessonContentRows, brand, pageName, {
+      dataField: 'items',
+      addNextLesson: true,
+      addNavigateTo: true,
+      addProgressPercentage: true,
+      addProgressStatus: true
+    })
+  } else if (sort === 'recommended' && tabName.toLowerCase() !== Tabs.ExploreAll.name.toLowerCase()) {
+    const contentTypes = lessonTypesMapping[tabName.toLowerCase()] || []
+    const allRecommendations = await recommendations(brand, { contentTypes, section: tabRecSysSection })
+
+    let contentToDisplay
+    if (allRecommendations.length > 0) {
+      // Fetch and sort recommended content
+      let recommendedContent = await fetchByRailContentIds(allRecommendations, 'tab-data', brand, true)
+      recommendedContent.sort((a, b) => allRecommendations.indexOf(a.id) - allRecommendations.indexOf(b.id))
+
+      recommendedContent = filterCoursesInCourseCollections(recommendedContent)
+
+      if (isFreeTier) {
+        recommendedContent = applyPermissionsPostSort(recommendedContent, permissions)
+      }
+
+      const start = (page - 1) * limit
+      const end = start + limit
+      const pagesFilledByRec = Math.floor(recommendedContent.length / limit)
+
+      // use pagination to only fetch new contents
+      if (recommendedContent.length < end) {
+        const tabData = await fetchTabData(brand, pageName, {
+          page: page - pagesFilledByRec,
+          limit,
+          sort: '-published_on',
+          includedFields: mergedIncludedFields,
+          progress: progressValue,
+          excludeIds: recommendedContent.map(c => c.id),
+          sortPermissions: permissions,
+        })
+
+        // Filter out duplicates and combine
+        const recommendedIds = new Set(recommendedContent.map(c => c.id))
+        const additionalContent = tabData.entity.filter(c => !recommendedIds.has(c.id))
+
+        const recommendedContentToDisplay = recommendedContent.slice(start, end)
+        const additionalContentToDisplay = additionalContent.slice(0, limit - recommendedContentToDisplay.length)
+        contentToDisplay = [...recommendedContentToDisplay, ...additionalContentToDisplay]
+      } else {
+        contentToDisplay = recommendedContent.slice(start, end)
+      }
+    } else {
+      // No recommendations - use normal flow
+      const temp = await fetchTabData(brand, pageName, {
+        page,
+        limit,
+        sort: '-published_on',
+        includedFields: mergedIncludedFields,
+        progress: progressValue,
+        sortPermissions: permissions,
+      })
+      contentToDisplay = temp.entity
+    }
+
+    results = await addContextToContent(() => contentToDisplay, {
+      addNextLesson: true,
+      addNavigateTo: true,
+      addProgressPercentage: true,
+      addProgressStatus: true
+    })
+  } else {
+    let temp = await fetchTabData(
+      brand,
+      pageName,
+      {
+        page,
+        limit,
+        sort,
+        includedFields: mergedIncludedFields,
+        progress: progressValue,
+        sortPermissions: permissions,
+      });
+    const [ranking, contextResults] = await Promise.all([
+      sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.id)) : [],
+      addContextToContent(() => temp.entity, {
+        addNextLesson: true,
+        addNavigateTo: true,
+        addProgressPercentage: true,
+        addProgressStatus: true
+      })
+    ]);
+
+    results = ranking.length === 0 ? contextResults : contextResults.sort((a, b) => {
+      const indexA = ranking.indexOf(a.id);
+      const indexB = ranking.indexOf(b.id);
+      return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
+    })
+  }
+
 
   // Fetch metadata
-  const metaData = await fetchMetadata(brand, pageName);
+  const metaData = await fetchMetadata(brand, pageName, { skipTabFiltering: true });
 
   // Process filters
   const filters = (metaData.filters ?? []).map(filter => ({
@@ -107,7 +239,7 @@ export async function getTabResults(brand, pageName, tabName, {
 
   return {
     type: tabName === Tabs.ForYou.name ? TabResponseType.SECTIONS : TabResponseType.CATALOG,
-    data: results.entity,
+    data: results,
     meta: { filters, sort: sortOptions }
   };
 }
@@ -149,11 +281,11 @@ export async function getRecent(brand, pageName, tabName = 'all', {
 }
 
 /**
- * Fetches content rows for a given brand and page with optional filtering by content row id.
+ * Fetches content rows for a given brand and page with optional filtering by content row slug.
  *
  * @param {string} brand - The brand for which to fetch content rows.
- * @param {string} pageName - The page name (e.g., 'lessons', 'songs', 'challenges').
- * @param {string} [contentRowId] - The specific content row ID to fetch.
+ * @param {string} pageName - The page name (e.g., 'lessons', 'songs').
+ * @param {string|null} contentRowSlug - The specific content row ID to fetch.
  * @param {Object} params - Parameters for pagination.
  * @param {number} [params.page=1] - The page number for pagination.
  * @param {number} [params.limit=10] - The maximum number of content items per row.
@@ -168,32 +300,43 @@ export async function getRecent(brand, pageName, tabName = 'all', {
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
-export async function getContentRows(brand, pageName, contentRowId , {
+export async function getContentRows(brand, pageName, contentRowSlug = null, {
   page = 1,
-  limit = 10,
+  limit = 10
 } = {}) {
-  const contentRow = contentRowId ? `&content_row_id=${contentRowId}` : ''
-  const url = `/api/content/v1/rows?brand=${brand}&page_name=${pageName}${contentRow}&page=${page}&limit=${limit}`;
-  const contentRows =  await fetchHandler(url, 'get', null) || [];
-  const results = await Promise.all(
-    contentRows.map(async (row) => {
-      if (row.content.length === 0){
-        return { id: row.id, title: row.title, items: [] }
-      }
-      const data = await fetchByRailContentIds(row.content)
-      return { id: row.id, title: row.title, items: data }
-    })
-  )
-
-  if (contentRowId) {
-    return {
-      type: TabResponseType.CATALOG,
-      data: results[0].items,
-      meta: {}
-    };
+  const sanityData = await fetchContentRows(brand, pageName, contentRowSlug)
+  if (!sanityData) {
+    return []
+  }
+  let contentMap = {}
+  let recData = {}
+  let slugNameMap = {}
+  for (const category of sanityData) {
+    recData[category.slug] = category.content.map(item => item.id)
+    for (const content of category.content) {
+      contentMap[content.id] = content
+    }
+    slugNameMap[category.slug] = category.name
   }
 
-  return results
+  const start = (page - 1) * limit
+  const end = start + limit
+  const sortedData = await rankCategories(brand, recData)
+  let finalData = []
+  for (const category of sortedData) {
+    finalData.push( {
+      id: category.slug,
+      title: slugNameMap[category.slug],
+      items: category.items.slice(start, end).map(id => contentMap[id])})
+  }
+
+  return contentRowSlug ?
+    {
+      type: TabResponseType.CATALOG,
+      data: finalData[0].items,
+      meta: {}
+    }
+    : finalData
 }
 
 /**
@@ -217,21 +360,26 @@ export async function getContentRows(brand, pageName, contentRowId , {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function getNewAndUpcoming(brand, {
-  page = 1,
-  limit = 10,
-} = {}) {
+export async function getNewAndUpcoming(brand, { page = 1, limit = 10 } = {}) {
+  const data = await addContextToContent(
+    fetchScheduledAndNewReleases,
+    brand,
+    { page: page, limit: limit },
+    {
+      addNavigateTo: true,
+      addProgressPercentage: true,
+      addProgressStatus: true,
+    }
+  )
 
-  const data = await fetchScheduledAndNewReleases(brand, {page: page, limit: limit});
   if (!data) {
-    return null;
+    return null
   }
 
   return {
     data: data,
-  };
+  }
 }
-
 /**
  * Fetches scheduled content rows for a given brand with optional filtering by content row ID.
  *
@@ -315,12 +463,18 @@ export async function getScheduleContentRows(brand, contentRowId = null, { page 
       const pagination = isNewReleases ? { page: 1, limit: 30 } : { page: 1, limit: Number.MAX_SAFE_INTEGER };
       const items = await section.fetchMethod(brand, pagination)
 
+      const content = await addContextToContent(() => items, {
+        addProgressPercentage: true,
+        addProgressStatus: true,
+        addNavigateTo: true,
+      })
+
       return {
         id,
         title: section.title,
         // TODO: Remove content after FE/MA updates the existing code to use items
-        content: items,
-        items: items
+        content: content,
+        items: content
       };
     })
   );
@@ -358,22 +512,19 @@ export async function getRecommendedForYou(brand, rowId = null, {
   limit = 10,
 } = {}) {
   const requiredItems = page * limit;
-  const data = await recommendations(brand, {limit: requiredItems});
+  const data = await recommendations( brand, {limit: requiredItems})
+  const title = brand === 'playbass' ? "You Might Like" : "Recommended For You"
   if (!data || !data.length) {
-    return { id: 'recommended', title: 'Recommended For You', items: [] };
+    return { id: 'recommended', title: title, items: [] };
   }
-
   // Apply pagination before calling fetchByRailContentIds
   const startIndex = (page - 1) * limit;
   const paginatedData = data.slice(startIndex, startIndex + limit);
-
-  const contents = await fetchByRailContentIds(paginatedData);
-  const result = {
-    id: 'recommended',
-    title: 'Recommended For You',
-    items: contents
-  };
-
+  const contents = await addContextToContent(fetchByRailContentIds, paginatedData, 'tab-data', brand, true,
+    {
+      addNextLesson: true,
+      addNavigateTo: true,
+    })
   if (rowId) {
     return {
       type: TabResponseType.CATALOG,
@@ -382,13 +533,121 @@ export async function getRecommendedForYou(brand, rowId = null, {
     };
   }
 
-  return { id: 'recommended', title: 'Recommended For You', items: contents }
+  return { id: 'recommended', title: title, items: contents }
 }
 
 
+/**
+ * Fetches legacy methods for a given brand by permission.
+ *
+ * @param {string} brand - The brand for which to fetch legacy methods.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing legacy methods.
+ *
+ * @example
+ * // Fetch legacy methods for a brand by permission
+ * getLegacyMethods('drumeo')
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
+export async function getLegacyMethods(brand)
+{
+  const brandMap = {
+    drumeo: [241247],
+    pianote: [
+      276693,
+      215952 //Foundations 2019
+    ],
+    singeo: [308514],
+    guitareo: [333652],
+  }
+  const ids = brandMap[brand] ?? null;
+  if (!ids) return [];
+  const adapter = getPermissionsAdapter()
+  const userPermissionsData = await adapter.fetchUserPermissions()
+  const userPermissions = userPermissionsData.permissions
+  // Users should only have access to this if they have an active membership AS WELL as the content access
+  // This is hardcoded behaviour and isn't found elsewhere
+  const hasMembership = doesUserHaveMembership(userPermissionsData)
+  const hasContentPermission = userPermissions.includes(100000000 + ids[0])
+  if (hasMembership && hasContentPermission) {
+   return Promise.all(ids.map(id => fetchCourseCollectionData(id)))
+  } else {
+    return []
+  }
+}
 
+/**
+ * Fetches content owned by the user (excluding membership content).
+ * Shows only content accessible through purchases/entitlements, not through membership.
+ *
+ * @param {string} brand - The brand for which to fetch owned content.
+ * @param {Object} [params={}] - Parameters for pagination and sorting.
+ * @param {Array<string>} [params.type=[]] - Content type(s) to filter (optional array).
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @param {string} [params.sort='-published_on'] - The field to sort the data by.
+ * @returns {Promise<Object>} - The fetched owned content with entity array and total count.
+ *
+ * @example
+ * // Fetch all owned content with default pagination
+ * getOwnedContent('drumeo')
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Fetch owned content with custom pagination and sorting
+ * getOwnedContent('drumeo', {
+ *   page: 2,
+ *   limit: 20,
+ *   sort: '-published_on'
+ * })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Fetch owned content filtered by types
+ * getOwnedContent('drumeo', {
+ *   type: ['course', 'course-collection'],
+ *   page: 1,
+ *   limit: 10
+ * })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
+export async function getOwnedContent(brand, {
+  type = [],
+  page = 1,
+  limit = 10,
+  sort = '-published_on',
+} = {}) {
+  const data = await fetchOwnedContent(brand, { type, page, limit, sort });
 
+  if (!data) {
+    return {
+      entity: [],
+      total: 0
+    };
+  }
 
+  return await addContextToContent(() => data, {
+    dataField: 'entity',
+    addNavigateTo: true,
+    addProgressPercentage: true,
+    addProgressStatus: true,
+  });
+}
 
+export function filterCoursesInCourseCollections(data) {
+  return data.filter(c => !(c.type === 'course' && c.parent_id))
+}
 
+function applyPermissionsPostSort(contentList, permissionIds) {
+  contentList.sort((a, b) => {
+    const hasAccess = (item) =>
+      item.permission_id?.includes(permissionIds)
 
+    return hasAccess(b) - hasAccess(a);
+  });
+
+  return contentList;
+}

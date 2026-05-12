@@ -1,0 +1,173 @@
+/**
+ * @module Onboarding
+ */
+import { GET, POST, PUT } from '../../infrastructure/http/HttpClient'
+import { globalConfig } from '../config.js'
+
+export interface OnboardingSteps {
+  email?: string
+  instrument?: 'drums' | 'guitar' | 'piano' | 'voice' | 'bass'
+  skill_level?: 'new' | 'beginner' | 'intermediate' | 'advanced' | 'expert'
+  topics?: string[]
+  gear?: string[]
+  genres?: string[]
+  goals?: string[]
+  practice_frequency?: string
+  enable_notifications?: boolean
+  recommendation?:
+    | {
+        accepted: true
+        content_id: number
+      }
+    | { accepted: false }
+}
+
+export interface StartOnboardingParams {
+  email: string
+  brand: string
+  flow: string
+  marketingOptIn: boolean
+  steps?: OnboardingSteps
+}
+
+export interface Onboarding {
+  id: number
+  email: string
+  brand: string
+  flow: string
+  steps: OnboardingSteps
+  is_completed: boolean
+  completed_at: Date | null
+  marketing_opt_in: boolean
+  has_skipped_paywall: boolean
+}
+
+/**
+ * @param {StartOnboardingParams} params - The parameters for starting the onboarding process.
+ *
+ * @returns {Promise<Onboarding>} - A promise that resolves when the onboarding process is started.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function startOnboarding({
+  email,
+  brand,
+  flow,
+  steps = {},
+  marketingOptIn = false,
+}: StartOnboardingParams): Promise<Onboarding> {
+  return POST(`/api/user-management-system/v1/onboardings`, {
+    email,
+    brand,
+    flow,
+    steps,
+    is_completed: false,
+    marketing_opt_in: marketingOptIn,
+  })
+}
+
+export interface UpdateOnboardingParams {
+  id: number
+  email: string
+  brand: string
+  flow: string
+  is_completed?: boolean
+  marketingOptIn?: boolean
+  hasSkippedPaywall?: boolean
+  steps: OnboardingSteps
+}
+
+/**
+ * @param {UpdateOnboardingParams} params - The parameters for updating the onboarding process.
+ *
+ * @returns {Promise<Onboarding>} - A promise that resolves when the onboarding process is updated.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function updateOnboarding({
+  id,
+  email,
+  brand,
+  flow,
+  steps,
+  is_completed = false,
+  marketingOptIn = false,
+  hasSkippedPaywall = false,
+}: UpdateOnboardingParams): Promise<Onboarding> {
+  return PUT(`/api/user-management-system/v1/onboardings/${id}`, {
+    email,
+    brand,
+    flow,
+    steps,
+    is_completed,
+    marketing_opt_in: marketingOptIn,
+    has_skipped_paywall: hasSkippedPaywall,
+  })
+}
+
+/**
+ * Fetches the onboardings for the current user and specified brand.
+ *
+ * @param {string} brand - The brand identifier.
+ *
+ * @returns {Promise<Onboarding>} - A promise that resolves with the onboarding data.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function userOnboardingForBrand(brand: string): Promise<Onboarding> {
+  return GET(
+    `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/brand/${encodeURIComponent(brand)}`
+  )
+}
+
+export interface OnboardingRecommendedContent {
+  id: number
+  title: string
+  difficulty: string
+  lesson_count: number
+  skill_count: number
+  badge: string
+  description: string
+  video: {
+    external_id: string
+    hlsManifestUrl: string
+    type: string
+  }
+}
+
+export interface OnboardingRecommendationResponse {
+  recommended_content: OnboardingRecommendedContent
+  user_onboarding: Onboarding
+}
+
+/**
+ * Fetches recommended content for onboarding based on the specified brand.
+ *
+ * @param {number} onboardingId - The ID of the onboarding process.
+ * @returns {Promise<OnboardingRecommendationResponse>} - A promise that resolves with the recommended content.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function getOnboardingRecommendedContent(
+  onboardingId: number
+): Promise<OnboardingRecommendationResponse> {
+  return POST(`/api/user-management-system/v1/onboardings/${onboardingId}/recommendation`, {})
+}
+
+/**
+ * @param {StartOnboardingParams} params - The parameters for starting the onboarding process.
+ * @param {boolean} sendAccountSetupEmail - Whether to send an account setup email to the user.
+ *
+ * @returns {Promise<Onboarding>} - A promise that resolves when the onboarding process is started.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function initializeOnboardingFlow(
+  { email, brand, flow, steps = {}, marketingOptIn = false }: StartOnboardingParams,
+  sendAccountSetupEmail: boolean = false
+): Promise<Onboarding> {
+  return POST(`/api/user-management-system/v1/onboardings/flows`, {
+    email,
+    brand,
+    flow,
+    steps,
+    is_completed: false,
+    marketing_opt_in: marketingOptIn,
+    send_email: sendAccountSetupEmail,
+  })
+}

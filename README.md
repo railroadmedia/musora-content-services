@@ -6,7 +6,6 @@ allowing you to easily retrieve, filter, and manipulate content for use in vario
 
 ## Setup
 To set up the Musora Content Services project for local development, follow these steps:
-- Pull the latest railenvironment `php-8-3-upgrade` branch changes
 - In the railenvironment directory, start up the container with the `./rrr.sh` command
 - Run `r setup musora-content-services`
 - Run `npm install --save-dev jest`
@@ -55,11 +54,42 @@ the `excludeFromGeneratedIndex` array inside the service file.
 
 ## Publishing Package Updates
 
-To publish a new version to NPM run, 
+To publish a new version to NPM run,
 
 ```bash
 ./publish.sh
 ```
+
+## NPM reauthentication
+
+If you see this error displayed when publishing, you need to reauthenticate:
+
+```bash
+npm notice Publishing to https://registry.npmjs.org/ with tag latest and default access
+npm notice Access token expired or revoked. Please try logging in again.
+npm ERR! code E404
+npm ERR! 404 Not Found - PUT https://registry.npmjs.org/musora-content-services - Not found
+npm ERR! 404
+npm ERR! 404  'musora-content-services@2.99.6' is not in this registry.
+npm ERR! 404
+npm ERR! 404 Note that you can also install from a
+npm ERR! 404 tarball, folder, http url, or git url.
+```
+
+Use the shared musora_dev account in 1password ("NPM Access Token For musora_dev") 
+and update this value as `npmAccessToken` in the railenvironment credentials file.
+
+Alternatively, request your own account or renew your own token.
+Update railenvironment credentials file with your new account details
+
+```bash
+npmUserName=
+npmPassword=
+npmAccessToken=
+```
+
+Either restart the manager container (`docker restart railenvironmentdocker_manager`) 
+or run `./usr/local/bin/setup-npm.sh` inside the container to update the `~/.npmrc` file.
 
 ## Symlinking 
 
@@ -90,8 +120,27 @@ https://railroadmedia.github.io/musora-content-services/
 ## Run tests
 Ensure that the setup process has been completed, including copying .env file from 1Password "musora-content-services .env" 
 and having jest installed (`npm install --save-dev jest`). To run the full test suite, simply run the following:
+
+### Unit tests only (fast, no external dependencies)
 ```
 npm test
 ```
-You can also filter down to specific tests with the `-- -t="..."` option. e.g. you can run the userContext test suite 
-with `npm test -- -t="userContext"` or just the contentLiked test with `npm test -- -t="contentLiked"`
+### Integration tests only (mocked external boundaries, runs in CI)
+```
+npm run test:integration
+```
+### Unit + integration (both suites)
+```
+npm run test:all
+```
+### Live tests (requires real credentials in .env, never runs in CI)
+```
+npm run test:live
+```
+### Filter to a specific test
+```
+npm test -- -t="contentLiked"
+```
+
+### Without coverage
+add flag `--coverage=false`

@@ -5,6 +5,12 @@ import { HttpError } from './interfaces/HttpError'
 import { NetworkError } from './interfaces/NetworkError'
 import { DefaultHeaderProvider } from './providers/DefaultHeaderProvider'
 import { FetchRequestExecutor } from './executors/FetchRequestExecutor'
+import { globalConfig } from '../../services/config'
+
+type _RequestOptions = {
+  dataVersion?: string | null
+  cache?: RequestCache
+}
 
 export class HttpClient {
   private baseUrl: string
@@ -13,13 +19,13 @@ export class HttpClient {
   private requestExecutor: RequestExecutor
 
   constructor(
-    baseUrl: string,
+    baseUrl: string = '',
     token: string | null = null,
     headerProvider: HeaderProvider = new DefaultHeaderProvider(),
     requestExecutor: RequestExecutor = new FetchRequestExecutor()
   ) {
-    this.baseUrl = baseUrl
-    this.token = token
+    this.baseUrl = baseUrl || globalConfig?.baseUrl || ''
+    this.token = token || globalConfig?.sessionConfig?.token || null
     this.headerProvider = headerProvider
     this.requestExecutor = requestExecutor
   }
@@ -28,38 +34,42 @@ export class HttpClient {
     this.token = token
   }
 
-  public async get<T>(url: string, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'get', dataVersion)
+  public clearToken(): void {
+    this.token = null;
   }
 
-  public async post<T>(url: string, data: any, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'post', dataVersion, data)
+  public async get<T>(url: string, options: _RequestOptions = {}): Promise<T> {
+    return this.request<T>(url, 'GET', options)
   }
 
-  public async put<T>(url: string, data: any, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'put', dataVersion, data)
+  public async post<T>(url: string, data: any, options: _RequestOptions = {}): Promise<T> {
+    return this.request<T>(url, 'POST', options, data)
   }
 
-  public async patch<T>(url: string, data: any, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'patch', dataVersion, data)
+  public async put<T>(url: string, data: any, options: _RequestOptions = {}): Promise<T> {
+    return this.request<T>(url, 'PUT', options, data)
   }
 
-  public async delete<T>(url: string, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'delete', dataVersion)
+  public async patch<T>(url: string, data: any, options: _RequestOptions = {}): Promise<T> {
+    return this.request<T>(url, 'PATCH', options, data)
+  }
+
+  public async delete<T>(url: string, data: any = null, options: _RequestOptions = {}): Promise<T> {
+    return this.request<T>(url, 'DELETE', options, data)
   }
 
   private async request<T>(
     url: string,
     method: string,
-    dataVersion: string | null = null,
+    options: _RequestOptions = {},
     body: any = null
   ): Promise<T> {
     try {
-      const headers = this.buildHeaders(dataVersion)
-      const options = this.buildRequestOptions(method, headers, body)
+      const headers = this.buildHeaders(options.dataVersion)
+      const requestOptions = this.buildRequestOptions(method, headers, body, options.cache)
       const fullUrl = this.resolveUrl(url)
 
-      return await this.requestExecutor.execute<T>(fullUrl, options)
+      return await this.requestExecutor.execute<T>(fullUrl, requestOptions)
     } catch (error: any) {
       return this.handleError(error, url, method)
     }
@@ -73,9 +83,10 @@ export class HttpClient {
       headers['Data-Version'] = dataVersion
     }
 
-    // Add auth token if available
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`
+    // Add auth token if available (check both instance token and global config)
+    const token = this.token || globalConfig?.sessionConfig?.token || null
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
     }
 
     return headers
@@ -84,23 +95,36 @@ export class HttpClient {
   private buildRequestOptions(
     method: string,
     headers: Record<string, string>,
-    body: any
+    body: any,
+    cache?: RequestCache | null
   ): RequestOptions {
     const options: RequestOptions = {
       method,
       headers,
+      credentials: 'include',
     }
 
-    // Add body for non-GET requests
+    if (cache) {
+      options.cache = cache
+    }
+
     if (body) {
-      options.body = JSON.stringify(body)
+      const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
+      if (isFormData) {
+        // Let browser set Content-Type with boundary for FormData
+        delete options.headers['Content-Type']
+        options.body = body
+      } else {
+        options.body = JSON.stringify(body)
+      }
     }
 
     return options
   }
 
   private resolveUrl(url: string): string {
-    return url.startsWith('/') ? this.baseUrl + url : url
+    const baseUrl = this.baseUrl || globalConfig?.baseUrl || ''
+    return url.startsWith('/') ? baseUrl + url : url
   }
 
   private handleError(error: any, url: string, method: string): never {
@@ -117,4 +141,20 @@ export class HttpClient {
       originalError: error,
     } as NetworkError
   }
+}
+
+const httpClient = new HttpClient()
+
+export const GET = httpClient.get.bind(httpClient)
+export const POST = httpClient.post.bind(httpClient)
+export const PUT = httpClient.put.bind(httpClient)
+export const PATCH = httpClient.patch.bind(httpClient)
+export const DELETE = httpClient.delete.bind(httpClient)
+
+export const setHttpToken = (token: string): void => {
+  httpClient.setToken(token)
+}
+
+export const clearHttpToken = (): void => {
+  httpClient.clearToken()
 }

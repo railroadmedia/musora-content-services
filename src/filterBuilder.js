@@ -1,5 +1,4 @@
-import { fetchUserPermissions } from './services/user/permissions.js'
-import { plusMembershipPermissions } from './contentTypeConfig.js'
+import { getPermissionsAdapter } from './services/permissions/index.ts'
 
 export class FilterBuilder {
   STATUS_SCHEDULED = 'scheduled'
@@ -13,29 +12,42 @@ export class FilterBuilder {
     {
       availableContentStatuses = [],
       bypassPermissions = false,
+      showMembershipRestrictedContent = false,
+      showOnlyOwnedContent = false,
       pullFutureContent = false,
       getFutureContentOnly = false,
       getFutureScheduledContentsOnly = false,
       bypassStatuses = false,
       bypassPublishedDateRestriction = false,
       isSingle = false,
-      allowsPullSongsContent = true,
       isChildrenFilter = false,
+      isParentFilter = false,
     } = {}
   ) {
     this.availableContentStatuses = availableContentStatuses
     this.bypassPermissions = bypassPermissions
+    this.showMembershipRestrictedContent = showMembershipRestrictedContent
+    this.showOnlyOwnedContent = showOnlyOwnedContent
     this.bypassStatuses = bypassStatuses
     this.bypassPublishedDateRestriction = bypassPublishedDateRestriction
     this.pullFutureContent = pullFutureContent
     this.getFutureContentOnly = getFutureContentOnly
     this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly
     this.isSingle = isSingle
-    this.allowsPullSongsContent = allowsPullSongsContent
     this.filter = filter
     // this.debug = process.env.DEBUG === 'true' || false;
     this.debug = false
-    this.prefix = isChildrenFilter ? '@->' : ''
+    this.prefix = this.getPrefix(isParentFilter, isChildrenFilter)
+  }
+
+  getPrefix(isParentFilter, isChildrenFilter) {
+    if (isParentFilter) {
+      return '^.'
+    } else if (isChildrenFilter) {
+      return '@->'
+    } else {
+      return ''
+    }
   }
 
   static withOnlyFilterAvailableStatuses(filter, availableContentStatuses, bypassPermissions) {
@@ -46,9 +58,16 @@ export class FilterBuilder {
   }
 
   async buildFilter() {
-    this.userData = await fetchUserPermissions()
+    if (this.bypassPermissions && !this.showOnlyOwnedContent) {
+      this.userData = { permissions: [], isAdmin: false }
+    } else {
+      const adapter = getPermissionsAdapter()
+      this.userData = await adapter.fetchUserPermissions()
+    }
+
     if (this.debug) console.log('baseFilter', this.filter)
     const filter = this._applyContentStatuses()
+      ._removeDeprecatedContent()
       ._applyPermissions()
       ._applyPublishingDateRestrictions()
       ._trimAmpersands().filter // just in case
@@ -63,6 +82,13 @@ export class FilterBuilder {
     // when the new content is available.
     const now = new Date()
     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 1)
+  }
+
+  _removeDeprecatedContent() {
+    this._andWhere(
+      `!defined(${this.prefix}deprecated_railcontent_id)`
+    )
+    return this
   }
 
   _applyContentStatuses() {
@@ -83,7 +109,6 @@ export class FilterBuilder {
           this.STATUS_SCHEDULED,
           this.STATUS_PUBLISHED,
           this.STATUS_UNLISTED,
-          this.STATUS_ARCHIVED,
         ]
       } else {
         this.availableContentStatuses = [this.STATUS_SCHEDULED, this.STATUS_PUBLISHED]
@@ -98,29 +123,32 @@ export class FilterBuilder {
     ) {
       // we must pull in future content here, otherwise we'll restrict on content this is published in the past and remove any scheduled content
       this.pullFutureContent = true
-      const now = this._getRoundedTime().toISOString()
-      let statuses = [...this.availableContentStatuses]
-      statuses.splice(statuses.indexOf(this.STATUS_SCHEDULED), 1)
-      this._andWhere(
-        `(${this.prefix}status in ${arrayToStringRepresentation(statuses)} || (${this.prefix}status == '${this.STATUS_SCHEDULED}' && defined(${this.prefix}published_on) && ${this.prefix}published_on >= '${now}'))`
-      )
-    } else {
-      this._andWhere(
-        `${this.prefix}status in ${arrayToStringRepresentation(this.availableContentStatuses)}`
-      )
     }
+
+    this._andWhere(
+      `${this.prefix}status in ${arrayToStringRepresentation(this.availableContentStatuses)}`
+    )
+
     return this
   }
 
   _applyPermissions() {
-    if (this.bypassPermissions || this.userData.isAdmin) return this
-    let requiredPermissions = this._getUserPermissions()
-    if (this.userData.isABasicMember && this.allowsPullSongsContent) {
-      requiredPermissions = [...requiredPermissions, plusMembershipPermissions]
+    if (this.bypassPermissions && !this.showOnlyOwnedContent) return this
+    const adapter = getPermissionsAdapter()
+    // Check if admin (admins bypass permissions)
+    if (adapter.isAdmin(this.userData) && !this.showOnlyOwnedContent) return this
+
+    // Generate permissions filter using adapter
+    const permissionsFilter = adapter.generatePermissionsFilter(this.userData, {
+      prefix: this.prefix,
+      showMembershipRestrictedContent: this.showMembershipRestrictedContent,
+      showOnlyOwnedContent: this.showOnlyOwnedContent,
+    })
+
+    // If adapter returns a filter, apply it
+    if (permissionsFilter) {
+      this._andWhere(permissionsFilter)
     }
-    this._andWhere(
-      `(!defined(permission) || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id))`
-    )
     return this
   }
 

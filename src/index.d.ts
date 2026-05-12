@@ -1,9 +1,66 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	registerAwardCallback,
+	registerProgressCallback
+} from './services/awards/award-callbacks.js';
+
+import {
+	getAwardStatistics,
+	getBadgeFields,
+	getCompletedAwards,
+	getContentAwards,
+	getContentAwardsByIds,
+	getInProgressAwards,
+	resetAllAwards
+} from './services/awards/award-query.js';
+
+import {
 	globalConfig,
+	initializeEnvVar,
 	initializeService
 } from './services/config.js';
+
+import {
+	fetchArtistBySlug,
+	fetchArtistLessons,
+	fetchArtists
+} from './services/content/artist.ts';
+
+import {
+	fetchGenreBySlug,
+	fetchGenreLessons,
+	fetchGenres
+} from './services/content/genre.ts';
+
+import {
+	fetchInstructorBySlug,
+	fetchInstructorLessons,
+	fetchInstructors
+} from './services/content/instructor.ts';
+
+import {
+	enrollUserInGuidedCourse,
+	fetchEnrollmentPageMetadata,
+	guidedCourses,
+	unEnrollUserInGuidedCourse
+} from './services/content-org/guided-courses.ts';
+
+import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
+	fetchLearningPathLessons,
+	fetchLearningPathProgressCheckLessons,
+	getActivePath,
+	getDailySession,
+	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
+	getLearningPathLessonsByIds,
+	mapContentToParent,
+	resetAllLearningPaths,
+	startLearningPath,
+	updateDailySession
+} from './services/content-org/learning-paths.ts';
 
 import {
 	addItemToPlaylist,
@@ -16,6 +73,7 @@ import {
 	fetchUserPlaylists,
 	likePlaylist,
 	reportPlaylist,
+	restoreItemFromPlaylist,
 	togglePlaylistPrivate,
 	undeletePlaylist,
 	unlikePlaylist,
@@ -23,9 +81,12 @@ import {
 } from './services/content-org/playlists.js';
 
 import {
+	filterCoursesInCourseCollections,
 	getContentRows,
+	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
+	getOwnedContent,
 	getRecent,
 	getRecommendedForYou,
 	getScheduleContentRows,
@@ -33,7 +94,9 @@ import {
 } from './services/content.js';
 
 import {
-	addContextToContent
+	addContextToContent,
+	addContextToLearningPaths,
+	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
 import {
@@ -44,24 +107,34 @@ import {
 } from './services/contentLikes.js';
 
 import {
-	assignmentStatusCompleted,
-	assignmentStatusReset,
 	contentStatusCompleted,
+	contentStatusCompletedMany,
 	contentStatusReset,
+	contentStatusStarted,
+	extractFromRecordId,
+	flushWatchSession,
+	generateRecordId,
 	getAllCompleted,
+	getAllCompletedByIds,
 	getAllStarted,
 	getAllStartedOrCompleted,
-	getProgressDateByIds,
-	getProgressPercentage,
-	getProgressPercentageByIds,
+	getIdsWhereLastAccessedFromMethod,
+	getLastInteractedOf,
+	getNavigateTo,
+	getNavigateToForMethod,
+	getProgressDataByIds,
+	getProgressDataByRecordIds,
 	getProgressState,
 	getProgressStateByIds,
-	getResumeTimeSeconds,
+	getProgressStateByRecordIds,
 	getResumeTimeSecondsByIds,
+	getResumeTimeSecondsByRecordIds,
+	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
 
 import {
+	clearAllCachedData,
 	verifyLocalDataContext
 } from './services/dataContext.js';
 
@@ -69,18 +142,62 @@ import {
 	convertToTimeZone,
 	getMonday,
 	getTimeRemainingUntilLocal,
+	getToday,
 	getWeekNumber,
 	isNextDay,
-	isSameDate
+	isSameDate,
+	toDayjs,
+	toLocalDay
 } from './services/dateUtils.js';
 
 import {
-	getActiveDiscussions
-} from './services/forum.js';
+	getEndScreen
+} from './services/endScreen/endScreen.ts';
 
 import {
-	fetchAwardsForUser
-} from './services/gamification/awards.js';
+	createForumCategory,
+	deleteForumCategory,
+	fetchForumCategories,
+	updateForumCategory
+} from './services/forums/categories.ts';
+
+import {
+	getActiveDiscussions
+} from './services/forums/forums.ts';
+
+import {
+	createPost,
+	deletePost,
+	fetchCommunityGuidelines,
+	fetchPost,
+	fetchPosts,
+	jumpToPost,
+	likePost,
+	search,
+	unlikePost,
+	updatePost
+} from './services/forums/posts.ts';
+
+import {
+	createThread,
+	deleteThread,
+	fetchFollowedThreads,
+	fetchLatestThreads,
+	fetchThread,
+	fetchThreads,
+	followThread,
+	lockThread,
+	markThreadAsRead,
+	pinThread,
+	unfollowThread,
+	unlockThread,
+	unpinThread,
+	updateThread
+} from './services/forums/threads.ts';
+
+import {
+	fetchCertificate
+} from './services/gamification/awards.ts';
 
 import {
 	applyCloudflareWrapper,
@@ -95,59 +212,85 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
+	createTestUser
+} from './services/liveTesting.ts';
+
+import {
+	acceptInvite,
+	createAccount,
+	createInvites,
+	fetchInvite,
+	fetchUsersMultiAccountDetails,
+	removeUserFromActiveMultiUserAccount,
+	rescindInvite,
+	updateMultiUserAccount
+} from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
+	getRecentActivityOffline
+} from './services/offline/activities.ts';
+
+import {
+	getPracticeSessionsOffline,
+	otherStatsOffline
+} from './services/offline/practices.ts';
+
+import {
+	contentStatusCompletedManyOffline,
+	contentStatusCompletedOffline,
+	contentStatusResetOffline,
+	contentStatusStartedOffline,
+	recordWatchSessionOffline
+} from './services/offline/progress.ts';
+
+import {
+	PermissionsAdapter,
+	PermissionsV1Adapter,
+	PermissionsV2Adapter,
+	doesUserHaveMembership,
+	fetchUserPermissions,
+	getPermissionsAdapter,
+	getPermissionsVersion,
+	isUserFreeTier,
+	reset
+} from './services/permissions/index.ts';
+
+import {
+	emitProgressSaved,
+	onProgressSaved
+} from './services/progress-events.js';
+
+import {
+	getProgressRows,
+	getUserPinProgressKey,
+	pinProgressRow,
+	setUserPinnedProgressRow,
+	unpinProgressRow
+} from './services/progress-row/base.js';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	createComment,
 	deleteComment,
 	editComment,
-	fetchAllCompletedStates,
-	fetchCarouselCardData,
-	fetchChallengeIndexMetadata,
-	fetchChallengeLessonData,
-	fetchChallengeMetadata,
-	fetchChallengeUserActiveChallenges,
+	fetchComment,
 	fetchCommentRelies,
 	fetchComments,
-	fetchCompletedChallenges,
-	fetchCompletedContent,
-	fetchCompletedState,
-	fetchContentInProgress,
 	fetchContentPageUserData,
-	fetchContentProgress,
-	fetchHandler,
-	fetchLastInteractedChild,
 	fetchLikeCount,
-	fetchNextContentDataForParent,
-	fetchOwnedChallenges,
+	fetchLiveStreamData,
 	fetchRecentUserActivities,
-	fetchSongsInProgress,
 	fetchTopComment,
-	fetchUserAward,
-	fetchUserBadges,
-	fetchUserChallengeProgress,
-	fetchUserLikes,
-	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	likeComment,
-	logUserPractice,
 	openComment,
-	postChallengesCommunityNotification,
-	postChallengesEnroll,
-	postChallengesEnrollmentNotification,
-	postChallengesHideCompletedBanner,
-	postChallengesLeave,
-	postChallengesSetStartDate,
-	postChallengesSoloNotification,
-	postChallengesUnlock,
-	postContentComplete,
-	postContentLiked,
-	postContentReset,
-	postContentUnliked,
-	postRecordWatchSession,
+	postPlaylistContentEngaged,
 	replyToComment,
 	reportComment,
+	restoreComment,
 	setStudentViewForUser,
 	unassignModeratorToComment,
 	unlikeComment
@@ -161,36 +304,37 @@ import {
 } from './services/recommendations.js';
 
 import {
+	getReportIssueOptions,
+	report
+} from './services/reporting/reporting.ts';
+
+import {
+	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
-	fetchAllPacks,
-	fetchArtistLessons,
-	fetchArtists,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchChatAndLiveEnvent,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
-	fetchFoundation,
-	fetchGenreLessons,
-	fetchHierarchy,
+	fetchContentRows,
+	fetchContentTypeCounts,
+	fetchCourseCollectionData,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
 	fetchLiveEvent,
 	fetchMetadata,
-	fetchMethod,
-	fetchMethodChildren,
-	fetchMethodChildrenIds,
-	fetchMethodPreviousNextLesson,
+	fetchMethodV2IntroVideo,
+	fetchMethodV2Structure,
+	fetchMethodV2StructureFromId,
 	fetchNewReleases,
-	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
-	fetchPackAll,
+	fetchOwnedContent,
 	fetchPackData,
-	fetchParentForDownload,
+	fetchParentChildRelationshipsFor,
 	fetchPlayAlongsCount,
 	fetchRecent,
 	fetchRelatedLessons,
@@ -202,14 +346,49 @@ import {
 	fetchScheduledReleases,
 	fetchShows,
 	fetchShowsData,
+	fetchSiblingContent,
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getHierarchies,
+	getHierarchy,
+	getSanityDate,
+	getSongTypesFor,
 	getSortOrder,
+	hasAnyMethodV2IntroCompleted,
 	jumpToContinueContent
 } from './services/sanity.js';
+
+import {
+	clearState
+} from './services/state.ts';
+
+import {
+	generateCommentUrl,
+	generateContentUrl,
+	generateContentUrlWithDomain,
+	generateForumPostUrl,
+	generatePlaylistUrl
+} from './services/urlBuilder.ts';
+
+import {
+	confirmEmailChange,
+	deleteAccount,
+	numberOfActiveUsers,
+	requestEmailChange,
+	resetPassword,
+	sendAccountSetupEmail,
+	sendPasswordResetEmail,
+	setupAccount,
+	status,
+	toggleStudentView
+} from './services/user/account.ts';
+
+import {
+	fetchChatSettings
+} from './services/user/chat.js';
 
 import {
 	fetchInterests,
@@ -222,22 +401,65 @@ import {
 
 import {
 	blockUser,
+	blockedUsers,
 	deletePicture,
+	getUserData,
+	getUserSignature,
+	isUsernameAvailable,
+	setUserSignature,
+	toggleSignaturePrivate,
 	unblockUser,
+	updateBrand,
+	updateDisplayName,
 	uploadPicture,
 	uploadPictureFromS3
 } from './services/user/management.js';
 
 import {
-	fetchUserPermissions,
-	reset
-} from './services/user/permissions.js';
+	fetchHasActivePlatformSubscription,
+	fetchLastSubscriptionPlatform,
+	fetchMemberships,
+	fetchRechargeTokens,
+	getUpgradePrice,
+	restorePurchases,
+	upgradeSubscription
+} from './services/user/memberships.ts';
 
 import {
+	deleteAllNotifications,
+	deleteNotification,
+	fetchLiveEventPollingState,
+	fetchNotificationSettings,
+	fetchNotifications,
+	fetchUnreadCount,
+	markAllNotificationsAsRead,
+	markNotificationAsRead,
+	markNotificationAsUnread,
+	pauseLiveEventPolling,
+	restoreNotification,
+	startLiveEventPolling,
+	updateNotificationSetting
+} from './services/user/notifications.js';
+
+import {
+	getOnboardingRecommendedContent,
+	initializeOnboardingFlow,
+	startOnboarding,
+	updateOnboarding,
+	userOnboardingForBrand
+} from './services/user/onboarding.ts';
+
+import {
+	fetchCustomerPayments
+} from './services/user/payments.ts';
+
+import {
+	deleteProfilePicture,
 	otherStats
 } from './services/user/profile.js';
 
 import {
+	generateAuthSessionUrl,
 	login,
 	logout
 } from './services/user/sessions.js';
@@ -247,108 +469,156 @@ import {
 	createPracticeNotes,
 	deletePracticeSession,
 	deleteUserActivity,
+	fetchRecentActivitiesActiveTabs,
 	getPracticeNotes,
 	getPracticeSessions,
-	getProgressRows,
 	getRecentActivity,
+	getStreaksAndMessage,
 	getUserMonthlyStats,
-	getUserPractices,
 	getUserWeeklyStats,
-	pinProgressRow,
 	recordUserActivity,
 	recordUserPractice,
 	removeUserPractice,
 	restorePracticeSession,
+	restoreUserActivity,
 	restoreUserPractice,
-	unpinProgressRow,
+	trackUserPractice,
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
 
+import {
+	 default as EventsAPI 
+} from './services/eventsAPI';
+
 declare module 'musora-content-services' {
 	export {
+		PermissionsAdapter,
+		PermissionsV1Adapter,
+		PermissionsV2Adapter,
+		acceptInvite,
 		addContextToContent,
+		addContextToLearningPaths,
 		addItemToPlaylist,
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
-		assignmentStatusCompleted,
-		assignmentStatusReset,
 		blockUser,
+		blockedUsers,
+		buildEntityAndTotalQuery,
 		buildImageSRC,
 		calculateLongestStreaks,
+		clearAllCachedData,
+		clearState,
 		closeComment,
+		completeLearningPathIntroVideo,
+		completeMethodIntroVideo,
+		confirmEmailChange,
 		contentStatusCompleted,
+		contentStatusCompletedMany,
+		contentStatusCompletedManyOffline,
+		contentStatusCompletedOffline,
 		contentStatusReset,
+		contentStatusResetOffline,
+		contentStatusStarted,
+		contentStatusStartedOffline,
 		convertToTimeZone,
+		createAccount,
 		createComment,
+		createForumCategory,
+		createInvites,
 		createPlaylist,
+		createPost,
 		createPracticeNotes,
+		createTestUser,
+		createThread,
+		deleteAccount,
+		deleteAllNotifications,
 		deleteComment,
+		deleteForumCategory,
 		deleteItemsFromPlaylist,
+		deleteNotification,
 		deletePicture,
 		deletePlaylist,
+		deletePost,
 		deletePracticeSession,
+		deleteProfilePicture,
+		deleteThread,
 		deleteUserActivity,
+		doesUserHaveMembership,
 		duplicatePlaylist,
 		editComment,
+		emitProgressSaved,
+		enrollUserInGuidedCourse,
+		extractFromRecordId,
 		extractSanityUrl,
 		fetchAll,
-		fetchAllCompletedStates,
 		fetchAllFilterOptions,
-		fetchAllPacks,
+		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
-		fetchAwardsForUser,
+		fetchBrandsByContentIds,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,
-		fetchCarouselCardData,
-		fetchChallengeIndexMetadata,
-		fetchChallengeLessonData,
-		fetchChallengeMetadata,
-		fetchChallengeUserActiveChallenges,
+		fetchCertificate,
 		fetchChatAndLiveEnvent,
-		fetchCoachLessons,
+		fetchChatSettings,
 		fetchComingSoon,
+		fetchComment,
 		fetchCommentModContentData,
 		fetchCommentRelies,
 		fetchComments,
-		fetchCompletedChallenges,
-		fetchCompletedContent,
-		fetchCompletedState,
-		fetchContentInProgress,
+		fetchCommunityGuidelines,
 		fetchContentPageUserData,
-		fetchContentProgress,
-		fetchFoundation,
+		fetchContentRows,
+		fetchContentTypeCounts,
+		fetchCourseCollectionData,
+		fetchCustomerPayments,
+		fetchEnrollmentPageMetadata,
+		fetchFollowedThreads,
+		fetchForumCategories,
+		fetchGenreBySlug,
 		fetchGenreLessons,
-		fetchHandler,
-		fetchHierarchy,
+		fetchGenres,
+		fetchHasActivePlatformSubscription,
+		fetchInstructorBySlug,
+		fetchInstructorLessons,
+		fetchInstructors,
 		fetchInterests,
-		fetchLastInteractedChild,
+		fetchInvite,
+		fetchLastSubscriptionPlatform,
+		fetchLatestThreads,
+		fetchLearningPathLessons,
+		fetchLearningPathProgressCheckLessons,
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
 		fetchLikeCount,
 		fetchLiveEvent,
+		fetchLiveEventPollingState,
+		fetchLiveStreamData,
+		fetchMemberships,
 		fetchMetadata,
-		fetchMethod,
-		fetchMethodChildren,
-		fetchMethodChildrenIds,
-		fetchMethodPreviousNextLesson,
+		fetchMethodV2IntroVideo,
+		fetchMethodV2Structure,
+		fetchMethodV2StructureFromId,
 		fetchNewReleases,
-		fetchNextContentDataForParent,
-		fetchNextPreviousLesson,
+		fetchNotificationSettings,
+		fetchNotifications,
 		fetchOtherSongVersions,
-		fetchOwnedChallenges,
-		fetchPackAll,
+		fetchOwnedContent,
 		fetchPackData,
-		fetchParentForDownload,
+		fetchParentChildRelationshipsFor,
 		fetchPlayAlongsCount,
 		fetchPlaylist,
 		fetchPlaylistItems,
+		fetchPost,
+		fetchPosts,
 		fetchRecent,
+		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
+		fetchRechargeTokens,
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
@@ -358,116 +628,215 @@ declare module 'musora-content-services' {
 		fetchScheduledReleases,
 		fetchShows,
 		fetchShowsData,
+		fetchSiblingContent,
 		fetchSimilarItems,
 		fetchSongArtistCount,
 		fetchSongById,
-		fetchSongsInProgress,
 		fetchTabData,
+		fetchThread,
+		fetchThreads,
 		fetchTopComment,
 		fetchTopLevelParentId,
 		fetchUninterests,
+		fetchUnreadCount,
 		fetchUpcomingEvents,
-		fetchUserAward,
-		fetchUserBadges,
-		fetchUserChallengeProgress,
-		fetchUserLikes,
 		fetchUserPermissions,
-		fetchUserPermissionsData,
 		fetchUserPlaylists,
 		fetchUserPracticeMeta,
 		fetchUserPracticeNotes,
 		fetchUserPractices,
+		fetchUsersMultiAccountDetails,
+		filterCoursesInCourseCollections,
+		flushWatchSession,
+		followThread,
+		generateAuthSessionUrl,
+		generateCommentUrl,
+		generateContentUrl,
+		generateContentUrlWithDomain,
+		generateForumPostUrl,
+		generatePlaylistUrl,
+		generateRecordId,
 		getActiveDiscussions,
+		getActivePath,
 		getAllCompleted,
+		getAllCompletedByIds,
 		getAllStarted,
 		getAllStartedOrCompleted,
+		getAwardStatistics,
+		getBadgeFields,
+		getCompletedAwards,
+		getContentAwards,
+		getContentAwardsByIds,
 		getContentRows,
+		getDailySession,
+		getEndScreen,
+		getEnrichedLearningPath,
+		getEnrichedLearningPaths,
+		getHierarchies,
+		getHierarchy,
+		getIdsWhereLastAccessedFromMethod,
+		getInProgressAwards,
+		getLastInteractedOf,
+		getLearningPathLessonsByIds,
+		getLegacyMethods,
 		getLessonContentRows,
 		getMonday,
+		getNavigateTo,
+		getNavigateToForMethod,
+		getNavigateToForPlaylists,
 		getNewAndUpcoming,
+		getOnboardingRecommendedContent,
+		getOwnedContent,
+		getPermissionsAdapter,
+		getPermissionsVersion,
 		getPracticeNotes,
 		getPracticeSessions,
-		getProgressDateByIds,
-		getProgressPercentage,
-		getProgressPercentageByIds,
+		getPracticeSessionsOffline,
+		getProgressDataByIds,
+		getProgressDataByRecordIds,
 		getProgressRows,
 		getProgressState,
 		getProgressStateByIds,
+		getProgressStateByRecordIds,
 		getRecent,
 		getRecentActivity,
+		getRecentActivityOffline,
 		getRecommendedForYou,
-		getResumeTimeSeconds,
+		getReportIssueOptions,
 		getResumeTimeSecondsByIds,
+		getResumeTimeSecondsByRecordIds,
+		getSanityDate,
 		getScheduleContentRows,
+		getSongTypesFor,
 		getSortOrder,
+		getStartedOrCompletedProgressOnly,
+		getStreaksAndMessage,
 		getTabResults,
 		getTimeRemainingUntilLocal,
+		getToday,
+		getUpgradePrice,
+		getUserData,
 		getUserMonthlyStats,
-		getUserPractices,
+		getUserPinProgressKey,
+		getUserSignature,
 		getUserWeeklyStats,
 		getWeekNumber,
 		globalConfig,
+		guidedCourses,
+		hasAnyMethodV2IntroCompleted,
+		initializeEnvVar,
+		initializeOnboardingFlow,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
 		isContentLikedByIds,
 		isNextDay,
 		isSameDate,
+		isUserFreeTier,
+		isUsernameAvailable,
 		jumpToContinueContent,
+		jumpToPost,
 		likeComment,
 		likeContent,
 		likePlaylist,
-		logUserPractice,
+		likePost,
+		lockThread,
 		login,
 		logout,
+		mapContentToParent,
+		markAllNotificationsAsRead,
 		markContentAsInterested,
 		markContentAsNotInterested,
+		markNotificationAsRead,
+		markNotificationAsUnread,
+		markThreadAsRead,
+		numberOfActiveUsers,
+		onProgressSaved,
 		openComment,
 		otherStats,
+		otherStatsOffline,
+		pauseLiveEventPolling,
 		pinProgressRow,
-		postChallengesCommunityNotification,
-		postChallengesEnroll,
-		postChallengesEnrollmentNotification,
-		postChallengesHideCompletedBanner,
-		postChallengesLeave,
-		postChallengesSetStartDate,
-		postChallengesSoloNotification,
-		postChallengesUnlock,
-		postContentComplete,
-		postContentLiked,
-		postContentReset,
-		postContentUnliked,
-		postRecordWatchSession,
+		pinThread,
+		postPlaylistContentEngaged,
 		rankCategories,
 		rankItems,
 		recommendations,
 		recordUserActivity,
 		recordUserPractice,
 		recordWatchSession,
+		recordWatchSessionOffline,
+		registerAwardCallback,
+		registerProgressCallback,
 		removeContentAsInterested,
 		removeContentAsNotInterested,
+		removeUserFromActiveMultiUserAccount,
 		removeUserPractice,
 		replyToComment,
+		report,
 		reportComment,
 		reportPlaylist,
+		requestEmailChange,
+		rescindInvite,
 		reset,
+		resetAllAwards,
+		resetAllLearningPaths,
+		resetPassword,
+		restoreComment,
+		restoreItemFromPlaylist,
+		restoreNotification,
 		restorePracticeSession,
+		restorePurchases,
+		restoreUserActivity,
 		restoreUserPractice,
+		search,
+		sendAccountSetupEmail,
+		sendPasswordResetEmail,
 		setStudentViewForUser,
+		setUserPinnedProgressRow,
+		setUserSignature,
+		setupAccount,
+		startLearningPath,
+		startLiveEventPolling,
+		startOnboarding,
+		status,
+		toDayjs,
+		toLocalDay,
 		togglePlaylistPrivate,
+		toggleSignaturePrivate,
+		toggleStudentView,
+		trackUserPractice,
+		unEnrollUserInGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
+		unfollowThread,
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
+		unlikePost,
+		unlockThread,
 		unpinProgressRow,
+		unpinThread,
+		updateBrand,
+		updateDailySession,
+		updateDisplayName,
+		updateForumCategory,
+		updateMultiUserAccount,
+		updateNotificationSetting,
+		updateOnboarding,
 		updatePlaylist,
+		updatePost,
 		updatePracticeNotes,
+		updateThread,
 		updateUserPractice,
+		upgradeSubscription,
 		uploadPicture,
 		uploadPictureFromS3,
+		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
 	}
 }
+
+export default EventsAPI
