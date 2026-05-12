@@ -44,7 +44,7 @@ export async function repairStaleSyncedRecords(storesRegistry: Record<string, Sy
 
     if (records.length === 0) continue
 
-    payload[table] = records.map((r) => [r._raw.id, r._raw.updated_at as number])
+    payload[table] = records.map((r) => [r._raw.id, r._raw.updated_at as EpochMs])
     recordsByTable[table] = records
   }
 
