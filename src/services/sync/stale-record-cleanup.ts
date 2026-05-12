@@ -61,6 +61,6 @@ export async function repairStaleSyncedRecords(storesRegistry: Record<string, Sy
     await db.batch(...preparedUpdates)
   })
 
-  SyncTelemetry.getInstance()?.info('[SyncManager] repaired stale synced records', { records: repairedByTable })
+  SyncTelemetry.getInstance()?.log('[SyncManager] repaired stale synced records', { records: repairedByTable })
   await db.write(() => db.localStorage.set(CLEANUP_FLAG_KEY, '1'))
 }
