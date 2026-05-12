@@ -3,4 +3,5 @@ export interface SanityError {
   query?: string
   params?: Record<string, any>
   originalError?: any
-} 
+}
+

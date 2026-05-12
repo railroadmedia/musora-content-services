@@ -34,4 +34,5 @@ export class DefaultConfigProvider implements ConfigProvider {
       debug: (config as any).debug ?? false,
     }
   }
-} 
+}
+

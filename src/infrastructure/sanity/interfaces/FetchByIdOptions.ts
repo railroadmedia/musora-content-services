@@ -3,4 +3,5 @@ export interface FetchByIdOptions {
   id: number | string
   fields?: string[]
   includeChildren?: boolean
-} 
+}
+

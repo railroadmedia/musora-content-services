@@ -4,4 +4,5 @@ import { SanityConfig } from './SanityConfig'
 
 export interface QueryExecutor {
   execute<T>(query: SanityQuery, config: SanityConfig): Promise<SanityResponse<T>>
-} 
+}
+

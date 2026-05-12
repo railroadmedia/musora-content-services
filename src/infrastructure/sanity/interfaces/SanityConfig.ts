@@ -6,4 +6,5 @@ export interface SanityConfig {
   perspective?: string
   useCachedAPI?: boolean
   debug?: boolean
-} 
+}
+

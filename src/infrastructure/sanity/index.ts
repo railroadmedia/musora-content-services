@@ -15,4 +15,5 @@ export type { FetchByIdOptions } from './interfaces/FetchByIdOptions'
 export { DefaultConfigProvider } from './providers/DefaultConfigProvider'
 
 // Executors
-export { FetchQueryExecutor } from './executors/FetchQueryExecutor' 
+export { FetchQueryExecutor } from './executors/FetchQueryExecutor'
+
