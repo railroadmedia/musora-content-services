@@ -1,6 +1,5 @@
 import { Q } from '@nozbe/watermelondb'
 import { POST } from '../../infrastructure/http/HttpClient'
-import { globalConfig } from '../config.js'
 import BaseModel from './models/Base'
 import type { default as SyncStore } from './store'
 import type { EpochMs } from './index'
@@ -10,22 +9,9 @@ const CLEANUP_FLAG_KEY = 'stale_synced_cleanup_v1'
 const STALE_CUTOFF_MS = 10_000
 const SYNC_TABLES = ['progress', 'content_likes', 'practices', 'practice_day_notes', 'user_award_progress']
 
-async function getCleanupFlag(): Promise<string | null> {
-  return globalConfig.isMA
-    ? globalConfig.localStorage.getItem(CLEANUP_FLAG_KEY)
-    : Promise.resolve(globalConfig.localStorage.getItem(CLEANUP_FLAG_KEY))
-}
-
-async function setCleanupFlag(): Promise<void> {
-  if (globalConfig.isMA) {
-    await globalConfig.localStorage.setItem(CLEANUP_FLAG_KEY, '1')
-  } else {
-    globalConfig.localStorage.setItem(CLEANUP_FLAG_KEY, '1')
-  }
-}
-
 export async function repairStaleSyncedRecords(storesRegistry: Record<string, SyncStore<any>>) {
-  if (await getCleanupFlag()) return
+  const db = Object.values(storesRegistry)[0]!.db
+  // if (await db.localStorage.get<string>(CLEANUP_FLAG_KEY)) return // todo
 
   const cutoff = Date.now() - STALE_CUTOFF_MS
   const payload: Record<string, [id: string, updated_at: EpochMs][]> = {}
@@ -71,11 +57,10 @@ export async function repairStaleSyncedRecords(storesRegistry: Record<string, Sy
 
   if (preparedUpdates.length === 0) return
 
-  const db = Object.values(storesRegistry)[0]!.db
   await db.write(async () => {
     await db.batch(...preparedUpdates)
   })
 
   SyncTelemetry.getInstance()?.info('[SyncManager] repaired stale synced records', { records: repairedByTable })
-  await setCleanupFlag()
+  await db.write(() => db.localStorage.set(CLEANUP_FLAG_KEY, '1'))
 }
