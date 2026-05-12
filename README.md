@@ -120,8 +120,27 @@ https://railroadmedia.github.io/musora-content-services/
 ## Run tests
 Ensure that the setup process has been completed, including copying .env file from 1Password "musora-content-services .env" 
 and having jest installed (`npm install --save-dev jest`). To run the full test suite, simply run the following:
+
+### Unit tests only (fast, no external dependencies)
 ```
 npm test
 ```
-You can also filter down to specific tests with the `-- -t="..."` option. e.g. you can run the userContext test suite 
-with `npm test -- -t="userContext"` or just the contentLiked test with `npm test -- -t="contentLiked"`
+### Integration tests only (mocked external boundaries, runs in CI)
+```
+npm run test:integration
+```
+### Unit + integration (both suites)
+```
+npm run test:all
+```
+### Live tests (requires real credentials in .env, never runs in CI)
+```
+npm run test:live
+```
+### Filter to a specific test
+```
+npm test -- -t="contentLiked"
+```
+
+### Without coverage
+add flag `--coverage=false`
