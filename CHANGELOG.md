@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.159.0](https://github.com/railroadmedia/musora-content-services/compare/v2.158.3...v2.159.0) (2026-05-12)
+
+
+### Features
+
+* **BEHSTP-304:** LP lesson downloads & refactors ([#955](https://github.com/railroadmedia/musora-content-services/issues/955)) ([536e90f](https://github.com/railroadmedia/musora-content-services/commit/536e90f2b7e4d405e22b3de497191aa5c61b5776))
+* **TP-1267:** audit live tests ([#962](https://github.com/railroadmedia/musora-content-services/issues/962)) ([aff540e](https://github.com/railroadmedia/musora-content-services/commit/aff540ec2e2f6f083e03406bc592eb54b4be8148))
+
 ### [2.158.3](https://github.com/railroadmedia/musora-content-services/compare/v2.158.2...v2.158.3) (2026-05-07)
 
 
