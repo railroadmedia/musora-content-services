@@ -61,9 +61,6 @@ import {
 	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
-	mapContentsThatWereLastProgressedFromMethod,
-	mapLearningPathParentsTo,
-	onContentCompletedLearningPathActions,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -450,6 +447,7 @@ import {
 
 import {
 	getOnboardingRecommendedContent,
+	initializeOnboardingFlow,
 	startOnboarding,
 	updateOnboarding,
 	userOnboardingForBrand
@@ -726,6 +724,7 @@ export {
 	guidedCourses,
 	hasAnyMethodV2IntroCompleted,
 	initializeEnvVar,
+	initializeOnboardingFlow,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
@@ -744,8 +743,6 @@ export {
 	login,
 	logout,
 	mapContentToParent,
-	mapContentsThatWereLastProgressedFromMethod,
-	mapLearningPathParentsTo,
 	markAllNotificationsAsRead,
 	markContentAsInterested,
 	markContentAsNotInterested,
@@ -753,7 +750,6 @@ export {
 	markNotificationAsUnread,
 	markThreadAsRead,
 	numberOfActiveUsers,
-	onContentCompletedLearningPathActions,
 	onProgressSaved,
 	openComment,
 	otherStats,
