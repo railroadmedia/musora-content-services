@@ -48,24 +48,24 @@ export const artistField = `select(
         )`
 
 export const DEFAULT_FIELDS = [
-  '\'sanity_id\' : _id',
-  '\'id\': railcontent_id',
+  "'sanity_id' : _id",
+  "'id': railcontent_id",
   artistOrInstructorName(),
   `'artist': ${artistField}`,
   'title',
-  '\'image\': thumbnail.asset->url',
-  '\'thumbnail\': thumbnail.asset->url',
+  "'image': thumbnail.asset->url",
+  "'thumbnail': thumbnail.asset->url",
   'difficulty',
   'difficulty_string',
   'published_on',
-  '\'type\': _type',
-  '\'length_in_seconds\' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)',
+  "'type': _type",
+  "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
   'brand',
   `"instructor": ${instructorField}`,
   `'genre': ${genreField}`,
   'status',
-  '\'slug\' : slug.current',
-  '\'permission_id\': permission_v2',
+  "'slug' : slug.current",
+  "'permission_id': permission_v2",
   'child_count',
   `"parent_id": ${parentReferenceField}->railcontent_id`,
   `"grandparent_id": ${grandParentReferenceField}->railcontent_id`,
@@ -77,23 +77,23 @@ export const DEFAULT_FIELDS = [
 
 // these are identical... why
 export const DEFAULT_CHILD_FIELDS = [
-  '\'sanity_id\' : _id',
-  '\'id\': railcontent_id',
+  "'sanity_id' : _id",
+  "'id': railcontent_id",
   artistOrInstructorName(),
   `'artist': ${artistField}`,
   'title',
-  '\'image\': thumbnail.asset->url',
-  '\'thumbnail\': thumbnail.asset->url',
+  "'image': thumbnail.asset->url",
+  "'thumbnail': thumbnail.asset->url",
   'difficulty',
   'difficulty_string',
   'published_on',
-  '\'type\': _type',
-  '\'length_in_seconds\' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)',
+  "'type': _type",
+  "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
   'brand',
   `'genre': ${genreField}`,
   'status',
-  '\'slug\' : slug.current',
-  '\'permission_id\': permission_v2',
+  "'slug' : slug.current",
+  "'permission_id': permission_v2",
   'child_count',
   `"parent_id": ${parentReferenceField}->railcontent_id`,
   `"grandparent_id": ${grandParentReferenceField}->railcontent_id`,
@@ -119,7 +119,7 @@ export const resourcesField = `[
           ... coalesce(parent_content_reference[count(@->resource) > 0]->resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )}, []),
           ]`
 
-export const contentAwardField = '*[references(^._id) && _type == \'content-award\'][0]'
+export const contentAwardField = "*[references(^._id) && _type == 'content-award'][0]"
 
 /*
  *  NOTE: TP-366 - Arrays can be either arrays of different objects or arrays of different primitives, not both
@@ -146,22 +146,22 @@ export const assignmentsField = `"assignments":assignment[]{
 // todo: refactor live event queries to use this
 export function getLiveFields(minimum = false) {
   const minimumFields = [
-    'live_event_start_time',
-    'live_event_end_time',
-    'live_event_stream_id',
-    'vimeo_live_event_id',
-    '\'live_event_is_global\': live_global_event == true',
-    '\'videoId\': coalesce(live_event_stream_id, video.external_id)',
+    "live_event_start_time",
+    "live_event_end_time",
+    "live_event_stream_id",
+    "vimeo_live_event_id",
+    "'live_event_is_global': live_global_event == true",
+    "'videoId': coalesce(live_event_stream_id, video.external_id)",
   ]
   const additionalFields = [
-    '\'slug\': slug.current',
-    '\'id\': railcontent_id',
-    'title',
-    'published_on',
-    '\'thumbnail\': thumbnail.asset->url',
+    "'slug': slug.current",
+    "'id': railcontent_id",
+    "title",
+    "published_on",
+    "'thumbnail': thumbnail.asset->url",
     `${artistOrInstructorName()}`,
-    'difficulty_string',
-    'railcontent_id',
+    "difficulty_string",
+    "railcontent_id",
     `'instructors': ${instructorField}`,
   ]
 
@@ -584,7 +584,7 @@ export let contentTypeConfig = {
     ],
     childFields: [
       `'description': ${descriptionField}`,
-      '\'lesson_count\': child_count',
+      "'lesson_count': child_count",
       `'instructors': select(
         instructor != null => instructor[]->name,
         ^.instructor[]->name
