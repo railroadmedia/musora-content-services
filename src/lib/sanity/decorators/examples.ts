@@ -7,7 +7,12 @@ import {
 } from './base'
 import { accessDecorator, decorateAccess, type AccessDecoratable } from './need-access'
 import { pageTypeDecorator, decoratePageType, type PageTypeDecoratable } from './page-type'
-import { decorateNavigateTo, navigateToDecorator, type NavigateToDecoratable } from './navigate-to'
+import {
+  decorateNavigateTo,
+  navigateToDecorator,
+  WithNavigateTo,
+  type NavigateToDecoratable,
+} from './navigate-to'
 import type { UserPermissions } from '../../../services/permissions'
 
 interface ContentRow extends AccessDecoratable, PageTypeDecoratable {
@@ -38,15 +43,15 @@ const rows: ContentRow[] = [
 
 export function singleDecoratorViaWrapper() {
   const decorated = decorateAccess(rows, perms)
-  const _na: boolean = decorated[0].need_access
+  const _na = decorated[0].need_access
   return decorated
 }
 
 export function chainedWrappers() {
   const withAccess = decorateAccess(rows, perms)
   const withBoth = decoratePageType(withAccess)
-  const _na: boolean = withBoth[0].need_access
-  const _pt: 'song' | 'lesson' = withBoth[0].page_type
+  const _na = withBoth[0].need_access
+  const _pt = withBoth[0].page_type
   return withBoth
 }
 
@@ -109,8 +114,8 @@ export async function parallelAsyncDecorators() {
     rows as ProgressDecoratable[],
     decorators
   )) as ProgressDecoratable[]
-  const _p: number | undefined = decorated[0].progress_percent
-  const _l: boolean | undefined = decorated[0].is_liked
+  const _p = decorated[0].progress_percent
+  const _l = decorated[0].is_liked
   return decorated
 }
 
@@ -197,7 +202,7 @@ export async function navigateToComposedWithAccess() {
   const withAccess = decorateAccess(items, perms)
   const withBoth = await decorateNavigateTo(withAccess)
 
-  const _na: boolean = withBoth[0].need_access
+  const _na = withBoth[0].need_access
   const _nav = withBoth[0].navigate_to
   return withBoth
 }
@@ -215,9 +220,12 @@ export async function navigateToParallelWithProgress() {
       compute: (item) => fetchProgress(item.id),
     },
   ]
-  const decorated = (await decorateAllAsync(items, decorators)) as ContentWithNavAndProgress[]
+  const decorated = (await decorateAllAsync(
+    items,
+    decorators
+  )) as WithNavigateTo<ContentWithNavAndProgress>[]
 
-  const _nav = (decorated[0] as any).navigate_to
-  const _p: number | undefined = decorated[0].progress_percent
+  const _nav = decorated[0].navigate_to
+  const _p = decorated[0].progress_percent
   return decorated
 }

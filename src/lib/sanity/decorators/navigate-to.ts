@@ -46,7 +46,7 @@ export interface NavigateTo {
 }
 
 export type WithNavigateTo<T extends NavigateToDecoratable> = T & {
-  [NAVIGATE_TO_FIELD]: NavigateTo | null
+  navigate_to: NavigateTo | null
   children?: WithNavigateTo<NonNullable<T['children']>[number]>[]
 }
 
@@ -68,7 +68,7 @@ function toNavigateTo(
 }
 
 async function computeNavigateTo(content: NavigateToDecoratable): Promise<NavigateTo | null> {
-  if (!NAVIGABLE_TYPES.includes(content.type as typeof NAVIGABLE_TYPES[number])) return null
+  if (!NAVIGABLE_TYPES.includes(content.type as (typeof NAVIGABLE_TYPES)[number])) return null
 
   const children = content.children
   if (!children || children.length === 0) return null

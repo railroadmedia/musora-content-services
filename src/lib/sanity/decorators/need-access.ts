@@ -9,7 +9,7 @@ export interface AccessDecoratable extends Decoratable {
 }
 
 export type WithNeedAccess<T extends AccessDecoratable> = T & {
-  [NEED_ACCESS_FIELD]: boolean
+  need_access: boolean
   children?: WithNeedAccess<NonNullable<T['children']>[number]>[]
 }
 

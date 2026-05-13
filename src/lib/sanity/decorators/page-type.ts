@@ -11,7 +11,7 @@ export interface PageTypeDecoratable extends Decoratable {
 }
 
 export type WithPageType<T extends PageTypeDecoratable> = T & {
-  [PAGE_TYPE_FIELD]: PageType
+  page_type: PageType
   children?: WithPageType<NonNullable<T['children']>[number]>[]
 }
 
