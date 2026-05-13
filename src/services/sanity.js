@@ -1186,9 +1186,9 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   }
 
   const now = new Date()
-  now.setMinutes(now.getMinutes() - LIVE_EXTRA_MINUTES)
 
-  const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString()
+  const startOfYesterday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1)).toISOString()
+  const endOfTomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 2)).toISOString()
 
   const liveEventFields = getLiveFields().concat(
     `'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}')`,
@@ -1201,7 +1201,8 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       : `status == 'scheduled'
       && (brand == '${brand}' || live_global_event == true)
       && defined(live_event_start_time)
-      && live_event_start_time >= '${startOfToday}'`
+      && live_event_start_time >= '${startOfYesterday}'
+      && live_event_start_time < '${endOfTomorrow}'`
 
   const filter = await new FilterBuilder(baseFilter, { bypassPermissions: true }).buildFilter()
 
