@@ -11,7 +11,7 @@ const SYNC_TABLES = ['progress', 'content_likes', 'practices', 'practice_day_not
 
 export async function repairStaleSyncedRecords(storesRegistry: Record<string, SyncStore<any>>) {
   const db = Object.values(storesRegistry)[0]!.db
-  // if (await db.localStorage.get<string>(CLEANUP_FLAG_KEY)) return // todo
+  if (await db.localStorage.get<string>(CLEANUP_FLAG_KEY)) return
 
   const cutoff = Date.now() - STALE_CUTOFF_MS
   const payload: Record<string, [id: string, updated_at: EpochMs][]> = {}
