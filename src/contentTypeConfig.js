@@ -273,7 +273,7 @@ export const showsLessonTypes = [
   'performance',
 ]
 export const entertainmentLessonTypes = ['special', 'documentary-lesson', ...showsLessonTypes]
-export const collectionLessonTypes = [...coursesLessonTypes, ]
+export const collectionLessonTypes = [...coursesLessonTypes]
 
 export const lessonTypesMapping = {
   lessons: singleLessonTypes,
