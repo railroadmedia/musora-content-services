@@ -1184,11 +1184,13 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
     default:
       break
   }
+  let startDateTemp = new Date()
+  let endDateTemp = new Date()
 
-  const now = new Date()
-  now.setMinutes(now.getMinutes() - LIVE_EXTRA_MINUTES)
-
-  const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString()
+  startDateTemp = new Date(
+    startDateTemp.setMinutes(startDateTemp.getMinutes() + LIVE_EXTRA_MINUTES),
+  )
+  endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - LIVE_EXTRA_MINUTES))
 
   const liveEventFields = getLiveFields().concat(
     `'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}')`,
@@ -1201,24 +1203,15 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       : `status == 'scheduled'
       && (brand == '${brand}' || live_global_event == true)
       && defined(live_event_start_time)
-      && live_event_start_time >= '${startOfToday}'`
+      && live_event_start_time <= '${getSanityDate(startDateTemp, false)}'
+      && live_event_end_time >= '${getSanityDate(endDateTemp, false)}'`
 
   const filter = await new FilterBuilder(baseFilter, { bypassPermissions: true }).buildFilter()
 
-  const events = await fetchSanity(
-    `*[${filter}]{${liveEventFields}} | order(live_event_start_time asc)`,
-    true,
-    { processNeedAccess: false }
-  )
+  // This query finds the first scheduled event (sorted by start_time) that ends after now()
+  const query = `*[${filter}]{${fieldsString}} | order(live_event_start_time)[0...1]`
 
-  const clientNow = new Date()
-  const windowStart = new Date(clientNow.getTime() - LIVE_EXTRA_MINUTES * 60000).toISOString()
-  const windowEnd = new Date(clientNow.getTime() + LIVE_EXTRA_MINUTES * 60000).toISOString()
-
-  return events?.find(event =>
-    event.live_event_end_time >= windowStart &&
-    event.live_event_start_time <= windowEnd
-  ) ?? null
+  return await fetchSanity(query, false, { processNeedAccess: false })
 }
 
 /**
@@ -2222,14 +2215,7 @@ export async function fetchScheduledAndNewReleases(
     return []
   }
 
-  const reordered = reorderScheduledAndNewReleases(r, limit)
-  const computedNow = new Date()
-  return reordered.map(item => ({
-    ...item,
-    isLive: item.live_event_start_time && item.live_event_end_time
-      ? new Date(item.live_event_start_time) <= computedNow && new Date(item.live_event_end_time) >= computedNow
-      : false,
-  }))
+  return reorderScheduledAndNewReleases(r, limit)
 }
 
 function reorderScheduledAndNewReleases(r, limit) {
