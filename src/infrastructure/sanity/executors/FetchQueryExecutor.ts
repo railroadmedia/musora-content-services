@@ -4,10 +4,12 @@ import { SanityResponse } from '../interfaces/SanityResponse'
 import { SanityConfig } from '../interfaces/SanityConfig'
 import { SanityError } from '../interfaces/SanityError'
 
+const GET_URL_MAX_LENGTH = 8000
+
 export class FetchQueryExecutor implements QueryExecutor {
   async execute<T>(query: SanityQuery, config: SanityConfig): Promise<SanityResponse<T>> {
-    const url = this.buildUrl(config)
-    const options = this.buildRequestOptions(query, config)
+    const baseUrl = this.buildUrl(config)
+    const { url, options } = this.buildRequest(baseUrl, query, config)
 
     if (config.debug) {
       console.log('Sanity Query:', query.query)
@@ -47,14 +49,40 @@ export class FetchQueryExecutor implements QueryExecutor {
     return `https://${config.projectId}.${api}.sanity.io/v${config.version}/data/query/${config.dataset}?perspective=${perspective}`
   }
 
-  private buildRequestOptions(query: SanityQuery, config: SanityConfig): RequestInit {
+  private buildRequest(
+    baseUrl: string,
+    query: SanityQuery,
+    config: SanityConfig
+  ): { url: string; options: RequestInit } {
+    const authHeader: Record<string, string> = config.token
+      ? { Authorization: `Bearer ${config.token}` }
+      : {}
+
+    const hasParams = query.params && Object.keys(query.params).length > 0
+    const encodedQuery = encodeURIComponent(query.query)
+    const getUrl = `${baseUrl}&query=${encodedQuery}`
+    const canUseGet = !hasParams && getUrl.length < GET_URL_MAX_LENGTH
+
+    if (canUseGet) {
+      return {
+        url: getUrl,
+        options: {
+          method: 'GET',
+          headers: authHeader,
+        },
+      }
+    }
+
     return {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${config.token}`,
-        'Content-Type': 'application/json',
+      url: baseUrl,
+      options: {
+        method: 'POST',
+        headers: {
+          ...authHeader,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(query),
       },
-      body: JSON.stringify(query),
     }
   }
 

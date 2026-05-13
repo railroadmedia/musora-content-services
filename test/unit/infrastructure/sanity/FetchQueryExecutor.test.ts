@@ -52,8 +52,50 @@ describe('FetchQueryExecutor', () => {
     await executor.execute({ query: 'q' }, { ...baseConfig, useCachedAPI: true })
 
     expect(fetchMock.mock.calls[0][0]).toBe(
-      'https://proj.apicdn.sanity.io/v2021-06-07/data/query/prod?perspective=published'
+      'https://proj.apicdn.sanity.io/v2021-06-07/data/query/prod?perspective=published&query=q'
     )
+  })
+
+  test('uses GET with encoded query when no params and URL under length limit', async () => {
+    fetchMock.mockResolvedValue(makeResponse({ result: [] }))
+    const executor = new FetchQueryExecutor()
+    await executor.execute({ query: '*[_type == "foo"]' }, baseConfig)
+
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe(
+      'https://proj.api.sanity.io/v2021-06-07/data/query/prod?perspective=published&query=' +
+        encodeURIComponent('*[_type == "foo"]')
+    )
+    expect(options.method).toBe('GET')
+    expect(options.headers['Authorization']).toBe('Bearer tok')
+    expect(options.body).toBeUndefined()
+  })
+
+  test('falls back to POST when params are provided', async () => {
+    fetchMock.mockResolvedValue(makeResponse({ result: [] }))
+    const executor = new FetchQueryExecutor()
+    await executor.execute({ query: 'q', params: { id: 1 } }, baseConfig)
+
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe(
+      'https://proj.api.sanity.io/v2021-06-07/data/query/prod?perspective=published'
+    )
+    expect(options.method).toBe('POST')
+    expect(options.body).toBe(JSON.stringify({ query: 'q', params: { id: 1 } }))
+  })
+
+  test('falls back to POST when GET URL would exceed length limit', async () => {
+    fetchMock.mockResolvedValue(makeResponse({ result: [] }))
+    const executor = new FetchQueryExecutor()
+    const longQuery = 'a'.repeat(8001)
+    await executor.execute({ query: longQuery }, baseConfig)
+
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe(
+      'https://proj.api.sanity.io/v2021-06-07/data/query/prod?perspective=published'
+    )
+    expect(options.method).toBe('POST')
+    expect(options.body).toBe(JSON.stringify({ query: longQuery }))
   })
 
   test('honours custom perspective', async () => {
