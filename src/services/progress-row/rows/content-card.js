@@ -119,7 +119,6 @@ export async function processContentItem(content) {
 }
 
 function getSubtitle(content, contentType, isLive) {
-  debugger
   if (getNextLessonLessonParentTypes.includes(content.type) || content.lesson_count > 1) {
     return `${content.completed_children ?? 0} of ${content.all_children ?? content.lesson_count ?? content.child_count} Lessons Complete`
   }
