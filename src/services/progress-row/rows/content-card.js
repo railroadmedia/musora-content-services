@@ -9,9 +9,16 @@ import {
   getFormattedType,
   recentTypes,
   showsLessonTypes,
-  songs, getNextLessonLessonParentTypes,
+  songs,
+  getNextLessonLessonParentTypes,
 } from '../../../contentTypeConfig.js'
 import { PARENT_ID_TOP_LEVEL } from '../../sync/models/ContentProgress'
+
+const excludeFromGeneratedIndex = [
+  'getSubtitle',
+  'getDefaultCTATextForContent',
+  'getCompletedChildren',
+]
 
 /**
  * Fetch any content IDs with some progress, include the userPinnedItem,
@@ -118,7 +125,7 @@ export async function processContentItem(content) {
   }
 }
 
-function getSubtitle(content, contentType, isLive) {
+export function getSubtitle(content, contentType, isLive) {
   if (getNextLessonLessonParentTypes.includes(content.type) || content.lesson_count > 1) {
     return `${content.completed_children ?? 0} of ${content.all_children ?? content.lesson_count ?? content.child_count} Lessons Complete`
   }
@@ -128,7 +135,7 @@ function getSubtitle(content, contentType, isLive) {
   return `${content.difficulty_string} • ${content.artist_name}`
 }
 
-function getDefaultCTATextForContent(content, contentType) {
+export function getDefaultCTATextForContent(content, contentType) {
   const notStarted =
     !content.progressStatus ||
     content.progressStatus === 'not-started' ||
@@ -151,7 +158,7 @@ function getDefaultCTATextForContent(content, contentType) {
   return 'Continue'
 }
 
-async function getCompletedChildren(content, contentType) {
+export async function getCompletedChildren(content, contentType) {
   let completedChildren = 0
   let allChildren = 0
 
