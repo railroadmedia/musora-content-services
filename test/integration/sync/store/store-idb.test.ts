@@ -15,8 +15,8 @@
  */
 
 import { IDBFactory } from 'fake-indexeddb'
-import { makeTelemetry, makeContext, makeUserScope, makePullMock, makePushMock, TEST_USER_ID } from '../helpers/index'
-import TestModel, { makeTestDatabase } from '../helpers/TestModel'
+import { makeTelemetry, makeContext, makeUserScope, makePullMock, makePushMock, TEST_USER_ID } from '../../../unit/sync/helpers/index'
+import TestModel, { makeTestDatabase } from '../../../unit/sync/helpers/TestModel'
 import SyncStore from '@/services/sync/store/index'
 import SyncRetry from '@/services/sync/retry'
 import SyncRunScope from '@/services/sync/run-scope'

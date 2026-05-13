@@ -65,11 +65,10 @@ describe('againstNone', () => {
     const resolver = new SyncResolver()
     resolver.againstNone(makeEntry('rec-1', { deletedAt: T }))
 
-    const { entriesForCreate, tuplesForUpdate, idsForDestroy, recordsForSynced } = resolver.result
+    const { entriesForCreate, tuplesForUpdate, idsForDestroy } = resolver.result
     expect(entriesForCreate).toHaveLength(0)
     expect(tuplesForUpdate).toHaveLength(0)
     expect(idsForDestroy).toHaveLength(0)
-    expect(recordsForSynced).toHaveLength(0)
   })
 })
 
@@ -101,10 +100,9 @@ describe('againstSynced', () => {
     const resolver = new SyncResolver()
     resolver.againstSynced(makeLocal('rec-1', T + 1), makeEntry('rec-1', { updatedAt: T }))
 
-    const { tuplesForUpdate, idsForDestroy, recordsForSynced } = resolver.result
+    const { tuplesForUpdate, idsForDestroy } = resolver.result
     expect(tuplesForUpdate).toHaveLength(0)
     expect(idsForDestroy).toHaveLength(0)
-    expect(recordsForSynced).toHaveLength(0)
   })
 })
 
@@ -129,14 +127,14 @@ describe('againstCreated', () => {
     expect(resolver.result.tuplesForUpdate[0][1]).toBe(server)
   })
 
-  test('server older (clock skew) → recordsForSynced', () => {
+  test('server older (clock skew) → no action (record stays dirty)', () => {
     const resolver = new SyncResolver()
     const local = makeLocal('rec-1', T + 1)
 
     resolver.againstCreated(local, makeEntry('rec-1', { updatedAt: T }))
 
-    expect(resolver.result.recordsForSynced).toContain(local)
     expect(resolver.result.tuplesForUpdate).toHaveLength(0)
+    expect(resolver.result.idsForDestroy).toHaveLength(0)
   })
 })
 
@@ -160,14 +158,14 @@ describe('againstUpdated', () => {
     expect(resolver.result.tuplesForUpdate).toHaveLength(1)
   })
 
-  test('server older (clock skew) → recordsForSynced', () => {
+  test('server older (clock skew) → no action (record stays dirty)', () => {
     const resolver = new SyncResolver()
     const local = makeLocal('rec-1', T + 1)
 
     resolver.againstUpdated(local, makeEntry('rec-1', { updatedAt: T }))
 
-    expect(resolver.result.recordsForSynced).toContain(local)
     expect(resolver.result.tuplesForUpdate).toHaveLength(0)
+    expect(resolver.result.idsForDestroy).toHaveLength(0)
   })
 })
 
@@ -214,7 +212,6 @@ describe('custom comparator', () => {
     resolver.againstSynced(local, server)
 
     expect(resolver.result.tuplesForUpdate).toHaveLength(0)
-    expect(resolver.result.recordsForSynced).toHaveLength(0)
     expect(resolver.result.idsForDestroy).toHaveLength(0)
   })
 

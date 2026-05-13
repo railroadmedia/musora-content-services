@@ -101,7 +101,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     addProgressPercentage || addProgressStatus || addProgressTimestamp
       ? getProgressDataByIds(ids, collection) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
-    addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
+    addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids, collection) : Promise.resolve(null),
     addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
     addAwards ? getContentAwardsByIds(ids) : Promise.resolve(null),
   ])

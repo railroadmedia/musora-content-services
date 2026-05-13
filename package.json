@@ -1,6 +1,6 @@
 {
   "name": "musora-content-services",
-  "version": "2.158.0",
+  "version": "2.159.0",
   "description": "A package for Musoras content services ",
   "main": "src/index.js",
   "type": "module",
@@ -8,7 +8,10 @@
     "build-index": "node tools/generate-index.cjs",
     "release": "standard-version",
     "doc": "jsdoc -c jsdoc.json --verbose",
-    "test": "jest"
+    "test": "jest",
+    "test:integration": "jest --config=jest.integration.config.js",
+    "test:all": "jest --config=jest.config.js; jest --config=jest.integration.config.js",
+    "test:live": "jest --config=jest.live.config.js"
   },
   "repository": {
     "type": "git",

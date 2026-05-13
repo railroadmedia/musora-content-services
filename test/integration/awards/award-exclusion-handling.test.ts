@@ -3,8 +3,8 @@ import { awardEvents } from '../../../src/services/awards/internal/award-events.
 import { mockAwardDefinitions, getAwardByContentId } from '../../mockData/award-definitions.js'
 import { globalConfig } from '../../../src/services/config.js'
 import { LocalStorageMock } from '../../localStorageMock.js'
-import { setupDefaultMocks, setupAwardEventListeners } from './helpers/index'
-import { mockCompletionStates, mockAllCompleted, mockNoneCompleted } from './helpers/completion-mock'
+import { setupDefaultMocks, setupAwardEventListeners } from '../../unit/awards/helpers/index'
+import { mockCompletionStates, mockAllCompleted, mockNoneCompleted } from '../../unit/awards/helpers/completion-mock'
 
 jest.mock('../../../src/services/sanity.js', () => ({
   ...jest.requireActual('../../../src/services/sanity'),

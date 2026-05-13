@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.159.0](https://github.com/railroadmedia/musora-content-services/compare/v2.158.3...v2.159.0) (2026-05-12)
+
+
+### Features
+
+* **BEHSTP-304:** LP lesson downloads & refactors ([#955](https://github.com/railroadmedia/musora-content-services/issues/955)) ([536e90f](https://github.com/railroadmedia/musora-content-services/commit/536e90f2b7e4d405e22b3de497191aa5c61b5776))
+* **TP-1267:** audit live tests ([#962](https://github.com/railroadmedia/musora-content-services/issues/962)) ([aff540e](https://github.com/railroadmedia/musora-content-services/commit/aff540ec2e2f6f083e03406bc592eb54b4be8148))
+
+### [2.158.3](https://github.com/railroadmedia/musora-content-services/compare/v2.158.2...v2.158.3) (2026-05-07)
+
+
+### Bug Fixes
+
+* pass collection to resumetime fetchers ([#959](https://github.com/railroadmedia/musora-content-services/issues/959)) ([cf61471](https://github.com/railroadmedia/musora-content-services/commit/cf6147117767e8f42dd5a3b1aa6a120173844150))
+
+### [2.158.2](https://github.com/railroadmedia/musora-content-services/compare/v2.158.1...v2.158.2) (2026-05-07)
+
+
+### Bug Fixes
+
+* revert recordWatchSesssion signature ([#958](https://github.com/railroadmedia/musora-content-services/issues/958)) ([569b9d2](https://github.com/railroadmedia/musora-content-services/commit/569b9d244042d2857989c686fd8ec6b3d0269cd2))
+
+### [2.158.1](https://github.com/railroadmedia/musora-content-services/compare/v2.158.0...v2.158.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* increment sanity url version ([#953](https://github.com/railroadmedia/musora-content-services/issues/953)) ([61c36c9](https://github.com/railroadmedia/musora-content-services/commit/61c36c962473294e6dfe67d3d688105649e3d79f))
+* pass collection to getProgressDataByIds ([#957](https://github.com/railroadmedia/musora-content-services/issues/957)) ([2ad1620](https://github.com/railroadmedia/musora-content-services/commit/2ad162085f45b35f617c0ba4d2cc32e7be4a3708))
+* Revert "add resolver condition to ensure seen records always get marked sync" ([#956](https://github.com/railroadmedia/musora-content-services/issues/956)) ([56741d3](https://github.com/railroadmedia/musora-content-services/commit/56741d3f49c97e4034e7841deb4aef1f938168c5))
+* update sanity url to v4 ([c567d22](https://github.com/railroadmedia/musora-content-services/commit/c567d227a4f3bdb9f2f1c95364d423e67b1b214f))
+
 ## [2.158.0](https://github.com/railroadmedia/musora-content-services/compare/v2.153.0...v2.158.0) (2026-05-05)
 
 

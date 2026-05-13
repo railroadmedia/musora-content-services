@@ -117,10 +117,7 @@ export default {
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
-  modulePathIgnorePatterns: [
-    '<rootDir>/test/live',
-    '<rootDir>/test/integration'
-  ],
+  testMatch: ['<rootDir>/test/unit/**/*.test.[jt]s?(x)'],
 
   // Activates notifications for test results
   // notify: false,
