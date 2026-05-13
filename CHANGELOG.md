@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.160.0](https://github.com/railroadmedia/musora-content-services/compare/v2.159.0...v2.160.0) (2026-05-13)
+
+
+### Features
+
+* adds stale record cleanup ([#963](https://github.com/railroadmedia/musora-content-services/issues/963)) ([72d917f](https://github.com/railroadmedia/musora-content-services/commit/72d917ff0d64d8c27f1d4ec831233c17663b1c49))
+* use client-side filtering for live events to leverage sanity cache ([#930](https://github.com/railroadmedia/musora-content-services/issues/930)) ([cbfe024](https://github.com/railroadmedia/musora-content-services/commit/cbfe02476b654a240bb1ba35093a98a03535227c))
+
 ## [2.159.0](https://github.com/railroadmedia/musora-content-services/compare/v2.158.3...v2.159.0) (2026-05-12)
 
 
