@@ -5,16 +5,9 @@ import {
   type FieldDecorator,
   type FieldDecoratorAsync,
 } from './base'
-import {
-  accessDecorator,
-  decorateAccess,
-  type AccessDecoratable,
-} from './need-access'
-import {
-  pageTypeDecorator,
-  decoratePageType,
-  type PageTypeDecoratable,
-} from './page-type'
+import { accessDecorator, decorateAccess, type AccessDecoratable } from './need-access'
+import { pageTypeDecorator, decoratePageType, type PageTypeDecoratable } from './page-type'
+import { decorateNavigateTo, navigateToDecorator, type NavigateToDecoratable } from './navigate-to'
 import type { UserPermissions } from '../../../services/permissions'
 
 interface ContentRow extends AccessDecoratable, PageTypeDecoratable {
@@ -66,10 +59,7 @@ export function composedSingleWalk() {
   return decorateAll(rows, decorators)
 }
 
-export function conditionalComposition(opts: {
-  withAccess: boolean
-  withPageType: boolean
-}) {
+export function conditionalComposition(opts: { withAccess: boolean; withPageType: boolean }) {
   type Composed = AccessDecoratable & PageTypeDecoratable
   const decorators: FieldDecorator<Composed>[] = []
   if (opts.withAccess) {
@@ -138,4 +128,96 @@ export async function mixedSyncThenAsync() {
       compute: (item) => fetchLiked(item.id as number),
     },
   ])
+}
+
+const courseLesson = (id: number): NavigateToDecoratable => ({
+  id,
+  type: 'course-lesson',
+  brand: 'drumeo',
+  thumbnail: '',
+  published_on: null,
+  status: 'published',
+})
+
+const navigateRows: NavigateToDecoratable[] = [
+  {
+    id: 1,
+    type: 'course',
+    brand: 'drumeo',
+    thumbnail: '',
+    published_on: null,
+    status: 'published',
+    children: [courseLesson(101), courseLesson(102), courseLesson(103)],
+  },
+  {
+    id: 2,
+    type: 'course-collection',
+    brand: 'drumeo',
+    thumbnail: '',
+    published_on: null,
+    status: 'published',
+    children: [
+      {
+        id: 201,
+        type: 'course',
+        brand: 'drumeo',
+        thumbnail: '',
+        published_on: null,
+        status: 'published',
+        children: [courseLesson(301), courseLesson(302)],
+      },
+    ],
+  },
+]
+
+export async function singleAsyncNavigateTo() {
+  const decorated = await decorateNavigateTo(navigateRows)
+  const _nav = decorated[0].navigate_to
+  const _nested = decorated[1].navigate_to?.child
+  return decorated
+}
+
+export async function navigateToOnSingleItem() {
+  const decorated = await decorateNavigateTo(navigateRows[0])
+  const _nav = decorated.navigate_to
+  return decorated
+}
+
+export async function navigateToComposedWithAccess() {
+  interface ContentWithNav extends NavigateToDecoratable, AccessDecoratable {
+    permission_id?: number[]
+    children?: ContentWithNav[]
+  }
+
+  const items: ContentWithNav[] = navigateRows.map((row) => ({
+    ...row,
+    permission_id: [78],
+  }))
+
+  const withAccess = decorateAccess(items, perms)
+  const withBoth = await decorateNavigateTo(withAccess)
+
+  const _na: boolean = withBoth[0].need_access
+  const _nav = withBoth[0].navigate_to
+  return withBoth
+}
+
+export async function navigateToParallelWithProgress() {
+  interface ContentWithNavAndProgress extends NavigateToDecoratable {
+    progress_percent?: number
+  }
+
+  const items = navigateRows as ContentWithNavAndProgress[]
+  const decorators: FieldDecoratorAsync<ContentWithNavAndProgress>[] = [
+    navigateToDecorator as FieldDecoratorAsync<ContentWithNavAndProgress>,
+    {
+      field: 'progress_percent',
+      compute: (item) => fetchProgress(item.id),
+    },
+  ]
+  const decorated = (await decorateAllAsync(items, decorators)) as ContentWithNavAndProgress[]
+
+  const _nav = (decorated[0] as any).navigate_to
+  const _p: number | undefined = decorated[0].progress_percent
+  return decorated
 }
