@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.160.2](https://github.com/railroadmedia/musora-content-services/compare/v2.160.1...v2.160.2) (2026-05-14)
+
+
+### Bug Fixes
+
+* **BR-678:** fix issues with is_locked and collection ([#972](https://github.com/railroadmedia/musora-content-services/issues/972)) ([725529b](https://github.com/railroadmedia/musora-content-services/commit/725529bd69d05ab79113b21a5e3dca5ce1deb0dc))
+
 ### [2.160.1](https://github.com/railroadmedia/musora-content-services/compare/v2.160.0...v2.160.1) (2026-05-13)
 
 
