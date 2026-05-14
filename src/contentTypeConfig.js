@@ -437,7 +437,7 @@ export let contentTypeConfig = {
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
       `"metadata": { brand, "type": _type, "parent_id":  coalesce(${parentReferenceField}->railcontent_id, 0) }`,
-      ],
+    ],
     childFields: [
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
@@ -498,6 +498,7 @@ export let contentTypeConfig = {
   'course-lesson': {
     fields: [`"resources": ${resourcesField}`],
   },
+
   download: {
     fields: [
       `"resources": ${resourcesField}`,
@@ -512,6 +513,7 @@ export let contentTypeConfig = {
       'video',
       ...playAlongMp3sFields,
       pcdForDownloadField,
+      '"learning_path_parent_id": *[_type == "learning-path-v2" && references(^._id)][0].railcontent_id',
       `...select(
         defined(live_event_start_time) => {
           ${getLiveFields(true).join(',')}
@@ -531,6 +533,7 @@ export let contentTypeConfig = {
       'video',
       ...playAlongMp3sFields,
       pcdForDownloadField,
+      '"learning_path_parent_id": *[_type == "learning-path-v2" && references(^._id)][0].railcontent_id',
       `...select(
         defined(live_event_start_time) => {
           ${getLiveFields(true).join(',')}
@@ -693,7 +696,7 @@ export let contentTypeConfig = {
   'new-and-scheduled': {
     fields: [
       'show_in_new_feed',
-      isLiveField()
+      isLiveField(),
     ],
     includeChildFields: true,
   },
@@ -813,7 +816,7 @@ export function artistOrInstructorNameAsArray(key = 'artists') {
 
 export async function getFieldsForContentTypeWithFilteredChildren(
   contentType,
-  asQueryString = true
+  asQueryString = true,
 ) {
   const childFields = getChildFieldsForContentType(contentType, true)
   const parentFields = getFieldsForContentType(contentType, false)
@@ -828,7 +831,7 @@ export async function getFieldsForContentTypeWithFilteredChildren(
         "children": child[${childFilter}]->{
           ${childFields}
         },
-      }`
+      }`,
     )
   }
   return asQueryString ? parentFields.toString() + ',' : parentFields
@@ -918,7 +921,7 @@ const filterHandlers = {
   length: (value) => {
     // Find the matching length option by name
     const lengthOption = Object.values(LengthFilterOptions).find(
-      (opt) => typeof opt === 'object' && opt.name === value
+      (opt) => typeof opt === 'object' && opt.name === value,
     )
 
     if (!lengthOption) return ''

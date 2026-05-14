@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.160.3](https://github.com/railroadmedia/musora-content-services/compare/v2.160.2...v2.160.3) (2026-05-14)
+
+
+### Bug Fixes
+
+* do immediate push after record repair ([#975](https://github.com/railroadmedia/musora-content-services/issues/975)) ([c087536](https://github.com/railroadmedia/musora-content-services/commit/c08753659fb5b1342ae8499fbf296ed4a2197625))
+
+### [2.160.2](https://github.com/railroadmedia/musora-content-services/compare/v2.160.1...v2.160.2) (2026-05-14)
+
+
+### Bug Fixes
+
+* **BR-678:** fix issues with is_locked and collection ([#972](https://github.com/railroadmedia/musora-content-services/issues/972)) ([725529b](https://github.com/railroadmedia/musora-content-services/commit/725529bd69d05ab79113b21a5e3dca5ce1deb0dc))
+
+### [2.160.1](https://github.com/railroadmedia/musora-content-services/compare/v2.160.0...v2.160.1) (2026-05-13)
+
+
+### Bug Fixes
+
+* disable debug code ([#970](https://github.com/railroadmedia/musora-content-services/issues/970)) ([4046c4f](https://github.com/railroadmedia/musora-content-services/commit/4046c4fca4457b9d21eab5221876a991bdf22973))
+
+## [2.160.0](https://github.com/railroadmedia/musora-content-services/compare/v2.159.0...v2.160.0) (2026-05-13)
+
+
+### Features
+
+* adds stale record cleanup ([#963](https://github.com/railroadmedia/musora-content-services/issues/963)) ([72d917f](https://github.com/railroadmedia/musora-content-services/commit/72d917ff0d64d8c27f1d4ec831233c17663b1c49))
+* use client-side filtering for live events to leverage sanity cache ([#930](https://github.com/railroadmedia/musora-content-services/issues/930)) ([cbfe024](https://github.com/railroadmedia/musora-content-services/commit/cbfe02476b654a240bb1ba35093a98a03535227c))
+
+## [2.159.0](https://github.com/railroadmedia/musora-content-services/compare/v2.158.3...v2.159.0) (2026-05-12)
+
+
+### Features
+
+* **BEHSTP-304:** LP lesson downloads & refactors ([#955](https://github.com/railroadmedia/musora-content-services/issues/955)) ([536e90f](https://github.com/railroadmedia/musora-content-services/commit/536e90f2b7e4d405e22b3de497191aa5c61b5776))
+* **TP-1267:** audit live tests ([#962](https://github.com/railroadmedia/musora-content-services/issues/962)) ([aff540e](https://github.com/railroadmedia/musora-content-services/commit/aff540ec2e2f6f083e03406bc592eb54b4be8148))
+
 ### [2.158.3](https://github.com/railroadmedia/musora-content-services/compare/v2.158.2...v2.158.3) (2026-05-07)
 
 

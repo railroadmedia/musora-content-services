@@ -1,6 +1,6 @@
 import * as fflate from 'fflate'
 import { handlePull, type SyncPullResponse } from '@/services/sync/fetch'
-import { makeContext } from './helpers/index'
+import { makeContext } from '../../unit/sync/helpers/index'
 import type { EpochMs } from '@/services/sync/index'
 
 // ---
