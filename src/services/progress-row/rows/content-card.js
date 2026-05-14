@@ -127,12 +127,16 @@ export async function processContentItem(content) {
 
 export function getSubtitle(content, contentType, isLive) {
   if (getNextLessonLessonParentTypes.includes(content.type) || content.lesson_count > 1) {
-    return `${content.completed_children ?? 0} of ${content.all_children ?? content.lesson_count ?? content.child_count} Lessons Complete`
+    const total = content.all_children ?? content.lesson_count ?? content.child_count
+    if (!total && total !== 0) return null
+    return `${content.completed_children ?? 0} of ${total} Lessons Complete`
   }
   if ((contentType === 'lesson' || contentType === 'show') && !isLive) {
+    if (content.progressPercentage == null) return null
     return `${content.progressPercentage}% Complete`
   }
-  return `${content.difficulty_string} • ${content.artist_name}`
+  const parts = [content.difficulty_string, content.artist_name].filter(Boolean)
+  return parts.length ? parts.join(' • ') : null
 }
 
 export function getDefaultCTATextForContent(content, contentType) {

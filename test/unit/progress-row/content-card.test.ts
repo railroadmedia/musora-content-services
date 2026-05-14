@@ -46,6 +46,11 @@ describe('getSubtitle', () => {
       }
       expect(getSubtitle(content, 'course', false)).toBe('1 of 9 Lessons Complete')
     })
+
+    test('returns null when all count fields missing', () => {
+      const content = { type: 'course', completed_children: 2 }
+      expect(getSubtitle(content, 'course', false)).toBeNull()
+    })
   })
 
   describe('lesson_count > 1', () => {
@@ -87,13 +92,23 @@ describe('getSubtitle', () => {
     })
 
     test('returns "X% Complete" for show when not live', () => {
-      const content = { type: 'show-type', progressPercentage: 75 }
+      const content = { type: 'show', progressPercentage: 75 }
       expect(getSubtitle(content, 'show', false)).toBe('75% Complete')
     })
 
     test('returns "0% Complete" when progressPercentage is 0', () => {
       const content = { type: 'course-lesson', progressPercentage: 0 }
       expect(getSubtitle(content, 'lesson', false)).toBe('0% Complete')
+    })
+
+    test('returns null when progressPercentage missing for lesson', () => {
+      const content = { type: 'course-lesson' }
+      expect(getSubtitle(content, 'lesson', false)).toBeNull()
+    })
+
+    test('returns null when progressPercentage missing for show', () => {
+      const content = { type: 'show' }
+      expect(getSubtitle(content, 'show', false)).toBeNull()
     })
 
     test('falls through to difficulty/artist when lesson isLive=true', () => {
@@ -108,7 +123,7 @@ describe('getSubtitle', () => {
 
     test('falls through to difficulty/artist when show isLive=true', () => {
       const content = {
-        type: 'show-type',
+        type: 'show',
         progressPercentage: 50,
         difficulty_string: 'Beginner',
         artist_name: 'Live Show',
@@ -127,9 +142,19 @@ describe('getSubtitle', () => {
       expect(getSubtitle(content, 'song', false)).toBe('Intermediate • The Beatles')
     })
 
-    test('returns "undefined • undefined" when fields missing', () => {
+    test('returns null when both difficulty and artist missing', () => {
       const content = { type: 'song' }
-      expect(getSubtitle(content, 'song', false)).toBe('undefined • undefined')
+      expect(getSubtitle(content, 'song', false)).toBeNull()
+    })
+
+    test('returns difficulty only when artist missing', () => {
+      const content = { type: 'song', difficulty_string: 'Beginner' }
+      expect(getSubtitle(content, 'song', false)).toBe('Beginner')
+    })
+
+    test('returns artist only when difficulty missing', () => {
+      const content = { type: 'song', artist_name: 'The Beatles' }
+      expect(getSubtitle(content, 'song', false)).toBe('The Beatles')
     })
   })
 
@@ -223,7 +248,7 @@ describe('getDefaultCTATextForContent', () => {
     })
 
     test('returns "Revisit Lesson" when completed show', () => {
-      const content = { type: 'show-type', progressStatus: 'completed' }
+      const content = { type: 'show', progressStatus: 'completed' }
       expect(getDefaultCTATextForContent(content, 'show')).toBe('Revisit Lesson')
     })
   })
