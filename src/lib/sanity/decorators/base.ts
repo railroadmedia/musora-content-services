@@ -14,6 +14,7 @@ export interface FieldDecorator<
 > {
   field: K
   compute: DecorateFn<T, V>
+  recurse?: boolean
 }
 
 export interface FieldDecoratorAsync<
@@ -23,6 +24,7 @@ export interface FieldDecoratorAsync<
 > {
   field: K
   compute: DecorateFnAsync<T, V>
+  recurse?: boolean
 }
 
 type Decorated<T, K extends string, V> = T & { [P in K]: V }
@@ -79,8 +81,10 @@ function visit<T extends Decoratable>(
   if (depth >= MAX_CHILD_DEPTH - 1) return
   const children = item.children
   if (!Array.isArray(children)) return
+  const recursing = decorators.filter((d) => d.recurse !== false)
+  if (recursing.length === 0) return
   for (const child of children) {
-    visit(child as T, decorators, depth + 1)
+    visit(child as T, recursing, depth + 1)
   }
 }
 
@@ -136,7 +140,9 @@ async function visitAsync<T extends Decoratable>(
   if (depth >= MAX_CHILD_DEPTH - 1) return
   const children = item.children
   if (!Array.isArray(children)) return
+  const recursing = decorators.filter((d) => d.recurse !== false)
+  if (recursing.length === 0) return
   await Promise.all(
-    children.map((child) => visitAsync(child as T, decorators, depth + 1))
+    children.map((child) => visitAsync(child as T, recursing, depth + 1))
   )
 }

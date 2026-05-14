@@ -195,6 +195,30 @@ describe('navigate-to decorator', () => {
       expect(result).toBe(items)
     })
 
+    test('navigateToDecorator.compute fires once per top-level item, never on descendants', async () => {
+      const spy = jest.spyOn(navigateToDecorator, 'compute')
+      const courseChild = parent(101, 'course', [child(201), child(202)])
+      const collection = parent(1, 'course-collection', [
+        courseChild,
+        parent(102, 'course', []),
+      ])
+      const standalone = parent(2, 'course', [child(301)])
+      await decorateNavigateTo([collection, standalone])
+      expect(spy).toHaveBeenCalledTimes(2)
+      expect(spy).toHaveBeenCalledWith(collection)
+      expect(spy).toHaveBeenCalledWith(standalone)
+      spy.mockRestore()
+    })
+
+    test('descendants of decorated items do not receive navigate_to field', async () => {
+      const item = parent(1, 'course', [child(101), child(102)])
+      const result = await decorateNavigateTo(item)
+      expect(result.navigate_to).not.toBeNull()
+      const children = result.children as NavigateToDecoratable[]
+      expect((children[0] as Record<string, unknown>).navigate_to).toBeUndefined()
+      expect((children[1] as Record<string, unknown>).navigate_to).toBeUndefined()
+    })
+
     test('output shape matches NavigateTo interface', async () => {
       const item = parent(1, 'course', [child(101)])
       const result = await decorateNavigateTo(item)

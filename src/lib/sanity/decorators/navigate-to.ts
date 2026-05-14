@@ -1,4 +1,4 @@
-import { decorateAsync, type Decoratable, type FieldDecoratorAsync } from './base'
+import { decorateAllAsync, type Decoratable, type FieldDecoratorAsync } from './base'
 import {
   findIncompleteLesson,
   getLastInteractedOf,
@@ -47,7 +47,6 @@ export interface NavigateTo {
 
 export type WithNavigateTo<T extends NavigateToDecoratable> = T & {
   navigate_to: NavigateTo | null
-  children?: WithNavigateTo<NonNullable<T['children']>[number]>[]
 }
 
 function toNavigateTo(
@@ -120,6 +119,7 @@ export const navigateToDecorator: FieldDecoratorAsync<
 > = {
   field: NAVIGATE_TO_FIELD,
   compute: computeNavigateTo,
+  recurse: false,
 }
 
 export function decorateNavigateTo<T extends NavigateToDecoratable>(
@@ -131,7 +131,7 @@ export function decorateNavigateTo<T extends NavigateToDecoratable>(
 export function decorateNavigateTo<T extends NavigateToDecoratable>(
   items: T | T[]
 ): Promise<WithNavigateTo<T> | WithNavigateTo<T>[]> {
-  return decorateAsync(items as T, NAVIGATE_TO_FIELD, computeNavigateTo) as Promise<
+  return decorateAllAsync(items as NavigateToDecoratable, [navigateToDecorator]) as Promise<
     WithNavigateTo<T> | WithNavigateTo<T>[]
   >
 }
