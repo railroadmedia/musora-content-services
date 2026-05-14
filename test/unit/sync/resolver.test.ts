@@ -135,7 +135,7 @@ describe('againstCreated', () => {
 
     resolver.againstCreated(local, makeEntry('rec-1', { updatedAt: T }))
 
-    expect(resolver.result.recordsForSynced).toContain(local)
+    expect(resolver.result.recordsForSynced[0][0]).toBe(local)
     expect(resolver.result.tuplesForUpdate).toHaveLength(0)
   })
 })
@@ -166,7 +166,7 @@ describe('againstUpdated', () => {
 
     resolver.againstUpdated(local, makeEntry('rec-1', { updatedAt: T }))
 
-    expect(resolver.result.recordsForSynced).toContain(local)
+    expect(resolver.result.recordsForSynced[0][0]).toBe(local)
     expect(resolver.result.tuplesForUpdate).toHaveLength(0)
   })
 })

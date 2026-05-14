@@ -76,3 +76,10 @@ export type ModelClass<T extends BaseModel = BaseModel> = {
   new (...args: any[]): T
   table: string
 }
+
+export type ColumnMergeStrategy = (
+  local: unknown,
+  server: unknown,
+  localRecord: Record<string, unknown>,
+  serverRecord: Record<string, unknown>
+) => unknown

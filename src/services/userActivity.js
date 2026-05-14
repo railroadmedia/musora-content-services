@@ -290,11 +290,9 @@ export async function recordUserPractice(practiceDetails) {
   return result
 }
 
-export async function trackUserPractice(contentId, incSeconds) {
+export async function trackUserPractice(contentId, sessionId, elapsedSeconds) {
   const day = new Date().toLocaleDateString('sv-SE') // YYYY-MM-DD wall clock date in user's timezone
-  const result = await db.practices.trackAutoPractice(contentId, day, incSeconds, {
-    skipPush: true,
-  }) // NOTE - SKIPS PUSH
+  const result = await db.practices.trackAutoPractice(contentId, day, sessionId, elapsedSeconds, true) // NOTE - SKIPS PUSH
 
   streakCalculator.invalidate()
   return result

@@ -5,6 +5,19 @@ import { handlePull, handlePush, makeFetchRequest } from "./fetch"
 import type BaseModel from "./models/Base"
 import { EpochMs } from "./index"
 
+const parseSessionMap = (v: unknown): Record<string, number> => {
+  if (!v) return {}
+  try { return typeof v === 'string' ? JSON.parse(v) : (v as Record<string, number>) } catch { return {} }
+}
+
+const mergeSessionMaps = (local: unknown, server: unknown): Record<string, number> => {
+  const merged: Record<string, number> = { ...parseSessionMap(local) }
+  for (const [key, value] of Object.entries(parseSessionMap(server))) {
+    merged[key] = Math.max(merged[key] ?? 0, value)
+  }
+  return merged
+}
+
 // keeps type-safety in each entry
 const c = <TModel extends BaseModel>(config: SyncStoreConfig<TModel>) => config
 
@@ -33,7 +46,19 @@ export default function createStoresFromConfig() {
       model: Practice,
       pull: handlePull(makeFetchRequest('/api/user/practices/v1')),
       push: handlePush(makeFetchRequest('/api/user/practices/v1', { method: 'POST' })),
-      purgeGracePeriod: 12_000 as EpochMs // delete undo toast duration is 10s
+      purgeGracePeriod: 12_000 as EpochMs, // delete undo toast duration is 10s
+      columnMergeStrategies: {
+        session_duration_seconds: (localValue, serverValue) => {
+          return mergeSessionMaps(localValue, serverValue)
+        },
+        duration_seconds: (_localValue, _serverValue, localRecord, serverRecord) => {
+          const merged = mergeSessionMaps(
+            (localRecord as any).session_duration_seconds,
+            (serverRecord as any).session_duration_seconds
+          )
+          return Math.min(Object.values(merged).reduce((sum, v) => sum + v, 0), 59999)
+        },
+      },
     }),
 
     c({

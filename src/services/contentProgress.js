@@ -441,6 +441,7 @@ async function _getAllStartedOrCompleted({
 export async function recordWatchSession(
   contentId,
   collection = null,
+  sessionId,
   mediaLengthSeconds,
   currentSeconds,
   secondsPlayed,
@@ -450,6 +451,7 @@ export async function recordWatchSession(
 ) {
   return _recordWatchSession(
     contentId,
+    sessionId,
     mediaLengthSeconds,
     currentSeconds,
     secondsPlayed,
@@ -471,8 +473,6 @@ export async function recordWatchSession(
  * @param {int} mediaLengthSeconds - total length of video media || live event duration if livestream
  * @param {int} currentSeconds - seconds timestamp relative to beginning of video
  * @param {int} secondsPlayed - seconds played in this watch session (since last pause)
- * @param {int|null} instrumentId - enum value of instrument id
- * @param {int|null} categoryId - enum value of category id
  * @param {boolean|null} isLivestream - determines livestream-specific progress handling
  * @param {boolean} isOffline - whether this watch session is being recorded in offline mode, which affects how progress is tracked and pushed
  * @param {object|null} hierarchy - response from getHierarchy, passed in to avoid redundant calls within the same session
@@ -480,13 +480,12 @@ export async function recordWatchSession(
  */
 export async function _recordWatchSession(
   contentId,
+  sessionId,
   mediaLengthSeconds,
   currentSeconds,
   secondsPlayed,
   {
     collection = null,
-    instrumentId = null,
-    categoryId = null,
     isLivestream = false,
     isOffline = false,
     hierarchy = null,
@@ -497,7 +496,7 @@ export async function _recordWatchSession(
 
   // Track practice and progress locally (no immediate push)
   await Promise.all([
-    trackPractice(contentId, secondsPlayed, { instrumentId, categoryId }),
+    trackPractice(contentId, sessionId, secondsPlayed),
     trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream, isOffline, hierarchy),
   ])
 }
@@ -507,8 +506,8 @@ export async function flushWatchSession() {
   db.practices.requestPushUnsynced('flush-watch-session')
 }
 
-async function trackPractice(contentId, secondsPlayed, details = {}) {
-  return trackUserPractice(contentId, secondsPlayed, details)
+async function trackPractice(contentId, sessionId, secondsPlayed) {
+  return trackUserPractice(contentId, sessionId, secondsPlayed)
 }
 
 async function trackProgress(
@@ -802,7 +801,7 @@ async function duplicateProgressToALaCarte(progresses, collection, {skipPush = f
 
   filteredProgresses = filterGreaterThanProgress(filteredProgresses, externalProgresses)
 
-  duplicateProgressForIds(filteredProgresses, skipPush)
+  await duplicateProgressForIds(filteredProgresses, skipPush)
 }
 
 function filterOutLearningPathsForDuplication(progresses, collection) {
@@ -829,14 +828,14 @@ function filterGreaterThanProgress(progresses, external) {
 }
 
 async function duplicateProgressForIds(ids, skipPush) {
-  ids.forEach(([id, pct], index) => {
+  return Promise.all(ids.map(([id, pct], index) => {
     let skip = true
     if (index === ids.length - 1) {
       // only allow push on last call, to group into one push
       skip = skipPush
     }
-    saveContentProgress(parseInt(id), null, pct, null, {skipPush: skip, accessedDirectly: false})
-  })
+    return saveContentProgress(parseInt(id), null, pct, null, {skipPush: skip, accessedDirectly: false})
+  }))
 }
 
 

@@ -44,3 +44,6 @@ export const numberInRange = (min: number, max: number) =>
 
 export const enumValue = <T extends Record<string, string>>(enumObj: T) =>
   validate(v.picklist(Object.values(enumObj) as [string, ...string[]]))
+
+export const record = <T>(valueSchema: v.BaseSchema<unknown, T, v.BaseIssue<unknown>>) =>
+  validate(v.record(v.string(), valueSchema))

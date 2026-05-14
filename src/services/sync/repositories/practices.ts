@@ -18,12 +18,13 @@ export default class PracticesRepository extends SyncRepository<Practice> {
     return Math.round(totalSeconds / 60)
   }
 
-  async trackAutoPractice(contentId: number, date: string, incrementalDurationSeconds: number, skipPush = true) {
+  async trackAutoPractice(contentId: number, date: string, sessionId: string, elapsedSeconds: number, skipPush = true) {
     this.store.log('trackUserPractice:before', {
       now: performance.now(),
       contentId,
       date,
-      incrementalDurationSeconds
+      elapsedSeconds,
+      sessionId,
     })
 
     const result = await this.upsertOne(Practice.generateAutoId(contentId, date), r => {
@@ -34,17 +35,18 @@ export default class PracticesRepository extends SyncRepository<Practice> {
       r.content_id = contentId;
       r.date = date;
 
-      r.duration_seconds = typeof incrementalDurationSeconds === 'number'
-        ? Math.min((r.duration_seconds || 0) + incrementalDurationSeconds, 59999)
-        : r.duration_seconds;
+      const sessions = { ...r.session_duration_seconds, [sessionId]: elapsedSeconds }
+      r.session_duration_seconds = sessions
+      r.duration_seconds = !r.duration_seconds_override ? Math.min(Object.values(sessions).reduce((sum, v) => sum + v, 0), 59999) : r.duration_seconds_override
 
       this.store.log('trackUserPractice:around', {
         now: performance.now(),
         contentId,
         date,
-        incrementalDurationSeconds,
+        elapsedSeconds,
+        sessionId,
         before: oldDurationSeconds,
-        after: r.duration_seconds
+        after: r.duration_seconds,
       })
     }, { skipPush })
 
@@ -52,8 +54,9 @@ export default class PracticesRepository extends SyncRepository<Practice> {
       now: performance.now(),
       contentId,
       date,
-      incrementalDurationSeconds,
-      after: result.data.duration_seconds
+      elapsedSeconds,
+      sessionId,
+      after: result.data.duration_seconds,
     })
 
     return result
@@ -77,9 +80,10 @@ export default class PracticesRepository extends SyncRepository<Practice> {
     });
   }
 
-  async updateDetails(id: RecordId, details: Partial<Pick<Practice, 'duration_seconds' | 'title' | 'thumbnail_url' | 'category_id' | 'instrument_id'>>) {
+  async updateDetails(id: RecordId, details: Partial<Pick<Practice, 'duration_seconds_override' | 'title' | 'thumbnail_url' | 'category_id' | 'instrument_id'>>) {
     return await this.updateOneId(id, r => {
-      r.duration_seconds = details.duration_seconds !== null ? Math.min(details.duration_seconds, 59999) : r.duration_seconds;
+      r.duration_seconds_override = details.duration_seconds_override !== null ? Math.min(details.duration_seconds_override, 59999) : null;
+      r.duration_seconds = r.duration_seconds_override ?? r.duration_seconds;
       r.title = details.title ?? r.title;
       r.thumbnail_url = details.thumbnail_url ?? r.thumbnail_url;
       r.category_id = details.category_id ?? r.category_id;

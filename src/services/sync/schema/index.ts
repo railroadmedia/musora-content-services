@@ -44,6 +44,8 @@ const practicesTable = tableSchema({
     { name: 'date', type: 'string', isIndexed: true },
     { name: 'auto', type: 'boolean', isIndexed: true },
     { name: 'duration_seconds', type: 'number' },
+    { name: 'session_duration_seconds', type: 'string' },
+    { name: 'duration_seconds_override', type: 'number', isOptional: true },
     { name: 'title', type: 'string', isOptional: true },
     { name: 'thumbnail_url', type: 'string', isOptional: true },
     { name: 'category_id', type: 'number', isOptional: true },
@@ -78,7 +80,7 @@ const userAwardProgressTable = tableSchema({
 })
 
 export default appSchema({
-  version: 2, // intentionally no migration for version 1->2, to wipe client db and backfill content_* columns
+  version: 3,
   tables: [
     contentLikesTable,
     contentProgressTable,

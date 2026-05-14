@@ -28,6 +28,7 @@ interface HierarchyParameter {
  */
 export async function recordWatchSessionOffline(
   contentId: number,
+  sessionId: string,
   mediaLengthSeconds: number,
   currentSeconds: number,
   secondsPlayed: number,
@@ -44,6 +45,7 @@ export async function recordWatchSessionOffline(
 ) {
   return _recordWatchSession(
     contentId,
+    sessionId,
     mediaLengthSeconds,
     currentSeconds,
     secondsPlayed,

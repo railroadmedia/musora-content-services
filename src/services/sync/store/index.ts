@@ -1,6 +1,6 @@
 import { Database, Q, Query, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
-import { ModelClass, SyncToken, SyncEntry, SyncUserScope, SyncContext, EpochMs } from '..'
+import { ModelClass, SyncToken, SyncEntry, SyncUserScope, SyncContext, EpochMs, ColumnMergeStrategy } from '..'
 import { SyncPullResponse, SyncPushResponse, SyncPullFetchFailureResponse, PushPayload, SyncStorePushResultSuccess, SyncStorePushResultFailure } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
@@ -31,6 +31,7 @@ export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
   pull: SyncPull
   push: SyncPush
   purgeGracePeriod?: EpochMs
+  columnMergeStrategies?: Record<string, ColumnMergeStrategy>
 }
 
 export default class SyncStore<TModel extends BaseModel = BaseModel> {
@@ -59,6 +60,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private pushCoalescer = new PushCoalescer()
 
   private purgeGracePeriod: EpochMs
+  private columnMergeStrategies: Record<string, ColumnMergeStrategy>
   private pushBlockingState: BlockingState = { enabled: false }
 
   private emitter = new EventEmitter<SyncStoreEvents<TModel>>()
@@ -67,7 +69,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private lastFetchTokenKey: string
 
   constructor(
-    { model, comparator, pull, push, purgeGracePeriod }: SyncStoreConfig<TModel>,
+    { model, comparator, pull, push, purgeGracePeriod, columnMergeStrategies }: SyncStoreConfig<TModel>,
     userScope: SyncUserScope,
     context: SyncContext,
     db: Database,
@@ -82,7 +84,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.db = db
     this.model = model
     this.collection = db.collections.get(model.table)
-    this.rawSerializer = new RawSerializer()
+    const SerializerClass = (model as any).serializer ?? RawSerializer
+    this.rawSerializer = new SerializerClass()
     this.modelSerializer = new ModelSerializer()
 
     this.resolverComparator = comparator
@@ -92,6 +95,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.pullThrottleState = createThrottleState(SyncStore.PULL_THROTTLE_INTERVAL)
 
     this.purgeGracePeriod = purgeGracePeriod ?? (0 as EpochMs)
+    this.columnMergeStrategies = columnMergeStrategies ?? {}
 
     this.puller = pull
     this.pusher = push
@@ -853,7 +857,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
     if (freshSync) {
       if ((await writer.callReader(() => this.queryMaybeDeletedRecords())).length === 0) {
-        const resolver = new Resolver(this.resolverComparator)
+        const resolver = new Resolver(this.resolverComparator, this.columnMergeStrategies)
         entries
           .filter((e) => !e.meta.lifecycle.deleted_at)
           .forEach((entry) => resolver.againstNone(entry))
@@ -868,7 +872,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     const existingRecords = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(entryIds))))
     existingRecords.forEach((record) => existingRecordsMap.set(record.id, record))
 
-    const resolver = new Resolver(this.resolverComparator)
+    const resolver = new Resolver(this.resolverComparator, this.columnMergeStrategies)
 
     entries.forEach((entry) => {
       const existing = existingRecordsMap.get(entry.meta.ids.id)
@@ -922,9 +926,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       })
     const createdBuilds = result.entriesForCreate.map((entry) => {
       return this.collection.prepareCreate((r) => {
-        Object.entries(entry.record!).forEach(([key, value]) => {
-          if (key === 'id') r._raw.id = value.toString()
-          else r._raw[key] = value
+        const record = this.rawSerializer.fromServerRecord(entry.record! as unknown as Record<string, unknown>)
+        Object.entries(record).forEach(([key, value]) => {
+          if (key === 'id') r._raw.id = (value as any).toString()
+          else r._raw[key] = value as any
         })
         r._raw['created_at'] = entry.meta.lifecycle.created_at
         r._raw['updated_at'] = entry.meta.lifecycle.updated_at
@@ -935,8 +940,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
     const updatedBuilds = result.tuplesForUpdate.map(([record, entry]) => {
       return record.prepareUpdate((r) => {
-        Object.entries(entry.record!).forEach(([key, value]) => {
-          if (key !== 'id') r._raw[key] = value
+        const normalized = this.rawSerializer.fromServerRecord(entry.record! as unknown as Record<string, unknown>)
+        Object.entries(normalized).forEach(([key, value]) => {
+          if (key !== 'id') r._raw[key] = value as any
         })
         r._raw['created_at'] = entry.meta.lifecycle.created_at
         r._raw['updated_at'] = entry.meta.lifecycle.updated_at
@@ -951,9 +957,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
     const restoreCreateBuilds = result.tuplesForRestore.map(([_model, entry]) => {
       return this.collection.prepareCreate((r) => {
-        Object.entries(entry.record!).forEach(([key, value]) => {
-          if (key === 'id') r._raw.id = value.toString()
-          else r._raw[key] = value
+        const record = this.rawSerializer.fromServerRecord(entry.record! as unknown as Record<string, unknown>)
+        Object.entries(record).forEach(([key, value]) => {
+          if (key === 'id') r._raw.id = (value as any).toString()
+          else r._raw[key] = value as any
         })
         r._raw['created_at'] = entry.meta.lifecycle.created_at
         r._raw['updated_at'] = entry.meta.lifecycle.updated_at
@@ -962,8 +969,12 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         r._raw._changed = ''
       })
     })
-    const syncedBuilds = result.recordsForSynced.map((record) => {
+    const syncedBuilds = result.recordsForSynced.map(([record, mergedFields]) => {
       return record.prepareUpdate((r) => {
+        const normalized = this.rawSerializer.fromServerRecord(mergedFields)
+        for (const [key, value] of Object.entries(normalized)) {
+          r._raw[key] = value as any
+        }
         r._raw._status = 'synced'
         r._raw._changed = ''
       })
