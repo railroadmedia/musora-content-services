@@ -455,8 +455,9 @@ import {
 
 import {
 	deleteProfilePicture,
-	otherStats
-} from './services/user/profile.js';
+	otherStats,
+	updateProfileVisibility
+} from './services/user/profile.ts';
 
 import {
 	generateAuthSessionUrl,
@@ -828,6 +829,7 @@ declare module 'musora-content-services' {
 		updatePlaylist,
 		updatePost,
 		updatePracticeNotes,
+		updateProfileVisibility,
 		updateThread,
 		updateUserPractice,
 		upgradeSubscription,
