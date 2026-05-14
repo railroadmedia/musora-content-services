@@ -43,6 +43,8 @@ export interface MultiUserAccountResponse {
   total_seats: number
   end_time: string
   is_primary_account_holder: boolean
+  membership_level: 'plus' | 'basic'
+  is_lifetime_addon: boolean
   // The following fields are not included for public or subaccount users
   active_invited_emails?: InviteResponse[]
   available_seats?: number

@@ -159,9 +159,7 @@ export async function fetchRechargeTokens(): Promise<RechargeTokens> {
 export async function upgradeSubscription(featureFlag = false): Promise<UpgradeSubscriptionResponse> {
   let featureFlagValue = featureFlag ? 1 : 0
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  let url = `${baseUrl}/v1/update-subscription?${multiUserAccountFeatureFlag}=${featureFlagValue}`
-  console.log(url)
-  return httpClient.get<UpgradeSubscriptionResponse>(url)
+  return httpClient.get<UpgradeSubscriptionResponse>(`${baseUrl}/v1/update-subscription?${multiUserAccountFeatureFlag}=${featureFlagValue}`)
 }
 
 /**
