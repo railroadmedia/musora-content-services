@@ -404,7 +404,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
       end: end,
     },
   )
-  return fetchSanity(query, true)
+  return fetchSanity(query, true, { processNeedAccess: true })
 }
 
 /**
