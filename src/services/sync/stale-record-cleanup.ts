@@ -63,4 +63,11 @@ export async function repairStaleSyncedRecords(storesRegistry: Record<string, Sy
 
   SyncTelemetry.getInstance()?.log('[SyncManager] repaired stale synced records', { records: repairedByTable })
   await db.write(() => db.localStorage.set(CLEANUP_FLAG_KEY, '1'))
+
+  for (const table of SYNC_TABLES) {
+    const store = storesRegistry[table]
+    if (!store) continue
+
+    await store.pushUnsyncedWithRetry()
+  }
 }
