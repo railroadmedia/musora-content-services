@@ -1211,7 +1211,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   // This query finds the first scheduled event (sorted by start_time) that ends after now()
   const query = `*[${filter}]{${fieldsString}} | order(live_event_start_time)[0...1]`
 
-  return await fetchSanity(query, false, { processNeedAccess: false })
+  return await fetchSanity(query, false, { processNeedAccess: true })
 }
 
 /**
