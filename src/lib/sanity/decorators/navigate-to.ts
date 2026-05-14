@@ -113,7 +113,11 @@ async function computeNavigateTo(content: NavigateToDecoratable): Promise<Naviga
   return null
 }
 
-export const navigateToDecorator: FieldDecoratorAsync<NavigateToDecoratable, NavigateTo | null> = {
+export const navigateToDecorator: FieldDecoratorAsync<
+  NavigateToDecoratable,
+  typeof NAVIGATE_TO_FIELD,
+  NavigateTo | null
+> = {
   field: NAVIGATE_TO_FIELD,
   compute: computeNavigateTo,
 }
@@ -127,9 +131,7 @@ export function decorateNavigateTo<T extends NavigateToDecoratable>(
 export function decorateNavigateTo<T extends NavigateToDecoratable>(
   items: T | T[]
 ): Promise<WithNavigateTo<T> | WithNavigateTo<T>[]> {
-  return decorateAsync<NavigateToDecoratable, NavigateTo | null>(
-    items,
-    NAVIGATE_TO_FIELD,
-    computeNavigateTo
-  ) as Promise<WithNavigateTo<T> | WithNavigateTo<T>[]>
+  return decorateAsync(items as T, NAVIGATE_TO_FIELD, computeNavigateTo) as Promise<
+    WithNavigateTo<T> | WithNavigateTo<T>[]
+  >
 }
