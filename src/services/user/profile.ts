@@ -36,7 +36,7 @@ export async function otherStats(
   userId: number | null = globalConfig.sessionConfig.userId
 ): Promise<OtherStatsDTO> {
   const [stats, longestStreaks] = await Promise.all([
-    GET<UserStatisticsResponse>(`${baseUrl}/v1/users/${userId}/statistics`),
+    GET(`${baseUrl}/v1/users/${userId}/statistics`) as Promise<UserStatisticsResponse>,
     calculateLongestStreaks(userId),
   ])
 
