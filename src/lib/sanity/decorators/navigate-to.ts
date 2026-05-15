@@ -1,15 +1,15 @@
 import { decorateAllAsync, type Decoratable, type FieldDecoratorAsync } from './base'
 import {
-  findIncompleteLesson,
-  getLastInteractedOf,
-  getProgressState,
-  getProgressStateByIds,
-} from '../../../services/contentProgress.js'
-import {
   COLLECTION_TYPE,
   CollectionParameter,
   STATE,
 } from '../../../services/sync/models/ContentProgress'
+import {
+  findIncompleteLesson,
+  getLastInteractedOf,
+  getProgressState,
+  getProgressStateByIds,
+} from '@/services/progress'
 
 export const NAVIGATE_TO_FIELD = 'navigateTo' as const
 
@@ -85,8 +85,8 @@ async function computeNavigateTo(content: NavigateToDecoratable): Promise<Naviga
 
   const childrenIds = children.map((c) => c.id)
   const childrenById = new Map(children.map((c) => [c.id, c]))
-  const childrenStates = (await getProgressStateByIds(childrenIds)) as Map<number, STATE>
-  const lastInteractedId = (await getLastInteractedOf(childrenIds)) as number
+  const childrenStates = await getProgressStateByIds(childrenIds)
+  const lastInteractedId = await getLastInteractedOf(childrenIds)
 
   if (COURSE_FLOW_TYPES.includes(content.type)) {
     const lastInteractedStatus = childrenStates.get(lastInteractedId)
