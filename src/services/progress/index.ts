@@ -10,17 +10,12 @@ export const getProgressState = async (contentId: number, collection?: Collectio
 export const getProgressStateByIds = async (
   contentIds: number[],
   collection?: CollectionParameter
-) => {
-  return getByIds(contentIds, collection, 'state', '')
-}
+) => getByIds(contentIds, collection, 'state', '')
 
-export const getProgressStateByRecordIds = async (ids: string[]) => {
-  return getByRecordIds(ids, 'state', '')
-}
+export const getProgressStateByRecordIds = async (ids: string[]) => getByRecordIds(ids, 'state', '')
 
-export async function getResumeTimeSecondsByIds(contentIds: number[], collection = null) {
-  return getByIds(contentIds, collection, 'resume_time_seconds', 0)
-}
+export const getResumeTimeSecondsByIds = async (contentIds: number[], collection = null) =>
+  getByIds(contentIds, collection, 'resume_time_seconds', 0)
 
 export const getLastInteractedOf = (
   contentIds: number[],
@@ -63,21 +58,25 @@ export interface GetAllQueryOptions {
   }
 }
 
+const defaultQueryOptions: GetAllQueryOptions = {
+  onlyIds: true,
+  include: {
+    aLaCarte: true,
+    learningPaths: false,
+  },
+}
+
 export interface QueryMetadata {
   brand?: string
   contentTypes?: string[]
   parentId?: number
 }
 
-export const getAllStarted = async (
-  limit = null,
-  options: GetAllQueryOptions = { onlyIds: true, include: { aLaCarte: true, learningPaths: false } }
-) => db.contentProgress.started(limit, options)
+export const getAllStarted = async (limit = null, options?: GetAllQueryOptions) =>
+  db.contentProgress.started(limit, options ?? defaultQueryOptions)
 
-export const getAllCompleted = async (
-  limit = null,
-  options: GetAllQueryOptions = { onlyIds: true, include: { aLaCarte: true, learningPaths: false } }
-) => db.contentProgress.completed(limit, options)
+export const getAllCompleted = async (limit = null, options?: GetAllQueryOptions) =>
+  db.contentProgress.completed(limit, options ?? defaultQueryOptions)
 
 export const getAllCompletedByIds = async (contentIds: number[]) =>
   db.contentProgress.completedByContentIds(contentIds)
