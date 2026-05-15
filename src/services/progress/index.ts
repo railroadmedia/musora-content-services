@@ -1,6 +1,8 @@
 import { db } from '../sync'
 import { COLLECTION_TYPE, CollectionParameter } from '../sync/models/ContentProgress'
 
+const SIXTY_DAYS_IN_SECONDS = 60 * 24 * 60 * 60
+
 export const getProgressState = async (contentId: number, collection?: CollectionParameter) => {
   return getById(contentId, collection, 'state', '')
 }
@@ -20,16 +22,19 @@ export async function getResumeTimeSecondsByIds(contentIds: number[], collection
   return getByIds(contentIds, collection, 'resume_time_seconds', 0)
 }
 
-export const getLastInteractedOf = (contentIds: number[], collection?: CollectionParameter) =>
+export const getLastInteractedOf = (
+  contentIds: number[],
+  collection?: CollectionParameter
+): Promise<number | undefined> =>
   db.contentProgress
     .mostRecentlyUpdatedId(contentIds, collection)
-    .then((r) => (r.data ? parseInt(r.data) : undefined))
+    .then((r) => (r.data ? parseInt(r.data, 10) : undefined))
 
 export const findIncompleteLesson = (
   progressOnItems: Map<number, string>,
-  currentContentId: number,
+  currentContentId: number | undefined,
   contentType: string
-) => {
+): number | null | undefined => {
   const ids = Array.from(progressOnItems.keys())
   const getProgress = (id: number) => progressOnItems.get(id)
 
@@ -77,15 +82,19 @@ export const getAllCompleted = async (
 export const getAllCompletedByIds = async (contentIds: number[]) =>
   db.contentProgress.completedByContentIds(contentIds)
 
+export interface StartedOrCompletedOptions extends QueryMetadata {
+  include?: GetAllQueryOptions['include']
+}
+
 export const getAllStartedOrCompleted = async (
   limit?: number,
-  options: QueryMetadata & GetAllQueryOptions = {}
+  options: StartedOrCompletedOptions = {}
 ) =>
   db.contentProgress
     .startedOrCompleted({
       ...options,
       limit,
-      updatedAfter: Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60,
+      updatedAfter: Math.floor(Date.now() / 1000) - SIXTY_DAYS_IN_SECONDS,
     })
     .then((r) => r.data)
 

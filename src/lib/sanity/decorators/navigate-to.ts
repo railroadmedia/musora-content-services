@@ -18,7 +18,7 @@ const NAVIGABLE_TYPES = [
   'guided-course',
   'course-collection',
   'song-tutorial',
-  'learning-path-v2',
+  COLLECTION_TYPE.LEARNING_PATH,
   'skill-pack',
 ] as const
 

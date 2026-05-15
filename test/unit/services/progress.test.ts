@@ -17,9 +17,7 @@ const repoMocks = {
       return Promise.resolve({ data: records })
     }),
     getSomeProgressByRecordIds: jest.fn().mockImplementation((ids: string[]) => {
-      const records = ids
-        .map((id) => mockRecordsById[id])
-        .filter(Boolean)
+      const records = ids.map((id) => mockRecordsById[id]).filter(Boolean)
       return Promise.resolve({ data: records })
     }),
     mostRecentlyUpdatedId: jest.fn().mockImplementation(() => {
@@ -30,9 +28,7 @@ const repoMocks = {
     completedByContentIds: jest
       .fn()
       .mockImplementation(() => Promise.resolve(mockCompletedByContentIds)),
-    startedOrCompleted: jest
-      .fn()
-      .mockImplementation(() => Promise.resolve(mockStartedOrCompleted)),
+    startedOrCompleted: jest.fn().mockImplementation(() => Promise.resolve(mockStartedOrCompleted)),
   },
 }
 
