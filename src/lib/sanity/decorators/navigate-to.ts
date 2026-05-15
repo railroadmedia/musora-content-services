@@ -5,11 +5,13 @@ import {
   getProgressState,
   getProgressStateByIds,
 } from '../../../services/contentProgress.js'
-import { COLLECTION_TYPE, CollectionParameter } from '../../../services/sync/models/ContentProgress'
+import {
+  COLLECTION_TYPE,
+  CollectionParameter,
+  STATE,
+} from '../../../services/sync/models/ContentProgress'
 
 export const NAVIGATE_TO_FIELD = 'navigateTo' as const
-
-const STATE_STARTED = 'started'
 
 const NAVIGABLE_TYPES = [
   'course',
@@ -73,7 +75,7 @@ async function computeNavigateTo(content: NavigateToDecoratable): Promise<Naviga
   if (!children || children.length === 0) return null
 
   const contentState = await getProgressState(content.id)
-  if (contentState !== STATE_STARTED) {
+  if (contentState !== STATE.STARTED) {
     const firstChild = children[0]
     const childNav = TWO_DEPTH_TYPES.includes(content.type)
       ? await computeNavigateTo(firstChild)
@@ -83,13 +85,13 @@ async function computeNavigateTo(content: NavigateToDecoratable): Promise<Naviga
 
   const childrenIds = children.map((c) => c.id)
   const childrenById = new Map(children.map((c) => [c.id, c]))
-  const childrenStates = await getProgressStateByIds(childrenIds)
-  const lastInteractedId = await getLastInteractedOf(childrenIds)
+  const childrenStates = (await getProgressStateByIds(childrenIds)) as Map<number, STATE>
+  const lastInteractedId = (await getLastInteractedOf(childrenIds)) as number
 
   if (COURSE_FLOW_TYPES.includes(content.type)) {
     const lastInteractedStatus = childrenStates.get(lastInteractedId)
     const targetId =
-      lastInteractedStatus === STATE_STARTED
+      lastInteractedStatus === STATE.STARTED
         ? lastInteractedId
         : findIncompleteLesson(childrenStates, lastInteractedId, content.type)
     const target = childrenById.get(targetId)
