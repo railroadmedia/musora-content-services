@@ -5,9 +5,9 @@ import {
   getProgressState,
   getProgressStateByIds,
 } from '../../../services/contentProgress.js'
-import { COLLECTION_TYPE } from '../../../services/sync/models/ContentProgress'
+import { COLLECTION_TYPE, CollectionParameter } from '../../../services/sync/models/ContentProgress'
 
-export const NAVIGATE_TO_FIELD = 'navigate_to' as const
+export const NAVIGATE_TO_FIELD = 'navigateTo' as const
 
 const STATE_STARTED = 'started'
 
@@ -42,14 +42,14 @@ export interface NavigateTo {
   published_on: string | null
   status: string
   child: NavigateTo | null
-  collection: { type: string; id: number } | null
+  collection: CollectionParameter | null
 }
 
 export type WithNavigateTo<T extends NavigateToDecoratable> = T & {
-  navigate_to: NavigateTo | null
+  navigateTo: NavigateTo | null
 }
 
-function toNavigateTo(
+function buildNavigateTo(
   content: NavigateToDecoratable,
   child: NavigateTo | null = null,
   collection: NavigateTo['collection'] = null
@@ -78,7 +78,7 @@ async function computeNavigateTo(content: NavigateToDecoratable): Promise<Naviga
     const childNav = TWO_DEPTH_TYPES.includes(content.type)
       ? await computeNavigateTo(firstChild)
       : null
-    return toNavigateTo(firstChild, childNav)
+    return buildNavigateTo(firstChild, childNav)
   }
 
   const childrenIds = children.map((c) => c.id)
@@ -93,20 +93,20 @@ async function computeNavigateTo(content: NavigateToDecoratable): Promise<Naviga
         ? lastInteractedId
         : findIncompleteLesson(childrenStates, lastInteractedId, content.type)
     const target = childrenById.get(targetId)
-    return target ? toNavigateTo(target) : null
+    return target ? buildNavigateTo(target) : null
   }
 
   if (GUIDED_FLOW_TYPES.includes(content.type)) {
     const targetId = findIncompleteLesson(childrenStates, lastInteractedId, content.type)
     const target = childrenById.get(targetId)
-    return target ? toNavigateTo(target) : null
+    return target ? buildNavigateTo(target) : null
   }
 
   if (TWO_DEPTH_TYPES.includes(content.type)) {
     const lastChild = childrenById.get(lastInteractedId)
     if (!lastChild) return null
     const childNav = await computeNavigateTo(lastChild)
-    return toNavigateTo(lastChild, childNav)
+    return buildNavigateTo(lastChild, childNav)
   }
 
   return null

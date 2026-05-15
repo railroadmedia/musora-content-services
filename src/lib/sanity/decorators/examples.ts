@@ -175,14 +175,14 @@ const navigateRows: NavigateToDecoratable[] = [
 
 export async function singleAsyncNavigateTo() {
   const decorated = await decorateNavigateTo(navigateRows)
-  void decorated[0].navigate_to
-  void decorated[1].navigate_to?.child
+  void decorated[0].navigateTo
+  void decorated[1].navigateTo?.child
   return decorated
 }
 
 export async function navigateToOnSingleItem() {
   const decorated = await decorateNavigateTo(navigateRows[0])
-  void decorated.navigate_to
+  void decorated.navigateTo
   return decorated
 }
 
@@ -201,7 +201,7 @@ export async function navigateToComposedWithAccess() {
   const withBoth = await decorateNavigateTo(withAccess)
 
   withBoth[0].need_access satisfies boolean
-  void withBoth[0].navigate_to
+  void withBoth[0].navigateTo
   return withBoth
 }
 
@@ -223,7 +223,7 @@ export async function navigateToParallelWithProgress() {
     decorators
   )) as WithNavigateTo<ContentWithNavAndProgress>[]
 
-  void decorated[0].navigate_to
+  void decorated[0].navigateTo
   decorated[0].progress_percent satisfies number | undefined
   return decorated
 }

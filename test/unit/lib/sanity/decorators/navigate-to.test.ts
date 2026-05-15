@@ -76,9 +76,9 @@ beforeEach(() => {
 
 describe('navigate-to decorator', () => {
   describe('navigateToDecorator (const)', () => {
-    test('field is navigate_to', () => {
-      expect(navigateToDecorator.field).toBe('navigate_to')
-      expect(NAVIGATE_TO_FIELD).toBe('navigate_to')
+    test('field is navigateTo', () => {
+      expect(navigateToDecorator.field).toBe('navigateTo')
+      expect(NAVIGATE_TO_FIELD).toBe('navigateTo')
     })
   })
 
@@ -86,19 +86,19 @@ describe('navigate-to decorator', () => {
     test('non-navigable type → null', async () => {
       const item = parent(1, 'lesson', [child(101)])
       const result = await decorateNavigateTo(item)
-      expect(result.navigate_to).toBeNull()
+      expect(result.navigateTo).toBeNull()
     })
 
     test('empty children → null', async () => {
       const item = parent(1, 'course', [])
       const result = await decorateNavigateTo(item)
-      expect(result.navigate_to).toBeNull()
+      expect(result.navigateTo).toBeNull()
     })
 
     test('not-started course → first child', async () => {
       const item = parent(1, 'course', [child(101), child(102)])
       const result = await decorateNavigateTo(item)
-      expect(result.navigate_to).toMatchObject({ id: 101, child: null })
+      expect(result.navigateTo).toMatchObject({ id: 101, child: null })
     })
 
     test('course started, lastInteracted started → lastInteracted', async () => {
@@ -110,7 +110,7 @@ describe('navigate-to decorator', () => {
       mockLastInteracted = 101
       const item = parent(1, 'course', [child(101), child(102)])
       const result = await decorateNavigateTo(item)
-      expect(result.navigate_to).toMatchObject({ id: 101 })
+      expect(result.navigateTo).toMatchObject({ id: 101 })
     })
 
     test('course started, lastInteracted completed → first incomplete after', async () => {
@@ -123,7 +123,7 @@ describe('navigate-to decorator', () => {
       mockLastInteracted = 101
       const item = parent(1, 'course', [child(101), child(102), child(103)])
       const result = await decorateNavigateTo(item)
-      expect(result.navigate_to).toMatchObject({ id: 103 })
+      expect(result.navigateTo).toMatchObject({ id: 103 })
     })
 
     test('guided-course started → first incomplete regardless of lastInteracted', async () => {
@@ -136,7 +136,7 @@ describe('navigate-to decorator', () => {
       mockLastInteracted = 102
       const item = parent(1, 'guided-course', [child(101), child(102), child(103)])
       const result = await decorateNavigateTo(item)
-      expect(result.navigate_to).toMatchObject({ id: 101 })
+      expect(result.navigateTo).toMatchObject({ id: 101 })
     })
 
     test('learning-path-v2 started → first incomplete regardless of lastInteracted', async () => {
@@ -149,14 +149,14 @@ describe('navigate-to decorator', () => {
       mockLastInteracted = 102
       const item = parent(1, COLLECTION_TYPE.LEARNING_PATH, [child(101), child(102), child(103)])
       const result = await decorateNavigateTo(item)
-      expect(result.navigate_to).toMatchObject({ id: 101 })
+      expect(result.navigateTo).toMatchObject({ id: 101 })
     })
 
     test('two-depth: not-started course-collection nests first child nav', async () => {
       const courseChild = parent(101, 'course', [child(201), child(202)])
       const collection = parent(1, 'course-collection', [courseChild, parent(102, 'course', [])])
       const result = await decorateNavigateTo(collection)
-      expect(result.navigate_to).toMatchObject({
+      expect(result.navigateTo).toMatchObject({
         id: 101,
         child: { id: 201 },
       })
@@ -173,20 +173,17 @@ describe('navigate-to decorator', () => {
       const courseB = parent(102, 'course', [child(301), child(302)])
       const collection = parent(1, 'course-collection', [courseA, courseB])
       const result = await decorateNavigateTo(collection)
-      expect(result.navigate_to).toMatchObject({
+      expect(result.navigateTo).toMatchObject({
         id: 102,
         child: { id: 301 },
       })
     })
 
     test('decorates every item in an array', async () => {
-      const items = [
-        parent(1, 'course', [child(101)]),
-        parent(2, 'lesson', [child(201)]),
-      ]
+      const items = [parent(1, 'course', [child(101)]), parent(2, 'lesson', [child(201)])]
       const result = await decorateNavigateTo(items)
-      expect(result[0].navigate_to).toMatchObject({ id: 101 })
-      expect(result[1].navigate_to).toBeNull()
+      expect(result[0].navigateTo).toMatchObject({ id: 101 })
+      expect(result[1].navigateTo).toBeNull()
     })
 
     test('returns the same reference it was given', async () => {
@@ -198,10 +195,7 @@ describe('navigate-to decorator', () => {
     test('navigateToDecorator.compute fires once per top-level item, never on descendants', async () => {
       const spy = jest.spyOn(navigateToDecorator, 'compute')
       const courseChild = parent(101, 'course', [child(201), child(202)])
-      const collection = parent(1, 'course-collection', [
-        courseChild,
-        parent(102, 'course', []),
-      ])
+      const collection = parent(1, 'course-collection', [courseChild, parent(102, 'course', [])])
       const standalone = parent(2, 'course', [child(301)])
       await decorateNavigateTo([collection, standalone])
       expect(spy).toHaveBeenCalledTimes(2)
@@ -210,19 +204,54 @@ describe('navigate-to decorator', () => {
       spy.mockRestore()
     })
 
-    test('descendants of decorated items do not receive navigate_to field', async () => {
+    test('descendants of decorated items do not receive navigateTo field', async () => {
       const item = parent(1, 'course', [child(101), child(102)])
       const result = await decorateNavigateTo(item)
-      expect(result.navigate_to).not.toBeNull()
+      expect(result.navigateTo).not.toBeNull()
       const children = result.children as NavigateToDecoratable[]
-      expect((children[0] as Record<string, unknown>).navigate_to).toBeUndefined()
-      expect((children[1] as Record<string, unknown>).navigate_to).toBeUndefined()
+      expect((children[0] as Record<string, unknown>).navigateTo).toBeUndefined()
+      expect((children[1] as Record<string, unknown>).navigateTo).toBeUndefined()
+    })
+
+    test('skill-pack uses course flow', async () => {
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 60, updated_at: 1000 },
+        { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+        { content_id: 102, state: 'started', progress_percent: 20, updated_at: 1000 },
+      ]
+      mockLastInteracted = 102
+      const item = parent(1, 'skill-pack', [child(101), child(102)])
+      const result = await decorateNavigateTo(item)
+      expect(result.navigateTo).toMatchObject({ id: 102 })
+    })
+
+    test('song-tutorial uses course flow', async () => {
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 50, updated_at: 1000 },
+        { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+        { content_id: 102, state: '', progress_percent: 0, updated_at: 0 },
+      ]
+      mockLastInteracted = 101
+      const item = parent(1, 'song-tutorial', [child(101), child(102)])
+      const result = await decorateNavigateTo(item)
+      expect(result.navigateTo).toMatchObject({ id: 102 })
+    })
+
+    test('two-depth started but lastInteracted child not in collection → null', async () => {
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 50, updated_at: 1000 },
+      ]
+      mockLastInteracted = 999
+      const courseA = parent(101, 'course', [child(201)])
+      const collection = parent(1, 'course-collection', [courseA])
+      const result = await decorateNavigateTo(collection)
+      expect(result.navigateTo).toBeNull()
     })
 
     test('output shape matches NavigateTo interface', async () => {
       const item = parent(1, 'course', [child(101)])
       const result = await decorateNavigateTo(item)
-      expect(result.navigate_to).toEqual({
+      expect(result.navigateTo).toEqual({
         id: 101,
         type: 'course-lesson',
         brand: 'drumeo',

@@ -7,11 +7,7 @@ export type DecorateFn<T, V> = (item: T) => V
 
 export type DecorateFnAsync<T, V> = (item: T) => Promise<V>
 
-export interface FieldDecorator<
-  T extends Decoratable,
-  K extends string = string,
-  V = unknown,
-> {
+export interface FieldDecorator<T extends Decoratable, K extends string = string, V = unknown> {
   field: K
   compute: DecorateFn<T, V>
   recurse?: boolean
@@ -142,7 +138,5 @@ async function visitAsync<T extends Decoratable>(
   if (!Array.isArray(children)) return
   const recursing = decorators.filter((d) => d.recurse !== false)
   if (recursing.length === 0) return
-  await Promise.all(
-    children.map((child) => visitAsync(child as T, recursing, depth + 1))
-  )
+  await Promise.all(children.map((child) => visitAsync(child as T, recursing, depth + 1)))
 }
