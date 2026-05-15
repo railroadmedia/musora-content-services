@@ -4,16 +4,24 @@ import {
   decorateAsync,
   type FieldDecorator,
   type FieldDecoratorAsync,
-} from './base'
-import { accessDecorator, decorateAccess, type AccessDecoratable } from './need-access'
-import { pageTypeDecorator, decoratePageType, type PageTypeDecoratable } from './page-type'
+} from '../../../src/lib/sanity/decorators/base'
+import {
+  accessDecorator,
+  decorateAccess,
+  type AccessDecoratable,
+} from '../../../src/lib/sanity/decorators/need-access'
+import {
+  pageTypeDecorator,
+  decoratePageType,
+  type PageTypeDecoratable,
+} from '../../../src/lib/sanity/decorators/page-type'
 import {
   decorateNavigateTo,
   navigateToDecorator,
   WithNavigateTo,
   type NavigateToDecoratable,
-} from './navigate-to'
-import type { UserPermissions } from '../../../services/permissions'
+} from '../../../src/lib/sanity/decorators/navigate-to'
+import type { UserPermissions } from '../../../src/services/permissions'
 
 interface ContentRow extends AccessDecoratable, PageTypeDecoratable {
   id: number
