@@ -16,24 +16,9 @@ jest.mock('../../../../../src/services/sync/repository-proxy', () => {
         return Promise.resolve({ data: mockLastInteracted })
       }),
     },
-    practices: {
-      queryAll: jest.fn().mockResolvedValue({ data: [] }),
-      getAll: jest.fn().mockResolvedValue({ data: [] }),
-    },
   }
   return { default: mockFns, ...mockFns }
 })
-
-jest.mock('../../../../../src/services/content-org/learning-paths', () => ({
-  getDailySession: jest.fn().mockResolvedValue(null),
-  onLearningPathCompletedActions: jest.fn().mockResolvedValue(undefined),
-}))
-
-jest.mock('../../../../../src/services/sanity.js', () => ({
-  getHierarchy: jest.fn().mockResolvedValue({ metadata: {}, parents: {}, children: {} }),
-  getHierarchies: jest.fn().mockResolvedValue({ metadata: {}, parents: {}, children: {} }),
-  getSanityDate: jest.fn((date: Date) => date.toISOString()),
-}))
 
 import { initializeTestService } from '../../../../initializeTests.js'
 import {

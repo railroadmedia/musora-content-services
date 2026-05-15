@@ -1,6 +1,6 @@
 let mockProgressRecords: any[] = []
 let mockRecordsById: Record<string, any> = {}
-let mockLastInteracted: number | null = null
+let mockLastInteracted: string | null = null
 let mockStarted: any = { data: [] }
 let mockCompleted: any = { data: [] }
 let mockCompletedByContentIds: any = { data: [] }
@@ -150,7 +150,7 @@ describe('getResumeTimeSecondsByIds', () => {
 
 describe('getLastInteractedOf', () => {
   test('parses numeric string to integer', async () => {
-    mockLastInteracted = '101' as any
+    mockLastInteracted = '101'
     expect(await getLastInteractedOf([100, 101])).toBe(101)
   })
 
