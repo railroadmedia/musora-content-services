@@ -1,3 +1,11 @@
+export interface RecordIdParts {
+  contentId: number
+  collection: {
+    type: string
+    id: number
+  }
+}
+
 export interface ProgressSnapshot {
   last_update: number
   progress: number

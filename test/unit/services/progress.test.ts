@@ -43,7 +43,7 @@ jest.mock('../../../src/services/sync/repository-proxy', () => ({
 }))
 
 import { Progress } from '../../../src/services/progress'
-import { COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
+import { COLLECTION_ID_SELF, COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -360,5 +360,49 @@ describe('Progress.percentByContentId', () => {
     await Progress.percentByContentId('drumeo')
     const args = repoMocks.contentProgress.startedOrCompleted.mock.calls[0][0]
     expect(args.brand).toBe('drumeo')
+  })
+})
+
+describe('Progress.generateRecordId', () => {
+  test('no collection uses SELF defaults', () => {
+    expect(Progress.generateRecordId(123)).toBe(
+      `123:${COLLECTION_TYPE.SELF}:${COLLECTION_ID_SELF}`
+    )
+  })
+
+  test('LP collection returns correct format', () => {
+    expect(
+      Progress.generateRecordId(123, { type: COLLECTION_TYPE.LEARNING_PATH, id: 456 })
+    ).toBe('123:learning-path-v2:456')
+  })
+})
+
+describe('Progress.extractFromRecordId', () => {
+  test('self record id parses correctly', () => {
+    expect(Progress.extractFromRecordId('123:self:0')).toEqual({
+      contentId: 123,
+      collection: { type: 'self', id: 0 },
+    })
+  })
+
+  test('LP record id parses correctly', () => {
+    expect(Progress.extractFromRecordId('456:learning-path-v2:789')).toEqual({
+      contentId: 456,
+      collection: { type: 'learning-path-v2', id: 789 },
+    })
+  })
+
+  test('missing collection type defaults to SELF', () => {
+    expect(Progress.extractFromRecordId('123::')).toEqual({
+      contentId: 123,
+      collection: { type: COLLECTION_TYPE.SELF, id: COLLECTION_ID_SELF },
+    })
+  })
+
+  test('missing collection id defaults to COLLECTION_ID_SELF', () => {
+    expect(Progress.extractFromRecordId('123:self:')).toEqual({
+      contentId: 123,
+      collection: { type: 'self', id: COLLECTION_ID_SELF },
+    })
   })
 })
