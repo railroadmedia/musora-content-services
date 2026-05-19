@@ -17,6 +17,9 @@ export const getProgressStateByRecordIds = async (ids: string[]) => getByRecordI
 export const getResumeTimeSecondsByIds = async (contentIds: number[], collection = null) =>
   getByIds(contentIds, collection, 'resume_time_seconds', 0)
 
+export const getResumeTimeSecondsByRecordIds = async (ids: string[]) =>
+  getByRecordIds(ids, 'resume_time_seconds', 0)
+
 export const getLastInteractedOf = (
   contentIds: number[],
   collection?: CollectionParameter

@@ -49,6 +49,7 @@ import {
   getProgressStateByIds,
   getProgressStateByRecordIds,
   getResumeTimeSecondsByIds,
+  getResumeTimeSecondsByRecordIds,
 } from '../../../src/services/progress'
 import { COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 
@@ -145,6 +146,25 @@ describe('getResumeTimeSecondsByIds', () => {
     mockProgressRecords = [{ content_id: 1, resume_time_seconds: null }]
     const result = await getResumeTimeSecondsByIds([1])
     expect(result.get(1)).toBe(0)
+  })
+})
+
+describe('getResumeTimeSecondsByRecordIds', () => {
+  test('returns object with resume_time_seconds keyed by record id', async () => {
+    mockRecordsById = {
+      '100:self:0': { id: '100:self:0', resume_time_seconds: 120 },
+      '300:self:0': { id: '300:self:0', resume_time_seconds: 0 },
+    }
+    const result = await getResumeTimeSecondsByRecordIds(['100:self:0', '300:self:0', '999:self:0'])
+    expect(result['100:self:0']).toBe(120)
+    expect(result['300:self:0']).toBe(0)
+    expect(result['999:self:0']).toBe(0)
+  })
+
+  test('returns default 0 when field is null', async () => {
+    mockRecordsById = { '100:self:0': { id: '100:self:0', resume_time_seconds: null } }
+    const result = await getResumeTimeSecondsByRecordIds(['100:self:0'])
+    expect(result['100:self:0']).toBe(0)
   })
 })
 
