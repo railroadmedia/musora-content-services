@@ -1,17 +1,16 @@
-export interface GetAllQueryOptions {
-  onlyIds?: boolean
-  include?: {
-    aLaCarte?: boolean
-    learningPaths?: boolean
-  }
+export interface ProgressContentFilter {
+  aLaCarte?: boolean
+  learningPaths?: boolean
 }
 
-export interface QueryMetadata {
+export interface ProgressQueryOptions {
+  onlyIds?: boolean
+  include?: ProgressContentFilter
+}
+
+export interface StartedOrCompletedOptions {
   brand?: string
   contentTypes?: string[]
   parentId?: number
-}
-
-export interface StartedOrCompletedOptions extends QueryMetadata {
-  include?: GetAllQueryOptions['include']
+  include?: ProgressContentFilter
 }

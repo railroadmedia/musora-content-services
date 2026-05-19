@@ -1,9 +1,9 @@
 import { db } from '../sync'
-import { GetAllQueryOptions, StartedOrCompletedOptions } from './types'
+import { ProgressQueryOptions, StartedOrCompletedOptions } from './types'
 
 const SIXTY_DAYS_IN_SECONDS = 60 * 24 * 60 * 60
 
-const defaultQueryOptions: GetAllQueryOptions = {
+const defaultQueryOptions: ProgressQueryOptions = {
   onlyIds: true,
   include: {
     aLaCarte: true,
@@ -11,10 +11,10 @@ const defaultQueryOptions: GetAllQueryOptions = {
   },
 }
 
-export const allStarted = async (limit: number | null = null, options?: GetAllQueryOptions) =>
+export const allStarted = async (limit: number | null = null, options?: ProgressQueryOptions) =>
   db.contentProgress.started(limit, options ?? defaultQueryOptions)
 
-export const allCompleted = async (limit: number | null = null, options?: GetAllQueryOptions) =>
+export const allCompleted = async (limit: number | null = null, options?: ProgressQueryOptions) =>
   db.contentProgress.completed(limit, options ?? defaultQueryOptions)
 
 export const allCompletedByIds = async (contentIds: number[]) =>
