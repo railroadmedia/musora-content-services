@@ -1,3 +1,9 @@
+export interface ProgressSnapshot {
+  last_update: number
+  progress: number
+  status: string
+}
+
 export interface ProgressContentFilter {
   aLaCarte?: boolean
   learningPaths?: boolean

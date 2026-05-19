@@ -31,3 +31,11 @@ export const allStartedOrCompleted = async (
       updatedAfter: Math.floor(Date.now() / 1000) - SIXTY_DAYS_IN_SECONDS,
     })
     .then((r) => r.data)
+
+export const percentByContentId = async (brand?: string): Promise<Record<number, number>> =>
+  db.contentProgress
+    .startedOrCompleted({
+      brand,
+      updatedAfter: Math.floor(Date.now() / 1000) - SIXTY_DAYS_IN_SECONDS,
+    })
+    .then((r) => Object.fromEntries(r.data.map((p) => [p.content_id, p.progress_percent])))
