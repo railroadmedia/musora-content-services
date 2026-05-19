@@ -1216,7 +1216,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   const filter = await new FilterBuilder(baseFilter, { bypassPermissions: true }).buildFilter()
 
   const events = await fetchSanity(
-    `*[${filter}]{${liveEventFields}} | order(live_event_start_time asc)`,
+    `*[${filter}]{${fieldsString}} | order(live_event_start_time asc)`,
     true,
     { processNeedAccess: false }
   )
