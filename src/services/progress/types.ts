@@ -1,3 +1,15 @@
+export interface ProgressMetadata {
+  brand: string
+  parent_id: number
+  type: string
+}
+
+export interface Hierarchy {
+  parents: Record<number, number>
+  children: Record<number, number[]>
+  metadata?: Record<number, ProgressMetadata>
+}
+
 export interface RecordIdParts {
   contentId: number
   collection: {
