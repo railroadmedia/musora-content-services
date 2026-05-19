@@ -203,20 +203,20 @@ describe('computeBubbleTrickleProgresses', () => {
 
   test('combines bubble and trickle', async () => {
     mockProgressRecords = [{ content_id: 2, progress_percent: 80 }]
-    const result = await computeBubbleTrickleProgresses(2, 80, undefined, hierarchy)
+    const result = await computeBubbleTrickleProgresses(2, 80, hierarchy)
     expect(result[1]).toBe(80)
   })
 
   test('respects { bubble: false }', async () => {
     mockProgressRecords = [{ content_id: 2, progress_percent: 80 }]
-    const result = await computeBubbleTrickleProgresses(2, 80, undefined, hierarchy, {
+    const result = await computeBubbleTrickleProgresses(2, 80, hierarchy, undefined, {
       bubble: false,
     })
     expect(result).not.toHaveProperty('1')
   })
 
   test('respects { trickle: false }', async () => {
-    const result = await computeBubbleTrickleProgresses(1, 50, undefined, hierarchy, {
+    const result = await computeBubbleTrickleProgresses(1, 50, hierarchy, undefined, {
       trickle: false,
     })
     expect(result).not.toHaveProperty('2')
@@ -225,12 +225,12 @@ describe('computeBubbleTrickleProgresses', () => {
 
 describe('bubbleAndTrickleProgressesSafely', () => {
   test('passes positive progresses to recordProgressMany', async () => {
-    await bubbleAndTrickleProgressesSafely({ 1: 50, 2: 100 }, null, {})
+    await bubbleAndTrickleProgressesSafely({ 1: 50, 2: 100 }, {})
     expect(mockRecordProgressMany).toHaveBeenCalledWith(
       { 1: 50, 2: 100 },
-      null,
+      undefined,
       {},
-      { skipPush: true, accessedDirectly: true, allowRegression: true }
+      { skipPush: true, accessedDirectly: undefined, allowRegression: true }
     )
     expect(mockEraseProgressMany).not.toHaveBeenCalled()
   })
@@ -238,22 +238,21 @@ describe('bubbleAndTrickleProgressesSafely', () => {
   test('isResetAction separates zero progresses into eraseProgressMany', async () => {
     await bubbleAndTrickleProgressesSafely(
       { 1: 50, 2: 0, 3: 0 },
-      null,
       {},
       { isResetAction: true }
     )
     expect(mockRecordProgressMany).toHaveBeenCalledWith(
       { 1: 50 },
-      null,
+      undefined,
       {},
       expect.objectContaining({ allowRegression: true })
     )
-    expect(mockEraseProgressMany).toHaveBeenCalledWith([2, 3], null, { skipPush: true })
+    expect(mockEraseProgressMany).toHaveBeenCalledWith([2, 3], undefined, { skipPush: true })
   })
 
   test('forwards collection argument', async () => {
     const collection = { type: COLLECTION_TYPE.LEARNING_PATH, id: 10 }
-    await bubbleAndTrickleProgressesSafely({ 1: 50 }, collection, {})
+    await bubbleAndTrickleProgressesSafely({ 1: 50 }, {}, {}, collection)
     expect(mockRecordProgressMany).toHaveBeenCalledWith(
       { 1: 50 },
       collection,
@@ -262,8 +261,18 @@ describe('bubbleAndTrickleProgressesSafely', () => {
     )
   })
 
+  test('forwards accessedDirectly option', async () => {
+    await bubbleAndTrickleProgressesSafely({ 1: 50 }, {}, { accessedDirectly: false })
+    expect(mockRecordProgressMany).toHaveBeenCalledWith(
+      { 1: 50 },
+      undefined,
+      {},
+      expect.objectContaining({ accessedDirectly: false })
+    )
+  })
+
   test('skips both calls when all empty', async () => {
-    await bubbleAndTrickleProgressesSafely({}, null, {})
+    await bubbleAndTrickleProgressesSafely({}, {})
     expect(mockRecordProgressMany).not.toHaveBeenCalled()
     expect(mockEraseProgressMany).not.toHaveBeenCalled()
   })
