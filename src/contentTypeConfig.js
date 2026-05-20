@@ -698,6 +698,7 @@ export let contentTypeConfig = {
       'show_in_new_feed',
       isLiveField(),
     ],
+    includeChildFields: true,
   },
 }
 

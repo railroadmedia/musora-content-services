@@ -6,13 +6,19 @@ import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds, fetchShows } from '../../sanity.js'
 import {
   postProcessBadge,
-  collectionLessonTypes,
   getFormattedType,
   recentTypes,
   showsLessonTypes,
   songs,
+  getNextLessonLessonParentTypes,
 } from '../../../contentTypeConfig.js'
 import { PARENT_ID_TOP_LEVEL } from '../../sync/models/ContentProgress'
+
+const excludeFromGeneratedIndex = [
+  'getSubtitle',
+  'getDefaultCTATextForContent',
+  'getCompletedChildren',
+]
 
 /**
  * Fetch any content IDs with some progress, include the userPinnedItem,
@@ -102,7 +108,7 @@ export async function processContentItem(content) {
       badge_logo: content.badge_logo ?? null,
       badge_template: content.badge_template ?? null,
       badge_template_rear: content.badge_template_rear ?? null,
-      isLocked: content.is_locked ?? false,
+      isLocked: content.need_access ?? false,
       subtitle: getSubtitle(content, contentType, isLive),
     },
     cta: {
@@ -119,17 +125,21 @@ export async function processContentItem(content) {
   }
 }
 
-function getSubtitle(content, contentType, isLive) {
-  if (collectionLessonTypes.includes(content.type) || content.lesson_count > 1) {
-    return `${content.completed_children ?? 0} of ${content.all_children ?? content.lesson_count ?? content.child_count} Lessons Complete`
+export function getSubtitle(content, contentType, isLive) {
+  if (getNextLessonLessonParentTypes.includes(content.type) || content.lesson_count > 1) {
+    const total = content.all_children ?? content.lesson_count ?? content.child_count
+    if (!total && total !== 0) return null
+    return `${content.completed_children ?? 0} of ${total} Lessons Complete`
   }
   if ((contentType === 'lesson' || contentType === 'show') && !isLive) {
+    if (content.progressPercentage == null) return null
     return `${content.progressPercentage}% Complete`
   }
-  return `${content.difficulty_string} • ${content.artist_name}`
+  const parts = [content.difficulty_string, content.artist_name].filter(Boolean)
+  return parts.length ? parts.join(' • ') : null
 }
 
-function getDefaultCTATextForContent(content, contentType) {
+export function getDefaultCTATextForContent(content, contentType) {
   const notStarted =
     !content.progressStatus ||
     content.progressStatus === 'not-started' ||
@@ -144,7 +154,7 @@ function getDefaultCTATextForContent(content, contentType) {
     )
       return 'Replay Song'
     if (contentType === 'lesson' || contentType === 'show') return 'Revisit Lesson'
-    if (contentType === 'song tutorial' || collectionLessonTypes.includes(content.type))
+    if (getNextLessonLessonParentTypes.includes(content.type))
       return 'Revisit Lessons'
     if (contentType === 'course-collection') return 'View Lessons'
   }
@@ -152,7 +162,7 @@ function getDefaultCTATextForContent(content, contentType) {
   return 'Continue'
 }
 
-async function getCompletedChildren(content, contentType) {
+export async function getCompletedChildren(content, contentType) {
   let completedChildren = 0
   let allChildren = 0
 
