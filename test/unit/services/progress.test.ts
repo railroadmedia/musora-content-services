@@ -235,12 +235,20 @@ describe('findIncompleteLesson', () => {
     expect(findIncompleteLesson(states, 3, 'course')).toBe(1)
   })
 
-  test('other type: returns null when currentContentId not in map', () => {
+  test('other type: scans from start when currentContentId not in map → first incomplete', () => {
     const states = new Map<number, string>([
       [1, 'completed'],
       [2, 'started'],
     ])
-    expect(findIncompleteLesson(states, 999, 'course')).toBeNull()
+    expect(findIncompleteLesson(states, 999, 'course')).toBe(2)
+  })
+
+  test('other type: scans from start when currentContentId not in map and all complete → first id', () => {
+    const states = new Map<number, string>([
+      [1, 'completed'],
+      [2, 'completed'],
+    ])
+    expect(findIncompleteLesson(states, 999, 'course')).toBe(1)
   })
 })
 
