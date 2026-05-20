@@ -1,4 +1,10 @@
-import { decorateAll, type FieldDecorator } from './base'
+import {
+  decorateAll,
+  decorateAllAsync,
+  decorateAsync,
+  type FieldDecorator,
+  type FieldDecoratorAsync,
+} from './base'
 import {
   accessDecorator,
   decorateAccess,
@@ -73,4 +79,63 @@ export function conditionalComposition(opts: {
     decorators.push(pageTypeDecorator as FieldDecorator<Composed>)
   }
   return decorateAll(rows, decorators)
+}
+
+interface ProgressDecoratable extends AccessDecoratable {
+  progress_percent?: number
+  is_liked?: boolean
+}
+
+async function fetchProgress(id: number): Promise<number> {
+  return id * 10
+}
+
+async function fetchLiked(id: number): Promise<boolean> {
+  return id % 2 === 0
+}
+
+export async function singleAsyncDecorator() {
+  const decorated = (await decorateAsync<ProgressDecoratable, number>(
+    rows,
+    'progress_percent',
+    (item) => fetchProgress(item.id as number)
+  )) as ProgressDecoratable[]
+  const _p: number | undefined = decorated[0].progress_percent
+  return decorated
+}
+
+export async function parallelAsyncDecorators() {
+  const decorators: FieldDecoratorAsync<ProgressDecoratable>[] = [
+    {
+      field: 'progress_percent',
+      compute: (item) => fetchProgress(item.id as number),
+    },
+    {
+      field: 'is_liked',
+      compute: (item) => fetchLiked(item.id as number),
+    },
+  ]
+  const decorated = (await decorateAllAsync(
+    rows as ProgressDecoratable[],
+    decorators
+  )) as ProgressDecoratable[]
+  const _p: number | undefined = decorated[0].progress_percent
+  const _l: boolean | undefined = decorated[0].is_liked
+  return decorated
+}
+
+export async function mixedSyncThenAsync() {
+  const withAccess = decorateAll(rows, [
+    accessDecorator(perms) as FieldDecorator<ProgressDecoratable>,
+  ]) as ProgressDecoratable[]
+  return decorateAllAsync(withAccess, [
+    {
+      field: 'progress_percent',
+      compute: (item) => fetchProgress(item.id as number),
+    },
+    {
+      field: 'is_liked',
+      compute: (item) => fetchLiked(item.id as number),
+    },
+  ])
 }

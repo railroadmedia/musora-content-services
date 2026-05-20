@@ -1,4 +1,12 @@
-import { decorate, decorateAll, type Decoratable, type FieldDecorator } from '../../../../../src/lib/sanity/decorators/base'
+import {
+  decorate,
+  decorateAll,
+  decorateAsync,
+  decorateAllAsync,
+  type Decoratable,
+  type FieldDecorator,
+  type FieldDecoratorAsync,
+} from '../../../../../src/lib/sanity/decorators/base'
 
 describe('base decorator', () => {
   describe('decorate', () => {
@@ -97,6 +105,175 @@ describe('base decorator', () => {
       }
       decorateAll(items, [probe, probe])
       expect(seen.sort()).toEqual([1, 1, 2, 2, 3, 3])
+    })
+  })
+
+  describe('decorateAsync', () => {
+    test('sets resolved value on single object', async () => {
+      const item: Decoratable = { id: 1 }
+      await decorateAsync(item, 'mark', async () => 'A')
+      expect(item.mark).toBe('A')
+    })
+
+    test('sets resolved value on every item in array', async () => {
+      const items: Decoratable[] = [{ id: 1 }, { id: 2 }, { id: 3 }]
+      await decorateAsync(items, 'mark', async (i) => i.id)
+      expect(items.map((i) => i.mark)).toEqual([1, 2, 3])
+    })
+
+    test('returns same reference it was given', async () => {
+      const items: Decoratable[] = [{ id: 1 }]
+      const result = await decorateAsync(items, 'mark', async () => true)
+      expect(result).toBe(items)
+    })
+
+    test('recurses children up to 3 levels deep', async () => {
+      const tree: Decoratable = {
+        id: 1,
+        children: [
+          {
+            id: 2,
+            children: [
+              {
+                id: 3,
+                children: [{ id: 4 }],
+              },
+            ],
+          },
+        ],
+      }
+      await decorateAsync(tree, 'visited', async () => true)
+
+      expect(tree.visited).toBe(true)
+      const lvl1 = (tree.children as Decoratable[])[0]
+      const lvl2 = (lvl1.children as Decoratable[])[0]
+      const lvl3 = (lvl2.children as Decoratable[])[0]
+      expect(lvl1.visited).toBe(true)
+      expect(lvl2.visited).toBe(true)
+      expect(lvl3.visited).toBeUndefined()
+    })
+
+    test('propagates rejection from compute', async () => {
+      const item: Decoratable = { id: 1 }
+      const failing = decorateAsync(item, 'mark', async () => {
+        throw new Error('boom')
+      })
+      await expect(failing).rejects.toThrow('boom')
+    })
+  })
+
+  describe('decorateAllAsync', () => {
+    test('applies every async decorator on a single walk', async () => {
+      const items: Decoratable[] = [{ id: 1, children: [{ id: 2 }] }]
+      const a: FieldDecoratorAsync<Decoratable> = {
+        field: 'a',
+        compute: async () => 'A',
+      }
+      const b: FieldDecoratorAsync<Decoratable> = {
+        field: 'b',
+        compute: async () => 'B',
+      }
+      await decorateAllAsync(items, [a, b])
+
+      expect(items[0].a).toBe('A')
+      expect(items[0].b).toBe('B')
+      const child = (items[0].children as Decoratable[])[0]
+      expect(child.a).toBe('A')
+      expect(child.b).toBe('B')
+    })
+
+    test('empty decorator list is a no-op', async () => {
+      const items: Decoratable[] = [{ id: 1 }]
+      await decorateAllAsync(items, [])
+      expect(Object.keys(items[0])).toEqual(['id'])
+    })
+
+    test('runs decorators for one item in parallel', async () => {
+      const items: Decoratable[] = [{ id: 1 }]
+      let active = 0
+      let peak = 0
+      const tracker = async () => {
+        active++
+        peak = Math.max(peak, active)
+        await new Promise((r) => setTimeout(r, 5))
+        active--
+        return true
+      }
+      await decorateAllAsync(items, [
+        { field: 'a', compute: tracker },
+        { field: 'b', compute: tracker },
+        { field: 'c', compute: tracker },
+      ])
+      expect(peak).toBe(3)
+    })
+
+    test('runs items in parallel', async () => {
+      const items: Decoratable[] = [{ id: 1 }, { id: 2 }, { id: 3 }]
+      let active = 0
+      let peak = 0
+      const tracker = async () => {
+        active++
+        peak = Math.max(peak, active)
+        await new Promise((r) => setTimeout(r, 5))
+        active--
+        return true
+      }
+      await decorateAllAsync(items, [{ field: 'mark', compute: tracker }])
+      expect(peak).toBe(3)
+    })
+
+    test('runs children in parallel', async () => {
+      const items: Decoratable[] = [
+        { id: 1, children: [{ id: 2 }, { id: 3 }, { id: 4 }] },
+      ]
+      let active = 0
+      let peak = 0
+      const tracker = async () => {
+        active++
+        peak = Math.max(peak, active)
+        await new Promise((r) => setTimeout(r, 5))
+        active--
+        return true
+      }
+      await decorateAllAsync(items, [{ field: 'mark', compute: tracker }])
+      expect(peak).toBeGreaterThanOrEqual(3)
+    })
+
+    test('visits each item exactly once with multiple decorators', async () => {
+      const items: Decoratable[] = [{ id: 1, children: [{ id: 2 }, { id: 3 }] }]
+      const seen: number[] = []
+      const probe: FieldDecoratorAsync<Decoratable> = {
+        field: 'probe',
+        compute: async (item) => {
+          seen.push(item.id as number)
+          return true
+        },
+      }
+      await decorateAllAsync(items, [probe, probe])
+      expect(seen.sort()).toEqual([1, 1, 2, 2, 3, 3])
+    })
+
+    test('rejects when any decorator throws', async () => {
+      const items: Decoratable[] = [{ id: 1 }]
+      const ok: FieldDecoratorAsync<Decoratable> = {
+        field: 'ok',
+        compute: async () => true,
+      }
+      const bad: FieldDecoratorAsync<Decoratable> = {
+        field: 'bad',
+        compute: async () => {
+          throw new Error('nope')
+        },
+      }
+      await expect(decorateAllAsync(items, [ok, bad])).rejects.toThrow('nope')
+    })
+
+    test('passes visited item to compute', async () => {
+      const item: Decoratable = { id: 7, label: 'x' }
+      const compute = jest.fn(async () => 'ok')
+      await decorateAllAsync(item, [{ field: 'mark', compute }])
+      expect(compute).toHaveBeenCalledTimes(1)
+      expect(compute).toHaveBeenCalledWith(item)
     })
   })
 })
