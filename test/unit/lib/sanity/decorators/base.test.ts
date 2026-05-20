@@ -106,6 +106,51 @@ describe('base decorator', () => {
       decorateAll(items, [probe, probe])
       expect(seen.sort()).toEqual([1, 1, 2, 2, 3, 3])
     })
+
+    test('recurse:false decorator runs only at top level; recurse:true descends', () => {
+      const items: Decoratable[] = [{ id: 1, children: [{ id: 2 }, { id: 3 }] }]
+      const topOnlyHits: number[] = []
+      const everyHits: number[] = []
+      const topOnly: FieldDecorator<Decoratable> = {
+        field: 'top',
+        compute: (item) => {
+          topOnlyHits.push(item.id as number)
+          return true
+        },
+        recurse: false,
+      }
+      const every: FieldDecorator<Decoratable> = {
+        field: 'every',
+        compute: (item) => {
+          everyHits.push(item.id as number)
+          return true
+        },
+      }
+      decorateAll(items, [topOnly, every])
+      expect(topOnlyHits).toEqual([1])
+      expect(everyHits.sort()).toEqual([1, 2, 3])
+      expect(items[0].top).toBe(true)
+      const child = (items[0].children as Decoratable[])[0]
+      expect(child.top).toBeUndefined()
+      expect(child.every).toBe(true)
+    })
+
+    test('all decorators recurse:false → children untouched, walk skipped', () => {
+      const items: Decoratable[] = [{ id: 1, children: [{ id: 2 }] }]
+      const seen: number[] = []
+      const dec: FieldDecorator<Decoratable> = {
+        field: 'mark',
+        compute: (item) => {
+          seen.push(item.id as number)
+          return true
+        },
+        recurse: false,
+      }
+      decorateAll(items, [dec])
+      expect(seen).toEqual([1])
+      const child = (items[0].children as Decoratable[])[0]
+      expect(child.mark).toBeUndefined()
+    })
   })
 
   describe('decorateAsync', () => {
@@ -274,6 +319,50 @@ describe('base decorator', () => {
       await decorateAllAsync(item, [{ field: 'mark', compute }])
       expect(compute).toHaveBeenCalledTimes(1)
       expect(compute).toHaveBeenCalledWith(item)
+    })
+
+    test('recurse:false decorator runs only at top level; recurse:true descends', async () => {
+      const items: Decoratable[] = [{ id: 1, children: [{ id: 2 }, { id: 3 }] }]
+      const topOnlyHits: number[] = []
+      const everyHits: number[] = []
+      const topOnly: FieldDecoratorAsync<Decoratable> = {
+        field: 'top',
+        compute: async (item) => {
+          topOnlyHits.push(item.id as number)
+          return true
+        },
+        recurse: false,
+      }
+      const every: FieldDecoratorAsync<Decoratable> = {
+        field: 'every',
+        compute: async (item) => {
+          everyHits.push(item.id as number)
+          return true
+        },
+      }
+      await decorateAllAsync(items, [topOnly, every])
+      expect(topOnlyHits).toEqual([1])
+      expect(everyHits.sort()).toEqual([1, 2, 3])
+      const child = (items[0].children as Decoratable[])[0]
+      expect(child.top).toBeUndefined()
+      expect(child.every).toBe(true)
+    })
+
+    test('all async decorators recurse:false → children untouched', async () => {
+      const items: Decoratable[] = [{ id: 1, children: [{ id: 2 }] }]
+      const seen: number[] = []
+      const dec: FieldDecoratorAsync<Decoratable> = {
+        field: 'mark',
+        compute: async (item) => {
+          seen.push(item.id as number)
+          return true
+        },
+        recurse: false,
+      }
+      await decorateAllAsync(items, [dec])
+      expect(seen).toEqual([1])
+      const child = (items[0].children as Decoratable[])[0]
+      expect(child.mark).toBeUndefined()
     })
   })
 })

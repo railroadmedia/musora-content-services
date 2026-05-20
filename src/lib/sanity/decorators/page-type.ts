@@ -11,11 +11,15 @@ export interface PageTypeDecoratable extends Decoratable {
 }
 
 export type WithPageType<T extends PageTypeDecoratable> = T & {
-  [PAGE_TYPE_FIELD]: PageType
+  page_type: PageType
   children?: WithPageType<NonNullable<T['children']>[number]>[]
 }
 
-export const pageTypeDecorator: FieldDecorator<PageTypeDecoratable, PageType> = {
+export const pageTypeDecorator: FieldDecorator<
+  PageTypeDecoratable,
+  typeof PAGE_TYPE_FIELD,
+  PageType
+> = {
   field: PAGE_TYPE_FIELD,
   compute: (item) => (SONG_TYPES_WITH_CHILDREN.includes(item.type as string) ? 'song' : 'lesson'),
 }
@@ -25,9 +29,7 @@ export function decoratePageType<T extends PageTypeDecoratable>(items: T): WithP
 export function decoratePageType<T extends PageTypeDecoratable>(
   items: T | T[]
 ): WithPageType<T> | WithPageType<T>[] {
-  return decorate<PageTypeDecoratable, PageType>(
-    items,
-    pageTypeDecorator.field,
-    pageTypeDecorator.compute
-  ) as WithPageType<T> | WithPageType<T>[]
+  return decorate(items as T, pageTypeDecorator.field, pageTypeDecorator.compute) as
+    | WithPageType<T>
+    | WithPageType<T>[]
 }

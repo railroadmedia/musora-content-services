@@ -5,16 +5,14 @@ import {
   type FieldDecorator,
   type FieldDecoratorAsync,
 } from './base'
+import { accessDecorator, decorateAccess, type AccessDecoratable } from './need-access'
+import { pageTypeDecorator, decoratePageType, type PageTypeDecoratable } from './page-type'
 import {
-  accessDecorator,
-  decorateAccess,
-  type AccessDecoratable,
-} from './need-access'
-import {
-  pageTypeDecorator,
-  decoratePageType,
-  type PageTypeDecoratable,
-} from './page-type'
+  decorateNavigateTo,
+  navigateToDecorator,
+  WithNavigateTo,
+  type NavigateToDecoratable,
+} from './navigate-to'
 import type { UserPermissions } from '../../../services/permissions'
 
 interface ContentRow extends AccessDecoratable, PageTypeDecoratable {
@@ -45,15 +43,15 @@ const rows: ContentRow[] = [
 
 export function singleDecoratorViaWrapper() {
   const decorated = decorateAccess(rows, perms)
-  const _na: boolean = decorated[0].need_access
+  decorated[0].need_access satisfies boolean
   return decorated
 }
 
 export function chainedWrappers() {
   const withAccess = decorateAccess(rows, perms)
   const withBoth = decoratePageType(withAccess)
-  const _na: boolean = withBoth[0].need_access
-  const _pt: 'song' | 'lesson' = withBoth[0].page_type
+  withBoth[0].need_access satisfies boolean
+  withBoth[0].page_type satisfies 'song' | 'lesson'
   return withBoth
 }
 
@@ -66,10 +64,7 @@ export function composedSingleWalk() {
   return decorateAll(rows, decorators)
 }
 
-export function conditionalComposition(opts: {
-  withAccess: boolean
-  withPageType: boolean
-}) {
+export function conditionalComposition(opts: { withAccess: boolean; withPageType: boolean }) {
   type Composed = AccessDecoratable & PageTypeDecoratable
   const decorators: FieldDecorator<Composed>[] = []
   if (opts.withAccess) {
@@ -95,12 +90,10 @@ async function fetchLiked(id: number): Promise<boolean> {
 }
 
 export async function singleAsyncDecorator() {
-  const decorated = (await decorateAsync<ProgressDecoratable, number>(
-    rows,
-    'progress_percent',
-    (item) => fetchProgress(item.id as number)
+  const decorated = (await decorateAsync(rows, 'progress_percent', (item) =>
+    fetchProgress(item.id as number)
   )) as ProgressDecoratable[]
-  const _p: number | undefined = decorated[0].progress_percent
+  decorated[0].progress_percent satisfies number | undefined
   return decorated
 }
 
@@ -119,8 +112,8 @@ export async function parallelAsyncDecorators() {
     rows as ProgressDecoratable[],
     decorators
   )) as ProgressDecoratable[]
-  const _p: number | undefined = decorated[0].progress_percent
-  const _l: boolean | undefined = decorated[0].is_liked
+  decorated[0].progress_percent satisfies number | undefined
+  decorated[0].is_liked satisfies boolean | undefined
   return decorated
 }
 
@@ -138,4 +131,99 @@ export async function mixedSyncThenAsync() {
       compute: (item) => fetchLiked(item.id as number),
     },
   ])
+}
+
+const courseLesson = (id: number): NavigateToDecoratable => ({
+  id,
+  type: 'course-lesson',
+  brand: 'drumeo',
+  thumbnail: '',
+  published_on: null,
+  status: 'published',
+})
+
+const navigateRows: NavigateToDecoratable[] = [
+  {
+    id: 1,
+    type: 'course',
+    brand: 'drumeo',
+    thumbnail: '',
+    published_on: null,
+    status: 'published',
+    children: [courseLesson(101), courseLesson(102), courseLesson(103)],
+  },
+  {
+    id: 2,
+    type: 'course-collection',
+    brand: 'drumeo',
+    thumbnail: '',
+    published_on: null,
+    status: 'published',
+    children: [
+      {
+        id: 201,
+        type: 'course',
+        brand: 'drumeo',
+        thumbnail: '',
+        published_on: null,
+        status: 'published',
+        children: [courseLesson(301), courseLesson(302)],
+      },
+    ],
+  },
+]
+
+export async function singleAsyncNavigateTo() {
+  const decorated = await decorateNavigateTo(navigateRows)
+  void decorated[0].navigateTo
+  void decorated[1].navigateTo?.child
+  return decorated
+}
+
+export async function navigateToOnSingleItem() {
+  const decorated = await decorateNavigateTo(navigateRows[0])
+  void decorated.navigateTo
+  return decorated
+}
+
+export async function navigateToComposedWithAccess() {
+  interface ContentWithNav extends NavigateToDecoratable, AccessDecoratable {
+    permission_id?: number[]
+    children?: ContentWithNav[]
+  }
+
+  const items: ContentWithNav[] = navigateRows.map((row) => ({
+    ...row,
+    permission_id: [78],
+  }))
+
+  const withAccess = decorateAccess(items, perms)
+  const withBoth = await decorateNavigateTo(withAccess)
+
+  withBoth[0].need_access satisfies boolean
+  void withBoth[0].navigateTo
+  return withBoth
+}
+
+export async function navigateToParallelWithProgress() {
+  interface ContentWithNavAndProgress extends NavigateToDecoratable {
+    progress_percent?: number
+  }
+
+  const items = navigateRows as ContentWithNavAndProgress[]
+  const decorators: FieldDecoratorAsync<ContentWithNavAndProgress>[] = [
+    navigateToDecorator as FieldDecoratorAsync<ContentWithNavAndProgress>,
+    {
+      field: 'progress_percent',
+      compute: (item) => fetchProgress(item.id),
+    },
+  ]
+  const decorated = (await decorateAllAsync(
+    items,
+    decorators
+  )) as WithNavigateTo<ContentWithNavAndProgress>[]
+
+  void decorated[0].navigateTo
+  decorated[0].progress_percent satisfies number | undefined
+  return decorated
 }

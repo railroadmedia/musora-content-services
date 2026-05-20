@@ -9,13 +9,13 @@ export interface AccessDecoratable extends Decoratable {
 }
 
 export type WithNeedAccess<T extends AccessDecoratable> = T & {
-  [NEED_ACCESS_FIELD]: boolean
+  need_access: boolean
   children?: WithNeedAccess<NonNullable<T['children']>[number]>[]
 }
 
 export function accessDecorator(
   userPermissions: UserPermissions
-): FieldDecorator<AccessDecoratable, boolean> {
+): FieldDecorator<AccessDecoratable, typeof NEED_ACCESS_FIELD, boolean> {
   const adapter = getPermissionsAdapter()
   return {
     field: NEED_ACCESS_FIELD,
@@ -36,7 +36,5 @@ export function decorateAccess<T extends AccessDecoratable>(
   userPermissions: UserPermissions
 ): WithNeedAccess<T> | WithNeedAccess<T>[] {
   const { field, compute } = accessDecorator(userPermissions)
-  return decorate<AccessDecoratable, boolean>(items, field, compute) as
-    | WithNeedAccess<T>
-    | WithNeedAccess<T>[]
+  return decorate(items as T, field, compute) as WithNeedAccess<T> | WithNeedAccess<T>[]
 }

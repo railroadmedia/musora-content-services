@@ -3,30 +3,58 @@ export interface Decoratable {
   [key: string]: unknown
 }
 
-export type DecorateFn<T extends Decoratable, V> = (item: T) => V
+export type DecorateFn<T, V> = (item: T) => V
 
-export type DecorateFnAsync<T extends Decoratable, V> = (item: T) => Promise<V>
+export type DecorateFnAsync<T, V> = (item: T) => Promise<V>
 
-export interface FieldDecorator<T extends Decoratable, V = unknown> {
-  field: string
+export interface FieldDecorator<T extends Decoratable, K extends string = string, V = unknown> {
+  field: K
   compute: DecorateFn<T, V>
+  recurse?: boolean
 }
 
-export interface FieldDecoratorAsync<T extends Decoratable, V = unknown> {
-  field: string
+export interface FieldDecoratorAsync<
+  T extends Decoratable,
+  K extends string = string,
+  V = unknown,
+> {
+  field: K
   compute: DecorateFnAsync<T, V>
+  recurse?: boolean
 }
+
+type Decorated<T, K extends string, V> = T & { [P in K]: V }
 
 const MAX_CHILD_DEPTH = 3
 
-export function decorate<T extends Decoratable, V>(
-  items: T | T[],
-  field: string,
+export function decorate<T extends Decoratable, K extends string, V>(
+  items: T[],
+  field: K,
   compute: DecorateFn<T, V>
-): T | T[] {
-  return decorateAll(items, [{ field, compute }])
+): Decorated<T, K, V>[]
+export function decorate<T extends Decoratable, K extends string, V>(
+  items: T,
+  field: K,
+  compute: DecorateFn<T, V>
+): Decorated<T, K, V>
+export function decorate<T extends Decoratable, K extends string, V>(
+  items: T | T[],
+  field: K,
+  compute: DecorateFn<T, V>
+): Decorated<T, K, V> | Decorated<T, K, V>[] {
+  const list = Array.isArray(items) ? items : [items]
+  for (const item of list) visit(item, [{ field, compute }], 0)
+  return items as Decorated<T, K, V> | Decorated<T, K, V>[]
 }
 
+export function decorateAll<T extends Decoratable>(
+  items: T[],
+  decorators: ReadonlyArray<FieldDecorator<T>>
+): T[]
+export function decorateAll<T extends Decoratable>(
+  items: T,
+  decorators: ReadonlyArray<FieldDecorator<T>>
+): T
 export function decorateAll<T extends Decoratable>(
   items: T | T[],
   decorators: ReadonlyArray<FieldDecorator<T>>
@@ -38,7 +66,7 @@ export function decorateAll<T extends Decoratable>(
 
 function visit<T extends Decoratable>(
   item: T,
-  decorators: ReadonlyArray<FieldDecorator<T>>,
+  decorators: ReadonlyArray<FieldDecorator<T, string, unknown>>,
   depth: number
 ): void {
   if (!item) return
@@ -49,19 +77,41 @@ function visit<T extends Decoratable>(
   if (depth >= MAX_CHILD_DEPTH - 1) return
   const children = item.children
   if (!Array.isArray(children)) return
+  const recursing = decorators.filter((d) => d.recurse !== false)
+  if (recursing.length === 0) return
   for (const child of children) {
-    visit(child as T, decorators, depth + 1)
+    visit(child as T, recursing, depth + 1)
   }
 }
 
-export function decorateAsync<T extends Decoratable, V>(
-  items: T | T[],
-  field: string,
+export function decorateAsync<T extends Decoratable, K extends string, V>(
+  items: T[],
+  field: K,
   compute: DecorateFnAsync<T, V>
-): Promise<T | T[]> {
-  return decorateAllAsync(items, [{ field, compute }])
+): Promise<Decorated<T, K, V>[]>
+export function decorateAsync<T extends Decoratable, K extends string, V>(
+  items: T,
+  field: K,
+  compute: DecorateFnAsync<T, V>
+): Promise<Decorated<T, K, V>>
+export function decorateAsync<T extends Decoratable, K extends string, V>(
+  items: T | T[],
+  field: K,
+  compute: DecorateFnAsync<T, V>
+): Promise<Decorated<T, K, V> | Decorated<T, K, V>[]> {
+  return decorateAllAsync(items as T[], [{ field, compute }]) as Promise<
+    Decorated<T, K, V> | Decorated<T, K, V>[]
+  >
 }
 
+export function decorateAllAsync<T extends Decoratable>(
+  items: T[],
+  decorators: ReadonlyArray<FieldDecoratorAsync<T>>
+): Promise<T[]>
+export function decorateAllAsync<T extends Decoratable>(
+  items: T,
+  decorators: ReadonlyArray<FieldDecoratorAsync<T>>
+): Promise<T>
 export async function decorateAllAsync<T extends Decoratable>(
   items: T | T[],
   decorators: ReadonlyArray<FieldDecoratorAsync<T>>
@@ -73,7 +123,7 @@ export async function decorateAllAsync<T extends Decoratable>(
 
 async function visitAsync<T extends Decoratable>(
   item: T,
-  decorators: ReadonlyArray<FieldDecoratorAsync<T>>,
+  decorators: ReadonlyArray<FieldDecoratorAsync<T, string, unknown>>,
   depth: number
 ): Promise<void> {
   if (!item) return
@@ -86,7 +136,7 @@ async function visitAsync<T extends Decoratable>(
   if (depth >= MAX_CHILD_DEPTH - 1) return
   const children = item.children
   if (!Array.isArray(children)) return
-  await Promise.all(
-    children.map((child) => visitAsync(child as T, decorators, depth + 1))
-  )
+  const recursing = decorators.filter((d) => d.recurse !== false)
+  if (recursing.length === 0) return
+  await Promise.all(children.map((child) => visitAsync(child as T, recursing, depth + 1)))
 }
