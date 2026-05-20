@@ -210,6 +210,92 @@ describe('navigate-to decorator', () => {
       expect(result.navigateTo).toMatchObject({ id: 102 })
     })
 
+    test('guided-course STARTED, lastInteracted not in children → first incomplete', async () => {
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 40, updated_at: 1000 },
+        { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+        { content_id: 102, state: '', progress_percent: 0, updated_at: 0 },
+        { content_id: 103, state: '', progress_percent: 0, updated_at: 0 },
+      ]
+      mockLastInteracted = 999
+      const item = parent(1, 'guided-course', [child(101), child(102), child(103)])
+      const result = await decorateNavigateTo(item)
+      expect(result.navigateTo).toMatchObject({ id: 102 })
+    })
+
+    test('guided-course STARTED, lastInteracted not in children, all complete → first child', async () => {
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 100, updated_at: 1000 },
+        { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+        { content_id: 102, state: 'completed', progress_percent: 100, updated_at: 1000 },
+      ]
+      mockLastInteracted = 999
+      const item = parent(1, 'guided-course', [child(101), child(102)])
+      const result = await decorateNavigateTo(item)
+      expect(result.navigateTo).toMatchObject({ id: 101 })
+    })
+
+    test('learning-path-v2 STARTED, lastInteracted not in children → first incomplete', async () => {
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 40, updated_at: 1000 },
+        { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+        { content_id: 102, state: '', progress_percent: 0, updated_at: 0 },
+      ]
+      mockLastInteracted = 999
+      const item = parent(1, COLLECTION_TYPE.LEARNING_PATH, [child(101), child(102)])
+      const result = await decorateNavigateTo(item)
+      expect(result.navigateTo).toMatchObject({ id: 102 })
+    })
+
+    test('course STARTED, lastInteracted not in children → first incomplete', async () => {
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 40, updated_at: 1000 },
+        { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+        { content_id: 102, state: '', progress_percent: 0, updated_at: 0 },
+        { content_id: 103, state: '', progress_percent: 0, updated_at: 0 },
+      ]
+      mockLastInteracted = 999
+      const item = parent(1, 'course', [child(101), child(102), child(103)])
+      const result = await decorateNavigateTo(item)
+      expect(result.navigateTo).toMatchObject({ id: 102 })
+    })
+
+    test('skill-pack STARTED, lastInteracted not in children → first incomplete', async () => {
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 40, updated_at: 1000 },
+        { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+        { content_id: 102, state: '', progress_percent: 0, updated_at: 0 },
+      ]
+      mockLastInteracted = 999
+      const item = parent(1, 'skill-pack', [child(101), child(102)])
+      const result = await decorateNavigateTo(item)
+      expect(result.navigateTo).toMatchObject({ id: 102 })
+    })
+
+    test('song-tutorial STARTED, lastInteracted not in children → first incomplete', async () => {
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 40, updated_at: 1000 },
+        { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+        { content_id: 102, state: '', progress_percent: 0, updated_at: 0 },
+      ]
+      mockLastInteracted = 999
+      const item = parent(1, 'song-tutorial', [child(101), child(102)])
+      const result = await decorateNavigateTo(item)
+      expect(result.navigateTo).toMatchObject({ id: 102 })
+    })
+
+    test('course STARTED, lastInteracted not in children, all complete → first child', async () => {
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 100, updated_at: 1000 },
+        { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+        { content_id: 102, state: 'completed', progress_percent: 100, updated_at: 1000 },
+      ]
+      mockLastInteracted = 999
+      const item = parent(1, 'course', [child(101), child(102)])
+      const result = await decorateNavigateTo(item)
+      expect(result.navigateTo).toMatchObject({ id: 101 })
+    })
+
     test('two-depth started but lastInteracted child not in collection → null', async () => {
       mockProgressRecords = [
         { content_id: 1, state: 'started', progress_percent: 50, updated_at: 1000 },
