@@ -1,21 +1,41 @@
 import { db } from '../sync'
-import { COLLECTION_TYPE, CollectionParameter } from '../sync/models/ContentProgress'
+import ContentProgress, {
+  COLLECTION_TYPE,
+  CollectionParameter,
+  STATE,
+} from '../sync/models/ContentProgress'
+import type { ModelSerialized } from '../sync/serializers'
 import { getById, getByIds, getByRecordIds } from './internal/queries'
 import type { ProgressSnapshot } from './types'
 
-export const state = async (contentId: number, collection?: CollectionParameter) =>
-  getById(contentId, 'state', '', collection)
+type Selector<V> = (p: ModelSerialized<ContentProgress>) => V | null | undefined
 
-export const stateByIds = async (contentIds: number[], collection?: CollectionParameter) =>
-  getByIds(contentIds, 'state', '', collection)
+const queryById =
+  <V>(select: Selector<V>, fallback: V) =>
+  (contentId: number, collection?: CollectionParameter) =>
+    getById(contentId, select, fallback, collection)
 
-export const stateByRecordIds = async (ids: string[]) => getByRecordIds(ids, 'state', '')
+const queryByIds =
+  <V>(select: Selector<V>, fallback: V) =>
+  (contentIds: number[], collection?: CollectionParameter) =>
+    getByIds(contentIds, select, fallback, collection)
 
-export const playbackPositionByIds = async (contentIds: number[], collection?: CollectionParameter) =>
-  getByIds(contentIds, 'resume_time_seconds', 0, collection)
+const queryByRecordIds =
+  <V>(select: Selector<V>, fallback: V) =>
+  (ids: string[]) =>
+    getByRecordIds(ids, select, fallback)
 
-export const playbackPositionByRecordIds = async (ids: string[]) =>
-  getByRecordIds(ids, 'resume_time_seconds', 0)
+type StateValue = STATE | ''
+
+export const state = queryById<StateValue>((p) => p.state, '')
+export const stateByIds = queryByIds<StateValue>((p) => p.state, '')
+export const stateByRecordIds = queryByRecordIds<StateValue>((p) => p.state, '')
+
+export const playbackPositionByIds = queryByIds<number>((p) => p.resume_time_seconds, 0)
+export const playbackPositionByRecordIds = queryByRecordIds<number>(
+  (p) => p.resume_time_seconds,
+  0
+)
 
 export const lastInteractedOf = (
   contentIds: number[],
@@ -50,46 +70,55 @@ export const incompleteLesson = (
   return ids[0]
 }
 
-export const snapshotByIds = async (
+const emptySnapshot = (): ProgressSnapshot => ({ last_update: 0, progress: 0, status: '' })
+
+const buildSnapshotMap = async <K extends string | number>(
+  ids: K[],
+  fetch: () => Promise<{ data: ModelSerialized<ContentProgress>[] }>,
+  keyOf: (p: ModelSerialized<ContentProgress>) => K,
+  toSnapshot: (p: ModelSerialized<ContentProgress>) => ProgressSnapshot
+): Promise<Record<K, ProgressSnapshot>> => {
+  const result = Object.fromEntries(ids.map((id) => [id, emptySnapshot()])) as Record<
+    K,
+    ProgressSnapshot
+  >
+
+  const { data } = await fetch()
+  data.forEach((p) => {
+    result[keyOf(p)] = toSnapshot(p)
+  })
+
+  return result
+}
+
+export const snapshotByIds = (
   contentIds: number[],
   collection?: CollectionParameter
-): Promise<Record<number, ProgressSnapshot>> => {
-  const result = Object.fromEntries(
-    contentIds.map((id) => [id, { last_update: 0, progress: 0, status: '' }])
-  ) as Record<number, ProgressSnapshot>
-
-  await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then((r) => {
-    r.data.forEach((p) => {
-      result[p.content_id] = {
-        last_update: p.last_interacted_a_la_carte,
-        progress: p.progress_percent,
-        status: p.state,
-      }
+): Promise<Record<number, ProgressSnapshot>> =>
+  buildSnapshotMap(
+    contentIds,
+    () => db.contentProgress.getSomeProgressByContentIds(contentIds, collection),
+    (p) => p.content_id,
+    (p) => ({
+      last_update: p.last_interacted_a_la_carte,
+      progress: p.progress_percent,
+      status: p.state,
     })
-  })
+  )
 
-  return result
-}
-
-export const snapshotByRecordIds = async (
+export const snapshotByRecordIds = (
   ids: string[]
-): Promise<Record<string, ProgressSnapshot>> => {
-  const result = Object.fromEntries(
-    ids.map((id) => [id, { last_update: 0, progress: 0, status: '' }])
-  ) as Record<string, ProgressSnapshot>
-
-  await db.contentProgress.getSomeProgressByRecordIds(ids).then((r) => {
-    r.data.forEach((p) => {
-      result[p.id] = {
-        last_update: p.updated_at,
-        progress: p.progress_percent,
-        status: p.state,
-      }
+): Promise<Record<string, ProgressSnapshot>> =>
+  buildSnapshotMap(
+    ids,
+    () => db.contentProgress.getSomeProgressByRecordIds(ids),
+    (p) => p.id,
+    (p) => ({
+      last_update: p.updated_at,
+      progress: p.progress_percent,
+      status: p.state,
     })
-  })
-
-  return result
-}
+  )
 
 export const methodAccessedIds = async (contentIds: number[]): Promise<number[]> =>
   db.contentProgress
