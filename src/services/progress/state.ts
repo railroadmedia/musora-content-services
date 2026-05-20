@@ -1,6 +1,7 @@
 import { db } from '../sync'
 import { COLLECTION_TYPE, CollectionParameter } from '../sync/models/ContentProgress'
 import { getById, getByIds, getByRecordIds } from './internal/queries'
+import type { ProgressSnapshot } from './types'
 
 export const state = async (contentId: number, collection?: CollectionParameter) =>
   getById(contentId, 'state', '', collection)
@@ -48,3 +49,49 @@ export const incompleteLesson = (
 
   return ids[0]
 }
+
+export const snapshotByIds = async (
+  contentIds: number[],
+  collection?: CollectionParameter
+): Promise<Record<number, ProgressSnapshot>> => {
+  const result = Object.fromEntries(
+    contentIds.map((id) => [id, { last_update: 0, progress: 0, status: '' }])
+  ) as Record<number, ProgressSnapshot>
+
+  await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then((r) => {
+    r.data.forEach((p) => {
+      result[p.content_id] = {
+        last_update: p.last_interacted_a_la_carte,
+        progress: p.progress_percent,
+        status: p.state,
+      }
+    })
+  })
+
+  return result
+}
+
+export const snapshotByRecordIds = async (
+  ids: string[]
+): Promise<Record<string, ProgressSnapshot>> => {
+  const result = Object.fromEntries(
+    ids.map((id) => [id, { last_update: 0, progress: 0, status: '' }])
+  ) as Record<string, ProgressSnapshot>
+
+  await db.contentProgress.getSomeProgressByRecordIds(ids).then((r) => {
+    r.data.forEach((p) => {
+      result[p.id] = {
+        last_update: p.updated_at,
+        progress: p.progress_percent,
+        status: p.state,
+      }
+    })
+  })
+
+  return result
+}
+
+export const methodAccessedIds = async (contentIds: number[]): Promise<number[]> =>
+  db.contentProgress
+    .getSomeProgressWhereLastAccessedFromMethod(contentIds)
+    .then((r) => r.data.map((record) => record.content_id))
