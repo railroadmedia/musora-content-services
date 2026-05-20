@@ -1,21 +1,41 @@
 import { db } from '../sync'
-import { COLLECTION_TYPE, CollectionParameter } from '../sync/models/ContentProgress'
+import ContentProgress, {
+  COLLECTION_TYPE,
+  CollectionParameter,
+  STATE,
+} from '../sync/models/ContentProgress'
+import type { ModelSerialized } from '../sync/serializers'
 import { getById, getByIds, getByRecordIds } from './internal/queries'
 import type { ProgressSnapshot } from './types'
 
-export const state = async (contentId: number, collection?: CollectionParameter) =>
-  getById(contentId, 'state', '', collection)
+type Selector<V> = (p: ModelSerialized<ContentProgress>) => V | null | undefined
 
-export const stateByIds = async (contentIds: number[], collection?: CollectionParameter) =>
-  getByIds(contentIds, 'state', '', collection)
+const queryById =
+  <V>(select: Selector<V>, fallback: V) =>
+  (contentId: number, collection?: CollectionParameter) =>
+    getById(contentId, select, fallback, collection)
 
-export const stateByRecordIds = async (ids: string[]) => getByRecordIds(ids, 'state', '')
+const queryByIds =
+  <V>(select: Selector<V>, fallback: V) =>
+  (contentIds: number[], collection?: CollectionParameter) =>
+    getByIds(contentIds, select, fallback, collection)
 
-export const playbackPositionByIds = async (contentIds: number[], collection?: CollectionParameter) =>
-  getByIds(contentIds, 'resume_time_seconds', 0, collection)
+const queryByRecordIds =
+  <V>(select: Selector<V>, fallback: V) =>
+  (ids: string[]) =>
+    getByRecordIds(ids, select, fallback)
 
-export const playbackPositionByRecordIds = async (ids: string[]) =>
-  getByRecordIds(ids, 'resume_time_seconds', 0)
+type StateValue = STATE | ''
+
+export const state = queryById<StateValue>((p) => p.state, '')
+export const stateByIds = queryByIds<StateValue>((p) => p.state, '')
+export const stateByRecordIds = queryByRecordIds<StateValue>((p) => p.state, '')
+
+export const playbackPositionByIds = queryByIds<number>((p) => p.resume_time_seconds, 0)
+export const playbackPositionByRecordIds = queryByRecordIds<number>(
+  (p) => p.resume_time_seconds,
+  0
+)
 
 export const lastInteractedOf = (
   contentIds: number[],
