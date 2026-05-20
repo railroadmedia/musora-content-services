@@ -13,6 +13,7 @@ import { SyncEffect } from './effects'
 import { SyncTelemetry } from './telemetry/index'
 import createStoreConfigs from './store-configs'
 import { contentProgressObserver } from '../awards/internal/content-progress-observer'
+import { repairStaleSyncedRecords } from './stale-record-cleanup'
 
 export type SyncTeardownMode = 'reset' | 'destroyOrReset' | 'abortWrites'
 
@@ -179,6 +180,10 @@ export default class SyncManager {
 
     contentProgressObserver.start(database).catch((error) => {
       this.telemetry.error('[SyncManager] Failed to start contentProgressObserver', error)
+    })
+
+    repairStaleSyncedRecords(this.storesRegistry).catch((error) => {
+      this.telemetry.error('[SyncManager] Failed stale record cleanup', error)
     })
 
     const teardown = async (mode: SyncTeardownMode = 'reset') => {

@@ -228,12 +228,20 @@ describe('Progress.incompleteLesson', () => {
     expect(Progress.incompleteLesson(states, 'course', 3)).toBe(1)
   })
 
-  test('other type: returns null when currentContentId not in map', () => {
+  test('other type: scans from start when currentContentId not in map → first incomplete', () => {
     const states = new Map<number, string>([
       [1, 'completed'],
       [2, 'started'],
     ])
-    expect(Progress.incompleteLesson(states, 'course', 999)).toBeNull()
+    expect(Progress.incompleteLesson(states, 'course', 999)).toBe(2)
+  })
+
+  test('other type: scans from start when currentContentId not in map and all complete → first id', () => {
+    const states = new Map<number, string>([
+      [1, 'completed'],
+      [2, 'completed'],
+    ])
+    expect(Progress.incompleteLesson(states, 'course', 999)).toBe(1)
   })
 })
 
