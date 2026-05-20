@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.160.4](https://github.com/railroadmedia/musora-content-services/compare/v2.160.3...v2.160.4) (2026-05-20)
+
+
+### Bug Fixes
+
+* **MU2-1510:** process need access for live events ([#964](https://github.com/railroadmedia/musora-content-services/issues/964)) ([66aa2b5](https://github.com/railroadmedia/musora-content-services/commit/66aa2b596b28c272b938672522b9c4024f9e328d))
+* **MU2-1511:** add need access to upcoming live events ([#965](https://github.com/railroadmedia/musora-content-services/issues/965)) ([9366907](https://github.com/railroadmedia/musora-content-services/commit/936690752529d25d80df0192e80b57ad90921445))
+* **MU2-1512:** add child data to new and upcoming ([#960](https://github.com/railroadmedia/musora-content-services/issues/960)) ([329f5c8](https://github.com/railroadmedia/musora-content-services/commit/329f5c8b98ea11f1d456dd53e81b705f55b4f346))
+
 ### [2.160.3](https://github.com/railroadmedia/musora-content-services/compare/v2.160.2...v2.160.3) (2026-05-14)
 
 
