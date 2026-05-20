@@ -152,7 +152,7 @@ export function getLiveFields(minimum = false) {
     'vimeo_live_event_id',
     "'live_event_is_global': live_global_event == true",
     "'videoId': coalesce(live_event_stream_id, video.external_id)",
-    'permission_id',
+    "'permission_id': permission_v2",
   ]
   const additionalFields = [
     "'slug': slug.current",
