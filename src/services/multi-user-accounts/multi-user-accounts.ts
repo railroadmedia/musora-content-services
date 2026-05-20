@@ -21,6 +21,8 @@ export interface InviteResponse {
   is_account_valid: boolean
   is_invite_active: boolean
   can_user_join: boolean
+  primary_user_name: string
+  product_name: string
   // These fields leak user information and are excluded entirely for the public endpoint
   existing_user_details?: User
   email?: string
