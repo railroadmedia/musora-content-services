@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.160.4](https://github.com/railroadmedia/musora-content-services/compare/v2.160.3...v2.160.4) (2026-05-20)
+
+
+### Bug Fixes
+
+* **MU2-1510:** process need access for live events ([#964](https://github.com/railroadmedia/musora-content-services/issues/964)) ([66aa2b5](https://github.com/railroadmedia/musora-content-services/commit/66aa2b596b28c272b938672522b9c4024f9e328d))
+* **MU2-1511:** add need access to upcoming live events ([#965](https://github.com/railroadmedia/musora-content-services/issues/965)) ([9366907](https://github.com/railroadmedia/musora-content-services/commit/936690752529d25d80df0192e80b57ad90921445))
+* **MU2-1512:** add child data to new and upcoming ([#960](https://github.com/railroadmedia/musora-content-services/issues/960)) ([329f5c8](https://github.com/railroadmedia/musora-content-services/commit/329f5c8b98ea11f1d456dd53e81b705f55b4f346))
+
+### [2.160.3](https://github.com/railroadmedia/musora-content-services/compare/v2.160.2...v2.160.3) (2026-05-14)
+
+
+### Bug Fixes
+
+* do immediate push after record repair ([#975](https://github.com/railroadmedia/musora-content-services/issues/975)) ([c087536](https://github.com/railroadmedia/musora-content-services/commit/c08753659fb5b1342ae8499fbf296ed4a2197625))
+
+### [2.160.2](https://github.com/railroadmedia/musora-content-services/compare/v2.160.1...v2.160.2) (2026-05-14)
+
+
+### Bug Fixes
+
+* **BR-678:** fix issues with is_locked and collection ([#972](https://github.com/railroadmedia/musora-content-services/issues/972)) ([725529b](https://github.com/railroadmedia/musora-content-services/commit/725529bd69d05ab79113b21a5e3dca5ce1deb0dc))
+
+### [2.160.1](https://github.com/railroadmedia/musora-content-services/compare/v2.160.0...v2.160.1) (2026-05-13)
+
+
+### Bug Fixes
+
+* disable debug code ([#970](https://github.com/railroadmedia/musora-content-services/issues/970)) ([4046c4f](https://github.com/railroadmedia/musora-content-services/commit/4046c4fca4457b9d21eab5221876a991bdf22973))
+
+## [2.160.0](https://github.com/railroadmedia/musora-content-services/compare/v2.159.0...v2.160.0) (2026-05-13)
+
+
+### Features
+
+* adds stale record cleanup ([#963](https://github.com/railroadmedia/musora-content-services/issues/963)) ([72d917f](https://github.com/railroadmedia/musora-content-services/commit/72d917ff0d64d8c27f1d4ec831233c17663b1c49))
+* use client-side filtering for live events to leverage sanity cache ([#930](https://github.com/railroadmedia/musora-content-services/issues/930)) ([cbfe024](https://github.com/railroadmedia/musora-content-services/commit/cbfe02476b654a240bb1ba35093a98a03535227c))
+
 ## [2.159.0](https://github.com/railroadmedia/musora-content-services/compare/v2.158.3...v2.159.0) (2026-05-12)
 
 
