@@ -60,7 +60,7 @@ export async function deleteProfilePicture(): Promise<void> {
 }
 
 export async function updateProfileVisibility(isPublic: boolean): Promise<UserResource> {
-  const apiUrl = `${baseUrl}/v1/users/${globalConfig.sessionConfig.userId}/profile-visibility`
+  const apiUrl = `${baseUrl}/v1/user/profile-visibility`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.post<UserResource>(apiUrl, { is_profile_public: isPublic })
 }
