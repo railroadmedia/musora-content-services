@@ -37,9 +37,9 @@ export const incompleteLesson = (
   }
 
   const currentIndex = ids.indexOf(Number(currentContentId))
-  if (currentIndex === -1) return null
+  const startIndex = currentIndex === -1 ? 0 : currentIndex + 1
 
-  for (let i = currentIndex + 1; i < ids.length; i++) {
+  for (let i = startIndex; i < ids.length; i++) {
     const id = ids[i]
     if (getProgress(id) !== 'completed') {
       return id
