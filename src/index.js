@@ -13,6 +13,7 @@ import {
 	getAwardStatistics,
 	getBadgeFields,
 	getCompletedAwards,
+	getCompletedAwardsByUser,
 	getContentAwards,
 	getContentAwardsByIds,
 	getInProgressAwards,
@@ -459,8 +460,9 @@ import {
 
 import {
 	deleteProfilePicture,
-	otherStats
-} from './services/user/profile.js';
+	otherStats,
+	updateProfileVisibility
+} from './services/user/profile.ts';
 
 import {
 	generateAuthSessionUrl,
@@ -664,6 +666,7 @@ export {
 	getAwardStatistics,
 	getBadgeFields,
 	getCompletedAwards,
+	getCompletedAwardsByUser,
 	getContentAwards,
 	getContentAwardsByIds,
 	getContentRows,
@@ -827,6 +830,7 @@ export {
 	updatePlaylist,
 	updatePost,
 	updatePracticeNotes,
+	updateProfileVisibility,
 	updateThread,
 	updateUserPractice,
 	upgradeSubscription,

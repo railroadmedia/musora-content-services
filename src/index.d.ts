@@ -9,6 +9,7 @@ import {
 	getAwardStatistics,
 	getBadgeFields,
 	getCompletedAwards,
+	getCompletedAwardsByUser,
 	getContentAwards,
 	getContentAwardsByIds,
 	getInProgressAwards,
@@ -455,8 +456,9 @@ import {
 
 import {
 	deleteProfilePicture,
-	otherStats
-} from './services/user/profile.js';
+	otherStats,
+	updateProfileVisibility
+} from './services/user/profile.ts';
 
 import {
 	generateAuthSessionUrl,
@@ -665,6 +667,7 @@ declare module 'musora-content-services' {
 		getAwardStatistics,
 		getBadgeFields,
 		getCompletedAwards,
+		getCompletedAwardsByUser,
 		getContentAwards,
 		getContentAwardsByIds,
 		getContentRows,
@@ -828,6 +831,7 @@ declare module 'musora-content-services' {
 		updatePlaylist,
 		updatePost,
 		updatePracticeNotes,
+		updateProfileVisibility,
 		updateThread,
 		updateUserPractice,
 		upgradeSubscription,
