@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.160.5](https://github.com/railroadmedia/musora-content-services/compare/v2.160.4...v2.160.5) (2026-05-22)
+
+
+### Bug Fixes
+
+* add a null check for method intro video ([#983](https://github.com/railroadmedia/musora-content-services/issues/983)) ([dbcaa72](https://github.com/railroadmedia/musora-content-services/commit/dbcaa7250ccca71ddcefda0d0514a7a013055784))
+* **live-events:** fetch permission ids ([#982](https://github.com/railroadmedia/musora-content-services/issues/982)) ([cd12054](https://github.com/railroadmedia/musora-content-services/commit/cd12054a58a0752614f8cdebcf79750edae948c3))
+
 ### [2.160.4](https://github.com/railroadmedia/musora-content-services/compare/v2.160.3...v2.160.4) (2026-05-20)
 
 
