@@ -74,6 +74,11 @@ async function prefetchStates(items: NavigateToDecoratable[]): Promise<NavigateC
     ids.add(item.id)
     for (const child of item.children ?? []) {
       ids.add(child.id)
+      if (TWO_DEPTH_TYPES.includes(item.type)) {
+        for (const grandchild of child.children ?? []) {
+          ids.add(grandchild.id)
+        }
+      }
     }
   }
   if (ids.size === 0) return { states: new Map() }
