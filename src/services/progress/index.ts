@@ -75,10 +75,10 @@ export interface QueryMetadata {
   parentId?: number
 }
 
-export const getAllStarted = async (limit = null, options?: GetAllQueryOptions) =>
+export const getAllStarted = async (limit: number | null = null, options?: GetAllQueryOptions) =>
   db.contentProgress.started(limit, options ?? defaultQueryOptions)
 
-export const getAllCompleted = async (limit = null, options?: GetAllQueryOptions) =>
+export const getAllCompleted = async (limit: number | null = null, options?: GetAllQueryOptions) =>
   db.contentProgress.completed(limit, options ?? defaultQueryOptions)
 
 export const getAllCompletedByIds = async (contentIds: number[]) =>
