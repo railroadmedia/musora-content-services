@@ -4,12 +4,7 @@ import {
   CollectionParameter,
   STATE,
 } from '../../../services/sync/models/ContentProgress'
-import {
-  findIncompleteLesson,
-  getLastInteractedOf,
-  getProgressState,
-  getProgressStateByIds,
-} from '@/services/progress'
+import { Progress } from '@/services/progress'
 
 export const NAVIGATE_TO_FIELD = 'navigateTo' as const
 
@@ -87,7 +82,7 @@ async function prefetchStates(items: NavigateToDecoratable[]): Promise<NavigateC
     }
   }
   if (ids.size === 0) return { states: new Map() }
-  const states = await getProgressStateByIds(Array.from(ids))
+  const states = await Progress.stateByIds(Array.from(ids))
   return { states }
 }
 
@@ -100,7 +95,7 @@ async function computeNavigateTo(
   const children = content.children
   if (!children || children.length === 0) return null
 
-  const contentState = ctx?.states.get(content.id) ?? (await getProgressState(content.id))
+  const contentState = ctx?.states.get(content.id) ?? (await Progress.state(content.id))
   if (contentState !== STATE.STARTED) {
     const firstChild = children[0]
     const childNav = TWO_DEPTH_TYPES.includes(content.type)
@@ -113,21 +108,21 @@ async function computeNavigateTo(
   const childrenById = new Map(children.map((c) => [c.id, c]))
   const childrenStates = ctx
     ? new Map(childrenIds.map((id) => [id, ctx.states.get(id) ?? '']))
-    : await getProgressStateByIds(childrenIds)
-  const lastInteractedId = await getLastInteractedOf(childrenIds)
+    : await Progress.stateByIds(childrenIds)
+  const lastInteractedId = await Progress.lastInteractedOf(childrenIds)
 
   if (COURSE_FLOW_TYPES.includes(content.type)) {
     const lastInteractedStatus = childrenStates.get(lastInteractedId)
     const targetId =
       lastInteractedStatus === STATE.STARTED
         ? lastInteractedId
-        : findIncompleteLesson(childrenStates, lastInteractedId, content.type)
+        : Progress.incompleteLesson(childrenStates, content.type, lastInteractedId)
     const target = childrenById.get(targetId)
     return target ? buildNavigateTo(target) : null
   }
 
   if (GUIDED_FLOW_TYPES.includes(content.type)) {
-    const targetId = findIncompleteLesson(childrenStates, lastInteractedId, content.type)
+    const targetId = Progress.incompleteLesson(childrenStates, content.type, lastInteractedId)
     const target = childrenById.get(targetId)
     return target ? buildNavigateTo(target) : null
   }
