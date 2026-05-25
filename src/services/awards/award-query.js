@@ -391,6 +391,9 @@ export async function getCompletedAwardsByUser(userId = globalConfig.sessionConf
           return null
         }
 
+        // this data comes from BE so json is stringified
+        progress.completion_data = JSON.parse(progress.completion_data)
+
         const completionData = definition.type === awardDefinitions.CONTENT_AWARD
           ? enhanceCompletionData(progress.completion_data)
           : progress.completion_data
