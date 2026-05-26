@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
+    "prepare": "node scripts/gen-version.cjs",
     "build-index": "node tools/generate-index.cjs",
     "release": "standard-version",
     "doc": "jsdoc -c jsdoc.json --verbose",
