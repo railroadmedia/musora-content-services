@@ -235,6 +235,27 @@ describe('getDailySession', () => {
     expect(result).toEqual(created)
     expect(HttpClient.POST).toHaveBeenCalledTimes(1)
   })
+
+  test('concurrent calls share single GET (cached promise reuse)', async () => {
+    const resp = { active_learning_path_id: 5, daily_session: [] }
+    setApiResponses({ dailySession: resp })
+    const [a, b] = await Promise.all([
+      getDailySession('drumeo', new Date('2026-01-01T10:00:00Z')),
+      getDailySession('drumeo', new Date('2026-01-01T10:00:00Z')),
+    ])
+    expect(a).toEqual(resp)
+    expect(b).toEqual(resp)
+    expect(HttpClient.GET).toHaveBeenCalledTimes(1)
+  })
+
+  test('returns null and logs when GET throws', async () => {
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    HttpClient.GET.mockImplementationOnce(() => Promise.reject(new Error('boom')))
+    const result = await getDailySession('drumeo', new Date('2026-01-01T10:00:00Z'), true)
+    expect(result).toBeNull()
+    expect(errSpy).toHaveBeenCalled()
+    errSpy.mockRestore()
+  })
 })
 
 describe('updateDailySession', () => {
@@ -262,6 +283,12 @@ describe('updateDailySession', () => {
     const result = await updateDailySession('drumeo', new Date('2026-01-01T10:00:00Z'))
     expect(result).toBeNull()
   })
+
+  test('defaults keepFirstLearningPath to false', async () => {
+    HttpClient.POST.mockResolvedValueOnce({ active_learning_path_id: 1, daily_session: [] })
+    await updateDailySession('drumeo', new Date('2026-01-01T10:00:00Z'))
+    expect(HttpClient.POST.mock.calls[0][1].keepFirstLearningPath).toBe(false)
+  })
 })
 
 describe('getActivePath', () => {
@@ -271,6 +298,15 @@ describe('getActivePath', () => {
     const result = await getActivePath('drumeo', true)
     expect(result).toEqual(resp)
     expect(HttpClient.GET.mock.calls[0][0]).toContain('/active-path/get?brand=drumeo')
+  })
+
+  test('concurrent calls share single GET (cached promise reuse)', async () => {
+    const resp = { user_id: 1, brand: 'drumeo', active_learning_path_id: 7 }
+    setApiResponses({ activePath: resp })
+    const [a, b] = await Promise.all([getActivePath('drumeo'), getActivePath('drumeo')])
+    expect(a).toEqual(resp)
+    expect(b).toEqual(resp)
+    expect(HttpClient.GET).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -284,6 +320,13 @@ describe('startLearningPath', () => {
     const [url, body] = HttpClient.POST.mock.calls[0]
     expect(url).toContain('/active-path/set')
     expect(body).toEqual({ brand: 'drumeo', learning_path_id: 11 })
+  })
+
+  test('does not trigger GET refresh when POST returns falsy', async () => {
+    HttpClient.POST.mockResolvedValueOnce(null)
+    await startLearningPath('drumeo', 11)
+    const getCalls = HttpClient.GET.mock.calls.filter((c: any[]) => c[0].includes('/active-path/get'))
+    expect(getCalls).toHaveLength(0)
   })
 })
 
@@ -341,6 +384,13 @@ describe('getEnrichedLearningPath', () => {
     expect(lesson200.progressStatus).toBe(STATE.COMPLETED)
     expect(lesson201.progressStatus).toBeFalsy()
   })
+
+  test('adds awards to LP parent (second addContextToLearningPaths call)', async () => {
+    const lp = makeLp(30, [{ id: 300 }])
+    sanity.fetchByRailContentId.mockResolvedValueOnce(lp)
+    const result = await getEnrichedLearningPath(30)
+    expect(result.awards).toEqual([])
+  })
 })
 
 describe('getEnrichedLearningPaths', () => {
@@ -350,6 +400,12 @@ describe('getEnrichedLearningPaths', () => {
     const result = await getEnrichedLearningPaths([1, 2])
     expect(result[0].children[0].parent_id).toBe(1)
     expect(result[1].children[0].parent_id).toBe(2)
+  })
+
+  test('returns empty array when fetched empty', async () => {
+    sanity.fetchByRailContentIds.mockResolvedValueOnce([])
+    const result = await getEnrichedLearningPaths([])
+    expect(result).toEqual([])
   })
 })
 
@@ -408,6 +464,81 @@ describe('fetchLearningPathLessons', () => {
     expect(result.completed_lessons.map((l: any) => l.id)).toEqual([101])
     expect(result.upcoming_lessons.map((l: any) => l.id)).toEqual([102])
   })
+
+  test('returns null when learningPath fetch resolves falsy', async () => {
+    sanity.fetchByRailContentId.mockResolvedValueOnce(null)
+    const result = await fetchLearningPathLessons(1, 'drumeo', new Date())
+    expect(result).toBeNull()
+  })
+
+  test('resolves previous and next learning path dailies', async () => {
+    const lpCurrent = makeLp(5, [{ id: 100 }])
+    const lpPrev = makeLp(4, [{ id: 40 }])
+    const lpNext = makeLp(6, [{ id: 60 }])
+    sanity.fetchByRailContentId.mockImplementation((id: number) => {
+      if (id === 5) return Promise.resolve(lpCurrent)
+      if (id === 4) return Promise.resolve(lpPrev)
+      if (id === 6) return Promise.resolve(lpNext)
+      return Promise.resolve(false)
+    })
+    setApiResponses({
+      dailySession: {
+        active_learning_path_id: 5,
+        daily_session: [
+          { learning_path_id: 4, content_ids: [40] },
+          { learning_path_id: 5, content_ids: [100] },
+          { learning_path_id: 6, content_ids: [60] },
+        ],
+      },
+    })
+
+    const result = await fetchLearningPathLessons(5, 'drumeo', new Date())
+    expect(result.previous_learning_path_id).toBe(4)
+    expect(result.previous_learning_path_dailies.map((l: any) => l.id)).toEqual([40])
+    expect(result.next_learning_path_id).toBe(6)
+    expect(result.next_learning_path_dailies.map((l: any) => l.id)).toEqual([60])
+    expect(result.next_learning_path_dailies[0].in_next_learning_path).toBe(false)
+  })
+
+  test('in_next_learning_path true when current LP is completed', async () => {
+    const lpCurrent = makeLp(5, [{ id: 100 }])
+    const lpNext = makeLp(6, [{ id: 60 }])
+    sanity.fetchByRailContentId.mockImplementation((id: number) => {
+      if (id === 5) return Promise.resolve(lpCurrent)
+      if (id === 6) return Promise.resolve(lpNext)
+      return Promise.resolve(false)
+    })
+    setApiResponses({ activePath: { active_learning_path_id: 999 } })
+    await contentStatusCompleted(5, { type: lpType, id: 5 })
+    await contentStatusCompleted(100, { type: lpType, id: 5 })
+    setApiResponses({
+      dailySession: {
+        active_learning_path_id: 5,
+        daily_session: [
+          { learning_path_id: 5, content_ids: [100] },
+          { learning_path_id: 6, content_ids: [60] },
+        ],
+      },
+    })
+
+    const result = await fetchLearningPathLessons(5, 'drumeo', new Date())
+    expect(result.progressStatus).toBe(STATE.COMPLETED)
+    expect(result.next_learning_path_dailies[0].in_next_learning_path).toBe(true)
+  })
+
+  test('treats missing session.content_ids as empty array', async () => {
+    const lp = makeLp(5, [{ id: 100 }])
+    sanity.fetchByRailContentId.mockResolvedValueOnce(lp)
+    setApiResponses({
+      dailySession: {
+        active_learning_path_id: 5,
+        daily_session: [{ learning_path_id: 5 }],
+      },
+    })
+    const result = await fetchLearningPathLessons(5, 'drumeo', new Date())
+    expect(result.learning_path_dailies).toEqual([])
+    expect(result.upcoming_lessons.map((l: any) => l.id)).toEqual([100])
+  })
 })
 
 describe('completeMethodIntroVideo', () => {
@@ -422,8 +553,13 @@ describe('completeMethodIntroVideo', () => {
     expect(result.intro_video_response).toBeTruthy()
     expect(await getProgressState(700)).toBe('completed')
     expect(result.active_path_response).toEqual({ active_learning_path_id: 50 })
-    const postedUrls = HttpClient.POST.mock.calls.map((c: any[]) => c[0])
-    expect(postedUrls.some((u: string) => u.includes('/method-intro-video-complete-actions'))).toBe(true)
+    const methodCall = HttpClient.POST.mock.calls.find(
+      (c: any[]) => c[0].includes('/method-intro-video-complete-actions'),
+    )
+    expect(methodCall).toBeDefined()
+    expect(methodCall[1].brand).toBe('drumeo')
+    expect(methodCall[1].learningPathId).toBe(50)
+    expect(methodCall[1].userDate).toMatch(/^\d{4}-\d{2}-\d{2}/)
   })
 
   test('skips intro completion when already completed', async () => {
@@ -481,6 +617,77 @@ describe('completeLearningPathIntroVideo', () => {
     expect(result.update_dailies_response).toBeTruthy()
     expect(await getProgressState(801)).toBe('completed')
   })
+
+  test('lateMethodSetup: triggers completeMethodIntroVideo when anyIntroComplete and no activePath', async () => {
+    sanity.hasAnyMethodV2IntroCompleted.mockResolvedValueOnce(true)
+    setApiResponses({ activePath: null })
+    sanity.fetchMethodV2Structure.mockResolvedValue({ learning_paths: [{ id: 10 }] })
+    HttpClient.POST.mockResolvedValue({ active_learning_path_id: 10 })
+
+    await completeLearningPathIntroVideo(802, 10, null, 'drumeo')
+    for (let i = 0; i < 50; i++) await new Promise(r => setImmediate(r))
+
+    const methodCalls = HttpClient.POST.mock.calls.filter(
+      (c: any[]) => c[0].includes('/method-intro-video-complete-actions'),
+    )
+    expect(methodCalls.length).toBeGreaterThanOrEqual(1)
+  })
+
+  test('skips late method setup when anyIntroComplete is false', async () => {
+    sanity.hasAnyMethodV2IntroCompleted.mockResolvedValueOnce(false)
+    setApiResponses({ activePath: null })
+
+    await completeLearningPathIntroVideo(803, 10, null, 'drumeo')
+    for (let i = 0; i < 50; i++) await new Promise(r => setImmediate(r))
+
+    const methodCalls = HttpClient.POST.mock.calls.filter(
+      (c: any[]) => c[0].includes('/method-intro-video-complete-actions'),
+    )
+    expect(methodCalls).toHaveLength(0)
+  })
+
+  test('imports lessons but does not update dailies when LP is not active', async () => {
+    sanity.hasAnyMethodV2IntroCompleted.mockResolvedValueOnce(true)
+    setApiResponses({ activePath: { active_learning_path_id: 999 } })
+
+    const result = await completeLearningPathIntroVideo(804, 10, [304], 'drumeo')
+
+    expect(result.lesson_import_response).toBeTruthy()
+    expect(result.update_dailies_response).toBeUndefined()
+    const dailyPosts = HttpClient.POST.mock.calls.filter(
+      (c: any[]) => c[0].includes('/daily-session/create'),
+    )
+    expect(dailyPosts).toHaveLength(0)
+  })
+
+  test('skips updateDailySession when lateMethodSetup already set dailies', async () => {
+    sanity.hasAnyMethodV2IntroCompleted.mockResolvedValueOnce(true)
+    setApiResponses({ activePath: null })
+    sanity.fetchMethodV2Structure.mockResolvedValue({ learning_paths: [{ id: 10 }] })
+    HttpClient.POST.mockImplementation((url: string) => {
+      if (url.includes('/method-intro-video-complete-actions')) {
+        setApiResponses({ activePath: { active_learning_path_id: 10 } })
+      }
+      return Promise.resolve({ active_learning_path_id: 10, daily_session: [] })
+    })
+
+    const result = await completeLearningPathIntroVideo(805, 10, [305], 'drumeo')
+
+    expect(result.update_dailies_response).toBeUndefined()
+    const dailyPosts = HttpClient.POST.mock.calls.filter(
+      (c: any[]) => c[0].includes('/daily-session/create'),
+    )
+    expect(dailyPosts).toHaveLength(0)
+  })
+
+  test('skips intro video completion when already completed', async () => {
+    await contentStatusCompleted(806)
+    sanity.hasAnyMethodV2IntroCompleted.mockResolvedValueOnce(true)
+    setApiResponses({ activePath: { active_learning_path_id: 10 } })
+
+    const result = await completeLearningPathIntroVideo(806, 10, null, 'drumeo')
+    expect(result.intro_video_response).toBeNull()
+  })
 })
 
 describe('onLearningPathCompletedActions', () => {
@@ -527,6 +734,34 @@ describe('onLearningPathCompletedActions', () => {
     const setPathCalls = HttpClient.POST.mock.calls.filter((c: any[]) => c[0].includes('/active-path/set'))
     expect(setPathCalls).toHaveLength(0)
   })
+
+  test('returns when active LP is not in published list', async () => {
+    sanity.fetchByRailContentId.mockResolvedValueOnce(makeLp(8))
+    setApiResponses({ activePath: { active_learning_path_id: 8 } })
+    sanity.fetchMethodV2Structure.mockResolvedValueOnce({
+      learning_paths: [
+        { id: 8, published_on: null },
+        { id: 9, published_on: '2025-01-01' },
+      ],
+    })
+    await onLearningPathCompletedActions(8)
+    const setPathCalls = HttpClient.POST.mock.calls.filter((c: any[]) => c[0].includes('/active-path/set'))
+    expect(setPathCalls).toHaveLength(0)
+  })
+
+  test('skips next LP that is not yet published', async () => {
+    sanity.fetchByRailContentId.mockResolvedValueOnce(makeLp(5))
+    setApiResponses({ activePath: { active_learning_path_id: 5 } })
+    sanity.fetchMethodV2Structure.mockResolvedValueOnce({
+      learning_paths: [
+        { id: 5, published_on: '2025-01-01' },
+        { id: 6, published_on: '2099-01-01' },
+      ],
+    })
+    await onLearningPathCompletedActions(5)
+    const setPathCalls = HttpClient.POST.mock.calls.filter((c: any[]) => c[0].includes('/active-path/set'))
+    expect(setPathCalls).toHaveLength(0)
+  })
 })
 
 describe('mapLearningPathParentsTo', () => {
@@ -544,6 +779,40 @@ describe('mapLearningPathParentsTo', () => {
       { id: 2, type: LEARNING_PATH_LESSON, parent_id: 100 },
       { id: 3, type: LEARNING_PATH_LESSON, parent_id: 200 },
     ])
+  })
+
+  test('id without parent in hierarchy gets parent_id undefined', async () => {
+    sanity.fetchParentChildRelationshipsFor.mockResolvedValueOnce([
+      { railcontent_id: '100', children: [1] },
+    ])
+    const result = await mapLearningPathParentsTo(
+      [{ id: 1 }, { id: 99 }],
+      { type: true, parent_id: true },
+    )
+    expect(result[0].parent_id).toBe(100)
+    expect(result[1].parent_id).toBeUndefined()
+  })
+
+  test('only maps type when parent_id flag is false', async () => {
+    sanity.fetchParentChildRelationshipsFor.mockResolvedValueOnce([
+      { railcontent_id: '100', children: [1] },
+    ])
+    const result = await mapLearningPathParentsTo(
+      [{ id: 1, type: 'orig' }],
+      { type: true },
+    )
+    expect(result[0]).toEqual({ id: 1, type: LEARNING_PATH_LESSON })
+  })
+
+  test('only maps parent_id when type flag is false', async () => {
+    sanity.fetchParentChildRelationshipsFor.mockResolvedValueOnce([
+      { railcontent_id: '100', children: [1] },
+    ])
+    const result = await mapLearningPathParentsTo(
+      [{ id: 1, type: 'orig' }],
+      { parent_id: true },
+    )
+    expect(result[0]).toEqual({ id: 1, type: 'orig', parent_id: 100 })
   })
 })
 
@@ -574,5 +843,14 @@ describe('mapContentsThatWereLastProgressedFromMethod', () => {
     const result = await mapContentsThatWereLastProgressedFromMethod(input)
     expect(result[0]).toEqual({ id: 1, type: LEARNING_PATH_LESSON, parent_id: 50 })
     expect(result[1]).toEqual({ id: 2, type: 'song' })
+  })
+
+  test('returns objects unchanged when none were last accessed from method', async () => {
+    const input = [
+      { id: 1, type: 'skill-pack-lesson' },
+      { id: 2, type: 'song-tutorial-lesson' },
+    ]
+    const result = await mapContentsThatWereLastProgressedFromMethod(input)
+    expect(result).toEqual(input)
   })
 })
