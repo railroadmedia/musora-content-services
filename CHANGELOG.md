@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.161.0](https://github.com/railroadmedia/musora-content-services/compare/v2.160.5...v2.161.0) (2026-05-27)
+
+
+### Features
+
+* **BEHLTP-106:** membership data upgrade ([#973](https://github.com/railroadmedia/musora-content-services/issues/973)) ([e1e0611](https://github.com/railroadmedia/musora-content-services/commit/e1e0611c13bdf4be920eb28cca1f15f912930d24))
+
 ### [2.160.5](https://github.com/railroadmedia/musora-content-services/compare/v2.160.4...v2.160.5) (2026-05-22)
 
 
