@@ -48,14 +48,11 @@ export default function createStoresFromConfig() {
       push: handlePush(makeFetchRequest('/api/user/practices/v1', { method: 'POST' })),
       purgeGracePeriod: 12_000 as EpochMs, // delete undo toast duration is 10s
       columnMergeStrategies: {
-        session_duration_seconds: (localValue, serverValue) => {
-          return mergeSessionMaps(localValue, serverValue)
-        },
+        session_duration_seconds: (localValue, serverValue) => mergeSessionMaps(localValue, serverValue),
         duration_seconds: (_localValue, _serverValue, localRecord, serverRecord) => {
-          const merged = mergeSessionMaps(
-            (localRecord as any).session_duration_seconds,
-            (serverRecord as any).session_duration_seconds
-          )
+          const override = localRecord.duration_seconds_override ?? serverRecord.duration_seconds_override ?? null
+          if (override != null) return override
+          const merged = mergeSessionMaps(localRecord.session_duration_seconds, serverRecord.session_duration_seconds)
           return Math.min(Object.values(merged).reduce((sum, v) => sum + v, 0), 59999)
         },
       },

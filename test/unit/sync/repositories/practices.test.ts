@@ -96,7 +96,7 @@ describe('recordManualPractice', () => {
 
     const result = await repo['store'].readAll()
     expect(result).toHaveLength(2)
-    expect(result.every(r => r.auto === false)).toBe(true)
+    expect(result.every((r) => r.auto === false)).toBe(true)
   })
 })
 
@@ -105,7 +105,7 @@ describe('updateDetails', () => {
     const created = await repo.recordManualPractice('2024-01-25', 600, { title: 'Old title' })
     const id = created.data.id
 
-    await repo.updateDetails(id, { duration_seconds: 900, title: 'New title' })
+    await repo.updateDetails(id, { duration_seconds_override: 900, title: 'New title' })
 
     const record = await repo['store'].readOne(id)
     expect(record!.duration_seconds).toBe(900)
@@ -119,7 +119,7 @@ describe('updateDetails', () => {
     })
     const id = created.data.id
 
-    await repo.updateDetails(id, { duration_seconds: 1200 })
+    await repo.updateDetails(id, { duration_seconds_override: 1200 })
 
     const record = await repo['store'].readOne(id)
     expect(record!.title).toBe('Keep me')
@@ -129,8 +129,8 @@ describe('updateDetails', () => {
 
 describe('getAutoPracticesOnDate', () => {
   test('returns only auto practices for the given date', async () => {
-    await repo.trackAutoPractice(100, '2024-02-01', 300)
-    await repo.recordManualPractice('2024-02-01', 600)   // manual — should not appear
+    await repo.trackAutoPractice(100, '2024-02-01', 'sessionA', 300)
+    await repo.recordManualPractice('2024-02-01', 600) // manual — should not appear
 
     const result = await repo.getAutoPracticesOnDate('2024-02-01')
     expect(result.data).toHaveLength(1)
@@ -145,16 +145,16 @@ describe('getAutoPracticesOnDate', () => {
 
 describe('sumPracticeMinutesForContent', () => {
   test('sums across multiple practice records', async () => {
-    await repo.trackAutoPractice(200, '2024-01-01', 600)   // 10 min
-    await repo.trackAutoPractice(200, '2024-01-02', 900)   // 15 min
+    await repo.trackAutoPractice(200, '2024-01-01', 'sessionA', 600) // 10 min
+    await repo.trackAutoPractice(200, '2024-01-02', 'sessionB', 900) // 15 min
 
     const minutes = await repo.sumPracticeMinutesForContent([200])
     expect(minutes).toBe(25)
   })
 
   test('sums only for specified contentIds', async () => {
-    await repo.trackAutoPractice(300, '2024-01-01', 600)
-    await repo.trackAutoPractice(301, '2024-01-01', 600)
+    await repo.trackAutoPractice(300, '2024-01-01', 'sessionA', 600)
+    await repo.trackAutoPractice(301, '2024-01-01', 'sessionB', 600)
 
     const minutes = await repo.sumPracticeMinutesForContent([300])
     expect(minutes).toBe(10)
@@ -171,7 +171,7 @@ describe('sumPracticeMinutesForContent', () => {
   })
 
   test('rounds to nearest minute', async () => {
-    await repo.trackAutoPractice(400, '2024-01-01', 90)  // 1.5 min → rounds to 2
+    await repo.trackAutoPractice(400, '2024-01-01', 'sessionA', 90) // 1.5 min → rounds to 2
 
     const minutes = await repo.sumPracticeMinutesForContent([400])
     expect(minutes).toBe(2)

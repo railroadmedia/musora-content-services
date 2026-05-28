@@ -15,7 +15,7 @@ import {
 } from '../errors/validators'
 
 export const validators = {
-  manual_id: nullableChar(26),/*  */
+  manual_id: nullableChar(26),
   content_id: nullableUint,
   date: string,
   auto: boolean,
@@ -97,27 +97,18 @@ export default class Practice extends BaseModel<{
     this._setRaw('auto', validators.auto(value))
   }
   set duration_seconds(value: number) {
-    if (this._getRaw('auto')) {
-      const val = validators.duration_seconds_override(value)
-      this._setRaw('duration_seconds_override', val)
-      this._setRaw('duration_seconds', !val ? Practice._countSessionDurationSeconds(this.session_duration_seconds) : val)
-
-
-    } else {
-      this._setRaw('duration_seconds', validators.duration_seconds(value))
-    }
+    this._setRaw('duration_seconds_override', validators.duration_seconds_override(value))
+    this._updateDerivedDuration()
   }
   set session_duration_seconds(value: Record<string, number>) {
     if (this._getRaw('auto')) {
       this._setRaw('session_duration_seconds', JSON.stringify(validators.session_duration_seconds(value)))
-      this._setRaw('duration_seconds', !this._getRaw('duration_seconds_override') ? Practice._countSessionDurationSeconds(value) : this._getRaw('duration_seconds_override'))
+      this._updateDerivedDuration()
     }
   }
   set duration_seconds_override(value: number | null) {
-    if (this._getRaw('auto')) {
-      this._setRaw('duration_seconds_override', validators.duration_seconds_override(value))
-      this._setRaw('duration_seconds', !value ? Practice._countSessionDurationSeconds(this.session_duration_seconds) : value)
-    }
+    this._setRaw('duration_seconds_override', validators.duration_seconds_override(value))
+    this._updateDerivedDuration()
   }
   set title(value: string | null) {
     this._setRaw('title', validators.title(value))
@@ -141,6 +132,11 @@ export default class Practice extends BaseModel<{
   static generateManualId(manualId: string) {
     string(manualId)
     return `manual:${manualId}`
+  }
+
+  private _updateDerivedDuration() {
+    const override = this._getRaw('duration_seconds_override') as number | null
+    this._setRaw('duration_seconds', override ?? Practice._countSessionDurationSeconds(this.session_duration_seconds))
   }
 
   private static _countSessionDurationSeconds(value: Record<string, number>) {

@@ -303,7 +303,7 @@ export async function trackUserPractice(contentId, sessionId, elapsedSeconds) {
  *
  * @param {string} id - The unique identifier of the practice session to update.
  * @param {Object} practiceDetails - The updated details of the practice session.
- * @param {number} [practiceDetails.duration_seconds] - The duration of the practice session in seconds.
+ * @param {number|null} [practiceDetails.duration_seconds_override] - The duration override in seconds. Pass null to clear and fall back to session-derived duration.
  * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
  * @param {string} [practiceDetails.title] - The title of the practice session (max 64 characters).
  * @param {string} [practiceDetails.thumbnail_url] - The URL of the session's thumbnail (max 255 characters).
@@ -312,7 +312,7 @@ export async function trackUserPractice(contentId, sessionId, elapsedSeconds) {
  *
  * @example
  * // Update a practice session's duration
- * updateUserPractice(123, { duration_seconds: 600 })
+ * updateUserPractice(123, { duration_seconds_override: 600 })
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  *

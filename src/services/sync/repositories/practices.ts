@@ -2,6 +2,8 @@ import SyncRepository, { Q } from "./base";
 import Practice from "../models/Practice";
 import { RecordId } from "@nozbe/watermelondb";
 
+export const generatePracticeSessionId = () => Math.random().toString(36).slice(2, 8)
+
 export default class PracticesRepository extends SyncRepository<Practice> {
   async sumPracticeMinutesForContent(contentIds: number[]): Promise<number> {
     if (contentIds.length === 0) return 0
@@ -37,7 +39,6 @@ export default class PracticesRepository extends SyncRepository<Practice> {
 
       const sessions = { ...r.session_duration_seconds, [sessionId]: elapsedSeconds }
       r.session_duration_seconds = sessions
-      r.duration_seconds = !r.duration_seconds_override ? Math.min(Object.values(sessions).reduce((sum, v) => sum + v, 0), 59999) : r.duration_seconds_override
 
       this.store.log('trackUserPractice:around', {
         now: performance.now(),
@@ -71,7 +72,7 @@ export default class PracticesRepository extends SyncRepository<Practice> {
       r.auto = false;
 
       r.date = date;
-      r.duration_seconds = Math.min(durationSeconds, 59999);
+      r.duration_seconds_override = Math.min(durationSeconds, 59999);
 
       r.title = details.title ?? null;
       r.thumbnail_url = details.thumbnail_url ?? null;
@@ -82,8 +83,7 @@ export default class PracticesRepository extends SyncRepository<Practice> {
 
   async updateDetails(id: RecordId, details: Partial<Pick<Practice, 'duration_seconds_override' | 'title' | 'thumbnail_url' | 'category_id' | 'instrument_id'>>) {
     return await this.updateOneId(id, r => {
-      r.duration_seconds_override = details.duration_seconds_override !== null ? Math.min(details.duration_seconds_override, 59999) : null;
-      r.duration_seconds = r.duration_seconds_override ?? r.duration_seconds;
+      if ('duration_seconds_override' in details) r.duration_seconds_override = details.duration_seconds_override != null ? Math.min(details.duration_seconds_override, 59999) : null
       r.title = details.title ?? r.title;
       r.thumbnail_url = details.thumbnail_url ?? r.thumbnail_url;
       r.category_id = details.category_id ?? r.category_id;

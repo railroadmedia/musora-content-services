@@ -1,6 +1,6 @@
 import { Database, Q, Query, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
-import { ModelClass, SyncToken, SyncEntry, SyncUserScope, SyncContext, EpochMs, ColumnMergeStrategy } from '..'
+import { ModelClass, SyncToken, SyncEntry, SyncUserScope, SyncContext, EpochMs, ColumnMergeStrategies } from '..'
 import { SyncPullResponse, SyncPushResponse, SyncPullFetchFailureResponse, PushPayload, SyncStorePushResultSuccess, SyncStorePushResultFailure } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
@@ -31,7 +31,7 @@ export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
   pull: SyncPull
   push: SyncPush
   purgeGracePeriod?: EpochMs
-  columnMergeStrategies?: Record<string, ColumnMergeStrategy>
+  columnMergeStrategies?: ColumnMergeStrategies<TModel>
 }
 
 export default class SyncStore<TModel extends BaseModel = BaseModel> {
@@ -60,7 +60,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private pushCoalescer = new PushCoalescer()
 
   private purgeGracePeriod: EpochMs
-  private columnMergeStrategies: Record<string, ColumnMergeStrategy>
+  private columnMergeStrategies: ColumnMergeStrategies<TModel>
   private pushBlockingState: BlockingState = { enabled: false }
 
   private emitter = new EventEmitter<SyncStoreEvents<TModel>>()
@@ -95,7 +95,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.pullThrottleState = createThrottleState(SyncStore.PULL_THROTTLE_INTERVAL)
 
     this.purgeGracePeriod = purgeGracePeriod ?? (0 as EpochMs)
-    this.columnMergeStrategies = columnMergeStrategies ?? {}
+    this.columnMergeStrategies = columnMergeStrategies ?? {} as ColumnMergeStrategies<TModel>
 
     this.puller = pull
     this.pusher = push

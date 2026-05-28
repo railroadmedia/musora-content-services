@@ -80,6 +80,17 @@ export type ModelClass<T extends BaseModel = BaseModel> = {
 export type ColumnMergeStrategy = (
   local: unknown,
   server: unknown,
-  localRecord: Record<string, unknown>,
-  serverRecord: Record<string, unknown>
+  localRecord: unknown,
+  serverRecord: unknown
 ) => unknown
+
+export type ModelFields<TModel extends BaseModel> = TModel extends BaseModel<infer F> ? F : never
+
+export type ColumnMergeStrategies<TModel extends BaseModel> = {
+  [K in keyof ModelFields<TModel>]?: (
+    local: ModelFields<TModel>[K],
+    server: ModelFields<TModel>[K],
+    localRecord: TModel,
+    serverRecord: ModelFields<TModel>
+  ) => ModelFields<TModel>[K]
+}

@@ -1,5 +1,5 @@
 import { RecordId } from "@nozbe/watermelondb";
-import { SyncEntry, SyncEntryNonDeleted, ColumnMergeStrategy } from ".";
+import { SyncEntry, SyncEntryNonDeleted, ColumnMergeStrategies, ModelFields } from ".";
 import BaseModel from "./models/Base";
 
 export type SyncResolution = {
@@ -15,14 +15,14 @@ export type SyncResolverComparator<T extends BaseModel = BaseModel> = (serverEnt
 export const updatedAtComparator: SyncResolverComparator = (server, local) => {
   return server.meta.lifecycle.updated_at >= local.updated_at ? 'SERVER' : 'LOCAL'
 }
-export default class SyncResolver {
+export default class SyncResolver<TModel extends BaseModel = BaseModel> {
   private resolution: SyncResolution
   private comparator: SyncResolverComparator
-  private columnMergeStrategies: Record<string, ColumnMergeStrategy>
+  private columnMergeStrategies: ColumnMergeStrategies<TModel>
 
-  constructor(comparator?: SyncResolverComparator, columnMergeStrategies?: Record<string, ColumnMergeStrategy>) {
+  constructor(comparator?: SyncResolverComparator, columnMergeStrategies?: ColumnMergeStrategies<TModel>) {
     this.comparator = comparator || updatedAtComparator
-    this.columnMergeStrategies = columnMergeStrategies ?? {}
+    this.columnMergeStrategies = columnMergeStrategies ?? {} as ColumnMergeStrategies<TModel>
     this.resolution = {
       entriesForCreate: [],
       tuplesForUpdate: [],
@@ -32,20 +32,19 @@ export default class SyncResolver {
     }
   }
 
-  private mergeStrategyColumns(local: BaseModel, server: SyncEntryNonDeleted<BaseModel>): Record<string, unknown> {
-    const merged: Record<string, unknown> = {}
-    for (const [key, strategy] of Object.entries(this.columnMergeStrategies)) {
-      merged[key] = strategy(
-        (local as any)[key],
-        (server.record as any)[key],
-        local as any,
-        server.record as any
-      )
+  private mergeStrategyColumns(local: TModel, server: SyncEntryNonDeleted<TModel>): Partial<ModelFields<TModel>> {
+    const merged: Partial<ModelFields<TModel>> = {}
+    const serverFields = server.record as unknown as ModelFields<TModel>
+    for (const key of Object.keys(this.columnMergeStrategies) as (keyof ModelFields<TModel>)[]) {
+      const strategy = this.columnMergeStrategies[key]
+      if (strategy) {
+        merged[key] = strategy(local[key as keyof TModel] as ModelFields<TModel>[typeof key], serverFields[key], local, serverFields)
+      }
     }
     return merged
   }
 
-  private withMergedColumns(local: BaseModel, server: SyncEntryNonDeleted<BaseModel>): SyncEntry {
+  private withMergedColumns(local: TModel, server: SyncEntryNonDeleted<TModel>): SyncEntry {
     const mergedFields = this.mergeStrategyColumns(local, server)
     if (Object.keys(mergedFields).length === 0) return server
     return { ...server, record: { ...server.record, ...mergedFields } as typeof server.record }
@@ -61,51 +60,51 @@ export default class SyncResolver {
     }
   }
 
-  againstSynced(local: BaseModel, server: SyncEntry) {
+  againstSynced(local: TModel, server: SyncEntry) {
     if (server.meta.lifecycle.deleted_at) {
       this.resolution.idsForDestroy.push(local.id)
     }
     // take care that the server stamp isn't older than the current local
     // (imagine a race condition where a pull request resolves long after a second one)
-    else if (this.comparator(server as SyncEntryNonDeleted<BaseModel>, local) !== 'LOCAL') {
-      this.resolution.tuplesForUpdate.push([local, this.withMergedColumns(local, server as SyncEntryNonDeleted<BaseModel>)])
+    else if (this.comparator(server as SyncEntryNonDeleted<TModel>, local) !== 'LOCAL') {
+      this.resolution.tuplesForUpdate.push([local, this.withMergedColumns(local, server as SyncEntryNonDeleted<TModel>)])
     }
   }
 
   // can happen if one tab notifies another of a created record, pushes to server, and other tab pulls
-  againstCreated(local: BaseModel, server: SyncEntry) {
+  againstCreated(local: TModel, server: SyncEntry) {
     if (server.meta.lifecycle.deleted_at) {
       // delete local even though user has newer changes
       // (we don't ever try to resurrect records here)
       this.resolution.idsForDestroy.push(local.id)
-    } else if (this.comparator(server as SyncEntryNonDeleted<BaseModel>, local) !== 'LOCAL') {
+    } else if (this.comparator(server as SyncEntryNonDeleted<TModel>, local) !== 'LOCAL') {
       // local is older, so update it with server's
-      this.resolution.tuplesForUpdate.push([local, this.withMergedColumns(local, server as SyncEntryNonDeleted<BaseModel>)])
+      this.resolution.tuplesForUpdate.push([local, this.withMergedColumns(local, server as SyncEntryNonDeleted<TModel>)])
     } else {
       // server is older - can happen with clock skew - just mark as synced
-      this.resolution.recordsForSynced.push([local, this.mergeStrategyColumns(local, server as SyncEntryNonDeleted<BaseModel>)])
+      this.resolution.recordsForSynced.push([local, this.mergeStrategyColumns(local, server as SyncEntryNonDeleted<TModel>)])
     }
   }
 
-  againstUpdated(local: BaseModel, server: SyncEntry) {
+  againstUpdated(local: TModel, server: SyncEntry) {
     if (server.meta.lifecycle.deleted_at) {
       // delete local even though user has newer changes
       // (we don't ever try to resurrect records here)
       this.resolution.idsForDestroy.push(local.id);
-    } else if (this.comparator(server as SyncEntryNonDeleted<BaseModel>, local) !== 'LOCAL') {
+    } else if (this.comparator(server as SyncEntryNonDeleted<TModel>, local) !== 'LOCAL') {
       // local is older, so update it with server's
-      this.resolution.tuplesForUpdate.push([local, this.withMergedColumns(local, server as SyncEntryNonDeleted<BaseModel>)])
+      this.resolution.tuplesForUpdate.push([local, this.withMergedColumns(local, server as SyncEntryNonDeleted<TModel>)])
     } else {
       // server is older - can happen with clock skew - just mark as synced
-      this.resolution.recordsForSynced.push([local, this.mergeStrategyColumns(local, server as SyncEntryNonDeleted<BaseModel>)])
+      this.resolution.recordsForSynced.push([local, this.mergeStrategyColumns(local, server as SyncEntryNonDeleted<TModel>)])
     }
   }
 
-  againstDeleted(local: BaseModel, server: SyncEntry) {
+  againstDeleted(local: TModel, server: SyncEntry) {
     if (server.meta.lifecycle.deleted_at) {
       this.resolution.idsForDestroy.push(local.id)
     } else if (server.meta.lifecycle.updated_at >= local.updated_at) {
-      this.resolution.tuplesForRestore.push([local, this.withMergedColumns(local, server as SyncEntryNonDeleted<BaseModel>)])
+      this.resolution.tuplesForRestore.push([local, this.withMergedColumns(local, server as SyncEntryNonDeleted<TModel>)])
     } else {
       this.resolution.idsForDestroy.push(local.id);
     }
