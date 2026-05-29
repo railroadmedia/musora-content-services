@@ -1,3 +1,25 @@
+export interface WhoLikedParams {
+  page?: number
+  limit?: number
+}
+
+export interface Liker {
+  user_id: number
+  display_name: string
+  profile_picture_url: string | null
+  access_level: string
+  liked_at: string
+}
+
+export interface WhoLikedResponse {
+  data: Liker[]
+  meta: {
+    total: number
+    current_page: number
+    last_page: number
+  }
+}
+
 export interface ForumUser {
   id: number
   display_name: string
