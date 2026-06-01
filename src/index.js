@@ -367,6 +367,10 @@ import {
 } from './services/sanity.js';
 
 import {
+	searchAlgolia
+} from './services/search.ts';
+
+import {
 	clearState
 } from './services/state.ts';
 
@@ -792,6 +796,7 @@ export {
 	restoreUserActivity,
 	restoreUserPractice,
 	search,
+	searchAlgolia,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setStudentViewForUser,
