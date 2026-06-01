@@ -663,3 +663,28 @@ export async function mapLearningPathParentsTo(objects: any[], fieldsToMap?: {
     })
   })
 }
+
+export function isNextLessonLocked(learningPath: fetchLearningPathLessonsResponse): boolean {
+  const allLearningPathDailies = [
+    ...(learningPath?.previous_learning_path_dailies ?? []),
+    ...(learningPath?.learning_path_dailies ?? []),
+    ...(learningPath?.next_learning_path_dailies ?? []),
+  ]
+
+  const allDailiesCompleted = allLearningPathDailies.every(
+    (lesson) => lesson?.progressStatus === 'completed'
+  )
+
+  if (allDailiesCompleted) {
+    const nextLesson = learningPath?.upcoming_lessons?.[0]
+    return nextLesson?.need_access === true
+  }
+
+  const accessibleDailies = allLearningPathDailies.filter(
+    (lesson) => lesson?.need_access === false
+  )
+
+  if (accessibleDailies.length === allLearningPathDailies.length) return false
+
+  return accessibleDailies.every((lesson) => lesson.progressStatus === 'completed') ?? false
+}
