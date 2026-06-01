@@ -50,6 +50,7 @@ export interface UpgradeProduct {
   price: number
   monthly_price: number
   includes_trial: boolean
+  tier: 'plus' | 'basic' | ''
 }
 
 export interface UpgradeOption {
