@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.161.3](https://github.com/railroadmedia/musora-content-services/compare/v2.161.2...v2.161.3) (2026-06-02)
+
+
+### Bug Fixes
+
+* **MU2-1487:** fetchAll to by pass permissions filter ([#991](https://github.com/railroadmedia/musora-content-services/issues/991)) ([39f38ca](https://github.com/railroadmedia/musora-content-services/commit/39f38cad21b97591eae113c32212b1fdc76be035))
+
 ### [2.161.2](https://github.com/railroadmedia/musora-content-services/compare/v2.161.1...v2.161.2) (2026-05-27)
 
 ### [2.161.1](https://github.com/railroadmedia/musora-content-services/compare/v2.161.0...v2.161.1) (2026-05-27)
