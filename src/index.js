@@ -180,7 +180,8 @@ import {
 	likePost,
 	search,
 	unlikePost,
-	updatePost
+	updatePost,
+	whoLikedPost
 } from './services/forums/posts.ts';
 
 import {
@@ -492,6 +493,11 @@ import {
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
+
+import {
+	whoLikedComment,
+	whoLikedContent
+} from './services/whoLiked.ts';
 
 export {
 	PermissionsAdapter,
@@ -839,6 +845,9 @@ export {
 	userOnboardingForBrand,
 	verifyImageSRC,
 	verifyLocalDataContext,
+	whoLikedComment,
+	whoLikedContent,
+	whoLikedPost,
 };
 
 export default EventsAPI
