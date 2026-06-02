@@ -9,6 +9,7 @@ export interface Liker {
   profile_picture_url: string | null
   access_level: string
   liked_at: string
+  liked_at_diff: string | null
 }
 
 export interface WhoLikedResponse {
