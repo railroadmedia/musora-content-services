@@ -625,7 +625,6 @@ describe('completeLearningPathIntroVideo', () => {
     HttpClient.POST.mockResolvedValue({ active_learning_path_id: 10 })
 
     await completeLearningPathIntroVideo(802, 10, null, 'drumeo')
-    for (let i = 0; i < 50; i++) await new Promise(r => setImmediate(r))
 
     const methodCalls = HttpClient.POST.mock.calls.filter(
       (c: any[]) => c[0].includes('/method-intro-video-complete-actions'),
@@ -638,7 +637,6 @@ describe('completeLearningPathIntroVideo', () => {
     setApiResponses({ activePath: null })
 
     await completeLearningPathIntroVideo(803, 10, null, 'drumeo')
-    for (let i = 0; i < 50; i++) await new Promise(r => setImmediate(r))
 
     const methodCalls = HttpClient.POST.mock.calls.filter(
       (c: any[]) => c[0].includes('/method-intro-video-complete-actions'),

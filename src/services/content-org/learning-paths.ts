@@ -548,7 +548,7 @@ export async function completeLearningPathIntroVideo(
   let lateMethodSetup = false
   // check if the method intro was watched elsewhere; then we have to give user active path for this brand.
   if (anyIntroComplete && !activePath) {
-    completeMethodIntroVideo(null, brand) // no need to await.
+    await completeMethodIntroVideo(null, brand)
     lateMethodSetup = true
   }
 
@@ -671,6 +671,8 @@ export function isNextLessonLocked(learningPath: fetchLearningPathLessonsRespons
     ...(learningPath?.next_learning_path_dailies ?? []),
   ]
 
+  if (allLearningPathDailies.length === 0) return false
+
   const allDailiesCompleted = allLearningPathDailies.every(
     (lesson) => lesson?.progressStatus === 'completed'
   )
@@ -686,5 +688,5 @@ export function isNextLessonLocked(learningPath: fetchLearningPathLessonsRespons
 
   if (accessibleDailies.length === allLearningPathDailies.length) return false
 
-  return accessibleDailies.every((lesson) => lesson.progressStatus === 'completed') ?? false
+  return accessibleDailies.every((lesson) => lesson.progressStatus === 'completed')
 }
