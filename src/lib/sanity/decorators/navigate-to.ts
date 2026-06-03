@@ -137,14 +137,14 @@ async function computeNavigateTo(
   return null
 }
 
-export const navigateToDecorator: FieldDecoratorAsync<
-  NavigateToDecoratable,
-  typeof NAVIGATE_TO_FIELD,
-  NavigateTo | null
-> = {
-  field: NAVIGATE_TO_FIELD,
-  compute: (item) => computeNavigateTo(item),
-  recurse: false,
+export function navigateToDecorator(
+  ctx?: NavigateContext
+): FieldDecoratorAsync<NavigateToDecoratable, typeof NAVIGATE_TO_FIELD, NavigateTo | null> {
+  return {
+    field: NAVIGATE_TO_FIELD,
+    compute: (item) => computeNavigateTo(item, ctx),
+    recurse: false,
+  }
 }
 
 export function decorateNavigateTo<T extends NavigateToDecoratable>(
@@ -158,16 +158,7 @@ export async function decorateNavigateTo<T extends NavigateToDecoratable>(
 ): Promise<WithNavigateTo<T> | WithNavigateTo<T>[]> {
   const list = Array.isArray(items) ? items : [items]
   const ctx = await prefetchStates(list)
-  const batchedDecorator: FieldDecoratorAsync<
-    NavigateToDecoratable,
-    typeof NAVIGATE_TO_FIELD,
-    NavigateTo | null
-  > = {
-    field: NAVIGATE_TO_FIELD,
-    compute: (item) => computeNavigateTo(item, ctx),
-    recurse: false,
-  }
-  return decorateAllAsync(items as NavigateToDecoratable, [batchedDecorator]) as Promise<
+  return decorateAllAsync(items as NavigateToDecoratable, [navigateToDecorator(ctx)]) as Promise<
     WithNavigateTo<T> | WithNavigateTo<T>[]
   >
 }
