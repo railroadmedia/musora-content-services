@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.162.0](https://github.com/railroadmedia/musora-content-services/compare/v2.161.4...v2.162.0) (2026-06-03)
+
+
+### Features
+
+* add helper for FE/MA method progress card (free method) ([#987](https://github.com/railroadmedia/musora-content-services/issues/987)) ([ce8e491](https://github.com/railroadmedia/musora-content-services/commit/ce8e49128d54ec4c3b36261eb0e550b152c3041a))
+
 ### [2.161.4](https://github.com/railroadmedia/musora-content-services/compare/v2.161.3...v2.161.4) (2026-06-02)
 
 ### [2.161.3](https://github.com/railroadmedia/musora-content-services/compare/v2.161.2...v2.161.3) (2026-06-02)
