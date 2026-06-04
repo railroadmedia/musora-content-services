@@ -1713,8 +1713,8 @@ function contentResultsDecorator(results, fieldName, callback) {
       }
     })
   } else {
+    processChildren(results)
     results[fieldName] = callback(results)
-    processChildren(results) // this on was always true
   }
 
   return results
