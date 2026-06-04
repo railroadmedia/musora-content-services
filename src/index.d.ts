@@ -9,6 +9,7 @@ import {
 	getAwardStatistics,
 	getBadgeFields,
 	getCompletedAwards,
+	getCompletedAwardsByUser,
 	getContentAwards,
 	getContentAwardsByIds,
 	getInProgressAwards,
@@ -56,6 +57,7 @@ import {
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
+	isNextLessonLocked,
 	mapContentToParent,
 	resetAllLearningPaths,
 	startLearningPath,
@@ -175,7 +177,8 @@ import {
 	likePost,
 	search,
 	unlikePost,
-	updatePost
+	updatePost,
+	whoLikedPost
 } from './services/forums/posts.ts';
 
 import {
@@ -362,6 +365,10 @@ import {
 } from './services/sanity.js';
 
 import {
+	searchAlgolia
+} from './services/search.ts';
+
+import {
 	clearState
 } from './services/state.ts';
 
@@ -455,8 +462,9 @@ import {
 
 import {
 	deleteProfilePicture,
-	otherStats
-} from './services/user/profile.js';
+	otherStats,
+	updateProfileVisibility
+} from './services/user/profile.ts';
 
 import {
 	generateAuthSessionUrl,
@@ -486,6 +494,11 @@ import {
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
+
+import {
+	whoLikedComment,
+	whoLikedContent
+} from './services/whoLiked.ts';
 
 import {
 	 default as EventsAPI 
@@ -665,6 +678,7 @@ declare module 'musora-content-services' {
 		getAwardStatistics,
 		getBadgeFields,
 		getCompletedAwards,
+		getCompletedAwardsByUser,
 		getContentAwards,
 		getContentAwardsByIds,
 		getContentRows,
@@ -731,6 +745,7 @@ declare module 'musora-content-services' {
 		isContentLiked,
 		isContentLikedByIds,
 		isNextDay,
+		isNextLessonLocked,
 		isSameDate,
 		isUserFreeTier,
 		isUsernameAvailable,
@@ -790,6 +805,7 @@ declare module 'musora-content-services' {
 		restoreUserActivity,
 		restoreUserPractice,
 		search,
+		searchAlgolia,
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
 		setStudentViewForUser,
@@ -828,6 +844,7 @@ declare module 'musora-content-services' {
 		updatePlaylist,
 		updatePost,
 		updatePracticeNotes,
+		updateProfileVisibility,
 		updateThread,
 		updateUserPractice,
 		upgradeSubscription,
@@ -836,6 +853,9 @@ declare module 'musora-content-services' {
 		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
+		whoLikedComment,
+		whoLikedContent,
+		whoLikedPost,
 	}
 }
 

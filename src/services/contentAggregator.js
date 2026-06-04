@@ -317,7 +317,7 @@ function addRecordIdsToData(data, dataField, isDataAnArray, includeParent, inclu
         items.push(content)
         recordIds.push(content.record_id)
       }
-      if (includeIntroVideo) {
+      if (includeIntroVideo && content.intro_video?.id) {
         content.intro_video.record_id = generateRecordId(content.intro_video.id, null)
         items.push(content.intro_video)
         recordIds.push(content.intro_video.record_id)
