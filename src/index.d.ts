@@ -177,7 +177,8 @@ import {
 	likePost,
 	search,
 	unlikePost,
-	updatePost
+	updatePost,
+	whoLikedPost
 } from './services/forums/posts.ts';
 
 import {
@@ -493,6 +494,11 @@ import {
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
+
+import {
+	whoLikedComment,
+	whoLikedContent
+} from './services/whoLiked.ts';
 
 import {
 	 default as EventsAPI 
@@ -847,6 +853,9 @@ declare module 'musora-content-services' {
 		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
+		whoLikedComment,
+		whoLikedContent,
+		whoLikedPost,
 	}
 }
 
