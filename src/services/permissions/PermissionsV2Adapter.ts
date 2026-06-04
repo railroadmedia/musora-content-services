@@ -19,7 +19,7 @@ import {
 } from './permissions'
 import {arrayToRawRepresentation, arrayToStringRepresentation} from '../../filterBuilder.js'
 import {basicMembershipTier, plusMembershipTier} from "../../contentTypeConfig";
-import { COLLECTION_TYPE } from '@/services/sync/models/ContentProgress'
+import { COLLECTION_TYPE } from '../sync/models/ContentProgress'
 
 /**
  * V2 Permissions Adapter for the new permissions system.
