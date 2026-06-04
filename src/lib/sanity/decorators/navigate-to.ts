@@ -1,15 +1,15 @@
 import { decorateAllAsync, type Decoratable, type FieldDecoratorAsync } from './base'
 import {
-  findIncompleteLesson,
-  getLastInteractedOf,
-  getProgressState,
-  getProgressStateByIds,
-} from '../../../services/contentProgress.js'
-import {
   COLLECTION_TYPE,
   CollectionParameter,
   STATE,
 } from '../../../services/sync/models/ContentProgress'
+import {
+  findIncompleteLesson,
+  getLastInteractedOf,
+  getProgressState,
+  getProgressStateByIds,
+} from '@/services/progress'
 
 export const NAVIGATE_TO_FIELD = 'navigateTo' as const
 
@@ -18,7 +18,7 @@ const NAVIGABLE_TYPES = [
   'guided-course',
   'course-collection',
   'song-tutorial',
-  'learning-path-v2',
+  COLLECTION_TYPE.LEARNING_PATH,
   'skill-pack',
 ] as const
 
@@ -68,25 +68,53 @@ function buildNavigateTo(
   }
 }
 
-async function computeNavigateTo(content: NavigateToDecoratable): Promise<NavigateTo | null> {
+interface NavigateContext {
+  states: Map<number, string>
+}
+
+async function prefetchStates(items: NavigateToDecoratable[]): Promise<NavigateContext> {
+  const ids = new Set<number>()
+  for (const item of items) {
+    if (!item || !NAVIGABLE_TYPES.includes(item.type as (typeof NAVIGABLE_TYPES)[number])) continue
+    ids.add(item.id)
+    for (const child of item.children ?? []) {
+      ids.add(child.id)
+      if (TWO_DEPTH_TYPES.includes(item.type)) {
+        for (const grandchild of child.children ?? []) {
+          ids.add(grandchild.id)
+        }
+      }
+    }
+  }
+  if (ids.size === 0) return { states: new Map() }
+  const states = await getProgressStateByIds(Array.from(ids))
+  return { states }
+}
+
+async function computeNavigateTo(
+  content: NavigateToDecoratable,
+  ctx?: NavigateContext
+): Promise<NavigateTo | null> {
   if (!NAVIGABLE_TYPES.includes(content.type as (typeof NAVIGABLE_TYPES)[number])) return null
 
   const children = content.children
   if (!children || children.length === 0) return null
 
-  const contentState = await getProgressState(content.id)
+  const contentState = ctx?.states.get(content.id) ?? (await getProgressState(content.id))
   if (contentState !== STATE.STARTED) {
     const firstChild = children[0]
     const childNav = TWO_DEPTH_TYPES.includes(content.type)
-      ? await computeNavigateTo(firstChild)
+      ? await computeNavigateTo(firstChild, ctx)
       : null
     return buildNavigateTo(firstChild, childNav)
   }
 
   const childrenIds = children.map((c) => c.id)
   const childrenById = new Map(children.map((c) => [c.id, c]))
-  const childrenStates = (await getProgressStateByIds(childrenIds)) as Map<number, STATE>
-  const lastInteractedId = (await getLastInteractedOf(childrenIds)) as number
+  const childrenStates = ctx
+    ? new Map(childrenIds.map((id) => [id, ctx.states.get(id) ?? '']))
+    : await getProgressStateByIds(childrenIds)
+  const lastInteractedId = await getLastInteractedOf(childrenIds)
 
   if (COURSE_FLOW_TYPES.includes(content.type)) {
     const lastInteractedStatus = childrenStates.get(lastInteractedId)
@@ -107,7 +135,7 @@ async function computeNavigateTo(content: NavigateToDecoratable): Promise<Naviga
   if (TWO_DEPTH_TYPES.includes(content.type)) {
     const lastChild = childrenById.get(lastInteractedId)
     if (!lastChild) return null
-    const childNav = await computeNavigateTo(lastChild)
+    const childNav = await computeNavigateTo(lastChild, ctx)
     return buildNavigateTo(lastChild, childNav)
   }
 
@@ -120,7 +148,7 @@ export const navigateToDecorator: FieldDecoratorAsync<
   NavigateTo | null
 > = {
   field: NAVIGATE_TO_FIELD,
-  compute: computeNavigateTo,
+  compute: (item) => computeNavigateTo(item),
   recurse: false,
 }
 
@@ -130,10 +158,21 @@ export function decorateNavigateTo<T extends NavigateToDecoratable>(
 export function decorateNavigateTo<T extends NavigateToDecoratable>(
   items: T
 ): Promise<WithNavigateTo<T>>
-export function decorateNavigateTo<T extends NavigateToDecoratable>(
+export async function decorateNavigateTo<T extends NavigateToDecoratable>(
   items: T | T[]
 ): Promise<WithNavigateTo<T> | WithNavigateTo<T>[]> {
-  return decorateAllAsync(items as NavigateToDecoratable, [navigateToDecorator]) as Promise<
+  const list = Array.isArray(items) ? items : [items]
+  const ctx = await prefetchStates(list)
+  const batchedDecorator: FieldDecoratorAsync<
+    NavigateToDecoratable,
+    typeof NAVIGATE_TO_FIELD,
+    NavigateTo | null
+  > = {
+    field: NAVIGATE_TO_FIELD,
+    compute: (item) => computeNavigateTo(item, ctx),
+    recurse: false,
+  }
+  return decorateAllAsync(items as NavigateToDecoratable, [batchedDecorator]) as Promise<
     WithNavigateTo<T> | WithNavigateTo<T>[]
   >
 }
