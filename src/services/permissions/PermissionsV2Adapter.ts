@@ -19,6 +19,7 @@ import {
 } from './permissions'
 import {arrayToRawRepresentation, arrayToStringRepresentation} from '../../filterBuilder.js'
 import {basicMembershipTier, plusMembershipTier} from "../../contentTypeConfig";
+import { COLLECTION_TYPE } from '../sync/models/ContentProgress'
 
 /**
  * V2 Permissions Adapter for the new permissions system.
@@ -55,6 +56,9 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
 
     // Content with no permissions is accessible to all
     if (contentPermissions.size === 0) {
+      if (content?.type === COLLECTION_TYPE.LEARNING_PATH && content?.children?.length) {
+        return content.children.every(child => child.need_access)
+      }
       return false
     }
 

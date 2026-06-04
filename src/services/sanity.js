@@ -1675,8 +1675,8 @@ function contentResultsDecorator(results, fieldName, callback) {
           processChildren(contentItem)
         })
       } else {
-        result[fieldName] = callback(result)
         processChildren(result)
+        result[fieldName] = callback(result)
       }
     })
   } else if (results.entity && Array.isArray(results.entity)) {
@@ -1713,8 +1713,8 @@ function contentResultsDecorator(results, fieldName, callback) {
       }
     })
   } else {
+    processChildren(results)
     results[fieldName] = callback(results)
-    processChildren(results) // this on was always true
   }
 
   return results
