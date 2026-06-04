@@ -1675,8 +1675,8 @@ function contentResultsDecorator(results, fieldName, callback) {
           processChildren(contentItem)
         })
       } else {
-        result[fieldName] = callback(result)
         processChildren(result)
+        result[fieldName] = callback(result)
       }
     })
   } else if (results.entity && Array.isArray(results.entity)) {

@@ -55,6 +55,9 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
 
     // Content with no permissions is accessible to all
     if (contentPermissions.size === 0) {
+      if (content?.type === 'learning-path-v2' && content?.children?.length) {
+        return content.children.every(child => child.need_access)
+      }
       return false
     }
 
