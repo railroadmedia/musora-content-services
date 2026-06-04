@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.163.0](https://github.com/railroadmedia/musora-content-services/compare/v2.162.1...v2.163.0) (2026-06-04)
+
+
+### Features
+
+* add need access logic branch for LPs ([#993](https://github.com/railroadmedia/musora-content-services/issues/993)) ([1d935aa](https://github.com/railroadmedia/musora-content-services/commit/1d935aaf147b45cd01bc1d438424f5322991aa69))
+* **TP-1195:** optimize live event loading ([#971](https://github.com/railroadmedia/musora-content-services/issues/971)) ([8daa616](https://github.com/railroadmedia/musora-content-services/commit/8daa6160c5bc1ee005093719beef1dd9e83ac3c8))
+
+
+### Bug Fixes
+
+* dont set resume-time to null ([#992](https://github.com/railroadmedia/musora-content-services/issues/992)) ([d7f0f3e](https://github.com/railroadmedia/musora-content-services/commit/d7f0f3e6aab53dcb332a9c149dd0a33f95bc1d75))
+
 ### [2.162.1](https://github.com/railroadmedia/musora-content-services/compare/v2.162.0...v2.162.1) (2026-06-04)
 
 ## [2.162.0](https://github.com/railroadmedia/musora-content-services/compare/v2.161.4...v2.162.0) (2026-06-03)
