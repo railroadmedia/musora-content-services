@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.162.1](https://github.com/railroadmedia/musora-content-services/compare/v2.162.0...v2.162.1) (2026-06-04)
+
+## [2.162.0](https://github.com/railroadmedia/musora-content-services/compare/v2.161.4...v2.162.0) (2026-06-03)
+
+
+### Features
+
+* add helper for FE/MA method progress card (free method) ([#987](https://github.com/railroadmedia/musora-content-services/issues/987)) ([ce8e491](https://github.com/railroadmedia/musora-content-services/commit/ce8e49128d54ec4c3b36261eb0e550b152c3041a))
+
+### [2.161.4](https://github.com/railroadmedia/musora-content-services/compare/v2.161.3...v2.161.4) (2026-06-02)
+
+### [2.161.3](https://github.com/railroadmedia/musora-content-services/compare/v2.161.2...v2.161.3) (2026-06-02)
+
+
+### Bug Fixes
+
+* **MU2-1487:** fetchAll to by pass permissions filter ([#991](https://github.com/railroadmedia/musora-content-services/issues/991)) ([39f38ca](https://github.com/railroadmedia/musora-content-services/commit/39f38cad21b97591eae113c32212b1fdc76be035))
+
+### [2.161.2](https://github.com/railroadmedia/musora-content-services/compare/v2.161.1...v2.161.2) (2026-05-27)
+
+### [2.161.1](https://github.com/railroadmedia/musora-content-services/compare/v2.161.0...v2.161.1) (2026-05-27)
+
+## [2.161.0](https://github.com/railroadmedia/musora-content-services/compare/v2.160.5...v2.161.0) (2026-05-27)
+
+
+### Features
+
+* **BEHLTP-106:** membership data upgrade ([#973](https://github.com/railroadmedia/musora-content-services/issues/973)) ([e1e0611](https://github.com/railroadmedia/musora-content-services/commit/e1e0611c13bdf4be920eb28cca1f15f912930d24))
+
+### [2.160.5](https://github.com/railroadmedia/musora-content-services/compare/v2.160.4...v2.160.5) (2026-05-22)
+
+
+### Bug Fixes
+
+* add a null check for method intro video ([#983](https://github.com/railroadmedia/musora-content-services/issues/983)) ([dbcaa72](https://github.com/railroadmedia/musora-content-services/commit/dbcaa7250ccca71ddcefda0d0514a7a013055784))
+* **live-events:** fetch permission ids ([#982](https://github.com/railroadmedia/musora-content-services/issues/982)) ([cd12054](https://github.com/railroadmedia/musora-content-services/commit/cd12054a58a0752614f8cdebcf79750edae948c3))
+
 ### [2.160.4](https://github.com/railroadmedia/musora-content-services/compare/v2.160.3...v2.160.4) (2026-05-20)
 
 
