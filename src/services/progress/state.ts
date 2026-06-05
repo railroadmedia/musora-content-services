@@ -53,18 +53,18 @@ export const incompleteLesson = (
 export const snapshotByIds = async (
   contentIds: number[],
   collection?: CollectionParameter
-): Promise<Record<number, ProgressSnapshot>> => {
-  const result = Object.fromEntries(
+): Promise<Map<number, ProgressSnapshot>> => {
+  const result = new Map<number, ProgressSnapshot>(
     contentIds.map((id) => [id, { last_update: 0, progress: 0, status: '' }])
-  ) as Record<number, ProgressSnapshot>
+  )
 
   await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then((r) => {
     r.data.forEach((p) => {
-      result[p.content_id] = {
+      result.set(p.content_id, {
         last_update: p.last_interacted_a_la_carte,
         progress: p.progress_percent,
         status: p.state,
-      }
+      })
     })
   })
 
