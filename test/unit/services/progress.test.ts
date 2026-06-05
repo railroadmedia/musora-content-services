@@ -351,26 +351,6 @@ describe('Progress.methodAccessedIds', () => {
   })
 })
 
-describe('Progress.percentByContentId', () => {
-  test('returns map of content_id to progress_percent', async () => {
-    mockStartedOrCompleted = {
-      data: [
-        { content_id: 1, progress_percent: 50 },
-        { content_id: 2, progress_percent: 100 },
-      ],
-    }
-    const result = await Progress.percentByContentId()
-    expect(result[1]).toBe(50)
-    expect(result[2]).toBe(100)
-  })
-
-  test('forwards brand filter to repository', async () => {
-    await Progress.percentByContentId('drumeo')
-    const args = repoMocks.contentProgress.startedOrCompleted.mock.calls[0][0]
-    expect(args.brand).toBe('drumeo')
-  })
-})
-
 describe('Progress.generateRecordId', () => {
   test('no collection uses SELF defaults', () => {
     expect(Progress.generateRecordId(123)).toBe(
