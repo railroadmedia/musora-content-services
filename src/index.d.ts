@@ -461,6 +461,11 @@ import {
 } from './services/user/payments.ts';
 
 import {
+	fetchPlayerSettings,
+	updatePlayerSettings
+} from './services/user/playerSettings.ts';
+
+import {
 	deleteProfilePicture,
 	otherStats,
 	updateProfileVisibility
@@ -624,6 +629,7 @@ declare module 'musora-content-services' {
 		fetchPackData,
 		fetchParentChildRelationshipsFor,
 		fetchPlayAlongsCount,
+		fetchPlayerSettings,
 		fetchPlaylist,
 		fetchPlaylistItems,
 		fetchPost,
@@ -841,6 +847,7 @@ declare module 'musora-content-services' {
 		updateMultiUserAccount,
 		updateNotificationSetting,
 		updateOnboarding,
+		updatePlayerSettings,
 		updatePlaylist,
 		updatePost,
 		updatePracticeNotes,
