@@ -34,10 +34,7 @@ export const getAncestorAndSiblingIds = (
   const parentId = hierarchy?.parents?.[contentId]
   if (!parentId) return []
 
-  if (parentId === contentId) {
-    console.error('Circular dependency detected for contentId', contentId)
-    return []
-  }
+  if (parentId === contentId) return []
 
   const siblingIds = hierarchy?.children?.[parentId] ?? []
   const allIds = [
