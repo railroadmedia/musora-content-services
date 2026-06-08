@@ -23,5 +23,5 @@ export async function fetchPlayerSettings(): Promise<PlayerSettings> {
  */
 export async function updatePlayerSettings(data: UpdatePlayerSettingsData): Promise<PlayerSettings> {
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.put<PlayerSettings>(baseUrl, data)
+  return httpClient.patch<PlayerSettings>(baseUrl, data)
 }
