@@ -16,6 +16,6 @@ npm run release
 git push --follow-tags origin main
 
 # Publish the package to npm
-npm publish --auth-type=legacy
+npm publish
 
 echo "Package published successfully."
