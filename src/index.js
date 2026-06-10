@@ -465,6 +465,11 @@ import {
 } from './services/user/payments.ts';
 
 import {
+	fetchPlayerSettings,
+	updatePlayerSettings
+} from './services/user/playerSettings.ts';
+
+import {
 	deleteProfilePicture,
 	otherStats,
 	updateProfileVisibility
@@ -623,6 +628,7 @@ export {
 	fetchPackData,
 	fetchParentChildRelationshipsFor,
 	fetchPlayAlongsCount,
+	fetchPlayerSettings,
 	fetchPlaylist,
 	fetchPlaylistItems,
 	fetchPost,
@@ -840,6 +846,7 @@ export {
 	updateMultiUserAccount,
 	updateNotificationSetting,
 	updateOnboarding,
+	updatePlayerSettings,
 	updatePlaylist,
 	updatePost,
 	updatePracticeNotes,

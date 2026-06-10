@@ -96,6 +96,20 @@ export interface AuthResponse {
   user: User
 }
 
+export interface PlayerSettings {
+  auto_play: boolean
+  auto_next: boolean
+  auto_complete: boolean
+  playlist_auto_next: boolean
+}
+
+export interface UpdatePlayerSettingsData {
+  auto_play?: boolean
+  auto_next?: boolean
+  auto_complete?: boolean
+  playlist_auto_next?: boolean
+}
+
 export interface StreakDTO {
   type: 'week' | 'day'
   length: number
