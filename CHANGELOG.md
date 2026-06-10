@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.164.0](https://github.com/railroadmedia/musora-content-services/compare/v2.160.5...v2.164.0) (2026-06-10)
+
+
+### Features
+
+* add helper for FE/MA method progress card (free method) ([#987](https://github.com/railroadmedia/musora-content-services/issues/987)) ([ce8e491](https://github.com/railroadmedia/musora-content-services/commit/ce8e49128d54ec4c3b36261eb0e550b152c3041a))
+* add need access logic branch for LPs ([#993](https://github.com/railroadmedia/musora-content-services/issues/993)) ([1d935aa](https://github.com/railroadmedia/musora-content-services/commit/1d935aaf147b45cd01bc1d438424f5322991aa69))
+* **BEHLTP-106:** membership data upgrade ([#973](https://github.com/railroadmedia/musora-content-services/issues/973)) ([e1e0611](https://github.com/railroadmedia/musora-content-services/commit/e1e0611c13bdf4be920eb28cca1f15f912930d24))
+* **TP-1195:** optimize live event loading ([#971](https://github.com/railroadmedia/musora-content-services/issues/971)) ([8daa616](https://github.com/railroadmedia/musora-content-services/commit/8daa6160c5bc1ee005093719beef1dd9e83ac3c8))
+
+
+### Bug Fixes
+
+* dont set resume-time to null ([#992](https://github.com/railroadmedia/musora-content-services/issues/992)) ([d7f0f3e](https://github.com/railroadmedia/musora-content-services/commit/d7f0f3e6aab53dcb332a9c149dd0a33f95bc1d75))
+* **MU2-1487:** fetchAll to by pass permissions filter ([#991](https://github.com/railroadmedia/musora-content-services/issues/991)) ([39f38ca](https://github.com/railroadmedia/musora-content-services/commit/39f38cad21b97591eae113c32212b1fdc76be035))
+* Replace PUT with PATCH ([a74a007](https://github.com/railroadmedia/musora-content-services/commit/a74a007efdc19fed98a882db5bf15741d95b89d0))
+
 ## [2.163.0](https://github.com/railroadmedia/musora-content-services/compare/v2.162.1...v2.163.0) (2026-06-04)
 
 
