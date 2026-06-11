@@ -27,11 +27,13 @@ export async function status(email: string): Promise<{ requires_setup: boolean }
  * @returns {Promise<void>} - A promise that resolves when the email is sent or an HttpError if the request fails.
  * @throws {HttpError} - Throws HttpError if the request fails.
  */
-export async function sendAccountSetupEmail(email: string): Promise<void> {
+export async function sendAccountSetupEmail(email: string, token?: string): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<void>(
     `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/send-setup-email`,
-    {}
+    {
+      token,
+    }
   )
 }
 

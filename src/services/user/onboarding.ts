@@ -120,15 +120,27 @@ export async function userOnboardingForBrand(brand: string): Promise<Onboarding>
 export interface OnboardingRecommendedContent {
   id: number
   title: string
+  brand: string
+  content_type: string
+  type: string
   difficulty: string
   lesson_count: number
   skill_count: number
   badge: string
+  badge_rear: string
+  badge_logo: string
   description: string
+  thumbnail: string
   video: {
     external_id: string
     hlsManifestUrl: string
     type: string
+  }
+  lessons: {
+    id: number
+    title: string
+    thumbnail: string
+    skill_pack_title?: string
   }
 }
 
