@@ -50,7 +50,7 @@ export interface UpgradeProduct {
   price: number
   monthly_price: number
   includes_trial: boolean
-  tier: 'plus' | 'basic' | ''
+  tier: 'plus' | 'basic' | '' // deprecated in favour of membership_level
   membership_level: 'plus' | 'basic' | ''
   plan_type: 'family' | 'duo' | 'solo'
 }
