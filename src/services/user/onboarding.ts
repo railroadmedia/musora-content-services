@@ -141,7 +141,7 @@ export interface OnboardingRecommendedContent {
     title: string
     thumbnail: string
     skill_pack_title?: string
-  }
+  }[]
 }
 
 export interface OnboardingRecommendationResponse {
