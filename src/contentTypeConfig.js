@@ -328,6 +328,7 @@ export const progressTypesMapping = {
     'course-lesson',
     'routine',
   ],
+  method: [LEARNING_PATH_LESSON],
   course: ['course'],
   show: showsLessonTypes,
   'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-lesson'],
@@ -695,9 +696,7 @@ export let contentTypeConfig = {
     }`,
   ],
   'new-and-scheduled': {
-    fields: [
-      'show_in_new_feed',
-    ],
+    fields: ['show_in_new_feed'],
     includeChildFields: true,
   },
 }
