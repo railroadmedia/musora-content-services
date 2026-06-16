@@ -291,3 +291,11 @@ export async function fetchHasActivePlatformSubscription(): Promise<boolean> {
   const response = await httpClient.get<SubscriptionPlatform>(`${baseUrl}/v1/subscription-platform`)
   return response.has_active_platform_subscription
 }
+
+/**
+ * @returns {Promise<void>}
+ */
+export async function grant30DaysAccessForLifetime(): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post(`${baseUrl}/v1/grant-30-days-access-for-lifetime`, {})
+}

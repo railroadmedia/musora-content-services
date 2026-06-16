@@ -432,6 +432,7 @@ import {
 	fetchMemberships,
 	fetchRechargeTokens,
 	getUpgradePrice,
+	grant30DaysAccessForLifetime,
 	restorePurchases,
 	upgradeSubscription
 } from './services/user/memberships.ts';
@@ -741,6 +742,7 @@ export {
 	getUserWeeklyStats,
 	getWeekNumber,
 	globalConfig,
+	grant30DaysAccessForLifetime,
 	guidedCourses,
 	hasAnyMethodV2IntroCompleted,
 	initializeEnvVar,

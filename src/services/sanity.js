@@ -46,6 +46,7 @@ import { globalConfig } from './config.js'
 
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
+import { MEMBERSHIP_PERMISSIONS } from '../constants/membership-permissions.ts'
 import {
   getAllCompleted,
   getAllCompletedByIds,
@@ -1639,6 +1640,7 @@ export async function fetchSanity(
         return null
       }
       results = processNeedAccess ? await needsAccessDecorator(results, userPermissions) : results
+      results = processNeedAccess ? needsLifetimeUpgradeDecorator(results, userPermissions) : results
       results = processPageType ? pageTypeDecorator(results) : results
       return customPostProcess ? customPostProcess(results) : results
     } else {
@@ -1731,6 +1733,19 @@ function needsAccessDecorator(results, userPermissions) {
   const adapter = getPermissionsAdapter()
   return contentResultsDecorator(results, 'need_access', function (content) {
     return adapter.doesUserNeedAccess(content, userPermissions)
+  })
+}
+
+function needsLifetimeUpgradeDecorator(results, userPermissions) {
+  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
+  const userPermSet = new Set(userPermissions?.permissions ?? [])
+  const hasLifetime = userPermSet.has(MEMBERSHIP_PERMISSIONS.lifetime)
+  const hasPlus = userPermSet.has(MEMBERSHIP_PERMISSIONS.plus)
+  return contentResultsDecorator(results, 'need_lifetime_upgrade', function (content) {
+    if (userPermissions?.isAdmin || !hasLifetime || hasPlus) return false
+    if (!content.need_access) return false
+    const contentPerms = new Set(content?.permission_id ?? [])
+    return contentPerms.has(MEMBERSHIP_PERMISSIONS.plus)
   })
 }
 
