@@ -46,7 +46,7 @@ import { globalConfig } from './config.js'
 
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
-import { MEMBERSHIP_PERMISSIONS } from '../constants/membership-permissions.ts'
+import { lifetimeUpgradeDecorator, NEED_LIFETIME_UPGRADE_FIELD } from '../lib/sanity/decorators/need-lifetime-upgrade.ts'
 import {
   getAllCompleted,
   getAllCompletedByIds,
@@ -1738,15 +1738,8 @@ function needsAccessDecorator(results, userPermissions) {
 
 function needsLifetimeUpgradeDecorator(results, userPermissions) {
   if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
-  const userPermSet = new Set(userPermissions?.permissions ?? [])
-  const hasLifetime = userPermSet.has(MEMBERSHIP_PERMISSIONS.lifetime)
-  const hasPlus = userPermSet.has(MEMBERSHIP_PERMISSIONS.plus)
-  return contentResultsDecorator(results, 'need_lifetime_upgrade', function (content) {
-    if (userPermissions?.isAdmin || !hasLifetime || hasPlus) return false
-    if (!content.need_access) return false
-    const contentPerms = new Set(content?.permission_id ?? [])
-    return contentPerms.has(MEMBERSHIP_PERMISSIONS.plus)
-  })
+  const { compute } = lifetimeUpgradeDecorator(userPermissions)
+  return contentResultsDecorator(results, NEED_LIFETIME_UPGRADE_FIELD, compute)
 }
 
 function doesUserNeedAccessToContent(result, userPermissions) {

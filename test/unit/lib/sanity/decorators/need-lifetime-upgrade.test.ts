@@ -2,87 +2,85 @@ import {
   NEED_LIFETIME_UPGRADE_FIELD,
   lifetimeUpgradeDecorator,
   decorateLifetimeUpgrade,
-  type WithNeedLifetimeUpgrade,
 } from '../../../../../src/lib/sanity/decorators/need-lifetime-upgrade'
-import { type AccessDecoratable } from '../../../../../src/lib/sanity/decorators/need-access'
 
 const PLUS = 92
 const LIFETIME = 108
 const BASE = 91
 
-const lifetimeOnlyPerms = { permissions: [LIFETIME], isAdmin: false, isModerator: false, isABasicMember: false }
-const lifetimePlusPerms = { permissions: [LIFETIME, PLUS], isAdmin: false, isModerator: false, isABasicMember: false }
-const plusOnlyPerms = { permissions: [PLUS], isAdmin: false, isModerator: false, isABasicMember: false }
-const basePerms = { permissions: [BASE], isAdmin: false, isModerator: false, isABasicMember: false }
-const adminPerms = { permissions: [LIFETIME], isAdmin: true, isModerator: false, isABasicMember: false }
+const lifetimeOnly = { permissions: [LIFETIME], isAdmin: false, isModerator: false, isABasicMember: false }
+const lifetimePlus = { permissions: [LIFETIME, PLUS], isAdmin: false, isModerator: false, isABasicMember: false }
+const plusOnly = { permissions: [PLUS], isAdmin: false, isModerator: false, isABasicMember: false }
+const baseOnly = { permissions: [BASE], isAdmin: false, isModerator: false, isABasicMember: false }
+const admin = { permissions: [LIFETIME], isAdmin: true, isModerator: false, isABasicMember: false }
 
-const plusContent: AccessDecoratable = { permission_id: [PLUS], need_access: true }
-const baseContent: AccessDecoratable = { permission_id: [BASE], need_access: true }
-const freeContent: AccessDecoratable = { permission_id: [], need_access: false }
+const plusGatedLocked = { permission_id: [PLUS], need_access: true }
+const plusGatedUnlocked = { permission_id: [PLUS], need_access: false }
+const baseGatedLocked = { permission_id: [BASE], need_access: true }
 
 describe('need-lifetime-upgrade decorator', () => {
   describe('lifetimeUpgradeDecorator (factory)', () => {
     test('field is need_lifetime_upgrade', () => {
-      const dec = lifetimeUpgradeDecorator(lifetimeOnlyPerms)
+      const dec = lifetimeUpgradeDecorator(lifetimeOnly)
       expect(dec.field).toBe('need_lifetime_upgrade')
       expect(NEED_LIFETIME_UPGRADE_FIELD).toBe('need_lifetime_upgrade')
     })
 
-    test('returns true for lifetime member on Plus-gated content they cannot access', () => {
-      const dec = lifetimeUpgradeDecorator(lifetimeOnlyPerms)
-      expect(dec.compute(plusContent)).toBe(true)
+    test('true for lifetime member on Plus-gated content they cannot access', () => {
+      const dec = lifetimeUpgradeDecorator(lifetimeOnly)
+      expect(dec.compute(plusGatedLocked)).toBe(true)
     })
 
-    test('returns false when user already has Plus', () => {
-      const dec = lifetimeUpgradeDecorator(lifetimePlusPerms)
-      expect(dec.compute(plusContent)).toBe(false)
+    test('false when user already has Plus', () => {
+      const dec = lifetimeUpgradeDecorator(lifetimePlus)
+      expect(dec.compute(plusGatedLocked)).toBe(false)
     })
 
-    test('returns false when user does not have lifetime', () => {
-      const dec = lifetimeUpgradeDecorator(basePerms)
-      expect(dec.compute(plusContent)).toBe(false)
+    test('false when user does not have lifetime', () => {
+      const dec = lifetimeUpgradeDecorator(baseOnly)
+      expect(dec.compute(plusGatedLocked)).toBe(false)
     })
 
-    test('returns false for Plus-only member', () => {
-      const dec = lifetimeUpgradeDecorator(plusOnlyPerms)
-      expect(dec.compute(plusContent)).toBe(false)
+    test('false for Plus-only member', () => {
+      const dec = lifetimeUpgradeDecorator(plusOnly)
+      expect(dec.compute(plusGatedLocked)).toBe(false)
     })
 
-    test('returns false for admin', () => {
-      const dec = lifetimeUpgradeDecorator(adminPerms)
-      expect(dec.compute(plusContent)).toBe(false)
+    test('false for admin', () => {
+      const dec = lifetimeUpgradeDecorator(admin)
+      expect(dec.compute(plusGatedLocked)).toBe(false)
     })
 
-    test('returns false when content does not require Plus', () => {
-      const dec = lifetimeUpgradeDecorator(lifetimeOnlyPerms)
-      expect(dec.compute(baseContent)).toBe(false)
+    test('false when content does not require Plus', () => {
+      const dec = lifetimeUpgradeDecorator(lifetimeOnly)
+      expect(dec.compute(baseGatedLocked)).toBe(false)
     })
 
-    test('returns false when content is free (need_access false)', () => {
-      const dec = lifetimeUpgradeDecorator(lifetimeOnlyPerms)
-      expect(dec.compute(freeContent)).toBe(false)
+    test('false when user already has access to content (need_access false)', () => {
+      const dec = lifetimeUpgradeDecorator(lifetimeOnly)
+      expect(dec.compute(plusGatedUnlocked)).toBe(false)
     })
 
-    test('returns false when userPermissions is null', () => {
+    test('false when userPermissions is null', () => {
       const dec = lifetimeUpgradeDecorator(null as any)
-      expect(dec.compute(plusContent)).toBe(false)
+      expect(dec.compute(plusGatedLocked)).toBe(false)
     })
   })
 
   describe('decorateLifetimeUpgrade', () => {
     test('decorates array of items', () => {
-      const items: AccessDecoratable[] = [plusContent, baseContent, freeContent]
-      const decorated = decorateLifetimeUpgrade(items, lifetimeOnlyPerms)
+      const items = [plusGatedLocked, baseGatedLocked, plusGatedUnlocked]
+      const decorated = decorateLifetimeUpgrade(items, lifetimeOnly)
       expect(decorated.map((i) => i.need_lifetime_upgrade)).toEqual([true, false, false])
     })
 
     test('decorates a single item', () => {
-      const decorated = decorateLifetimeUpgrade(plusContent, lifetimeOnlyPerms)
+      const decorated = decorateLifetimeUpgrade(plusGatedLocked, lifetimeOnly)
       expect(decorated.need_lifetime_upgrade).toBe(true)
     })
 
     test('decorates children recursively', () => {
-      const tree: AccessDecoratable = {
+      const tree = {
         permission_id: [PLUS],
         need_access: true,
         children: [
@@ -93,15 +91,15 @@ describe('need-lifetime-upgrade decorator', () => {
           },
         ],
       }
-      const decorated = decorateLifetimeUpgrade(tree, lifetimeOnlyPerms) as WithNeedLifetimeUpgrade<AccessDecoratable>
+      const decorated = decorateLifetimeUpgrade(tree, lifetimeOnly)
       expect(decorated.need_lifetime_upgrade).toBe(true)
       expect(decorated.children![0].need_lifetime_upgrade).toBe(true)
       expect(decorated.children![0].children![0].need_lifetime_upgrade).toBe(true)
     })
 
     test('returns the same reference it was given', () => {
-      const items: AccessDecoratable[] = [plusContent]
-      const decorated = decorateLifetimeUpgrade(items, lifetimeOnlyPerms)
+      const items = [plusGatedLocked]
+      const decorated = decorateLifetimeUpgrade(items, lifetimeOnly)
       expect(decorated).toBe(items)
     })
   })
