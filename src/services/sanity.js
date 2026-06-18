@@ -46,6 +46,7 @@ import { globalConfig } from './config.js'
 
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
+import { lifetimeUpgradeDecorator, NEED_LIFETIME_UPGRADE_FIELD } from '../lib/sanity/decorators/need-lifetime-upgrade.ts'
 import {
   getAllCompleted,
   getAllCompletedByIds,
@@ -1639,6 +1640,7 @@ export async function fetchSanity(
         return null
       }
       results = processNeedAccess ? await needsAccessDecorator(results, userPermissions) : results
+      results = processNeedAccess ? needsLifetimeUpgradeDecorator(results, userPermissions) : results
       results = processPageType ? pageTypeDecorator(results) : results
       return customPostProcess ? customPostProcess(results) : results
     } else {
@@ -1732,6 +1734,12 @@ function needsAccessDecorator(results, userPermissions) {
   return contentResultsDecorator(results, 'need_access', function (content) {
     return adapter.doesUserNeedAccess(content, userPermissions)
   })
+}
+
+function needsLifetimeUpgradeDecorator(results, userPermissions) {
+  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
+  const { compute } = lifetimeUpgradeDecorator(userPermissions)
+  return contentResultsDecorator(results, NEED_LIFETIME_UPGRADE_FIELD, compute)
 }
 
 function doesUserNeedAccessToContent(result, userPermissions) {
