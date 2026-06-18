@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.165.0](https://github.com/railroadmedia/musora-content-services/compare/v2.164.6...v2.165.0) (2026-06-18)
+
+
+### Features
+
+* **BEHSTP-370:** add need_lifetime_upgrade flag on documents and grant30DaysAccessForLifetime method ([2dd8bed](https://github.com/railroadmedia/musora-content-services/commit/2dd8bedf71a543599a0c421d7eea99cae3bf156c))
+
+
+### Bug Fixes
+
+* add method for progress types mapping ([#998](https://github.com/railroadmedia/musora-content-services/issues/998)) ([9830710](https://github.com/railroadmedia/musora-content-services/commit/9830710893e85f3680286fc5abdc23d1cbf47580))
+
 ### [2.164.6](https://github.com/railroadmedia/musora-content-services/compare/v2.164.5...v2.164.6) (2026-06-10)
 
 ### [2.164.5](https://github.com/railroadmedia/musora-content-services/compare/v2.164.4...v2.164.5) (2026-06-10)
