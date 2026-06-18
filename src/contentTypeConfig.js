@@ -73,6 +73,7 @@ export const DEFAULT_FIELDS = [
   'live_event_end_time',
   'enrollment_start_time',
   'enrollment_end_time',
+  'membership_tier',
 ]
 
 // these are identical... why

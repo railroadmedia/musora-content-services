@@ -5,7 +5,7 @@ import { MEMBERSHIP_PERMISSIONS } from '../../../constants/membership-permission
 
 export const NEED_LIFETIME_UPGRADE_FIELD = 'need_lifetime_upgrade' as const
 
-type LifetimeUpgradeDecoratable = AccessDecoratable & { need_access?: boolean }
+type LifetimeUpgradeDecoratable = AccessDecoratable & { need_access?: boolean; membership_tier?: string }
 
 export type WithNeedLifetimeUpgrade<T extends AccessDecoratable> = T & {
   need_lifetime_upgrade: boolean
@@ -24,9 +24,8 @@ export function lifetimeUpgradeDecorator(
     compute: (item) => {
       if (userPermissions?.isAdmin || !hasLifetime || hasPlus) return false
       if (!item.need_access) return false
-      const contentPerms = new Set(item?.permission_id ?? [])
-      return contentPerms.has(MEMBERSHIP_PERMISSIONS.plus)
-    },
+      return item.membership_tier === 'plus'
+      },
   }
 }
 
