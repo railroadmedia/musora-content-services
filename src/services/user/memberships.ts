@@ -47,6 +47,10 @@ export interface UpgradeProduct {
   id: number
   name: string
   sku: string
+  rc_product_ids: {
+    apple: string
+    google: string
+  }
   price: number
   monthly_price: number
   includes_trial: boolean
