@@ -5,6 +5,7 @@ let mockStarted: any = { data: [] }
 let mockCompleted: any = { data: [] }
 let mockCompletedByContentIds: any = { data: [] }
 let mockStartedOrCompleted: any = { data: [] }
+let mockMethodAccessed: any = { data: [] }
 
 const repoMocks = {
   contentProgress: {
@@ -29,6 +30,9 @@ const repoMocks = {
       .fn()
       .mockImplementation(() => Promise.resolve(mockCompletedByContentIds)),
     startedOrCompleted: jest.fn().mockImplementation(() => Promise.resolve(mockStartedOrCompleted)),
+    getSomeProgressWhereLastAccessedFromMethod: jest
+      .fn()
+      .mockImplementation(() => Promise.resolve(mockMethodAccessed)),
   },
 }
 
@@ -39,7 +43,7 @@ jest.mock('../../../src/services/sync/repository-proxy', () => ({
 }))
 
 import { Progress } from '../../../src/services/progress'
-import { COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
+import { COLLECTION_ID_SELF, COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -50,6 +54,7 @@ beforeEach(() => {
   mockCompleted = { data: [] }
   mockCompletedByContentIds = { data: [] }
   mockStartedOrCompleted = { data: [] }
+  mockMethodAccessed = { data: [] }
 })
 
 describe('Progress.state', () => {
@@ -296,5 +301,96 @@ describe('Progress.allStartedOrCompleted', () => {
     expect(args.brand).toBe('drumeo')
     expect(args.updatedAfter).toBeGreaterThanOrEqual(before)
     expect(args.updatedAfter).toBeLessThanOrEqual(after)
+  })
+})
+
+describe('Progress.snapshotByIds', () => {
+  test('returns snapshot keyed by content_id with defaults for missing', async () => {
+    mockProgressRecords = [
+      { content_id: 1, last_interacted_a_la_carte: 111, progress_percent: 50, state: 'started' },
+    ]
+    const result = await Progress.snapshotByIds([1, 2])
+    expect(result.get(1)).toEqual({ last_update: 111, progress: 50, status: 'started' })
+    expect(result.get(2)).toEqual({ last_update: 0, progress: 0, status: '' })
+  })
+
+  test('returns empty defaults when no records match', async () => {
+    const result = await Progress.snapshotByIds([99])
+    expect(result.get(99)).toEqual({ last_update: 0, progress: 0, status: '' })
+  })
+})
+
+describe('Progress.snapshotByRecordIds', () => {
+  test('returns snapshot keyed by record id with defaults for missing', async () => {
+    mockRecordsById = {
+      '1:self:0': { id: '1:self:0', updated_at: 222, progress_percent: 75, state: 'completed' },
+    }
+    const result = await Progress.snapshotByRecordIds(['1:self:0', '2:self:0'])
+    expect(result['1:self:0']).toEqual({ last_update: 222, progress: 75, status: 'completed' })
+    expect(result['2:self:0']).toEqual({ last_update: 0, progress: 0, status: '' })
+  })
+})
+
+describe('Progress.methodAccessedIds', () => {
+  test('returns content_ids from records', async () => {
+    mockMethodAccessed = { data: [{ content_id: 10 }, { content_id: 20 }] }
+    const result = await Progress.methodAccessedIds([10, 20, 30])
+    expect(result).toEqual([10, 20])
+  })
+
+  test('returns empty array when no records', async () => {
+    const result = await Progress.methodAccessedIds([1])
+    expect(result).toEqual([])
+  })
+
+  test('forwards contentIds to repository', async () => {
+    await Progress.methodAccessedIds([5, 6])
+    expect(
+      repoMocks.contentProgress.getSomeProgressWhereLastAccessedFromMethod
+    ).toHaveBeenCalledWith([5, 6])
+  })
+})
+
+describe('Progress.generateRecordId', () => {
+  test('no collection uses SELF defaults', () => {
+    expect(Progress.generateRecordId(123)).toBe(
+      `123:${COLLECTION_TYPE.SELF}:${COLLECTION_ID_SELF}`
+    )
+  })
+
+  test('LP collection returns correct format', () => {
+    expect(
+      Progress.generateRecordId(123, { type: COLLECTION_TYPE.LEARNING_PATH, id: 456 })
+    ).toBe('123:learning-path-v2:456')
+  })
+})
+
+describe('Progress.extractFromRecordId', () => {
+  test('self record id parses correctly', () => {
+    expect(Progress.extractFromRecordId('123:self:0')).toEqual({
+      contentId: 123,
+      collection: { type: 'self', id: 0 },
+    })
+  })
+
+  test('LP record id parses correctly', () => {
+    expect(Progress.extractFromRecordId('456:learning-path-v2:789')).toEqual({
+      contentId: 456,
+      collection: { type: 'learning-path-v2', id: 789 },
+    })
+  })
+
+  test('missing collection type defaults to SELF', () => {
+    expect(Progress.extractFromRecordId('123::')).toEqual({
+      contentId: 123,
+      collection: { type: COLLECTION_TYPE.SELF, id: COLLECTION_ID_SELF },
+    })
+  })
+
+  test('missing collection id defaults to COLLECTION_ID_SELF', () => {
+    expect(Progress.extractFromRecordId('123:self:')).toEqual({
+      contentId: 123,
+      collection: { type: 'self', id: COLLECTION_ID_SELF },
+    })
   })
 })
