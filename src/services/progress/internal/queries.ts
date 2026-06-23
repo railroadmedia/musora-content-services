@@ -1,9 +1,12 @@
 import { db } from '../../sync'
-import { CollectionParameter } from '../../sync/models/ContentProgress'
+import type { ModelSerialized } from '../../sync/serializers'
+import ContentProgress, { CollectionParameter } from '../../sync/models/ContentProgress'
+
+type Selector<V> = (p: ModelSerialized<ContentProgress>) => V
 
 export const getByIds = async <V>(
   contentIds: number[],
-  dataKey: string,
+  selector: Selector<V>,
   defaultValue: V,
   collection?: CollectionParameter
 ): Promise<Map<number, V>> => {
@@ -12,7 +15,7 @@ export const getByIds = async <V>(
   const progress = new Map(contentIds.map((id) => [id, defaultValue]))
   await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then((r) => {
     r.data.forEach((p) => {
-      progress.set(p.content_id, p[dataKey] ?? defaultValue)
+      progress.set(p.content_id, selector(p) ?? defaultValue)
     })
   })
   return progress
@@ -20,22 +23,22 @@ export const getByIds = async <V>(
 
 export const getById = async <V>(
   contentId: number,
-  dataKey: string,
+  selector: Selector<V>,
   defaultValue: V,
   collection?: CollectionParameter
 ): Promise<V> => {
   if (!contentId) return defaultValue
   return db.contentProgress
     .getOneProgressByContentId(contentId, collection)
-    .then((r) => r.data?.[dataKey] ?? defaultValue)
+    .then((r) => (r.data ? selector(r.data) : defaultValue) ?? defaultValue)
 }
 
-export const getByRecordIds = async <V>(ids: string[], dataKey: string, defaultValue: V) => {
+export const getByRecordIds = async <V>(ids: string[], selector: Selector<V>, defaultValue: V) => {
   const progress = Object.fromEntries(ids.map((id) => [id, defaultValue]))
 
   await db.contentProgress.getSomeProgressByRecordIds(ids).then((r) => {
     r.data.forEach((p) => {
-      progress[p.id] = p[dataKey] ?? defaultValue
+      progress[p.id] = selector(p) ?? defaultValue
     })
   })
 

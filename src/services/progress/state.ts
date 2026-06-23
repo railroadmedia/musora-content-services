@@ -4,18 +4,19 @@ import { getById, getByIds, getByRecordIds } from './internal/queries'
 import type { ProgressSnapshot } from './types'
 
 export const state = async (contentId: number, collection?: CollectionParameter) =>
-  getById(contentId, 'state', '', collection)
+  getById(contentId, (p) => p.state as string, '', collection)
 
 export const stateByIds = async (contentIds: number[], collection?: CollectionParameter) =>
-  getByIds(contentIds, 'state', '', collection)
+  getByIds(contentIds, (p) => p.state as string, '', collection)
 
-export const stateByRecordIds = async (ids: string[]) => getByRecordIds(ids, 'state', '')
+export const stateByRecordIds = async (ids: string[]) =>
+  getByRecordIds(ids, (p) => p.state as string, '')
 
 export const playbackPositionByIds = async (contentIds: number[], collection?: CollectionParameter) =>
-  getByIds(contentIds, 'resume_time_seconds', 0, collection)
+  getByIds(contentIds, (p) => p.resume_time_seconds ?? 0, 0, collection)
 
 export const playbackPositionByRecordIds = async (ids: string[]) =>
-  getByRecordIds(ids, 'resume_time_seconds', 0)
+  getByRecordIds(ids, (p) => p.resume_time_seconds ?? 0, 0)
 
 export const lastInteractedOf = (
   contentIds: number[],

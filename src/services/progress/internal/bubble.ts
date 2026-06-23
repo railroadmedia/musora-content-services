@@ -85,7 +85,7 @@ export const bubbleProgress = async (
   collection?: CollectionParameter
 ): Promise<Record<number, number>> => {
   const ids = getAncestorAndSiblingIds(hierarchy, contentId)
-  const progresses = await getByIds(ids, 'progress_percent', 0, collection)
+  const progresses = await getByIds(ids, (p) => p.progress_percent, 0, collection)
   return averageProgressesFor(hierarchy, contentId, progresses)
 }
 
