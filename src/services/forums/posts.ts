@@ -3,7 +3,7 @@
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import { ForumPost } from './types'
+import { ForumPost, WhoLikedParams, WhoLikedResponse } from './types'
 import { PaginatedResponse } from '../api/types'
 import { markThreadAsRead } from './threads'
 
@@ -126,6 +126,33 @@ export async function likePost(postId: number, brand: string): Promise<void> {
     brand,
     content_url: contentUrl
   })
+}
+
+/**
+ * Fetch the list of users who liked a forum post.
+ *
+ * @param {number} postId - The ID of the post.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @param {WhoLikedParams} [params] - Optional pagination parameters.
+ * @returns {Promise<WhoLikedResponse>} - A promise that resolves to the paginated list of likers.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function whoLikedPost(
+  postId: number,
+  brand: string,
+  params: WhoLikedParams = {}
+): Promise<WhoLikedResponse> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const queryObj: Record<string, string> = {
+    brand,
+    ...Object.fromEntries(
+      Object.entries({ page: 1, limit: 20, ...params })
+        .filter(([_, v]) => v !== undefined && v !== null)
+        .map(([k, v]) => [k, String(v)])
+    ),
+  }
+  const query = new URLSearchParams(queryObj).toString()
+  return httpClient.get<WhoLikedResponse>(`${baseUrl}/v1/posts/${postId}/likes?${query}`)
 }
 
 /**

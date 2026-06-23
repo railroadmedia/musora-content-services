@@ -34,10 +34,7 @@ export const getAncestorAndSiblingIds = (
   const parentId = hierarchy?.parents?.[contentId]
   if (!parentId) return []
 
-  if (parentId === contentId) {
-    console.error('Circular dependency detected for contentId', contentId)
-    return []
-  }
+  if (parentId === contentId) return []
 
   const siblingIds = hierarchy?.children?.[parentId] ?? []
   const allIds = [
@@ -88,7 +85,7 @@ export const bubbleProgress = async (
   collection?: CollectionParameter
 ): Promise<Record<number, number>> => {
   const ids = getAncestorAndSiblingIds(hierarchy, contentId)
-  const progresses = await getByIds(ids, (p) => p.progress_percent, 0, collection)
+  const progresses = await getByIds(ids, 'progress_percent', 0, collection)
   return averageProgressesFor(hierarchy, contentId, progresses)
 }
 
@@ -111,7 +108,7 @@ export interface BubbleAndTrickleOptions {
 export const bubbleAndTrickleProgressesSafely = async (
   progresses: Record<number, number>,
   metadata: Record<number, ProgressMetadata>,
-  options: BubbleAndTrickleOptions = {},
+  options: BubbleAndTrickleOptions = { accessedDirectly: true },
   collection?: CollectionParameter
 ): Promise<void> => {
   let eraseProgresses: Record<number, number> = {}

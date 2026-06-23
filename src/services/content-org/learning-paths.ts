@@ -222,7 +222,7 @@ export async function resetAllLearningPaths() {
  * @param {number} learningPathId - The learning path ID
  * @returns {Promise<Object>} Learning path with enriched lesson data
  */
-export async function getEnrichedLearningPath(learningPathId) {
+export async function getEnrichedLearningPath(learningPathId: number) {
   let response = (await addContextToLearningPaths(
     fetchByRailContentId,
     learningPathId,
@@ -548,7 +548,7 @@ export async function completeLearningPathIntroVideo(
   let lateMethodSetup = false
   // check if the method intro was watched elsewhere; then we have to give user active path for this brand.
   if (anyIntroComplete && !activePath) {
-    completeMethodIntroVideo(null, brand) // no need to await.
+    await completeMethodIntroVideo(null, brand)
     lateMethodSetup = true
   }
 
@@ -662,4 +662,31 @@ export async function mapLearningPathParentsTo(objects: any[], fieldsToMap?: {
       parentContentId: fieldsToMap.parent_id ? parent_id : undefined,
     })
   })
+}
+
+export function isNextLessonLocked(learningPath: fetchLearningPathLessonsResponse): boolean {
+  const allLearningPathDailies = [
+    ...(learningPath?.previous_learning_path_dailies ?? []),
+    ...(learningPath?.learning_path_dailies ?? []),
+    ...(learningPath?.next_learning_path_dailies ?? []),
+  ]
+
+  if (allLearningPathDailies.length === 0) return false
+
+  const allDailiesCompleted = allLearningPathDailies.every(
+    (lesson) => lesson?.progressStatus === 'completed'
+  )
+
+  if (allDailiesCompleted) {
+    const nextLesson = learningPath?.upcoming_lessons?.[0]
+    return nextLesson?.need_access === true
+  }
+
+  const accessibleDailies = allLearningPathDailies.filter(
+    (lesson) => lesson?.need_access === false
+  )
+
+  if (accessibleDailies.length === allLearningPathDailies.length) return false
+
+  return accessibleDailies.every((lesson) => lesson.progressStatus === 'completed')
 }
