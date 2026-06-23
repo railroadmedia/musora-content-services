@@ -44,3 +44,18 @@ export const getByRecordIds = async <V>(ids: string[], selector: Selector<V>, de
 
   return progress
 }
+
+export const queryById =
+  <V>(selector: Selector<V>, defaultValue: V) =>
+  (contentId: number, collection?: CollectionParameter) =>
+    getById(contentId, selector, defaultValue, collection)
+
+export const queryByIds =
+  <V>(selector: Selector<V>, defaultValue: V) =>
+  (contentIds: number[], collection?: CollectionParameter) =>
+    getByIds(contentIds, selector, defaultValue, collection)
+
+export const queryByRecordIds =
+  <V>(selector: Selector<V>, defaultValue: V) =>
+  (ids: string[]) =>
+    getByRecordIds(ids, selector, defaultValue)

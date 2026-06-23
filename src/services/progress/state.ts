@@ -1,22 +1,14 @@
 import { db } from '../sync'
 import { COLLECTION_TYPE, CollectionParameter } from '../sync/models/ContentProgress'
-import { getById, getByIds, getByRecordIds } from './internal/queries'
+import { queryById, queryByIds, queryByRecordIds } from './internal/queries'
 import type { ProgressSnapshot } from './types'
 
-export const state = async (contentId: number, collection?: CollectionParameter) =>
-  getById(contentId, (p) => p.state as string, '', collection)
+export const state = queryById((p) => p.state as string, '')
+export const stateByIds = queryByIds((p) => p.state as string, '')
+export const stateByRecordIds = queryByRecordIds((p) => p.state as string, '')
 
-export const stateByIds = async (contentIds: number[], collection?: CollectionParameter) =>
-  getByIds(contentIds, (p) => p.state as string, '', collection)
-
-export const stateByRecordIds = async (ids: string[]) =>
-  getByRecordIds(ids, (p) => p.state as string, '')
-
-export const playbackPositionByIds = async (contentIds: number[], collection?: CollectionParameter) =>
-  getByIds(contentIds, (p) => p.resume_time_seconds ?? 0, 0, collection)
-
-export const playbackPositionByRecordIds = async (ids: string[]) =>
-  getByRecordIds(ids, (p) => p.resume_time_seconds ?? 0, 0)
+export const playbackPositionByIds = queryByIds((p) => p.resume_time_seconds ?? 0, 0)
+export const playbackPositionByRecordIds = queryByRecordIds((p) => p.resume_time_seconds ?? 0, 0)
 
 export const lastInteractedOf = (
   contentIds: number[],
