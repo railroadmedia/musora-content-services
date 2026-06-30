@@ -877,9 +877,12 @@ function createTypeConditions(lessonTypes) {
  */
 const filterHandlers = {
   style: (value) => {
-    return (value === 'Latin/World')
-      ? (`("Latin" in genre[]->name || "World" in genre[]->name)`)
-      : (`"${value}" in genre[]->name`)
+    const hasMultipleStyles = value.includes('/')
+    const styles = [value]
+    if (hasMultipleStyles) {
+      styles.push(...value.split('/').map((s) => s.trim()))
+    }
+    return styles.map((style) => `"${style}" in genre[]->name`).join(' || ')
   },
 
   difficulty: (value) => {
