@@ -876,7 +876,14 @@ function createTypeConditions(lessonTypes) {
  * Filter handler registry - maps filter keys to their handler functions
  */
 const filterHandlers = {
-  style: (value) => `"${value}" in genre[]->name`,
+  style: (value) => {
+    const hasMultipleStyles = value.includes('/')
+    const styles = [value]
+    if (hasMultipleStyles) {
+      styles.push(...value.split('/').map((s) => s.trim()))
+    }
+    return styles.map((style) => `"${style}" in genre[]->name`).join(' || ')
+  },
 
   difficulty: (value) => {
     return `difficulty_string == "${value}"`
