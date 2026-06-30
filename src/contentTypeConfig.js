@@ -876,7 +876,11 @@ function createTypeConditions(lessonTypes) {
  * Filter handler registry - maps filter keys to their handler functions
  */
 const filterHandlers = {
-  style: (value) => `"${value}" in genre[]->name`,
+  style: (value) => {
+    return (value === 'Latin/World')
+      ? (`("Latin" in genre[]->name || "World" in genre[]->name)`)
+      : (`"${value}" in genre[]->name`)
+  },
 
   difficulty: (value) => {
     return `difficulty_string == "${value}"`
