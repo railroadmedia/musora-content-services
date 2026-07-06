@@ -18,6 +18,7 @@ const perms = {
   isAdmin: false,
   isModerator: false,
   isABasicMember: false,
+  hasAllContentAccess: false,
 }
 
 describe('need-access decorator', () => {

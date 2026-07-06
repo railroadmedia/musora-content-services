@@ -899,14 +899,14 @@ export async function fetchAllFilterOptions(
   const progressFilter = progressIds ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
   const adapter = getPermissionsAdapter()
   const userPermissionsData = await adapter.fetchUserPermissions()
-  const isAdmin = adapter.isAdmin(userPermissionsData)
+  const hasAllContentAccess = adapter.hasAllContentAccess(userPermissionsData)
 
   const constructCommonFilter = (excludeFilter) => {
     const filterWithoutOption = excludeFilter
       ? filtersToGroq(filters, excludeFilter)
       : includedFieldsFilter
     const statusFilter = ' && status == "published"'
-    const includeStatusFilter = !isAdmin && !['instructor', 'artist', 'genre'].includes(contentType)
+    const includeStatusFilter = !hasAllContentAccess && !['instructor', 'artist', 'genre'].includes(contentType)
 
     return coachId
       ? `brand == '${brand}' && status == "published" && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''} ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}`
@@ -2117,14 +2117,14 @@ export async function fetchTabData(
   // Check if user is admin to determine available content statuses
   const adapter = getPermissionsAdapter()
   const userData = await adapter.fetchUserPermissions()
-  const isAdminORModerator = adapter.isAdmin(userData) || adapter.isModerator(userData)
+  const hasAllContentAccess = adapter.hasAllContentAccess(userData)
 
   const filterWithRestrictions = await new FilterBuilder(filter, {
     showMembershipRestrictedContent: true,
-    availableContentStatuses: isAdminORModerator
+    availableContentStatuses: hasAllContentAccess
       ? CONTENT_STATUSES.ADMIN_ALL
       : CONTENT_STATUSES.PUBLISHED_ONLY,
-    pullFutureContent: isAdminORModerator ? true : false,
+    pullFutureContent: hasAllContentAccess
   }).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
