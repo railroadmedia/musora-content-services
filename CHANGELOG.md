@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.167.0](https://github.com/railroadmedia/musora-content-services/compare/v2.165.5...v2.167.0) (2026-07-13)
+
+
+### Features
+
+* **BEHLPT-186:**  subscription upgrade endpoints ([#1003](https://github.com/railroadmedia/musora-content-services/issues/1003)) ([9da55f2](https://github.com/railroadmedia/musora-content-services/commit/9da55f24708976190317a3b69381acbccce2f33c))
+
+
+### Bug Fixes
+
+* **BR-658:** add playbass logo for ceritificates ([#1006](https://github.com/railroadmedia/musora-content-services/issues/1006)) ([da52391](https://github.com/railroadmedia/musora-content-services/commit/da5239178c3526c685b84220009f1f4e0774deb9))
+* **BR-671:** fix Latin/World style search ([#1002](https://github.com/railroadmedia/musora-content-services/issues/1002)) ([25fdff8](https://github.com/railroadmedia/musora-content-services/commit/25fdff80c6279e8568ea057ac250f7e057717ccf))
+
 ## [2.166.0](https://github.com/railroadmedia/musora-content-services/compare/v2.165.5...v2.166.0) (2026-07-02)
 
 
