@@ -27,7 +27,7 @@ describe('sendAccountSetupEmail', () => {
 
     expect(mockPost).toHaveBeenCalledWith(
       '/api/user-management-system/v1/accounts/user%40example.com/send-setup-email',
-      { token: 'abc123' }
+      { token: 'abc123', has_skipped_paywall: false }
     )
   })
 
@@ -38,7 +38,7 @@ describe('sendAccountSetupEmail', () => {
 
     expect(mockPost).toHaveBeenCalledWith(
       '/api/user-management-system/v1/accounts/user%40example.com/send-setup-email',
-      { token: undefined }
+      { token: undefined, has_skipped_paywall: false }
     )
   })
 
@@ -49,7 +49,18 @@ describe('sendAccountSetupEmail', () => {
 
     expect(mockPost).toHaveBeenCalledWith(
       '/api/user-management-system/v1/accounts/user%2Btag%40example.com/send-setup-email',
-      { token: 'tok' }
+      { token: 'tok', has_skipped_paywall: false }
+    )
+  })
+
+  it('posts has_skipped_paywall true when set in options', async () => {
+    mockPost.mockResolvedValueOnce(undefined)
+
+    await sendAccountSetupEmail('user@example.com', 'abc123', { has_skipped_paywall: true })
+
+    expect(mockPost).toHaveBeenCalledWith(
+      '/api/user-management-system/v1/accounts/user%40example.com/send-setup-email',
+      { token: 'abc123', has_skipped_paywall: true }
     )
   })
 })
