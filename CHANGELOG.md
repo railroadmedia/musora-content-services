@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.167.1](https://github.com/railroadmedia/musora-content-services/compare/v2.167.0...v2.167.1) (2026-07-13)
+
+
+### Bug Fixes
+
+* **accounts:** allow confirmation email for extra options ([5437d11](https://github.com/railroadmedia/musora-content-services/commit/5437d114437dbe5b4e316ebc440ce957cd9a496c))
+
 ## [2.167.0](https://github.com/railroadmedia/musora-content-services/compare/v2.165.5...v2.167.0) (2026-07-13)
 
 
