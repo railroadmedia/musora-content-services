@@ -89,6 +89,7 @@ export interface User {
   first_access_at: string
   is_challenge_owner: number
   login_as_users: boolean
+  badge: string | null
 }
 
 export interface AuthResponse {
