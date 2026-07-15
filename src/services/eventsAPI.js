@@ -3,7 +3,7 @@ import {fetchLiveEvent} from "./sanity"
 import { DataContext, PollingStateVersionKey } from './dataContext'
 
 const pollingStateContext = new DataContext(PollingStateVersionKey, fetchLiveEventPollingState)
-const notificationPollingIntervalMs = 60000
+const NOTIFICATION_POLLING_INTERVAL_MS = 60_000
 
 /**
  * API for managing notifications and live event polling.
@@ -100,7 +100,7 @@ class EventsAPI {
 
     this.pollingInterval = setInterval(() => {
       this.checkNotifications();
-    }, notificationPollingIntervalMs);
+    }, NOTIFICATION_POLLING_INTERVAL_MS);
   }
 
   /**
