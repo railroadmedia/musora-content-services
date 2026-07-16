@@ -316,9 +316,11 @@ import {
 } from './services/reporting/reporting.ts';
 
 import {
+	blockContentToHtml,
 	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
+	fetchAllPublicAnnouncements,
 	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
@@ -343,6 +345,7 @@ import {
 	fetchPackData,
 	fetchParentChildRelationshipsFor,
 	fetchPlayAlongsCount,
+	fetchPublicAnnouncement,
 	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -521,6 +524,7 @@ export {
 	applyCloudflareWrapper,
 	applySanityTransformations,
 	assignModeratorToComment,
+	blockContentToHtml,
 	blockUser,
 	blockedUsers,
 	buildEntityAndTotalQuery,
@@ -572,6 +576,7 @@ export {
 	extractSanityUrl,
 	fetchAll,
 	fetchAllFilterOptions,
+	fetchAllPublicAnnouncements,
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
@@ -634,6 +639,7 @@ export {
 	fetchPlaylistItems,
 	fetchPost,
 	fetchPosts,
+	fetchPublicAnnouncement,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,

@@ -312,9 +312,11 @@ import {
 } from './services/reporting/reporting.ts';
 
 import {
+	blockContentToHtml,
 	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
+	fetchAllPublicAnnouncements,
 	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
@@ -339,6 +341,7 @@ import {
 	fetchPackData,
 	fetchParentChildRelationshipsFor,
 	fetchPlayAlongsCount,
+	fetchPublicAnnouncement,
 	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -522,6 +525,7 @@ declare module 'musora-content-services' {
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
+		blockContentToHtml,
 		blockUser,
 		blockedUsers,
 		buildEntityAndTotalQuery,
@@ -573,6 +577,7 @@ declare module 'musora-content-services' {
 		extractSanityUrl,
 		fetchAll,
 		fetchAllFilterOptions,
+		fetchAllPublicAnnouncements,
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
@@ -635,6 +640,7 @@ declare module 'musora-content-services' {
 		fetchPlaylistItems,
 		fetchPost,
 		fetchPosts,
+		fetchPublicAnnouncement,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
