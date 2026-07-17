@@ -1,5 +1,5 @@
 import { initializeTestService } from '../initializeTests.js'
-import { blockContentToHtml, fetchPublicAnnouncement } from '../../src/services/sanity.js'
+import { blockContentToHtml, fetchPublicAnnouncement } from '../../src/services/notifications/public-announcements'
 import { globalConfig } from '../../src/services/config.js'
 
 const TEST_PROJECT_ID = 'test-project'
@@ -140,7 +140,7 @@ describe('fetchPublicAnnouncement', () => {
           },
         ],
       }),
-    })
+    }) as jest.Mock
 
     const announcement = await fetchPublicAnnouncement('heads-up')
 
@@ -151,7 +151,7 @@ describe('fetchPublicAnnouncement', () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ result: [] }),
-    })
+    }) as jest.Mock
 
     const announcement = await fetchPublicAnnouncement('missing-slug')
 
