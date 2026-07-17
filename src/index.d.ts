@@ -369,6 +369,49 @@ import {
 } from './services/search.ts';
 
 import {
+	resolveSmartEmbed,
+	resolveSmartEmbeds,
+	resolveSmartEmbedsFromUrls
+} from './services/smart-embeds/contentResolver.ts';
+
+import {
+	isValidBrand
+} from './services/smart-embeds/domains.ts';
+
+import {
+	INTERNAL_DOMAINS,
+	VALID_BRANDS,
+	enrichWithViewerState,
+	extractUrlsFromText,
+	getViewerState,
+	getViewerStates,
+	isInternalUrl,
+	isValidBrand,
+	parseContentUrl,
+	parseMultipleUrls,
+	processSmartEmbedUrls,
+	processSmartEmbedsFromText,
+	resolveSmartEmbed,
+	resolveSmartEmbeds,
+	resolveSmartEmbedsFromUrls,
+	sanitizeUrl
+} from './services/smart-embeds/index.ts';
+
+import {
+	extractUrlsFromText,
+	isInternalUrl,
+	parseContentUrl,
+	parseMultipleUrls,
+	sanitizeUrl
+} from './services/smart-embeds/urlParser.ts';
+
+import {
+	enrichWithViewerState,
+	getViewerState,
+	getViewerStates
+} from './services/smart-embeds/viewerState.ts';
+
+import {
 	clearState
 } from './services/state.ts';
 
@@ -512,9 +555,11 @@ import {
 
 declare module 'musora-content-services' {
 	export {
+		INTERNAL_DOMAINS,
 		PermissionsAdapter,
 		PermissionsV1Adapter,
 		PermissionsV2Adapter,
+		VALID_BRANDS,
 		acceptInvite,
 		addContextToContent,
 		addContextToLearningPaths,
@@ -568,9 +613,13 @@ declare module 'musora-content-services' {
 		duplicatePlaylist,
 		editComment,
 		emitProgressSaved,
+		enrichWithViewerState,
+		enrichWithViewerState,
 		enrollUserInGuidedCourse,
 		extractFromRecordId,
 		extractSanityUrl,
+		extractUrlsFromText,
+		extractUrlsFromText,
 		fetchAll,
 		fetchAllFilterOptions,
 		fetchArtistBySlug,
@@ -741,6 +790,10 @@ declare module 'musora-content-services' {
 		getUserPinProgressKey,
 		getUserSignature,
 		getUserWeeklyStats,
+		getViewerState,
+		getViewerState,
+		getViewerStates,
+		getViewerStates,
 		getWeekNumber,
 		globalConfig,
 		grant30DaysAccessForLifetime,
@@ -752,11 +805,15 @@ declare module 'musora-content-services' {
 		isBucketUrl,
 		isContentLiked,
 		isContentLikedByIds,
+		isInternalUrl,
+		isInternalUrl,
 		isNextDay,
 		isNextLessonLocked,
 		isSameDate,
 		isUserFreeTier,
 		isUsernameAvailable,
+		isValidBrand,
+		isValidBrand,
 		jumpToContinueContent,
 		jumpToPost,
 		likeComment,
@@ -778,10 +835,16 @@ declare module 'musora-content-services' {
 		openComment,
 		otherStats,
 		otherStatsOffline,
+		parseContentUrl,
+		parseContentUrl,
+		parseMultipleUrls,
+		parseMultipleUrls,
 		pauseLiveEventPolling,
 		pinProgressRow,
 		pinThread,
 		postPlaylistContentEngaged,
+		processSmartEmbedUrls,
+		processSmartEmbedsFromText,
 		rankCategories,
 		rankItems,
 		recommendations,
@@ -805,6 +868,12 @@ declare module 'musora-content-services' {
 		resetAllAwards,
 		resetAllLearningPaths,
 		resetPassword,
+		resolveSmartEmbed,
+		resolveSmartEmbed,
+		resolveSmartEmbeds,
+		resolveSmartEmbeds,
+		resolveSmartEmbedsFromUrls,
+		resolveSmartEmbedsFromUrls,
 		restoreComment,
 		restoreItemFromPlaylist,
 		restoreNotification,
@@ -812,6 +881,8 @@ declare module 'musora-content-services' {
 		restorePurchases,
 		restoreUserActivity,
 		restoreUserPractice,
+		sanitizeUrl,
+		sanitizeUrl,
 		search,
 		searchAlgolia,
 		sendAccountSetupEmail,
