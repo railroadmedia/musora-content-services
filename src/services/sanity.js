@@ -41,7 +41,6 @@ import {
   processMetadata,
 } from '../contentMetaData.js'
 import { GET } from '../infrastructure/http/HttpClient.ts'
-import { toHTML } from '@portabletext/to-html'
 
 import { globalConfig } from './config.js'
 
@@ -1844,36 +1843,6 @@ function arrayJoinWithQuotes(array, delimiter = ',') {
   return wrapped.join(delimiter)
 }
 
-function sanityImageRefToUrl(ref) {
-  const match = ref?.match(/^image-([a-f0-9]+)-(\d+x\d+)-(\w+)$/)
-  if (!match) {
-    return null
-  }
-  const [, assetId, dimensions, format] = match
-  const { projectId, dataset } = globalConfig.sanityConfig
-  return `https://cdn.sanity.io/images/${projectId}/${dataset}/${assetId}-${dimensions}.${format}`
-}
-
-/**
- * @param {Array<Object>} blocks - Sanity Portable Text / block content array
- * @returns {string} HTML string
- */
-export function blockContentToHtml(blocks) {
-  if (!blocks) {
-    return ''
-  }
-  return toHTML(blocks, {
-    components: {
-      types: {
-        image: ({ value }) => {
-          const url = sanityImageRefToUrl(value?.asset?._ref)
-          return url ? `<img src="${url}" />` : ''
-        },
-      },
-    },
-  })
-}
-
 export function getSanityDate(date, roundToHourForCaching = true) {
   if (roundToHourForCaching) {
     // We need to set the published on filter date to be a round time so that it doesn't bypass the query cache
@@ -2691,65 +2660,4 @@ export async function hasAnyMethodV2IntroCompleted() {
 function applyPermissionSort(sortOrder, permissionIds) {
   const idsString = permissionIds.join(',')
   return `select(count(permission_v2[@ in [${idsString}]]) > 0 => 1, 0) desc, ${sortOrder}`
-}
-
-/**
- * @typedef {Object} PublicAnnouncement
- * @property {string} [title]
- * @property {string} [slug]
- * @property {string} [published_on]
- * @property {string} [message]
- */
-
-/**
- * Fetches a specific public announcement by slug, or by default the most recent published one.
- * @param {string} slug
- * @returns {Promise<PublicAnnouncement|null>} The public announcement object or null if not found
- */
-export async function fetchPublicAnnouncement(slug) {
-  const now = getSanityDate(new Date())
-
-  //verify slug is a string
-  const slugString = typeof slug === 'string'
-    ? `&& slug.current == '${slug}'`
-    : ''
-
-  // grab the specific one by slug, or the most recent one if no slug is provided
-  const query = `*[_type == 'public-announcement' && published_on <= '${now}' ${slugString}]
-    {
-      title,
-      'slug': slug.current,
-      published_on,
-      message
-    }
-    | order(published_on desc)`
-
-  const result = await fetchSanity(query, false, {processNeedAccess: false, processPageType: false})
-
-  if (result?.message) {
-    result.message = blockContentToHtml(result.message)
-  }
-
-  return result
-}
-
-/**
- * Fetches all public announcements published within the last `spanDays` days (default 1 year).
- * @param spanDays - Number of days to look back for public announcements (default: 1 year)
- * @returns {Promise<PublicAnnouncement[]|null>}
- */
-export async function fetchAllPublicAnnouncements(spanDays = 365) {
-  const rawNow = new Date()
-  const nowDate = getSanityDate(rawNow)
-  const startDate = getSanityDate(new Date(rawNow - spanDays * 24 * 60 * 60 * 1000))
-
-  const query = `*[_type == 'public-announcement' && published_on >= '${startDate}' && published_on <= '${nowDate}']
-    {
-      title,
-      'slug': slug.current,
-      published_on
-    }
-    | order(published_on desc)`
-
-  return await fetchSanity(query, true, {processNeedAccess: false, processPageType: false})
 }
