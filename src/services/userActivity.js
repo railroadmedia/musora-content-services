@@ -821,6 +821,7 @@ async function formatPracticeMeta(practices = []) {
       sanity_type: content?.type || null,
       content_slug: content?.slug || null,
       parent_id: content?.parent_id || null,
+      learningPathId: content?.learning_path_id || null,
       navigateTo: content?.navigateTo || null,
       artist_name: content?.artist_name || null,
     }
