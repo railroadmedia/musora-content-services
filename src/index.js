@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 import {
@@ -454,7 +454,7 @@ import {
 	restoreNotification,
 	startLiveEventPolling,
 	updateNotificationSetting
-} from './services/user/notifications.js';
+} from './services/notifications/notifications.js';
 
 import {
 	getOnboardingRecommendedContent,

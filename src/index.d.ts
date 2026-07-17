@@ -450,7 +450,7 @@ import {
 	restoreNotification,
 	startLiveEventPolling,
 	updateNotificationSetting
-} from './services/user/notifications.js';
+} from './services/notifications/notifications.js';
 
 import {
 	getOnboardingRecommendedContent,
@@ -510,7 +510,7 @@ import {
 } from './services/whoLiked.ts';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
