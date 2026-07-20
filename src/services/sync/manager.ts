@@ -152,7 +152,7 @@ export default class SyncManager {
       () => this.initDatabase(this.userScope)
     )
     this.database = database
-    this.teardownIntrospection = setupIntrospection(database, this.IntrospectionCompressionWorker)
+    this.teardownIntrospection = setupIntrospection(this.context, database, this.IntrospectionCompressionWorker)
 
     Object.entries(this.storeConfigsRegistry).forEach(([table, storeConfig]) => {
       this.storesRegistry[table] = this.createStore(storeConfig, database)
@@ -315,6 +315,6 @@ export default class SyncManager {
     if (!this.database) {
       throw new SyncError('Cannot trigger introspection dump - database not available')
     }
-    return triggerManualDump(this.database, this.IntrospectionCompressionWorker)
+    return triggerManualDump(this.database, this.context, this.IntrospectionCompressionWorker)
   }
 }
