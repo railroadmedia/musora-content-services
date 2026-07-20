@@ -5,6 +5,8 @@ import { compressInWorker } from './compression'
 import { globalConfig } from '../../config.js'
 import SyncContext from '../context'
 import type SyncStore from '../store'
+import { readPersistedTables } from './persisted-tables'
+import { createEventBatcher, DiagnosticEvent } from './event-batcher'
 
 export type DumpMode = 'off' | 'interval'
 export type EventMode = 'off' | 'debounced_write' | 'interval'
@@ -39,7 +41,7 @@ function tableForModelName(modelName: string): string {
   return (models as Record<string, { table: string }>)[modelName].table
 }
 
-async function readTables(database: Database, modelNames: string[]): Promise<Record<string, unknown[]>> {
+async function readTablesFromLiveCache(database: Database, modelNames: string[]): Promise<Record<string, unknown[]>> {
   const entries = await Promise.all(
     modelNames.map(async (modelName) => {
       const records = await database.collections.get(tableForModelName(modelName)).query().fetch()
@@ -47,6 +49,19 @@ async function readTables(database: Database, modelNames: string[]): Promise<Rec
     })
   )
   return Object.fromEntries(entries)
+}
+
+function isLokiAdapter(adapter: any) {
+  return adapter?._driver && 'loki' in adapter._driver
+}
+
+async function readTables(database: Database, modelNames: string[]): Promise<Record<string, unknown[]>> {
+  if (!isLokiAdapter(database.adapter.underlyingAdapter)) {
+    return readTablesFromLiveCache(database, modelNames)
+  }
+
+  const byTable = await readPersistedTables(database.adapter.dbName, modelNames.map(tableForModelName))
+  return Object.fromEntries(modelNames.map((modelName) => [modelName, byTable[tableForModelName(modelName)]]))
 }
 
 async function uploadSnapshot(payload: string, context: SyncContext): Promise<void> {
@@ -94,42 +109,62 @@ function diffRaw(current: Record<string, unknown>, previous: Record<string, unkn
   return diff
 }
 
-function handleWriteEvents(modelName: string, op: 'upserted' | 'deleted', events: [unknown, unknown][]) {
-  if (op === 'upserted') {
-    const diffs = (events as [{ _raw: Record<string, unknown> }, Record<string, unknown> | null][]).map(
-      ([record, previous]) => diffRaw(record._raw, previous)
-    )
-    console.log(modelName, op, diffs)
-    return
-  }
-
-  console.log(modelName, op, events)
+function buildDiagnosticEvents(
+  tableName: string,
+  op: 'upserted' | 'deleted' | 'restored',
+  events: [unknown, unknown][],
+  timestamp: number
+): DiagnosticEvent[] {
+  return op === 'deleted'
+    ? (events as [string, Record<string, unknown> | null][]).map(([id, previous]) => ({
+        model_name: tableName,
+        record_id: id,
+        op,
+        changed_fields: diffRaw({}, previous),
+        client_created_at: timestamp,
+      }))
+    : (events as [{ id: string; _raw: Record<string, unknown> }, Record<string, unknown> | null][]).map(
+        ([record, previous]) => ({
+          model_name: tableName,
+          record_id: record.id,
+          op,
+          changed_fields: diffRaw(record._raw, previous),
+          client_created_at: timestamp,
+        })
+      )
 }
 
-async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<any>>) {
+async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<any>>, context: SyncContext) {
   const config = await fetchConfig()
   const activeModelNames = Object.entries(config)
     .filter(([, modelConfig]) => modelConfig.eventMode !== 'off')
     .map(([modelName]) => modelName)
 
+  const batcher = createEventBatcher(context)
+
   const unsubscribes = activeModelNames.flatMap((modelName) => {
-    const store = storesRegistry[tableForModelName(modelName)]
+    const tableName = tableForModelName(modelName)
+    const store = storesRegistry[tableName]
     if (!store) return []
 
     return [
-      store.on('upserted', (records) => handleWriteEvents(modelName, 'upserted', records)),
-      store.on('deleted', (ids) => handleWriteEvents(modelName, 'deleted', ids)),
+      store.on('upserted', (records) => batcher.queue(buildDiagnosticEvents(tableName, 'upserted', records, Date.now()))),
+      store.on('deleted', (ids) => batcher.queue(buildDiagnosticEvents(tableName, 'deleted', ids, Date.now()))),
+      store.on('restored', (records) => batcher.queue(buildDiagnosticEvents(tableName, 'restored', records, Date.now()))),
     ]
   })
 
-  return () => unsubscribes.forEach((unsubscribe) => unsubscribe())
+  return () => {
+    unsubscribes.forEach((unsubscribe) => unsubscribe())
+    batcher.flush()
+  }
 }
 
 export default function setup(context: SyncContext, database: Database, storesRegistry: Record<string, SyncStore<any>>, CompressionWorker?: CompressionWorkerConstructor) {
   let timer: ReturnType<typeof setTimeout> | null = null
   let unsubscribeWriteEvents: (() => void) | null = null
 
-  subscribeToWriteEvents(storesRegistry).then((unsubscribe) => {
+  subscribeToWriteEvents(storesRegistry, context).then((unsubscribe) => {
     unsubscribeWriteEvents = unsubscribe
   })
 
