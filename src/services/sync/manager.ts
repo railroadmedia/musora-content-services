@@ -152,11 +152,12 @@ export default class SyncManager {
       () => this.initDatabase(this.userScope)
     )
     this.database = database
-    this.teardownIntrospection = setupIntrospection(this.context, database, this.IntrospectionCompressionWorker)
 
     Object.entries(this.storeConfigsRegistry).forEach(([table, storeConfig]) => {
       this.storesRegistry[table] = this.createStore(storeConfig, database)
     })
+
+    this.teardownIntrospection = setupIntrospection(this.context, database, this.storesRegistry, this.IntrospectionCompressionWorker)
 
     this.context.start()
     this.retry.start()

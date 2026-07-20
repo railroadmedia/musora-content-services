@@ -17,9 +17,12 @@ import type LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { SyncError } from '../errors'
 import type { SyncPull, SyncPush, BlockingState } from '../fetch'
 
+export type SyncStoreUpsertEvent<TModel extends BaseModel> = [record: TModel, previous: TModel['_raw'] | null]
+export type SyncStoreDeleteEvent<TModel extends BaseModel> = [id: RecordId, previous: TModel['_raw'] | null]
+
 type SyncStoreEvents<TModel extends BaseModel> = {
-  upserted: [TModel[]]
-  deleted: [RecordId[]]
+  upserted: [SyncStoreUpsertEvent<TModel>[]]
+  deleted: [SyncStoreDeleteEvent<TModel>[]]
   pullCompleted: []
   pushCompleted: []
   failedPush: []
@@ -234,7 +237,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         span.setAttribute('records.ids', [r.id])
         return r
       })
-      this.emit('upserted', [record])
+      this.emit('upserted', [[record, null]])
 
       this.pushUnsyncedWithRetry(parentSpan, { type: 'insertOne', recordId: record.id })
       await this.ensurePersistence()
@@ -251,11 +254,13 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         throw new SyncError('Record not found', { id })
       }
 
+      const previous = { ...found._raw }
+
       const record = await this.paranoidWrite(parentSpan, async (_writer, span) => {
         span.setAttribute('records.ids', [id])
         return found.update(builder)
       })
-      this.emit('upserted', [record])
+      this.emit('upserted', [[record, previous]])
 
       this.pushUnsyncedWithRetry(parentSpan, { type: 'updateOneId', recordIds: record.id })
       await this.ensurePersistence()
@@ -270,6 +275,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return await this.runScope.abortable(async () => {
       const ids = Object.keys(builders)
 
+      const previousById = new Map<RecordId, TModel['_raw']>()
+
       const records = await this.paranoidWrite(parentSpan, async (writer, span) => {
         span.setAttribute('records.ids', ids)
 
@@ -277,6 +284,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           return this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
         })
         const existingMap = existing.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
+        existing.forEach(record => previousById.set(record.id, { ...record._raw }))
         const destroyedBuilds = []
 
         existing.forEach(record => {
@@ -309,7 +317,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         return newBuilds
       })
 
-      this.emit('upserted', records)
+      this.emit('upserted', records.map(record => [record, previousById.get(record.id) ?? null]))
 
       if (!skipPush) {
         this.pushUnsyncedWithRetry(parentSpan, { type: 'upsertSome', recordIds: records.map(r => r.id).join(',') })
@@ -327,6 +335,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async deleteOne(id: RecordId, parentSpan?: Span, { skipPush = false } = {}) {
     return await this.runScope.abortable(async () => {
       let record: TModel | null = null
+      let previous: TModel['_raw'] | null = null
 
       await this.paranoidWrite(parentSpan, async (writer, span) => {
         span.setAttribute('records.ids', [id])
@@ -336,6 +345,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         )
 
         if (existing && existing._raw._status !== 'deleted') {
+          previous = { ...existing._raw }
           await existing.markAsDeleted()
           record = existing
         } else {
@@ -349,7 +359,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         }
       })
 
-      this.emit('deleted', [id])
+      this.emit('deleted', [[id, previous]])
 
       if (!skipPush) {
         this.pushUnsyncedWithRetry(parentSpan, { type: 'deleteOne', recordId: id })
@@ -362,14 +372,17 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async deleteSome(ids: RecordId[], parentSpan?: Span, { skipPush = false } = {}) {
     return this.runScope.abortable(async () => {
+      const previousById = new Map<RecordId, TModel['_raw']>()
+
       await this.paranoidWrite(parentSpan, async (writer, span) => {
         span.setAttribute('records.ids', ids)
         const existing = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
+        existing.forEach(record => previousById.set(record.id, { ...record._raw }))
 
         await writer.batch(...existing.map(record => record.prepareMarkAsDeleted()))
       })
 
-      this.emit('deleted', ids)
+      this.emit('deleted', ids.map(id => [id, previousById.get(id) ?? null]))
 
       if (!skipPush) {
         this.pushUnsyncedWithRetry(parentSpan, { type: 'deleteSome', recordIds: ids.join(',') })
@@ -386,6 +399,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async restoreSome(ids: RecordId[], parentSpan?: Span) {
     return this.runScope.abortable(async () => {
+      const previousById = new Map<RecordId, TModel['_raw']>()
+
       const records = await this.paranoidWrite(parentSpan, async (writer, span) => {
         span.setAttribute('records.ids', ids)
 
@@ -393,6 +408,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           Q.where('id', Q.oneOf(ids)),
           Q.where('_status', 'deleted')
         ))
+        records.forEach(record => previousById.set(record.id, { ...record._raw }))
 
         const destroyBuilds = records.map(record => new this.model(this.collection, { id: record.id }).prepareDestroyPermanently())
         const createBuilds = records.map(record => this.collection.prepareCreate((r) => {
@@ -409,7 +425,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         return createBuilds
       })
 
-      this.emit('upserted', records)
+      this.emit('upserted', records.map(record => [record, previousById.get(record.id) ?? null]))
 
       this.pushUnsyncedWithRetry(parentSpan, { type: 'restoreSome', recordIds: ids.join(',') })
       await this.ensurePersistence()

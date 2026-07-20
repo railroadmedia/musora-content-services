@@ -4,6 +4,7 @@ import * as models from '../models'
 import { compressInWorker } from './compression'
 import { globalConfig } from '../../config.js'
 import SyncContext from '../context'
+import type SyncStore from '../store'
 
 export type DumpMode = 'off' | 'interval'
 export type EventMode = 'off' | 'debounced_write' | 'interval'
@@ -78,8 +79,59 @@ export async function triggerManualDump(database: Database, context: SyncContext
   return performDump(database, Object.keys(config), context, CompressionWorker)
 }
 
-export default function setup(context: SyncContext, database: Database, CompressionWorker?: CompressionWorkerConstructor) {
+function diffRaw(current: Record<string, unknown>, previous: Record<string, unknown> | null): Record<string, [unknown, unknown]> {
+  const keys = new Set([...Object.keys(current), ...Object.keys(previous ?? {})])
+  const diff: Record<string, [unknown, unknown]> = {}
+
+  keys.forEach((key) => {
+    const previousValue = previous ? previous[key] : undefined
+    const currentValue = current[key]
+    if (previousValue !== currentValue) {
+      diff[key] = [previousValue, currentValue]
+    }
+  })
+
+  return diff
+}
+
+function handleWriteEvents(modelName: string, op: 'upserted' | 'deleted', events: [unknown, unknown][]) {
+  if (op === 'upserted') {
+    const diffs = (events as [{ _raw: Record<string, unknown> }, Record<string, unknown> | null][]).map(
+      ([record, previous]) => diffRaw(record._raw, previous)
+    )
+    console.log(modelName, op, diffs)
+    return
+  }
+
+  console.log(modelName, op, events)
+}
+
+async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<any>>) {
+  const config = await fetchConfig()
+  const activeModelNames = Object.entries(config)
+    .filter(([, modelConfig]) => modelConfig.eventMode !== 'off')
+    .map(([modelName]) => modelName)
+
+  const unsubscribes = activeModelNames.flatMap((modelName) => {
+    const store = storesRegistry[tableForModelName(modelName)]
+    if (!store) return []
+
+    return [
+      store.on('upserted', (records) => handleWriteEvents(modelName, 'upserted', records)),
+      store.on('deleted', (ids) => handleWriteEvents(modelName, 'deleted', ids)),
+    ]
+  })
+
+  return () => unsubscribes.forEach((unsubscribe) => unsubscribe())
+}
+
+export default function setup(context: SyncContext, database: Database, storesRegistry: Record<string, SyncStore<any>>, CompressionWorker?: CompressionWorkerConstructor) {
   let timer: ReturnType<typeof setTimeout> | null = null
+  let unsubscribeWriteEvents: (() => void) | null = null
+
+  subscribeToWriteEvents(storesRegistry).then((unsubscribe) => {
+    unsubscribeWriteEvents = unsubscribe
+  })
 
   async function scheduleNextDump() {
     const config = await fetchConfig()
@@ -102,5 +154,6 @@ export default function setup(context: SyncContext, database: Database, Compress
 
   return async () => {
     if (timer) clearTimeout(timer)
+    unsubscribeWriteEvents?.()
   }
 }
