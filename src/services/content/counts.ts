@@ -34,8 +34,8 @@ export async function fetchSongAndLessonCounts(
   )
 
   const q = `{
-    "songs": count(${query().and(songsFilter).build()}),
-    "lessons": count(${query().and(lessonsFilter).build()})
+    "songs": count(${query().and(songsFilter)}),
+    "lessons": count(${query().and(lessonsFilter)})
   }`
 
   const counts = (await sanityClient.executeQuery<Omit<SongAndLessonCounts, 'total'>>(q)) ?? {
