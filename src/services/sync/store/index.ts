@@ -23,6 +23,7 @@ export type SyncStoreDeleteEvent<TModel extends BaseModel> = [id: RecordId, prev
 type SyncStoreEvents<TModel extends BaseModel> = {
   upserted: [SyncStoreUpsertEvent<TModel>[]]
   deleted: [SyncStoreDeleteEvent<TModel>[]]
+  restored: [SyncStoreUpsertEvent<TModel>[]]
   pullCompleted: []
   pushCompleted: []
   failedPush: []
@@ -425,7 +426,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         return createBuilds
       })
 
-      this.emit('upserted', records.map(record => [record, previousById.get(record.id) ?? null]))
+      this.emit('restored', records.map(record => [record, previousById.get(record.id) ?? null]))
 
       this.pushUnsyncedWithRetry(parentSpan, { type: 'restoreSome', recordIds: ids.join(',') })
       await this.ensurePersistence()
@@ -493,6 +494,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       })
     })
   }
+  async importRestore(recordRaws: TModel['_raw'][]) {
+    await this.importUpsert(recordRaws)
+  }
+
   async importDeletion(ids: RecordId[]) {
     await this.runScope.abortable(async () => {
       await this.paranoidWrite(undefined, async writer => {
