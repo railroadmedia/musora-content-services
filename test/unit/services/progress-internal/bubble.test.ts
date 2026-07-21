@@ -131,6 +131,14 @@ describe('getAncestorAndSiblingIds', () => {
     const circular: Hierarchy = { parents: { 1: 1 }, children: { 1: [] } }
     expect(getAncestorAndSiblingIds(circular, 1)).toEqual([])
   })
+
+  test('logs an error when a circular dependency is detected', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const circular: Hierarchy = { parents: { 1: 1 }, children: { 1: [] } }
+    getAncestorAndSiblingIds(circular, 1)
+    expect(errorSpy).toHaveBeenCalledWith('Circular dependency detected for contentId', 1)
+    errorSpy.mockRestore()
+  })
 })
 
 describe('averageProgressesFor', () => {
