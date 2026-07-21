@@ -230,7 +230,7 @@ describe('bubbleAndTrickleProgressesSafely', () => {
       { 1: 50, 2: 100 },
       undefined,
       {},
-      { skipPush: true, accessedDirectly: undefined, allowRegression: true }
+      { skipPush: true, accessedDirectly: true, allowRegression: true }
     )
     expect(mockEraseProgressMany).not.toHaveBeenCalled()
   })

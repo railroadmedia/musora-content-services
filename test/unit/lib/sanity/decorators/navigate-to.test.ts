@@ -60,10 +60,31 @@ beforeEach(() => {
 })
 
 describe('navigate-to decorator', () => {
-  describe('navigateToDecorator (const)', () => {
+  describe('navigateToDecorator (factory)', () => {
     test('field is navigateTo', () => {
-      expect(navigateToDecorator.field).toBe('navigateTo')
+      expect(navigateToDecorator().field).toBe('navigateTo')
       expect(NAVIGATE_TO_FIELD).toBe('navigateTo')
+    })
+
+    test('recurse is false', () => {
+      expect(navigateToDecorator().recurse).toBe(false)
+    })
+
+    test('without ctx — navigates single item via DB', async () => {
+      const item = parent(1, 'course', [child(101), child(102)])
+      const result = await navigateToDecorator().compute(item)
+      expect(result).toMatchObject({ id: 101, child: null })
+    })
+
+    test('with ctx — uses ctx states, not DB', async () => {
+      // DB says course is started; ctx overrides to not-started → should go to first child
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 50, updated_at: 1000 },
+      ]
+      const ctx = { states: new Map<number, string>([[1, '']]) }
+      const item = parent(1, 'course', [child(101), child(102)])
+      const result = await navigateToDecorator(ctx).compute(item)
+      expect(result).toMatchObject({ id: 101 })
     })
   })
 
@@ -162,6 +183,21 @@ describe('navigate-to decorator', () => {
         id: 102,
         child: { id: 301 },
       })
+    })
+
+    test('two-depth: started course-collection, last-interacted course has completed lessons → first incomplete lesson, not lesson[0]', async () => {
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 50, updated_at: 1000 },
+        { content_id: 101, state: 'started', progress_percent: 50, updated_at: 900 },
+        { content_id: 201, state: 'completed', progress_percent: 100, updated_at: 800 },
+        { content_id: 202, state: '', progress_percent: 0, updated_at: 0 },
+        { content_id: 203, state: '', progress_percent: 0, updated_at: 0 },
+      ]
+      mockLastInteracted = 101
+      const course = parent(101, 'course', [child(201), child(202), child(203)])
+      const collection = parent(1, 'course-collection', [course])
+      const result = await decorateNavigateTo(collection)
+      expect(result.navigateTo).toMatchObject({ id: 101, child: { id: 202 } })
     })
 
     test('decorates every item in an array', async () => {

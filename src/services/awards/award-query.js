@@ -9,6 +9,7 @@
  * - `getContentAwardsByIds(contentIds)` - Get awards for multiple content items (batch optimized)
  * - `getCompletedAwards(brand)` - Get user's earned awards
  * - `getInProgressAwards(brand)` - Get awards user is working toward
+ * - `getCompletedAwardsByUser(userId, brand)` - Get another user's earned awards
  * - `getAwardStatistics(brand)` - Get aggregate award stats
  *
  * **Event Callbacks**:
@@ -58,6 +59,10 @@ import { AwardMessageGenerator } from './internal/message-generator'
 import db from '../sync/repository-proxy'
 import UserAwardProgressRepository from '../sync/repositories/user-award-progress'
 import {awardTemplate} from "../../contentTypeConfig.js";
+import { globalConfig } from '../config.js'
+import { HttpClient } from '../../infrastructure/http/HttpClient'
+
+const userManagementBaseUrl = '/api/user-management-system'
 
 function enhanceCompletionData(completionData) {
   if (!completionData) return null
@@ -348,6 +353,72 @@ export async function getCompletedAwards(brand = null, options = {}) {
     return awards
   } catch (error) {
     console.error('Failed to get completed awards:', error)
+    return []
+  }
+}
+
+/**
+ * @param {number|null} [userId=globalConfig.sessionConfig.userId] - The user whose completed awards to fetch
+ * @param {string|null} [brand=null] - Brand to filter by (drumeo, pianote, guitareo, singeo), or null for all brands
+ * @returns {Promise<AwardInfo[]>} Array of completed award objects sorted by completion date (newest first)
+ *
+ * @description
+ * Returns completed awards for any user (typically used when viewing another
+ * user's public profile). Fetches raw progress from the BE then enriches each
+ * record with the matching Sanity award definition so the response shape
+ * matches `getCompletedAwards`.
+ *
+ * Returns empty array `[]` on error or when no progress is found.
+ */
+export async function getCompletedAwardsByUser(userId = globalConfig.sessionConfig.userId, brand = null) {
+  try {
+    const apiUrl = `${userManagementBaseUrl}/v1/users/${userId}/awards`
+    const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+    const progressRecords = await httpClient.get(apiUrl)
+
+    if (!Array.isArray(progressRecords) || progressRecords.length === 0) {
+      return []
+    }
+
+    let awards = await Promise.all(
+      progressRecords.map(async (progress) => {
+        const definition = await awardDefinitions.getById(progress.award_id)
+        if (!definition) {
+          return null
+        }
+
+        if (brand && definition.brand !== brand) {
+          return null
+        }
+
+        const completionData = definition.type === awardDefinitions.CONTENT_AWARD
+          ? enhanceCompletionData(progress.completion_data)
+          : progress.completion_data
+        const hasCertificate = definition.type === awardDefinitions.CONTENT_AWARD
+
+        return {
+          awardId: progress.award_id,
+          awardTitle: definition.name,
+          awardType: definition.type,
+          ...getBadgeFields(definition),
+          award: definition.award,
+          brand: definition.brand,
+          hasCertificate,
+          instructorName: definition.instructor_name,
+          progressPercentage: progress.progress_percentage,
+          isCompleted: true,
+          completedAt: progress.completed_at,
+          completionData,
+        }
+      })
+    )
+
+    awards = awards.filter(award => award !== null)
+    awards.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+
+    return awards
+  } catch (error) {
+    console.error(`Failed to get completed awards for user ${userId}:`, error)
     return []
   }
 }

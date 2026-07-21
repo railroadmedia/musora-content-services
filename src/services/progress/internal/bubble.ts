@@ -111,7 +111,7 @@ export interface BubbleAndTrickleOptions {
 export const bubbleAndTrickleProgressesSafely = async (
   progresses: Record<number, number>,
   metadata: Record<number, ProgressMetadata>,
-  options: BubbleAndTrickleOptions = {},
+  options: BubbleAndTrickleOptions = { accessedDirectly: true },
   collection?: CollectionParameter
 ): Promise<void> => {
   let eraseProgresses: Record<number, number> = {}

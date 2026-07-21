@@ -2,6 +2,151 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.167.2](https://github.com/railroadmedia/musora-content-services/compare/v2.167.1...v2.167.2) (2026-07-17)
+
+
+### Bug Fixes
+
+* **BEHLTP-210:** add non-destructive notification polling pause ([#1009](https://github.com/railroadmedia/musora-content-services/issues/1009)) ([3c0d783](https://github.com/railroadmedia/musora-content-services/commit/3c0d783ee7ae4f54c77f9d37299ba182eaa3ebb5))
+
+### [2.167.1](https://github.com/railroadmedia/musora-content-services/compare/v2.167.0...v2.167.1) (2026-07-13)
+
+
+### Bug Fixes
+
+* **accounts:** allow confirmation email for extra options ([5437d11](https://github.com/railroadmedia/musora-content-services/commit/5437d114437dbe5b4e316ebc440ce957cd9a496c))
+
+## [2.167.0](https://github.com/railroadmedia/musora-content-services/compare/v2.165.5...v2.167.0) (2026-07-13)
+
+
+### Features
+
+* **BEHLPT-186:**  subscription upgrade endpoints ([#1003](https://github.com/railroadmedia/musora-content-services/issues/1003)) ([9da55f2](https://github.com/railroadmedia/musora-content-services/commit/9da55f24708976190317a3b69381acbccce2f33c))
+
+
+### Bug Fixes
+
+* **BR-658:** add playbass logo for ceritificates ([#1006](https://github.com/railroadmedia/musora-content-services/issues/1006)) ([da52391](https://github.com/railroadmedia/musora-content-services/commit/da5239178c3526c685b84220009f1f4e0774deb9))
+* **BR-671:** fix Latin/World style search ([#1002](https://github.com/railroadmedia/musora-content-services/issues/1002)) ([25fdff8](https://github.com/railroadmedia/musora-content-services/commit/25fdff80c6279e8568ea057ac250f7e057717ccf))
+
+## [2.166.0](https://github.com/railroadmedia/musora-content-services/compare/v2.165.5...v2.166.0) (2026-07-02)
+
+
+### Features
+
+* **BEHLPT-186:**  subscription upgrade endpoints ([#1003](https://github.com/railroadmedia/musora-content-services/issues/1003)) ([9da55f2](https://github.com/railroadmedia/musora-content-services/commit/9da55f24708976190317a3b69381acbccce2f33c))
+
+
+### Bug Fixes
+
+* **BR-671:** fix Latin/World style search ([#1002](https://github.com/railroadmedia/musora-content-services/issues/1002)) ([25fdff8](https://github.com/railroadmedia/musora-content-services/commit/25fdff80c6279e8568ea057ac250f7e057717ccf))
+
+### [2.165.5](https://github.com/railroadmedia/musora-content-services/compare/v2.165.4...v2.165.5) (2026-06-25)
+
+
+### Bug Fixes
+
+* **recommender:** omit web credentials on request ([#1001](https://github.com/railroadmedia/musora-content-services/issues/1001)) ([d03179a](https://github.com/railroadmedia/musora-content-services/commit/d03179a829e1048304b42493c34743999272da7a))
+
+### [2.165.4](https://github.com/railroadmedia/musora-content-services/compare/v2.165.3...v2.165.4) (2026-06-19)
+
+### [2.165.3](https://github.com/railroadmedia/musora-content-services/compare/v2.165.1...v2.165.3) (2026-06-19)
+
+### [2.165.2](https://github.com/railroadmedia/musora-content-services/compare/v2.165.1...v2.165.2) (2026-06-19)
+
+### [2.165.1](https://github.com/railroadmedia/musora-content-services/compare/v2.165.0...v2.165.1) (2026-06-19)
+
+## [2.165.0](https://github.com/railroadmedia/musora-content-services/compare/v2.164.6...v2.165.0) (2026-06-18)
+
+
+### Features
+
+* **BEHSTP-370:** add need_lifetime_upgrade flag on documents and grant30DaysAccessForLifetime method ([2dd8bed](https://github.com/railroadmedia/musora-content-services/commit/2dd8bedf71a543599a0c421d7eea99cae3bf156c))
+
+
+### Bug Fixes
+
+* add method for progress types mapping ([#998](https://github.com/railroadmedia/musora-content-services/issues/998)) ([9830710](https://github.com/railroadmedia/musora-content-services/commit/9830710893e85f3680286fc5abdc23d1cbf47580))
+
+### [2.164.6](https://github.com/railroadmedia/musora-content-services/compare/v2.164.5...v2.164.6) (2026-06-10)
+
+### [2.164.5](https://github.com/railroadmedia/musora-content-services/compare/v2.164.4...v2.164.5) (2026-06-10)
+
+### [2.164.4](https://github.com/railroadmedia/musora-content-services/compare/v2.164.3...v2.164.4) (2026-06-10)
+
+### [2.164.3](https://github.com/railroadmedia/musora-content-services/compare/v2.164.2...v2.164.3) (2026-06-10)
+
+### [2.164.2](https://github.com/railroadmedia/musora-content-services/compare/v2.164.1...v2.164.2) (2026-06-10)
+
+### [2.164.1](https://github.com/railroadmedia/musora-content-services/compare/v2.164.0...v2.164.1) (2026-06-10)
+
+## [2.164.0](https://github.com/railroadmedia/musora-content-services/compare/v2.160.5...v2.164.0) (2026-06-10)
+
+
+### Features
+
+* add helper for FE/MA method progress card (free method) ([#987](https://github.com/railroadmedia/musora-content-services/issues/987)) ([ce8e491](https://github.com/railroadmedia/musora-content-services/commit/ce8e49128d54ec4c3b36261eb0e550b152c3041a))
+* add need access logic branch for LPs ([#993](https://github.com/railroadmedia/musora-content-services/issues/993)) ([1d935aa](https://github.com/railroadmedia/musora-content-services/commit/1d935aaf147b45cd01bc1d438424f5322991aa69))
+* **BEHLTP-106:** membership data upgrade ([#973](https://github.com/railroadmedia/musora-content-services/issues/973)) ([e1e0611](https://github.com/railroadmedia/musora-content-services/commit/e1e0611c13bdf4be920eb28cca1f15f912930d24))
+* **TP-1195:** optimize live event loading ([#971](https://github.com/railroadmedia/musora-content-services/issues/971)) ([8daa616](https://github.com/railroadmedia/musora-content-services/commit/8daa6160c5bc1ee005093719beef1dd9e83ac3c8))
+
+
+### Bug Fixes
+
+* dont set resume-time to null ([#992](https://github.com/railroadmedia/musora-content-services/issues/992)) ([d7f0f3e](https://github.com/railroadmedia/musora-content-services/commit/d7f0f3e6aab53dcb332a9c149dd0a33f95bc1d75))
+* **MU2-1487:** fetchAll to by pass permissions filter ([#991](https://github.com/railroadmedia/musora-content-services/issues/991)) ([39f38ca](https://github.com/railroadmedia/musora-content-services/commit/39f38cad21b97591eae113c32212b1fdc76be035))
+* Replace PUT with PATCH ([a74a007](https://github.com/railroadmedia/musora-content-services/commit/a74a007efdc19fed98a882db5bf15741d95b89d0))
+
+## [2.163.0](https://github.com/railroadmedia/musora-content-services/compare/v2.162.1...v2.163.0) (2026-06-04)
+
+
+### Features
+
+* add need access logic branch for LPs ([#993](https://github.com/railroadmedia/musora-content-services/issues/993)) ([1d935aa](https://github.com/railroadmedia/musora-content-services/commit/1d935aaf147b45cd01bc1d438424f5322991aa69))
+* **TP-1195:** optimize live event loading ([#971](https://github.com/railroadmedia/musora-content-services/issues/971)) ([8daa616](https://github.com/railroadmedia/musora-content-services/commit/8daa6160c5bc1ee005093719beef1dd9e83ac3c8))
+
+
+### Bug Fixes
+
+* dont set resume-time to null ([#992](https://github.com/railroadmedia/musora-content-services/issues/992)) ([d7f0f3e](https://github.com/railroadmedia/musora-content-services/commit/d7f0f3e6aab53dcb332a9c149dd0a33f95bc1d75))
+
+### [2.162.1](https://github.com/railroadmedia/musora-content-services/compare/v2.162.0...v2.162.1) (2026-06-04)
+
+## [2.162.0](https://github.com/railroadmedia/musora-content-services/compare/v2.161.4...v2.162.0) (2026-06-03)
+
+
+### Features
+
+* add helper for FE/MA method progress card (free method) ([#987](https://github.com/railroadmedia/musora-content-services/issues/987)) ([ce8e491](https://github.com/railroadmedia/musora-content-services/commit/ce8e49128d54ec4c3b36261eb0e550b152c3041a))
+
+### [2.161.4](https://github.com/railroadmedia/musora-content-services/compare/v2.161.3...v2.161.4) (2026-06-02)
+
+### [2.161.3](https://github.com/railroadmedia/musora-content-services/compare/v2.161.2...v2.161.3) (2026-06-02)
+
+
+### Bug Fixes
+
+* **MU2-1487:** fetchAll to by pass permissions filter ([#991](https://github.com/railroadmedia/musora-content-services/issues/991)) ([39f38ca](https://github.com/railroadmedia/musora-content-services/commit/39f38cad21b97591eae113c32212b1fdc76be035))
+
+### [2.161.2](https://github.com/railroadmedia/musora-content-services/compare/v2.161.1...v2.161.2) (2026-05-27)
+
+### [2.161.1](https://github.com/railroadmedia/musora-content-services/compare/v2.161.0...v2.161.1) (2026-05-27)
+
+## [2.161.0](https://github.com/railroadmedia/musora-content-services/compare/v2.160.5...v2.161.0) (2026-05-27)
+
+
+### Features
+
+* **BEHLTP-106:** membership data upgrade ([#973](https://github.com/railroadmedia/musora-content-services/issues/973)) ([e1e0611](https://github.com/railroadmedia/musora-content-services/commit/e1e0611c13bdf4be920eb28cca1f15f912930d24))
+
+### [2.160.5](https://github.com/railroadmedia/musora-content-services/compare/v2.160.4...v2.160.5) (2026-05-22)
+
+
+### Bug Fixes
+
+* add a null check for method intro video ([#983](https://github.com/railroadmedia/musora-content-services/issues/983)) ([dbcaa72](https://github.com/railroadmedia/musora-content-services/commit/dbcaa7250ccca71ddcefda0d0514a7a013055784))
+* **live-events:** fetch permission ids ([#982](https://github.com/railroadmedia/musora-content-services/issues/982)) ([cd12054](https://github.com/railroadmedia/musora-content-services/commit/cd12054a58a0752614f8cdebcf79750edae948c3))
+
 ### [2.160.4](https://github.com/railroadmedia/musora-content-services/compare/v2.160.3...v2.160.4) (2026-05-20)
 
 

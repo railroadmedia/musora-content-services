@@ -117,19 +117,53 @@ export async function userOnboardingForBrand(brand: string): Promise<Onboarding>
   )
 }
 
+export interface OnboardingBrandStatus {
+  brand: string
+  is_completed: boolean
+  completed_flow: string | null
+  completed_at: Date | null
+}
+
+export interface OnboardingStatus {
+  has_completed_onboarding: boolean
+  brands: OnboardingBrandStatus[]
+}
+
+/**
+ * Fetches the current user's onboarding completion status across all brands.
+ *
+ * @returns {Promise<OnboardingStatus>} - A promise that resolves with the cross-brand onboarding status.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function getOnboardingStatus(): Promise<OnboardingStatus> {
+  return GET(`/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/status`)
+}
+
 export interface OnboardingRecommendedContent {
   id: number
   title: string
+  brand: string
+  content_type: string
+  type: string
   difficulty: string
   lesson_count: number
   skill_count: number
   badge: string
+  badge_rear: string
+  badge_logo: string
   description: string
+  thumbnail: string
   video: {
     external_id: string
     hlsManifestUrl: string
     type: string
   }
+  lessons: {
+    id: number
+    title: string
+    thumbnail: string
+    skill_pack_title?: string
+  }[]
 }
 
 export interface OnboardingRecommendationResponse {

@@ -1,29 +1,8 @@
 import { db } from '../sync'
-import ContentProgress, {
-  COLLECTION_TYPE,
-  CollectionParameter,
-  STATE,
-} from '../sync/models/ContentProgress'
+import ContentProgress, { COLLECTION_TYPE, CollectionParameter, STATE } from '../sync/models/ContentProgress'
 import type { ModelSerialized } from '../sync/serializers'
-import { getById, getByIds, getByRecordIds } from './internal/queries'
+import { queryById, queryByIds, queryByRecordIds } from './internal/queries'
 import type { ProgressSnapshot } from './types'
-
-type Selector<V> = (p: ModelSerialized<ContentProgress>) => V | null | undefined
-
-const queryById =
-  <V>(select: Selector<V>, fallback: V) =>
-  (contentId: number, collection?: CollectionParameter) =>
-    getById(contentId, select, fallback, collection)
-
-const queryByIds =
-  <V>(select: Selector<V>, fallback: V) =>
-  (contentIds: number[], collection?: CollectionParameter) =>
-    getByIds(contentIds, select, fallback, collection)
-
-const queryByRecordIds =
-  <V>(select: Selector<V>, fallback: V) =>
-  (ids: string[]) =>
-    getByRecordIds(ids, select, fallback)
 
 type StateValue = STATE | ''
 
@@ -106,9 +85,7 @@ export const snapshotByIds = (
     })
   )
 
-export const snapshotByRecordIds = (
-  ids: string[]
-): Promise<Record<string, ProgressSnapshot>> =>
+export const snapshotByRecordIds = (ids: string[]): Promise<Record<string, ProgressSnapshot>> =>
   buildSnapshotMap(
     ids,
     () => db.contentProgress.getSomeProgressByRecordIds(ids),

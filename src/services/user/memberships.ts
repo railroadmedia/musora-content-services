@@ -4,22 +4,28 @@
 import './types.js'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config'
+import { MultiUserAccountResponse } from "../multi-user-accounts/multi-user-accounts";
 
 const baseUrl = `/api/user-memberships`
+// Magic stringed to MembershipController.php
+const multiUserAccountFeatureFlag = 'multi_user_account_feature_flag'
 
-/**
- * Represents a user membership object
- */
-export interface Membership {
-  id: number
-  user_id: number
-  membership_type: string
-  start_date: string
-  expiration_date: string | null
-  status: string
-  created_at: string
-  updated_at: string
-  [key: string]: any
+// Active Purchased Subscription Data
+export interface MembershipData {
+  type: string
+  name: string
+  expiration_date: string
+  is_in_trial: boolean
+  trial_duration: string
+  never_expires: boolean
+}
+
+export interface UserMembershipResponse {
+  user_membership_data: MembershipData[]
+  can_upgrade_membership: boolean // pre multiUserAccount data
+  need_lifetime_upgrade: boolean
+  sub_account_data: MultiUserAccountResponse // post multiUserAccount data
+  upgrade_options: UpgradeOption[] // post multiuser account data
 }
 
 /**
@@ -32,14 +38,34 @@ export interface RechargeTokens {
   storefront_access_token: string
 }
 
-/**
- * Represents the response from subscription upgrade
- */
 export interface UpgradeSubscriptionResponse {
   action: 'instant_upgrade' | 'shopify'
   message?: string
   url?: string
 }
+
+export interface UpgradeProduct {
+  id: number
+  name: string
+  sku: string
+  rc_product_ids: {
+    apple: string
+    google: string
+  }
+  price: number
+  monthly_price: number
+  includes_trial: boolean
+  tier: 'plus' | 'basic' | '' // deprecated in favour of membership_level
+  membership_level: 'plus' | 'basic' | ''
+  plan_type: 'family' | 'duo' | 'solo'
+}
+
+export interface UpgradeOption {
+  annual_savings: number
+  lowest_monthly_cost: number
+  products: UpgradeProduct[] // annual + monthly products, or solely annual product with the same configuration information
+}
+
 
 /**
  * Represents the response when user should create an account (no entitlements or user not found)
@@ -93,21 +119,9 @@ export type RestorePurchasesResponse =
   | RestorePurchasesSuccessResponse
   | RestorePurchasesSetupAccountResponse
 
-/**
- * Fetches the authenticated user's memberships from the API.
- *
- * @returns {Promise<Array<Membership>>} - A promise that resolves to an array of membership objects.
- *
- * @throws {Error} - Throws an error if the request fails.
- *
- * @example
- * fetchMemberships()
- *   .then(memberships => console.log(memberships))
- *   .catch(error => console.error(error));
- */
-export async function fetchMemberships(): Promise<Membership[]> {
+export async function fetchMemberships(): Promise<UserMembershipResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<Membership[]>(`${baseUrl}/v1`)
+  return httpClient.get<UserMembershipResponse>(`${baseUrl}/v1`)
 }
 
 /**
@@ -134,6 +148,9 @@ export async function fetchRechargeTokens(): Promise<RechargeTokens> {
 /**
  * Upgrades the user's subscription or provides a prefilled add-to-cart URL.
  *
+ * @param {boolean} featureFlag - MultiUserAccount feature Flag - default false
+ * @param {string} sku- product sku to upgrade to, required if feature flag is set
+ *
  * @returns {Promise<UpgradeSubscriptionResponse>} A promise that resolves to an object containing either:
  *  - {string} action - The action performed (e.g., 'instant_upgrade').
  *  - {string} message - Success message if the subscription was upgraded immediately.
@@ -148,9 +165,11 @@ export async function fetchRechargeTokens(): Promise<RechargeTokens> {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function upgradeSubscription(): Promise<UpgradeSubscriptionResponse> {
+export async function upgradeSubscription(featureFlag = false, sku): Promise<UpgradeSubscriptionResponse> {
+  let featureFlagValue = featureFlag ? 1 : 0
+  let skuValue = sku ? `&sku=${sku}` : ''
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<UpgradeSubscriptionResponse>(`${baseUrl}/v1/update-subscription`)
+  return httpClient.get<UpgradeSubscriptionResponse>(`${baseUrl}/v1/update-subscription?${multiUserAccountFeatureFlag}=${featureFlagValue}${skuValue}`)
 }
 
 /**
@@ -231,6 +250,8 @@ export async function restorePurchases(
  * Get the upgrade price from Basic to Plus membership.
  * Returns the price based on the user's subscription interval.
  *
+ * @param {boolean} featureFlag - MultiUserAccount feature Flag - default false
+ *
  * For monthly subscribers: Returns the monthly upgrade cost (difference between Plus and Base monthly prices, ~$5/month)
  * For yearly subscribers: Returns the monthly equivalent upgrade cost ($3.33/month from $40/year)
  * For lifetime subscribers: Returns the annual upgrade cost for songs add-on ($40/year)
@@ -254,9 +275,10 @@ export async function restorePurchases(
  *     console.error('Failed to fetch upgrade price:', error)
  *   })
  */
-export async function getUpgradePrice() {
+export async function getUpgradePrice(featureFlag = false) {
+  let featureFlagValue = featureFlag ? 1 : 0
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return  httpClient.get(`${baseUrl}/v1/upgrade-price`)
+  return  httpClient.get(`${baseUrl}/v1/upgrade-price?${multiUserAccountFeatureFlag}=${featureFlagValue}`)
 }
 
 /**
@@ -275,4 +297,12 @@ export async function fetchHasActivePlatformSubscription(): Promise<boolean> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   const response = await httpClient.get<SubscriptionPlatform>(`${baseUrl}/v1/subscription-platform`)
   return response.has_active_platform_subscription
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+export async function grant30DaysAccessForLifetime(): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  await httpClient.post<void>(`${baseUrl}/v1/grant-30-days-access-for-lifetime`, {})
 }

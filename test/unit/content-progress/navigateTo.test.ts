@@ -254,6 +254,17 @@ describe('getNavigateTo', () => {
     expect(result[1]).toMatchObject({ id: 101 })
   })
 
+  test('documentary started lastInteracted started navigates to lastInteracted child', async () => {
+    mockProgressRecords = [
+      { content_id: 1, state: 'started', progress_percent: 50, updated_at: 1000 },
+      { content_id: 101, state: 'started', progress_percent: 100, updated_at: 900 },
+      { content_id: 102, state: 'started', progress_percent: 30, updated_at: 1000 },
+    ]
+    mockLastInteracted = 101
+    const result = await getNavigateTo([{ id: 1, type: 'documentary', children: [child(101), child(102)] }])
+    expect(result[1]).toMatchObject({ id: 101 })
+  })
+
   test('course started lastInteracted completed navigates to first incomplete after lastInteracted', async () => {
     mockProgressRecords = [
       { content_id: 1, state: 'started', progress_percent: 60, updated_at: 1000 },

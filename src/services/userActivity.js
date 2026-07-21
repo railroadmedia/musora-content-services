@@ -526,6 +526,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
       thumbnail: content.thumbnail || null,
       title: content.title || practice.title,
       parent_id: content.parent_id || null,
+      learningPathId: content.learning_path_id || null,
       navigateTo: content.navigateTo || null,
       sanityType: content.type || null,
       artist_name: content.artist_name || null,
@@ -820,6 +821,7 @@ async function formatPracticeMeta(practices = []) {
       sanity_type: content?.type || null,
       content_slug: content?.slug || null,
       parent_id: content?.parent_id || null,
+      learningPathId: content?.learning_path_id || null,
       navigateTo: content?.navigateTo || null,
       artist_name: content?.artist_name || null,
     }

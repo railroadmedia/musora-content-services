@@ -13,6 +13,7 @@ import {
 	getAwardStatistics,
 	getBadgeFields,
 	getCompletedAwards,
+	getCompletedAwardsByUser,
 	getContentAwards,
 	getContentAwardsByIds,
 	getInProgressAwards,
@@ -60,6 +61,7 @@ import {
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
+	isNextLessonLocked,
 	mapContentToParent,
 	resetAllLearningPaths,
 	startLearningPath,
@@ -179,7 +181,8 @@ import {
 	likePost,
 	search,
 	unlikePost,
-	updatePost
+	updatePost,
+	whoLikedPost
 } from './services/forums/posts.ts';
 
 import {
@@ -366,6 +369,10 @@ import {
 } from './services/sanity.js';
 
 import {
+	searchAlgolia
+} from './services/search.ts';
+
+import {
 	clearState
 } from './services/state.ts';
 
@@ -425,6 +432,7 @@ import {
 	fetchMemberships,
 	fetchRechargeTokens,
 	getUpgradePrice,
+	grant30DaysAccessForLifetime,
 	restorePurchases,
 	upgradeSubscription
 } from './services/user/memberships.ts';
@@ -447,6 +455,7 @@ import {
 
 import {
 	getOnboardingRecommendedContent,
+	getOnboardingStatus,
 	initializeOnboardingFlow,
 	startOnboarding,
 	updateOnboarding,
@@ -458,9 +467,15 @@ import {
 } from './services/user/payments.ts';
 
 import {
+	fetchPlayerSettings,
+	updatePlayerSettings
+} from './services/user/playerSettings.ts';
+
+import {
 	deleteProfilePicture,
-	otherStats
-} from './services/user/profile.js';
+	otherStats,
+	updateProfileVisibility
+} from './services/user/profile.ts';
 
 import {
 	generateAuthSessionUrl,
@@ -490,6 +505,11 @@ import {
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
+
+import {
+	whoLikedComment,
+	whoLikedContent
+} from './services/whoLiked.ts';
 
 export {
 	PermissionsAdapter,
@@ -610,6 +630,7 @@ export {
 	fetchPackData,
 	fetchParentChildRelationshipsFor,
 	fetchPlayAlongsCount,
+	fetchPlayerSettings,
 	fetchPlaylist,
 	fetchPlaylistItems,
 	fetchPost,
@@ -664,6 +685,7 @@ export {
 	getAwardStatistics,
 	getBadgeFields,
 	getCompletedAwards,
+	getCompletedAwardsByUser,
 	getContentAwards,
 	getContentAwardsByIds,
 	getContentRows,
@@ -685,6 +707,7 @@ export {
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
+	getOnboardingStatus,
 	getOwnedContent,
 	getPermissionsAdapter,
 	getPermissionsVersion,
@@ -721,6 +744,7 @@ export {
 	getUserWeeklyStats,
 	getWeekNumber,
 	globalConfig,
+	grant30DaysAccessForLifetime,
 	guidedCourses,
 	hasAnyMethodV2IntroCompleted,
 	initializeEnvVar,
@@ -730,6 +754,7 @@ export {
 	isContentLiked,
 	isContentLikedByIds,
 	isNextDay,
+	isNextLessonLocked,
 	isSameDate,
 	isUserFreeTier,
 	isUsernameAvailable,
@@ -789,6 +814,7 @@ export {
 	restoreUserActivity,
 	restoreUserPractice,
 	search,
+	searchAlgolia,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setStudentViewForUser,
@@ -824,9 +850,11 @@ export {
 	updateMultiUserAccount,
 	updateNotificationSetting,
 	updateOnboarding,
+	updatePlayerSettings,
 	updatePlaylist,
 	updatePost,
 	updatePracticeNotes,
+	updateProfileVisibility,
 	updateThread,
 	updateUserPractice,
 	upgradeSubscription,
@@ -835,6 +863,9 @@ export {
 	userOnboardingForBrand,
 	verifyImageSRC,
 	verifyLocalDataContext,
+	whoLikedComment,
+	whoLikedContent,
+	whoLikedPost,
 };
 
 export default EventsAPI

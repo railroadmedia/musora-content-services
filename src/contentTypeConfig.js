@@ -73,6 +73,7 @@ export const DEFAULT_FIELDS = [
   'live_event_end_time',
   'enrollment_start_time',
   'enrollment_end_time',
+  'membership_tier',
 ]
 
 // these are identical... why
@@ -146,22 +147,23 @@ export const assignmentsField = `"assignments":assignment[]{
 // todo: refactor live event queries to use this
 export function getLiveFields(minimum = false) {
   const minimumFields = [
-    "live_event_start_time",
-    "live_event_end_time",
-    "live_event_stream_id",
-    "vimeo_live_event_id",
+    'live_event_start_time',
+    'live_event_end_time',
+    'live_event_stream_id',
+    'vimeo_live_event_id',
     "'live_event_is_global': live_global_event == true",
     "'videoId': coalesce(live_event_stream_id, video.external_id)",
+    "'permission_id': permission_v2",
   ]
   const additionalFields = [
     "'slug': slug.current",
     "'id': railcontent_id",
-    "title",
-    "published_on",
+    'title',
+    'published_on',
     "'thumbnail': thumbnail.asset->url",
     `${artistOrInstructorName()}`,
-    "difficulty_string",
-    "railcontent_id",
+    'difficulty_string',
+    'railcontent_id',
     `'instructors': ${instructorField}`,
   ]
 
@@ -313,6 +315,7 @@ export const getNextLessonLessonParentTypes = [
   'song-tutorial',
   'learning-path-v2',
   'skill-pack',
+  'documentary',
 ]
 
 export const progressTypesMapping = {
@@ -327,6 +330,7 @@ export const progressTypesMapping = {
     'course-lesson',
     'routine',
   ],
+  method: [LEARNING_PATH_LESSON],
   course: ['course'],
   show: showsLessonTypes,
   'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-lesson'],
@@ -429,6 +433,7 @@ export let contentTypeConfig = {
       `"badge" : ${contentAwardField}.badge.asset->url`,
       `"badge_rear" : ${contentAwardField}.badge_rear.asset->url`,
       `"badge_logo" : ${contentAwardField}.logo.asset->url`,
+      '"learning_path_id": *[_type == "learning-path-v2" && references(^._id)][0].railcontent_id',
     ],
     includeChildFields: true,
   },
@@ -694,10 +699,7 @@ export let contentTypeConfig = {
     }`,
   ],
   'new-and-scheduled': {
-    fields: [
-      'show_in_new_feed',
-      isLiveField(),
-    ],
+    fields: ['show_in_new_feed'],
     includeChildFields: true,
   },
 }
@@ -816,7 +818,7 @@ export function artistOrInstructorNameAsArray(key = 'artists') {
 
 export async function getFieldsForContentTypeWithFilteredChildren(
   contentType,
-  asQueryString = true,
+  asQueryString = true
 ) {
   const childFields = getChildFieldsForContentType(contentType, true)
   const parentFields = getFieldsForContentType(contentType, false)
@@ -831,7 +833,7 @@ export async function getFieldsForContentTypeWithFilteredChildren(
         "children": child[${childFilter}]->{
           ${childFields}
         },
-      }`,
+      }`
     )
   }
   return asQueryString ? parentFields.toString() + ',' : parentFields
@@ -876,7 +878,14 @@ function createTypeConditions(lessonTypes) {
  * Filter handler registry - maps filter keys to their handler functions
  */
 const filterHandlers = {
-  style: (value) => `"${value}" in genre[]->name`,
+  style: (value) => {
+    const hasMultipleStyles = value.includes('/')
+    const styles = [value]
+    if (hasMultipleStyles) {
+      styles.push(...value.split('/').map((s) => s.trim()))
+    }
+    return styles.map((style) => `"${style}" in genre[]->name`).join(' || ')
+  },
 
   difficulty: (value) => {
     return `difficulty_string == "${value}"`
@@ -921,7 +930,7 @@ const filterHandlers = {
   length: (value) => {
     // Find the matching length option by name
     const lengthOption = Object.values(LengthFilterOptions).find(
-      (opt) => typeof opt === 'object' && opt.name === value,
+      (opt) => typeof opt === 'object' && opt.name === value
     )
 
     if (!lengthOption) return ''

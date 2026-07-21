@@ -212,7 +212,7 @@ export async function navigateToParallelWithProgress() {
 
   const items = navigateRows as ContentWithNavAndProgress[]
   const decorators: FieldDecoratorAsync<ContentWithNavAndProgress>[] = [
-    navigateToDecorator as FieldDecoratorAsync<ContentWithNavAndProgress>,
+    navigateToDecorator() as FieldDecoratorAsync<ContentWithNavAndProgress>,
     {
       field: 'progress_percent',
       compute: (item) => fetchProgress(item.id),

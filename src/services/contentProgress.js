@@ -173,7 +173,7 @@ export async function getNavigateTo(data) {
         const lastInteracted = await getLastInteractedOf(childrenIds)
         const lastInteractedStatus = childrenStates.get(lastInteracted)
 
-        if (['course', 'skill-pack', 'song-tutorial'].includes(content.type)) {
+        if (['course', 'skill-pack', 'song-tutorial', 'documentary'].includes(content.type)) {
           // todo(BEHSTP-325): remove if/else and make findIncompleteLesson able to return current lesson if `started`
           if (lastInteractedStatus === STATE_STARTED) {
             // send to last interacted
@@ -841,7 +841,7 @@ export function filterOutLearningPathsForDuplication(progresses, collection) {
 
 export async function duplicateProgressForIds(entries) {
   return Promise.all(Object.entries(entries).map(([id, pct]) => {
-    return saveContentProgress(parseInt(id), null, pct, null, { skipPush: true, accessedDirectly: false })
+    return saveContentProgress(parseInt(id), null, pct, undefined, { skipPush: true, accessedDirectly: false })
   }))
 }
 

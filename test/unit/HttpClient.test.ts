@@ -35,6 +35,22 @@ describe('HttpClient', () => {
     })
   })
 
+  describe('credentials', () => {
+    test('should default to include', async () => {
+      const client = new HttpClient(baseUrl, token, mockHeaderProvider, mockRequestExecutor)
+      await client.get('/test')
+      const options = mockRequestExecutor.execute.mock.calls[0][1]
+      expect(options.credentials).toBe('include')
+    })
+
+    test('should use provided credentials value', async () => {
+      const client = new HttpClient(baseUrl, token, mockHeaderProvider, mockRequestExecutor, 'omit')
+      await client.get('/test')
+      const options = mockRequestExecutor.execute.mock.calls[0][1]
+      expect(options.credentials).toBe('omit')
+    })
+  })
+
   describe('setToken', () => {
     test('should update the token', () => {
       const newToken = 'new-test-token'
