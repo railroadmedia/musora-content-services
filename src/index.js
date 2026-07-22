@@ -461,6 +461,7 @@ import {
 
 import {
 	getOnboardingRecommendedContent,
+	getOnboardingStatus,
 	initializeOnboardingFlow,
 	startOnboarding,
 	updateOnboarding,
@@ -715,6 +716,7 @@ export {
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
+	getOnboardingStatus,
 	getOwnedContent,
 	getPermissionsAdapter,
 	getPermissionsVersion,

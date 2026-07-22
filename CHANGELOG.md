@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.167.4](https://github.com/railroadmedia/musora-content-services/compare/v2.167.3...v2.167.4) (2026-07-22)
+
+### [2.167.3](https://github.com/railroadmedia/musora-content-services/compare/v2.167.2...v2.167.3) (2026-07-22)
+
+
+### Bug Fixes
+
+* add gen-version script ([#1015](https://github.com/railroadmedia/musora-content-services/issues/1015)) ([c047e38](https://github.com/railroadmedia/musora-content-services/commit/c047e38f5a20d34dc9a69e2eb3cf3f31861aa8f1))
+* **BR-819:** add learning path id for learning path intro in recent a… ([#1008](https://github.com/railroadmedia/musora-content-services/issues/1008)) ([267423f](https://github.com/railroadmedia/musora-content-services/commit/267423f525ee12824acfe45e771fd2271d566ed6))
+
+### [2.167.2](https://github.com/railroadmedia/musora-content-services/compare/v2.167.1...v2.167.2) (2026-07-17)
+
+
+### Bug Fixes
+
+* **BEHLTP-210:** add non-destructive notification polling pause ([#1009](https://github.com/railroadmedia/musora-content-services/issues/1009)) ([3c0d783](https://github.com/railroadmedia/musora-content-services/commit/3c0d783ee7ae4f54c77f9d37299ba182eaa3ebb5))
+
 ### [2.167.1](https://github.com/railroadmedia/musora-content-services/compare/v2.167.0...v2.167.1) (2026-07-13)
 
 

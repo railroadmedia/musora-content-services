@@ -457,6 +457,7 @@ import {
 
 import {
 	getOnboardingRecommendedContent,
+	getOnboardingStatus,
 	initializeOnboardingFlow,
 	startOnboarding,
 	updateOnboarding,
@@ -716,6 +717,7 @@ declare module 'musora-content-services' {
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getOnboardingRecommendedContent,
+		getOnboardingStatus,
 		getOwnedContent,
 		getPermissionsAdapter,
 		getPermissionsVersion,

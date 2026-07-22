@@ -72,6 +72,21 @@ const excludeFromGeneratedIndex = []
  *   appEnv: 'local'
  * });
  */
+export async function getMCSVersion() {
+  try {
+    const { MCS_VERSION } = await import('../version-info.js')
+    return MCS_VERSION
+  } catch {
+    return null
+  }
+}
+
+if (process.env.NODE_ENV === 'development') {
+  getMCSVersion().then(v => v && console.log('[MCS] last tagged version:', v))
+} else {
+  getMCSVersion().then(v => v && console.log('[MCS] version:', v))
+}
+
 export function initializeService(config) {
   globalConfig.sanityConfig = config.sanityConfig
   globalConfig.railcontentConfig = config.railcontentConfig

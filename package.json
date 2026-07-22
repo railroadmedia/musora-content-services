@@ -1,10 +1,11 @@
 {
   "name": "musora-content-services",
-  "version": "2.167.1",
+  "version": "2.167.4",
   "description": "A package for Musoras content services ",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
+    "prepare": "node scripts/gen-version.cjs",
     "build-index": "node tools/generate-index.cjs",
     "release": "standard-version",
     "doc": "jsdoc -c jsdoc.json --verbose",
