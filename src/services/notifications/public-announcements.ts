@@ -3,10 +3,16 @@ import { toHTML } from '@portabletext/to-html'
 import { globalConfig } from '../config.js'
 
 interface PublicAnnouncement {
-  title: string;
-  slug: string;
-  published_on: string;
-  message?: string;
+  title: string
+  slug: string
+  published_on: string
+  message?: string
+  forum_data?: Record<string, ForumData>
+}
+
+interface ForumData {
+  category_id: string
+  forum_id: string
 }
 
 /**
@@ -25,7 +31,8 @@ export async function fetchPublicAnnouncement(slug?: string): Promise<PublicAnno
       title,
       'slug': slug.current,
       published_on,
-      message
+      message,
+      forum_data
     }
     | order(published_on desc)`
 
