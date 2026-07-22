@@ -1,32 +1,20 @@
 import { db } from '../sync'
+import ContentProgress, { COLLECTION_TYPE, CollectionParameter, STATE } from '../sync/models/ContentProgress'
 import type { ModelSerialized } from '../sync/serializers'
-import ContentProgress, { COLLECTION_TYPE, CollectionParameter } from '../sync/models/ContentProgress'
 import { queryById, queryByIds, queryByRecordIds } from './internal/queries'
 import type { ProgressSnapshot } from './types'
 
-const buildSnapshotMap = <K extends string | number>(
-  ids: K[],
-  records: ModelSerialized<ContentProgress>[],
-  keyOf: (p: ModelSerialized<ContentProgress>) => K,
-  lastUpdateOf: (p: ModelSerialized<ContentProgress>) => number
-): Map<K, ProgressSnapshot> => {
-  const overrides = new Map(
-    records.map((p) => [
-      keyOf(p),
-      { last_update: lastUpdateOf(p), progress: p.progress_percent, status: p.state as string },
-    ])
-  )
-  return new Map(
-    ids.map((id) => [id, overrides.get(id) ?? { last_update: 0, progress: 0, status: '' }])
-  )
-}
+type StateValue = STATE | ''
 
-export const state = queryById((p) => p.state as string, '')
-export const stateByIds = queryByIds((p) => p.state as string, '')
-export const stateByRecordIds = queryByRecordIds((p) => p.state as string, '')
+export const state = queryById<StateValue>((p) => p.state, '')
+export const stateByIds = queryByIds<StateValue>((p) => p.state, '')
+export const stateByRecordIds = queryByRecordIds<StateValue>((p) => p.state, '')
 
-export const playbackPositionByIds = queryByIds((p) => p.resume_time_seconds ?? 0, 0)
-export const playbackPositionByRecordIds = queryByRecordIds((p) => p.resume_time_seconds ?? 0, 0)
+export const playbackPositionByIds = queryByIds<number>((p) => p.resume_time_seconds, 0)
+export const playbackPositionByRecordIds = queryByRecordIds<number>(
+  (p) => p.resume_time_seconds,
+  0
+)
 
 export const lastInteractedOf = (
   contentIds: number[],
@@ -61,20 +49,53 @@ export const incompleteLesson = (
   return ids[0]
 }
 
-export const snapshotByIds = async (
+const emptySnapshot = (): ProgressSnapshot => ({ last_update: 0, progress: 0, status: '' })
+
+const buildSnapshotMap = async <K extends string | number>(
+  ids: K[],
+  fetch: () => Promise<{ data: ModelSerialized<ContentProgress>[] }>,
+  keyOf: (p: ModelSerialized<ContentProgress>) => K,
+  toSnapshot: (p: ModelSerialized<ContentProgress>) => ProgressSnapshot
+): Promise<Record<K, ProgressSnapshot>> => {
+  const result = Object.fromEntries(ids.map((id) => [id, emptySnapshot()])) as Record<
+    K,
+    ProgressSnapshot
+  >
+
+  const { data } = await fetch()
+  data.forEach((p) => {
+    result[keyOf(p)] = toSnapshot(p)
+  })
+
+  return result
+}
+
+export const snapshotByIds = (
   contentIds: number[],
   collection?: CollectionParameter
-): Promise<Map<number, ProgressSnapshot>> =>
-  db.contentProgress
-    .getSomeProgressByContentIds(contentIds, collection)
-    .then((r) => buildSnapshotMap(contentIds, r.data, (p) => p.content_id, (p) => p.last_interacted_a_la_carte))
+): Promise<Record<number, ProgressSnapshot>> =>
+  buildSnapshotMap(
+    contentIds,
+    () => db.contentProgress.getSomeProgressByContentIds(contentIds, collection),
+    (p) => p.content_id,
+    (p) => ({
+      last_update: p.last_interacted_a_la_carte,
+      progress: p.progress_percent,
+      status: p.state,
+    })
+  )
 
-export const snapshotByRecordIds = async (
-  ids: string[]
-): Promise<Record<string, ProgressSnapshot>> =>
-  db.contentProgress
-    .getSomeProgressByRecordIds(ids)
-    .then((r) => Object.fromEntries(buildSnapshotMap(ids, r.data, (p) => p.id, (p) => p.updated_at)))
+export const snapshotByRecordIds = (ids: string[]): Promise<Record<string, ProgressSnapshot>> =>
+  buildSnapshotMap(
+    ids,
+    () => db.contentProgress.getSomeProgressByRecordIds(ids),
+    (p) => p.id,
+    (p) => ({
+      last_update: p.updated_at,
+      progress: p.progress_percent,
+      status: p.state,
+    })
+  )
 
 export const methodAccessedIds = async (contentIds: number[]): Promise<number[]> =>
   db.contentProgress
