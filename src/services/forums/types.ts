@@ -10,6 +10,7 @@ export interface Liker {
   access_level: string
   liked_at: string
   liked_at_diff: string | null
+  badge: string | null
 }
 
 export interface WhoLikedResponse {
@@ -27,6 +28,7 @@ export interface ForumUser {
   profile_picture_url: string | null
   access_level: string
   signature: string | null
+  badge: string | null
 }
 
 export interface ForumPost {
