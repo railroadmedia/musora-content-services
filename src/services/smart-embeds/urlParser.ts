@@ -1,48 +1,12 @@
 import { SmartEmbedUrl } from './types'
-import { INTERNAL_DOMAINS, TRACKING_PARAMS_TO_REMOVE, isValidBrand } from './domains'
+import { TRACKING_PARAMS_TO_REMOVE, isInternalHostname, isValidBrand } from './domains'
 
-const URL_SEGMENT_TO_CONTENT_TYPE: Record<string, string> = {
-  transcription: 'song',
-  tutorial: 'song-tutorial',
-  'play-along': 'play-along',
-  'jam-track': 'jam-track',
-  course: 'course-lesson',
-  'course-collection': 'course-collection',
-  'skill-pack': 'skill-pack-lesson',
-  documentary: 'documentary-lesson',
-  lesson: 'learning-path-lesson-v2',
-  workout: 'workout',
-  'quick-tips': 'quick-tips',
-  'question-and-answer': 'question-and-answer',
-  'student-review': 'student-review',
-  'student-focus': 'student-focus',
-  'coach-stream': 'coach-stream',
-  rudiment: 'rudiment',
-  routine: 'routine',
-  performance: 'performance',
-  podcast: 'podcast',
-  'boot-camp': 'boot-camp',
-  'gear-guide': 'gear-guide',
-  spotlight: 'spotlight',
-  'study-the-greats': 'study-the-greats',
-  'odd-times': 'odd-times',
-  'guided-course': 'guided-course',
-}
-
-const PARENT_CONTENT_TYPES: Record<string, string> = {
-  'course-lesson': 'course',
-  'guided-course-lesson': 'guided-course',
-  'skill-pack-lesson': 'skill-pack',
-  'documentary-lesson': 'documentary',
-  'learning-path-lesson-v2': 'learning-path-v2',
-  'song-tutorial-lesson': 'song-tutorial',
-}
+const CONTENT_PAGE_TYPES = ['songs', 'lessons', 'method', 'quick-tips', 'packs']
 
 export function isInternalUrl(url: string): boolean {
   try {
     const parsed = new URL(url)
-    const hostname = parsed.hostname.toLowerCase()
-    return INTERNAL_DOMAINS.includes(hostname)
+    return isInternalHostname(parsed.hostname)
   } catch {
     return false
   }
@@ -71,11 +35,9 @@ export function parseContentUrl(url: string): SmartEmbedUrl | null {
 
   try {
     const parsed = new URL(url)
-    const pathname = parsed.pathname
+    const segments = parsed.pathname.split('/').filter(Boolean)
 
-    const segments = pathname.split('/').filter(Boolean)
-
-    if (segments.length < 2) {
+    if (segments.length < 3) {
       return null
     }
 
@@ -85,201 +47,39 @@ export function parseContentUrl(url: string): SmartEmbedUrl | null {
     }
 
     const pageType = segments[1]
+    // if (!CONTENT_PAGE_TYPES.includes(pageType)) {
+    //   return null
+    // }
 
-    if (pageType === 'songs') {
-      return parseSongsUrl(segments, brand, url)
+    const lastSegment = segments[segments.length - 1]
+    const isLiveLesson = pageType === 'lessons' && lastSegment === 'live'
+    const idSegment = isLiveLesson ? segments[segments.length - 2] : lastSegment
+
+    const contentId = parseInt(idSegment, 10)
+    if (isNaN(contentId)) {
+      return null
     }
 
-    if (pageType === 'lessons') {
-      return parseLessonsUrl(segments, brand, url)
+    return {
+      brand,
+      contentId,
+      originalUrl: sanitizeUrl(url),
     }
-
-    if (pageType === 'method') {
-      return parseMethodUrl(segments, brand, url)
-    }
-
-    return null
   } catch {
     return null
   }
 }
 
-function parseSongsUrl(segments: string[], brand: string, originalUrl: string): SmartEmbedUrl | null {
-  if (segments.length < 4) {
-    return null
-  }
-
-  const contentTypeSegment = segments[2]
-  let contentType = URL_SEGMENT_TO_CONTENT_TYPE[contentTypeSegment]
-
-  if (!contentType) {
-    return null
-  }
-
-  if (segments.length === 4) {
-    const contentId = parseInt(segments[3], 10)
-    if (isNaN(contentId)) {
-      return null
-    }
-
-    return {
-      brand,
-      contentType,
-      contentId,
-      originalUrl: sanitizeUrl(originalUrl),
-    }
-  }
-
-  if (segments.length >= 5) {
-    const parentId = parseInt(segments[3], 10)
-    const contentId = parseInt(segments[4], 10)
-
-    if (isNaN(parentId) || isNaN(contentId)) {
-      return null
-    }
-
-    if (contentType === 'song-tutorial') {
-      contentType = 'song-tutorial-lesson'
-    }
-
-    return {
-      brand,
-      contentType,
-      contentId,
-      parentId,
-      originalUrl: sanitizeUrl(originalUrl),
-    }
-  }
-
-  return null
-}
-
-function parseLessonsUrl(segments: string[], brand: string, originalUrl: string): SmartEmbedUrl | null {
-  if (segments.length < 3) {
-    return null
-  }
-
-  if (segments.length >= 4 && segments[3] === 'live') {
-    const contentId = parseInt(segments[2], 10)
-    if (isNaN(contentId)) {
-      return null
-    }
-
-    return {
-      brand,
-      contentType: 'live',
-      contentId,
-      originalUrl: sanitizeUrl(originalUrl),
-    }
-  }
-
-  if (segments[2] === 'course-collection' && segments[3] === 'overview' && segments.length >= 5) {
-    const contentId = parseInt(segments[4], 10)
-    if (isNaN(contentId)) {
-      return null
-    }
-
-    return {
-      brand,
-      contentType: 'course-collection',
-      contentId,
-      originalUrl: sanitizeUrl(originalUrl),
-    }
-  }
-
-  const contentTypeSegment = segments[2]
-  let contentType = URL_SEGMENT_TO_CONTENT_TYPE[contentTypeSegment] || contentTypeSegment
-
-  if (segments.length === 4) {
-    const contentId = parseInt(segments[3], 10)
-    if (isNaN(contentId)) {
-      return null
-    }
-
-    return {
-      brand,
-      contentType,
-      contentId,
-      originalUrl: sanitizeUrl(originalUrl),
-    }
-  }
-
-  if (segments.length >= 5) {
-    const parentId = parseInt(segments[3], 10)
-    const contentId = parseInt(segments[4], 10)
-
-    if (isNaN(parentId) || isNaN(contentId)) {
-      return null
-    }
-
-    if (contentType === 'course' && segments[2] === 'course') {
-      contentType = 'course-lesson'
-    }
-
-    return {
-      brand,
-      contentType,
-      contentId,
-      parentId,
-      originalUrl: sanitizeUrl(originalUrl),
-    }
-  }
-
-  return null
-}
-
-function parseMethodUrl(segments: string[], brand: string, originalUrl: string): SmartEmbedUrl | null {
-  if (segments.length === 2) {
-    return null
-  }
-
-  if (segments.length < 4) {
-    return null
-  }
-
-  const contentTypeSegment = segments[2]
-
-  if (contentTypeSegment !== 'lesson') {
-    return null
-  }
-
-  if (segments.length === 4) {
-    const contentId = parseInt(segments[3], 10)
-    if (isNaN(contentId)) {
-      return null
-    }
-
-    return {
-      brand,
-      contentType: 'learning-path-v2',
-      contentId,
-      originalUrl: sanitizeUrl(originalUrl),
-    }
-  }
-
-  if (segments.length >= 5) {
-    const parentId = parseInt(segments[3], 10)
-    const contentId = parseInt(segments[4], 10)
-
-    if (isNaN(parentId) || isNaN(contentId)) {
-      return null
-    }
-
-    return {
-      brand,
-      contentType: 'learning-path-lesson-v2',
-      contentId,
-      parentId,
-      originalUrl: sanitizeUrl(originalUrl),
-    }
-  }
-
-  return null
-}
-
 export function extractUrlsFromText(text: string): string[] {
+  // Links the user explicitly kept as plain links in the smart-embed editor are
+  // marked data-embed="false" and must never be re-offered as embed candidates
+  const withoutExcludedLinks = text.replace(
+    /<a\b[^>]*\bdata-embed=["']false["'][^>]*>[\s\S]*?<\/a>/gi,
+    ''
+  )
+
   const urlPattern = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi
-  const matches = text.match(urlPattern) || []
+  const matches = withoutExcludedLinks.match(urlPattern) || []
 
   return matches.map(url => url.replace(/[.,;:!?)]+$/, ''))
 }

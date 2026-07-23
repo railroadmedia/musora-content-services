@@ -174,7 +174,6 @@ describe('enrichWithViewerState', () => {
       {
         content: mockContent,
         originalUrl: 'https://www.musora.com/drumeo/songs/transcription/123',
-        generatedUrl: '/drumeo/songs/transcription/123',
       },
     ]
 

@@ -50,6 +50,13 @@ export async function updatePost(postId: number, params: CreatePostParams): Prom
   return httpClient.put<ForumPost>(`${baseUrl}/v1/posts/${postId}`, params)
 }
 
+const MAX_EMBEDS_PER_ENTRY = 5
+
+async function withEmbedUrls(post: ForumPost): Promise<ForumPost> {
+  const { getEligibleEmbedUrls } = await import('../smart-embeds/index')
+  return { ...post, ...getEligibleEmbedUrls(post.content, MAX_EMBEDS_PER_ENTRY) }
+}
+
 /**
  * Fetches a single forum post by ID.
  *
@@ -60,7 +67,8 @@ export async function updatePost(postId: number, params: CreatePostParams): Prom
  */
 export async function fetchPost(postId: number, brand: string): Promise<ForumPost> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<ForumPost>(`${baseUrl}/v1/posts/${postId}?brand=${brand}`)
+  const post = await httpClient.get<ForumPost>(`${baseUrl}/v1/posts/${postId}?brand=${brand}`)
+  return withEmbedUrls(post)
 }
 
 export interface FetchPostParams {
@@ -102,7 +110,9 @@ export async function fetchPosts(
     console.error('Failed to mark thread as read:', error)
   })
 
-  return httpClient.get<PaginatedResponse<ForumPost>>(url)
+  const response = await httpClient.get<PaginatedResponse<ForumPost>>(url)
+  response.data = await Promise.all(response.data.map(withEmbedUrls))
+  return response
 }
 
 /**

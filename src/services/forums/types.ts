@@ -1,3 +1,5 @@
+import type { SmartEmbedWithViewerState } from '../smart-embeds/types'
+
 export interface WhoLikedParams {
   page?: number
   limit?: number
@@ -38,6 +40,14 @@ export interface ForumPost {
   like_count: number
   is_liked: boolean
   thread?: { id: number; title?: string; slug?: string }
+  /** Candidate URLs eligible for smart-embed resolution (already capped at the per-entry limit) */
+  embedUrls?: string[]
+  /** URLs beyond the smart-embed limit; always rendered as plain links */
+  overLimitUrls?: string[]
+  /** Resolved smart embeds; undefined until resolveEmbeds() completes */
+  embeds?: SmartEmbedWithViewerState[]
+  /** URLs that could not be resolved into a smart embed */
+  unsupported?: string[]
 }
 
 export interface ForumThread {

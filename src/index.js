@@ -373,20 +373,11 @@ import {
 } from './services/search.ts';
 
 import {
-	resolveSmartEmbed,
-	resolveSmartEmbeds,
-	resolveSmartEmbedsFromUrls
-} from './services/smart-embeds/contentResolver.ts';
-
-import {
-	isValidBrand
-} from './services/smart-embeds/domains.ts';
-
-import {
 	INTERNAL_DOMAINS,
 	VALID_BRANDS,
 	enrichWithViewerState,
 	extractUrlsFromText,
+	getEligibleEmbedUrls,
 	getViewerState,
 	getViewerStates,
 	isInternalUrl,
@@ -395,25 +386,12 @@ import {
 	parseMultipleUrls,
 	processSmartEmbedUrls,
 	processSmartEmbedsFromText,
+	resolveEmbeds,
 	resolveSmartEmbed,
 	resolveSmartEmbeds,
 	resolveSmartEmbedsFromUrls,
 	sanitizeUrl
 } from './services/smart-embeds/index.ts';
-
-import {
-	extractUrlsFromText,
-	isInternalUrl,
-	parseContentUrl,
-	parseMultipleUrls,
-	sanitizeUrl
-} from './services/smart-embeds/urlParser.ts';
-
-import {
-	enrichWithViewerState,
-	getViewerState,
-	getViewerStates
-} from './services/smart-embeds/viewerState.ts';
 
 import {
 	clearState
@@ -613,11 +591,9 @@ export {
 	editComment,
 	emitProgressSaved,
 	enrichWithViewerState,
-	enrichWithViewerState,
 	enrollUserInGuidedCourse,
 	extractFromRecordId,
 	extractSanityUrl,
-	extractUrlsFromText,
 	extractUrlsFromText,
 	fetchAll,
 	fetchAllFilterOptions,
@@ -738,6 +714,7 @@ export {
 	getContentAwardsByIds,
 	getContentRows,
 	getDailySession,
+	getEligibleEmbedUrls,
 	getEndScreen,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
@@ -790,8 +767,6 @@ export {
 	getUserSignature,
 	getUserWeeklyStats,
 	getViewerState,
-	getViewerState,
-	getViewerStates,
 	getViewerStates,
 	getWeekNumber,
 	globalConfig,
@@ -805,13 +780,11 @@ export {
 	isContentLiked,
 	isContentLikedByIds,
 	isInternalUrl,
-	isInternalUrl,
 	isNextDay,
 	isNextLessonLocked,
 	isSameDate,
 	isUserFreeTier,
 	isUsernameAvailable,
-	isValidBrand,
 	isValidBrand,
 	jumpToContinueContent,
 	jumpToPost,
@@ -835,8 +808,6 @@ export {
 	otherStats,
 	otherStatsOffline,
 	parseContentUrl,
-	parseContentUrl,
-	parseMultipleUrls,
 	parseMultipleUrls,
 	pauseLiveEventPolling,
 	pinProgressRow,
@@ -867,11 +838,9 @@ export {
 	resetAllAwards,
 	resetAllLearningPaths,
 	resetPassword,
-	resolveSmartEmbed,
+	resolveEmbeds,
 	resolveSmartEmbed,
 	resolveSmartEmbeds,
-	resolveSmartEmbeds,
-	resolveSmartEmbedsFromUrls,
 	resolveSmartEmbedsFromUrls,
 	restoreComment,
 	restoreItemFromPlaylist,
@@ -880,7 +849,6 @@ export {
 	restorePurchases,
 	restoreUserActivity,
 	restoreUserPractice,
-	sanitizeUrl,
 	sanitizeUrl,
 	search,
 	searchAlgolia,

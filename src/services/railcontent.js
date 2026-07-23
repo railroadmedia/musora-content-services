@@ -75,6 +75,8 @@ export async function fetchTopComment(railcontentId) {
   return await GET(url)
 }
 
+const MAX_EMBEDS_PER_ENTRY = 5
+
 /**
  * @param {int} railcontentId
  * @param {int} page
@@ -82,8 +84,17 @@ export async function fetchTopComment(railcontentId) {
  * @returns {Promise<*|null>}
  */
 export async function fetchComments(railcontentId, page = 1, limit = 20) {
+  const { getEligibleEmbedUrls } = await import('./smart-embeds/index.ts')
   const url = `/api/content/v1/${railcontentId}/comments?page=${page}&limit=${limit}`
-  return await GET(url)
+
+  const commentsDB = await GET(url)
+
+  commentsDB.data = commentsDB.data.map((comment) => ({
+    ...comment,
+    ...getEligibleEmbedUrls(comment.comment, MAX_EMBEDS_PER_ENTRY),
+  }))
+console.log('rox::: fetchComments', commentsDB)
+  return commentsDB
 }
 
 /**

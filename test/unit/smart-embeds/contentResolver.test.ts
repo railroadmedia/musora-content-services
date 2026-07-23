@@ -9,12 +9,7 @@ jest.mock('../../../src/services/sanity.js', () => ({
   fetchByRailContentIds: jest.fn(),
 }))
 
-jest.mock('../../../src/services/urlBuilder', () => ({
-  generateContentUrl: jest.fn(),
-}))
-
 const { fetchByRailContentIds } = require('../../../src/services/sanity.js')
-const { generateContentUrl } = require('../../../src/services/urlBuilder')
 
 describe('resolveSmartEmbed', () => {
   beforeEach(() => {
@@ -40,11 +35,9 @@ describe('resolveSmartEmbed', () => {
     }
 
     fetchByRailContentIds.mockResolvedValue([mockContent])
-    generateContentUrl.mockResolvedValue('/drumeo/songs/transcription/123')
 
     const parsedUrl: SmartEmbedUrl = {
       brand: 'drumeo',
-      contentType: 'song',
       contentId: 123,
       originalUrl: 'https://www.musora.com/drumeo/songs/transcription/123',
     }
@@ -56,7 +49,7 @@ describe('resolveSmartEmbed', () => {
     expect(result?.content.title).toBe('Test Song')
     expect(result?.content.artistName).toBe('Test Artist')
     expect(result?.content.type).toBe('song')
-    expect(result?.generatedUrl).toBe('/drumeo/songs/transcription/123')
+    expect(result?.originalUrl).toBe('https://www.musora.com/drumeo/songs/transcription/123')
   })
 
   test('returns null for non-existent content', async () => {
@@ -64,7 +57,6 @@ describe('resolveSmartEmbed', () => {
 
     const parsedUrl: SmartEmbedUrl = {
       brand: 'drumeo',
-      contentType: 'song',
       contentId: 999,
       originalUrl: 'https://www.musora.com/drumeo/songs/transcription/999',
     }
@@ -86,7 +78,6 @@ describe('resolveSmartEmbed', () => {
 
     const parsedUrl: SmartEmbedUrl = {
       brand: 'drumeo',
-      contentType: 'song',
       contentId: 123,
       originalUrl: 'https://www.musora.com/drumeo/songs/transcription/123',
     }
@@ -120,20 +111,16 @@ describe('resolveSmartEmbeds', () => {
     ]
 
     fetchByRailContentIds.mockResolvedValue(mockContents)
-    generateContentUrl.mockImplementation(({ id }) => Promise.resolve(`/drumeo/content/${id}`))
 
     const parsedUrls: SmartEmbedUrl[] = [
       {
         brand: 'drumeo',
-        contentType: 'song',
         contentId: 123,
         originalUrl: 'https://www.musora.com/drumeo/songs/transcription/123',
       },
       {
         brand: 'drumeo',
-        contentType: 'course-lesson',
         contentId: 456,
-        parentId: 100,
         originalUrl: 'https://www.musora.com/drumeo/lessons/course/100/456',
       },
     ]
@@ -155,7 +142,6 @@ describe('resolveSmartEmbeds', () => {
     const parsedUrls: SmartEmbedUrl[] = [
       {
         brand: 'drumeo',
-        contentType: 'song',
         contentId: 123,
         originalUrl: 'https://www.musora.com/drumeo/songs/transcription/123',
       },
@@ -181,7 +167,6 @@ describe('resolveSmartEmbedsFromUrls', () => {
     }
 
     fetchByRailContentIds.mockResolvedValue([mockContent])
-    generateContentUrl.mockResolvedValue('/drumeo/songs/transcription/123')
 
     const { results, unsupported } = await resolveSmartEmbedsFromUrls([
       'https://www.musora.com/drumeo/songs/transcription/123',

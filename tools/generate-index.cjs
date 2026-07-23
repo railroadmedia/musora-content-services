@@ -93,6 +93,11 @@ treeElements.forEach((treeNode) => {
       addFunctionsToFileExports(path.join(filePath, 'index.ts'), treeNode + '/index.ts')
       return
     }
+    // Skip smart-embeds directory except its index.ts barrel export
+    if (treeNode === 'smart-embeds') {
+      addFunctionsToFileExports(path.join(filePath, 'index.ts'), treeNode + '/index.ts')
+      return
+    }
 
     const subDir = fs.readdirSync(filePath)
     subDir.forEach((subFile) => {

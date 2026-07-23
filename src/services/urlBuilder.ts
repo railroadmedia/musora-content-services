@@ -124,6 +124,13 @@ export async function generateContentUrl({
     return `/${brand}/lessons/course-collection/overview/${id}`
   }
 
+  // Bare learning-path reference (no specific lesson within it) — the canonical
+  // entry point for a learning path on its own is its intro page, not /method/lesson/{id}
+  // (which isn't a valid route without an accompanying lesson id)
+  if (type === 'learning-path-v2' && !navigateTo && !parentId) {
+    return `/${brand}/method/intro/${id}`
+  }
+
   // Recursive helper to fetch navigateTo with optional deep fetching
   const fetchNavigateToRecursive = async (contentId: number | string, shouldGoDeeper: boolean): Promise<any> => {
     const content = await fetchByRailContentIds([contentId])

@@ -65,29 +65,16 @@ describe('parseContentUrl - songs', () => {
     const result = parseContentUrl('https://www.musora.com/drumeo/songs/transcription/123')
     expect(result).toEqual({
       brand: 'drumeo',
-      contentType: 'song',
       contentId: 123,
       originalUrl: 'https://www.musora.com/drumeo/songs/transcription/123',
     })
   })
 
-  test('parses song-tutorial URL', () => {
-    const result = parseContentUrl('https://www.musora.com/drumeo/songs/tutorial/456')
-    expect(result).toEqual({
-      brand: 'drumeo',
-      contentType: 'song-tutorial',
-      contentId: 456,
-      originalUrl: 'https://www.musora.com/drumeo/songs/tutorial/456',
-    })
-  })
-
-  test('parses song-tutorial-lesson URL with parent', () => {
+  test('parses song-tutorial-lesson URL with parent, taking the last segment as the id', () => {
     const result = parseContentUrl('https://www.musora.com/drumeo/songs/tutorial/456/789')
     expect(result).toEqual({
       brand: 'drumeo',
-      contentType: 'song-tutorial-lesson',
       contentId: 789,
-      parentId: 456,
       originalUrl: 'https://www.musora.com/drumeo/songs/tutorial/456/789',
     })
   })
@@ -96,7 +83,6 @@ describe('parseContentUrl - songs', () => {
     const result = parseContentUrl('https://www.musora.com/drumeo/songs/play-along/101')
     expect(result).toEqual({
       brand: 'drumeo',
-      contentType: 'play-along',
       contentId: 101,
       originalUrl: 'https://www.musora.com/drumeo/songs/play-along/101',
     })
@@ -106,7 +92,6 @@ describe('parseContentUrl - songs', () => {
     const result = parseContentUrl('https://www.musora.com/guitareo/songs/jam-track/202')
     expect(result).toEqual({
       brand: 'guitareo',
-      contentType: 'jam-track',
       contentId: 202,
       originalUrl: 'https://www.musora.com/guitareo/songs/jam-track/202',
     })
@@ -114,13 +99,11 @@ describe('parseContentUrl - songs', () => {
 })
 
 describe('parseContentUrl - lessons', () => {
-  test('parses course-lesson URL', () => {
+  test('parses course-lesson URL, taking the last segment as the id', () => {
     const result = parseContentUrl('https://www.musora.com/drumeo/lessons/course/100/200')
     expect(result).toEqual({
       brand: 'drumeo',
-      contentType: 'course-lesson',
       contentId: 200,
-      parentId: 100,
       originalUrl: 'https://www.musora.com/drumeo/lessons/course/100/200',
     })
   })
@@ -129,29 +112,29 @@ describe('parseContentUrl - lessons', () => {
     const result = parseContentUrl('https://www.musora.com/drumeo/lessons/course-collection/overview/300')
     expect(result).toEqual({
       brand: 'drumeo',
-      contentType: 'course-collection',
       contentId: 300,
       originalUrl: 'https://www.musora.com/drumeo/lessons/course-collection/overview/300',
     })
   })
 
-  test('parses live URL', () => {
+  test('parses live URL, taking the segment before "live" as the id', () => {
     const result = parseContentUrl('https://www.musora.com/drumeo/lessons/400/live')
     expect(result).toEqual({
       brand: 'drumeo',
-      contentType: 'live',
       contentId: 400,
       originalUrl: 'https://www.musora.com/drumeo/lessons/400/live',
     })
+  })
+
+  test('returns null for a live URL with no id before "live"', () => {
+    expect(parseContentUrl('https://www.musora.com/drumeo/lessons/live')).toBeNull()
   })
 
   test('parses skill-pack-lesson URL', () => {
     const result = parseContentUrl('https://www.musora.com/drumeo/lessons/skill-pack/500/600')
     expect(result).toEqual({
       brand: 'drumeo',
-      contentType: 'skill-pack-lesson',
       contentId: 600,
-      parentId: 500,
       originalUrl: 'https://www.musora.com/drumeo/lessons/skill-pack/500/600',
     })
   })
@@ -160,7 +143,6 @@ describe('parseContentUrl - lessons', () => {
     const result = parseContentUrl('https://www.musora.com/drumeo/lessons/workout/700')
     expect(result).toEqual({
       brand: 'drumeo',
-      contentType: 'workout',
       contentId: 700,
       originalUrl: 'https://www.musora.com/drumeo/lessons/workout/700',
     })
@@ -170,7 +152,6 @@ describe('parseContentUrl - lessons', () => {
     const result = parseContentUrl('https://www.musora.com/pianote/lessons/quick-tips/800')
     expect(result).toEqual({
       brand: 'pianote',
-      contentType: 'quick-tips',
       contentId: 800,
       originalUrl: 'https://www.musora.com/pianote/lessons/quick-tips/800',
     })
@@ -178,13 +159,11 @@ describe('parseContentUrl - lessons', () => {
 })
 
 describe('parseContentUrl - method', () => {
-  test('parses learning-path-lesson URL', () => {
+  test('parses learning-path-lesson URL, taking the last segment as the id', () => {
     const result = parseContentUrl('https://www.musora.com/drumeo/method/lesson/900/1000')
     expect(result).toEqual({
       brand: 'drumeo',
-      contentType: 'learning-path-lesson-v2',
       contentId: 1000,
-      parentId: 900,
       originalUrl: 'https://www.musora.com/drumeo/method/lesson/900/1000',
     })
   })
@@ -193,10 +172,22 @@ describe('parseContentUrl - method', () => {
     const result = parseContentUrl('https://www.musora.com/drumeo/method/lesson/1100')
     expect(result).toEqual({
       brand: 'drumeo',
-      contentType: 'learning-path-v2',
       contentId: 1100,
       originalUrl: 'https://www.musora.com/drumeo/method/lesson/1100',
     })
+  })
+
+  test('parses learning-path intro URL', () => {
+    const result = parseContentUrl('https://www.musora.com/drumeo/method/intro/1100')
+    expect(result).toEqual({
+      brand: 'drumeo',
+      contentId: 1100,
+      originalUrl: 'https://www.musora.com/drumeo/method/intro/1100',
+    })
+  })
+
+  test('returns null for method welcome URL (no content id)', () => {
+    expect(parseContentUrl('https://www.musora.com/drumeo/method/welcome')).toBeNull()
   })
 })
 
@@ -225,6 +216,15 @@ describe('parseContentUrl - edge cases', () => {
     )
     expect(result?.originalUrl).toBe('https://www.musora.com/drumeo/songs/transcription/123')
   })
+
+  test('parses a songs URL with an unrecognized type segment, since only the last segment is used', () => {
+    const result = parseContentUrl('https://www.musora.com/drumeo/songs/some-new-type/123')
+    expect(result).toEqual({
+      brand: 'drumeo',
+      contentId: 123,
+      originalUrl: 'https://www.musora.com/drumeo/songs/some-new-type/123',
+    })
+  })
 })
 
 describe('extractUrlsFromText', () => {
@@ -245,6 +245,20 @@ describe('extractUrlsFromText', () => {
 
   test('returns empty array for text without URLs', () => {
     expect(extractUrlsFromText('No URLs here')).toEqual([])
+  })
+
+  test('excludes URLs inside a data-embed="false" anchor', () => {
+    const text =
+      'Keeping this one as a link: <a href="https://www.musora.com/drumeo/songs/transcription/123" data-embed="false">123</a>'
+    expect(extractUrlsFromText(text)).toEqual([])
+  })
+
+  test('still extracts unmarked anchor URLs alongside an excluded one', () => {
+    const text =
+      '<a href="https://www.musora.com/drumeo/songs/transcription/123" data-embed="false">123</a> but check this out https://www.musora.com/drumeo/lessons/course/100/200'
+    expect(extractUrlsFromText(text)).toEqual([
+      'https://www.musora.com/drumeo/lessons/course/100/200',
+    ])
   })
 })
 

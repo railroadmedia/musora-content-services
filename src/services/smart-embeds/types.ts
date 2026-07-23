@@ -1,8 +1,6 @@
 export interface SmartEmbedUrl {
   brand: string
-  contentType: string
   contentId: number
-  parentId?: number
   originalUrl: string
 }
 
@@ -29,7 +27,6 @@ export interface SmartEmbedContent {
 export interface SmartEmbedResult {
   content: SmartEmbedContent
   originalUrl: string
-  generatedUrl: string
 }
 
 export interface SmartEmbedViewerState {

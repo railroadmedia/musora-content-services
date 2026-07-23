@@ -2,41 +2,24 @@ export const VALID_BRANDS = ['drumeo', 'pianote', 'guitareo', 'singeo', 'playbas
 
 export type ValidBrand = (typeof VALID_BRANDS)[number]
 
-export const INTERNAL_DOMAINS: readonly string[] = [
-  // Production domains - Musora
-  'www.musora.com',
-  'musora.com',
+// Root domains for Musora and each brand. Any hostname that IS one of these, or is a
+// subdomain of one of these (www., app., devapp., staging., beta., etc.), is internal —
+// so new subdomains don't require touching this file.
+const ROOT_DOMAINS: readonly string[] = ['musora.com', ...VALID_BRANDS.map((brand) => `${brand}.com`)]
 
-  // Production domains - Brand specific
-  'www.drumeo.com',
-  'drumeo.com',
-  'www.pianote.com',
-  'pianote.com',
-  'www.guitareo.com',
-  'guitareo.com',
-  'www.singeo.com',
-  'singeo.com',
-  'www.playbass.com',
-  'playbass.com',
+const LOCAL_HOSTS: readonly string[] = ['localhost', '127.0.0.1']
 
-  // Staging/Beta domains
-  'staging.musora.com',
-  'beta.musora.com',
-  'staging.drumeo.com',
-  'beta.drumeo.com',
-  'staging.pianote.com',
-  'beta.pianote.com',
-  'staging.guitareo.com',
-  'beta.guitareo.com',
-  'staging.singeo.com',
-  'beta.singeo.com',
-  'staging.playbass.com',
-  'beta.playbass.com',
+export const INTERNAL_DOMAINS: readonly string[] = [...ROOT_DOMAINS, ...LOCAL_HOSTS]
 
-  // Development/Local domains
-  'localhost',
-  '127.0.0.1',
-]
+export function isInternalHostname(hostname: string): boolean {
+  const lower = hostname.toLowerCase()
+
+  if (LOCAL_HOSTS.includes(lower)) {
+    return true
+  }
+
+  return ROOT_DOMAINS.some((root) => lower === root || lower.endsWith(`.${root}`))
+}
 
 export const TRACKING_PARAMS_TO_REMOVE = [
   'utm_source',

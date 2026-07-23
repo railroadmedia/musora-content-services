@@ -1,5 +1,4 @@
 import { fetchByRailContentIds } from '../sanity.js'
-import { generateContentUrl } from '../urlBuilder'
 import { SmartEmbedUrl, SmartEmbedContent, SmartEmbedResult } from './types'
 
 interface SanityContent {
@@ -95,28 +94,15 @@ export async function resolveSmartEmbeds(
       continue
     }
 
-    if (content.status !== 'published' && content.status !== 'scheduled') {
+    if (content.status !== 'published' && content.status !== 'scheduled' && content.status !== 'unlisted') {
       continue
     }
 
     const smartEmbedContent = mapToSmartEmbedContent(content)
 
-    let generatedUrl: string
-    try {
-      generatedUrl = await generateContentUrl({
-        id: content.id,
-        type: content.type,
-        parentId: parsedUrl.parentId || content.parent_id || undefined,
-        brand: content.brand,
-      })
-    } catch {
-      generatedUrl = parsedUrl.originalUrl
-    }
-
     results.push({
       content: smartEmbedContent,
       originalUrl: parsedUrl.originalUrl,
-      generatedUrl,
     })
   }
 
