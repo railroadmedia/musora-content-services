@@ -110,6 +110,17 @@ export interface UpdatePlayerSettingsData {
   playlist_auto_next?: boolean
 }
 
+export interface PracticeGoals {
+  weekly_target_days: number | null
+  daily_target_minutes: number | null
+  updated_at: string | null
+}
+
+export interface UpdatePracticeGoalsData {
+  weekly_target_days?: number
+  daily_target_minutes?: number
+}
+
 export interface StreakDTO {
   type: 'week' | 'day'
   length: number
