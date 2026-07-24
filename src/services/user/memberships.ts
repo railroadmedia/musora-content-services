@@ -26,7 +26,7 @@ export interface UserMembershipResponse {
   need_lifetime_upgrade: boolean
   sub_account_data: MultiUserAccountResponse // post multiUserAccount data
   upgrade_options: UpgradeOption[] // post multiuser account data
-  subscription_data: {
+  user_subscriber_data: {
     has_had_apple_subscription: boolean
     has_had_google_subscription: boolean
     has_had_web_subscription: boolean
