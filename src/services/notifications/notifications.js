@@ -3,9 +3,9 @@
  */
 import { GET, PUT, DELETE } from '../../infrastructure/http/HttpClient.ts'
 import  eventsAPI from '../eventsAPI.js'
-import './types.js'
-import {globalConfig} from "../config";
-import {fetchLiveEvent} from "../sanity";
+import '../user/types.js'
+import {globalConfig} from "../config.js";
+import {fetchLiveEvent} from "../sanity.js";
 
 const baseUrl = `/api/notifications`
 

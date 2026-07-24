@@ -1,7 +1,7 @@
-import { initializeTestService } from '../initializeTests.js'
-import * as UserNotifications from "../../src/services/user/notifications.js";
+import { initializeTestService } from '../../initializeTests.js'
+import * as UserNotifications from "../../../src/services/notifications/notifications.js";
 
-jest.mock('../../src/infrastructure/http/HttpClient.ts', () => ({
+jest.mock('../../../src/infrastructure/http/HttpClient.ts', () => ({
   GET: jest.fn(),
   POST: jest.fn(),
   PUT: jest.fn(),
@@ -10,19 +10,19 @@ jest.mock('../../src/infrastructure/http/HttpClient.ts', () => ({
   HttpClient: jest.fn(),
 }))
 
-jest.mock('../../src/services/railcontent.js', () => ({
+jest.mock('../../../src/services/railcontent.js', () => ({
   fetchUserPermissionsData: jest.fn(() => ({ permissions: [78, 91, 92], isAdmin: false })),
   fetchHandler: jest.fn(),
 }))
 
-jest.mock('../../src/services/eventsAPI.js', () => ({
+jest.mock('../../../src/services/eventsAPI.js', () => ({
   __esModule: true,
   default: {
     pauseLiveEventCheck: jest.fn().mockResolvedValue(undefined),
   }
 }))
 
-import { GET, PUT, DELETE } from '../../src/infrastructure/http/HttpClient'
+import { GET, PUT, DELETE } from '../../../src/infrastructure/http/HttpClient'
 
 const baseUrl = `/api/notifications`
 

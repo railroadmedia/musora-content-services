@@ -230,6 +230,28 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	deleteAllNotifications,
+	deleteNotification,
+	fetchLiveEventPollingState,
+	fetchNotificationSettings,
+	fetchNotifications,
+	fetchUnreadCount,
+	markAllNotificationsAsRead,
+	markNotificationAsRead,
+	markNotificationAsUnread,
+	pauseLiveEventPolling,
+	restoreNotification,
+	startLiveEventPolling,
+	updateNotificationSetting
+} from './services/notifications/notifications.js';
+
+import {
+	blockContentToHtml,
+	fetchAllPublicAnnouncements,
+	fetchPublicAnnouncement
+} from './services/notifications/public-announcements.ts';
+
+import {
 	getRecentActivityOffline
 } from './services/offline/activities.ts';
 
@@ -434,22 +456,6 @@ import {
 } from './services/user/memberships.ts';
 
 import {
-	deleteAllNotifications,
-	deleteNotification,
-	fetchLiveEventPollingState,
-	fetchNotificationSettings,
-	fetchNotifications,
-	fetchUnreadCount,
-	markAllNotificationsAsRead,
-	markNotificationAsRead,
-	markNotificationAsUnread,
-	pauseLiveEventPolling,
-	restoreNotification,
-	startLiveEventPolling,
-	updateNotificationSetting
-} from './services/user/notifications.js';
-
-import {
 	getOnboardingRecommendedContent,
 	getOnboardingStatus,
 	initializeOnboardingFlow,
@@ -523,6 +529,7 @@ declare module 'musora-content-services' {
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
+		blockContentToHtml,
 		blockUser,
 		blockedUsers,
 		buildEntityAndTotalQuery,
@@ -574,6 +581,7 @@ declare module 'musora-content-services' {
 		extractSanityUrl,
 		fetchAll,
 		fetchAllFilterOptions,
+		fetchAllPublicAnnouncements,
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
@@ -636,6 +644,7 @@ declare module 'musora-content-services' {
 		fetchPlaylistItems,
 		fetchPost,
 		fetchPosts,
+		fetchPublicAnnouncement,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,

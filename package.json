@@ -45,6 +45,7 @@
     "ts-jest": "^29.2.4"
   },
   "dependencies": {
+    "@portabletext/to-html": "^2.0.14",
     "@sanity/client": "^5.4.2",
     "dayjs": "^1.11.13",
     "docdash": "^2.0.2",
