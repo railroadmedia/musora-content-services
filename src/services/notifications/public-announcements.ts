@@ -6,7 +6,8 @@ interface PublicAnnouncement {
   title: string
   slug: string
   published_on: string
-  message?: string
+  description: string
+  message: string
   forum_data?: Record<string, ForumData>
 }
 
@@ -31,6 +32,7 @@ export async function fetchPublicAnnouncement(slug?: string): Promise<PublicAnno
       title,
       'slug': slug.current,
       published_on,
+      description,
       message,
       forum_data
     }
