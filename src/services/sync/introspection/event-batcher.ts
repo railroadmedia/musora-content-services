@@ -1,5 +1,5 @@
-import { globalConfig } from '../../config.js'
 import SyncContext from '../context'
+import { diagnosticsFetch } from './diagnostics-fetch'
 
 export type DiagnosticEvent = {
   model_name: string
@@ -14,13 +14,8 @@ const EVENT_DEBOUNCE_MS = 2000
 async function uploadEvents(events: DiagnosticEvent[], context: SyncContext): Promise<void> {
   if (!events.length) return
 
-  await fetch(`${globalConfig.baseUrl}/api/sync/v1/diagnostics/events`, {
+  await diagnosticsFetch('/events', {
     method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(globalConfig.sessionConfig?.token ? { Authorization: `Bearer ${globalConfig.sessionConfig.token}` } : {}),
-    },
     body: JSON.stringify({
       client_id: context.session.getClientId(),
       client_session_id: context.session.getSessionId() ?? '',

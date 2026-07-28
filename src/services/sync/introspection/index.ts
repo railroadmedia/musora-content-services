@@ -2,11 +2,11 @@ import { Database } from '@nozbe/watermelondb'
 import type { CompressionWorkerConstructor } from '../index'
 import * as models from '../models'
 import { compressInWorker } from './compression'
-import { globalConfig } from '../../config.js'
 import SyncContext from '../context'
 import type SyncStore from '../store'
 import { readPersistedTables } from './persisted-tables'
 import { createEventBatcher, DiagnosticEvent } from './event-batcher'
+import { diagnosticsFetch } from './diagnostics-fetch'
 
 export type DumpMode = 'off' | 'interval'
 export type EventMode = 'off' | 'debounced_write' | 'interval'
@@ -19,12 +19,19 @@ export type IntrospectionModelConfig = {
 
 export type IntrospectionConfig = Record<string, IntrospectionModelConfig>
 
-export async function fetchConfig(): Promise<IntrospectionConfig> {
-  return {
-    ContentProgress: { dumpMode: 'interval', dumpInterval: 21600000, eventMode: 'debounced_write' },
-    ContentLike: { dumpMode: 'interval', dumpInterval: 21600000, eventMode: 'debounced_write' },
-    Practice: { dumpMode: 'interval', dumpInterval: 21600000, eventMode: 'debounced_write' },
+let configPromise: Promise<IntrospectionConfig | null> | null = null
+
+export async function fetchConfig(): Promise<IntrospectionConfig | null> {
+  if (!configPromise) {
+    configPromise = diagnosticsFetch('/settings').then((response) =>
+      response.ok ? (response.json() as Promise<IntrospectionConfig>) : null
+    )
   }
+
+  const config = await configPromise
+  if (!config) configPromise = null
+
+  return config
 }
 
 const LAST_DUMP_AT_KEY = 'introspection_last_dump_at'
@@ -65,13 +72,8 @@ async function readTables(database: Database, modelNames: string[]): Promise<Rec
 }
 
 async function uploadSnapshot(payload: string, context: SyncContext): Promise<void> {
-  await fetch(`${globalConfig.baseUrl}/api/sync/v1/diagnostics/snapshot`, {
+  await diagnosticsFetch('/snapshot', {
     method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(globalConfig.sessionConfig?.token ? { Authorization: `Bearer ${globalConfig.sessionConfig.token}` } : {}),
-    },
     body: JSON.stringify({
       client_id: context.session.getClientId(),
       client_session_id: context.session.getSessionId() ?? '',
@@ -91,6 +93,8 @@ async function performDump(database: Database, modelNames: string[], context: Sy
 
 export async function triggerManualDump(database: Database, context: SyncContext, CompressionWorker?: CompressionWorkerConstructor) {
   const config = await fetchConfig()
+  if (!config) return
+
   return performDump(database, Object.keys(config), context, CompressionWorker)
 }
 
@@ -136,6 +140,8 @@ function buildDiagnosticEvents(
 
 async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<any>>, context: SyncContext) {
   const config = await fetchConfig()
+  if (!config) return () => {}
+
   const activeModelNames = Object.entries(config)
     .filter(([, modelConfig]) => modelConfig.eventMode !== 'off')
     .map(([modelName]) => modelName)
@@ -170,14 +176,16 @@ export default function setup(context: SyncContext, database: Database, storesRe
 
   async function scheduleNextDump() {
     const config = await fetchConfig()
+    if (!config) return
+
     const dumpableModelNames = Object.entries(config)
-      .filter(([, modelConfig]) => modelConfig.dumpMode === 'interval')
+      .filter(([, modelConfig]) => modelConfig['dump_mode'] === 'interval')
       .map(([modelName]) => modelName)
     if (!dumpableModelNames.length) return
 
-    const minInterval = Math.min(...dumpableModelNames.map((modelName) => config[modelName].dumpInterval))
+    const minIntervalMinutes = Math.max(0, Math.min(...dumpableModelNames.map((modelName) => config[modelName]['dump_interval_minutes'])) || 1440)
     const lastDumpAt = await getLastDumpAt(database)
-    const delay = Math.max(0, (lastDumpAt ?? 0) + minInterval - Date.now())
+    const delay = Math.max(0, (lastDumpAt ?? 0) + (minIntervalMinutes * 60 * 1000) - Date.now())
 
     timer = setTimeout(async () => {
       await performDump(database, dumpableModelNames, context, CompressionWorker)
