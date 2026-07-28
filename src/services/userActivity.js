@@ -113,12 +113,22 @@ export async function getUserWeeklyStats() {
   }
 
   const streakData = await streakCalculator.getStreakData()
-
+ console.log('rox::: getUserWeeklyStats ',  {
+   data: {
+     dailyActiveStats: dailyStats,
+     streakMessage: streakData.streakMessage,
+     practices: weekPractices,
+     currentWeekPracticeDays: streakData.currentWeekPracticeDays,
+     todaysPracticeSeconds: streakData.todaysPracticeSeconds,
+   }
+ })
   return {
     data: {
       dailyActiveStats: dailyStats,
       streakMessage: streakData.streakMessage,
       practices: weekPractices,
+      currentWeekPracticeDays: streakData.currentWeekPracticeDays,
+      todaysPracticeSeconds: streakData.todaysPracticeSeconds,
     },
   }
 }
@@ -417,9 +427,12 @@ export async function restorePracticeSession(date) {
  * @param {Object} params - Parameters for fetching practice sessions.
  * @param {string} params.day - The date for which practice sessions should be retrieved (format: YYYY-MM-DD).
  * @param {number} [params.userId=globalConfig.sessionConfig.userId] - Optional user ID to retrieve sessions for a specific user. Defaults to the logged-in user.
+ * @param {number} [params.page=1] - The page number, only applied when `limit` is set.
+ * @param {number} [params.limit] - Max sessions to return; omit to return all of the day's sessions unpaginated.
  * @returns {Promise<Object>} - A promise that resolves to an object containing:
- *   - `practices`: An array of formatted practice session data.
- *   - `practiceDuration`: Total practice duration (in seconds) for the given day.
+ *   - `practices`: An array of formatted practice session data (paginated if `limit` is set).
+ *   - `practiceDuration`: Total practice duration (in seconds) for the whole day, regardless of pagination.
+ *   - `total`: Total number of sessions for the day, regardless of pagination.
  *
  * @example
  * // Get practice sessions for the current user on a specific day
@@ -434,7 +447,7 @@ export async function restorePracticeSession(date) {
  *   .catch(error => console.error(error));
  */
 export async function getPracticeSessions(params = {}, options = {}) {
-  const { day, userId = globalConfig.sessionConfig.userId } = params
+  const { day, userId = globalConfig.sessionConfig.userId, page = 1, limit } = params
 
   let data
 
@@ -455,15 +468,74 @@ export async function getPracticeSessions(params = {}, options = {}) {
     data = query.data
   }
 
-  if (!data.length) return { data: { practices: [], practiceDuration: 0 } }
+  if (!data.length) return { data: { practices: [], practiceDuration: 0, total: 0 } }
 
-  const formattedMeta = await formatPracticeMeta(data)
-  const practiceDuration = Math.round(formattedMeta.reduce(
-    (total, practice) => total + (practice.duration || 0),
-    0
-  ))
+  // Total reflects the full day, not just the current page, so goal-progress
+  // math stays correct regardless of how the session list is paginated.
+  const practiceDuration = Math.round(
+    data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0)
+  )
 
-  return { data: { practices: formattedMeta, practiceDuration } }
+  const pagedData = limit ? data.slice((page - 1) * limit, page * limit) : data
+  const formattedMeta = await formatPracticeMeta(pagedData)
+
+  return { data: { practices: formattedMeta, practiceDuration, total: data.length } }
+}
+
+/**
+ * Retrieves and formats the current user's practice sessions for the current
+ * Monday-Sunday week, enriched with content metadata (title, thumbnail, etc.) in a
+ * single batched lookup — for the weekly practice view where individual sessions can
+ * be displayed, edited, or deleted (unlike getUserWeeklyStats, which only returns raw
+ * per-day counts).
+ *
+ * @param {Object} [params={}] - Parameters for fetching the week's practice sessions.
+ * @param {number} [params.page=1] - The page number, only applied when `limit` is set.
+ * @param {number} [params.limit] - Max sessions to return; omit to return all of the week's sessions unpaginated.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing:
+ *   - `sessionsByDate`: Formatted practice sessions grouped by date (YYYY-MM-DD), paginated if `limit` is set.
+ *   - `practiceDuration`: Total practice duration (in seconds) for the whole week, regardless of pagination.
+ *   - `total`: Total number of sessions for the week, regardless of pagination.
+ *
+ * @example
+ * getWeeklyPracticeSessions()
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function getWeeklyPracticeSessions(params = {}, options = {}) {
+  const { page = 1, limit } = params
+
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const startOfWeek = getMonday(new Date(), timeZone)
+  const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
+
+  if (options.pull) {
+    await db.practices.pull()
+  } else {
+    db.practices.pull()
+  }
+
+  const query = await db.practices.queryAll(Q.where('date', Q.oneOf(weekDays)), Q.sortBy('date', 'desc'))
+  const data = query.data
+
+  if (!data.length) return { data: { sessionsByDate: {}, practiceDuration: 0, total: 0 } }
+
+  // Total reflects the full week, not just the current page, so goal-progress
+  // math stays correct regardless of how the session list is paginated.
+  const practiceDuration = Math.round(
+    data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0)
+  )
+
+  const pagedData = limit ? data.slice((page - 1) * limit, page * limit) : data
+  const formattedMeta = await formatPracticeMeta(pagedData)
+
+  const sessionsByDate = formattedMeta.reduce((acc, practice) => {
+    acc[practice.date] = acc[practice.date] || []
+    acc[practice.date].push(practice)
+    return acc
+  }, {})
+
+  return { data: { sessionsByDate, practiceDuration, total: data.length } }
 }
 
 /**
@@ -575,12 +647,21 @@ export async function updatePracticeNotes(payload) {
 }
 
 export function getStreaksAndMessage(practices) {
-  let { currentDailyStreak, currentWeeklyStreak, streakMessage } = calculateStreaks(practices, true)
-
+  let { currentDailyStreak, currentWeeklyStreak, streakMessage, currentWeekPracticeDays } = calculateStreaks(
+    practices,
+    true
+  )
+console.log('rox::: getStreakMessage', {
+  currentDailyStreak,
+  currentWeeklyStreak,
+  streakMessage,
+  currentWeekPracticeDays,
+})
   return {
     currentDailyStreak,
     currentWeeklyStreak,
     streakMessage,
+    currentWeekPracticeDays,
   }
 }
 
@@ -604,6 +685,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     return {
       currentDailyStreak: 0,
       currentWeeklyStreak: 0,
+      currentWeekPracticeDays: 0,
       streakMessage: streakMessages.startStreak,
     }
   }
@@ -649,13 +731,17 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   }
   currentWeeklyStreak = weeklyStreak
 
+  // Qualifying days (calendar days with at least one recorded practice) within the
+  // current Monday-anchored week — used for the weekly practice-days target progress.
+  let today = new Date()
+  let currentWeekStart = getMonday(today, timeZone)
+  let currentWeekPracticeDays = sortedPracticeDays.filter((date) => date >= currentWeekStart).length
+
   // Calculate streak message only if includeStreakMessage is true
   if (includeStreakMessage) {
-    let today = new Date()
     let yesterday = new Date(today)
     yesterday.setDate(today.getDate() - 1)
 
-    let currentWeekStart = getMonday(today, timeZone)
     let lastWeekStart = currentWeekStart.subtract(7, 'days')
 
     let hasYesterdayPractice = sortedPracticeDays.some((date) => isSameDate(date, yesterday))
@@ -695,7 +781,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     }
   }
 
-  return { currentDailyStreak, currentWeeklyStreak, streakMessage }
+  return { currentDailyStreak, currentWeeklyStreak, streakMessage, currentWeekPracticeDays }
 }
 
 /**
@@ -806,6 +892,7 @@ async function formatPracticeMeta(practices = []) {
     return {
       id: practice.id,
       auto: practice.auto,
+      date: practice.date,
       thumbnail: practice.content_id ? content?.thumbnail : practice.thumbnail_url || '',
       thumbnail_url: practice.content_id ? content?.thumbnail : practice.thumbnail_url || '',
       duration: practice.duration_seconds || 0,
