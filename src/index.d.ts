@@ -30,6 +30,7 @@ import {
 } from './services/content/artist.ts';
 
 import {
+	fetchLearningPathCount,
 	fetchSongAndLessonCounts
 } from './services/content/counts.ts';
 
@@ -619,6 +620,7 @@ declare module 'musora-content-services' {
 		fetchInvite,
 		fetchLastSubscriptionPlatform,
 		fetchLatestThreads,
+		fetchLearningPathCount,
 		fetchLearningPathLessons,
 		fetchLearningPathProgressCheckLessons,
 		fetchLeaving,
