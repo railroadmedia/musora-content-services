@@ -650,6 +650,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   // Calculate streak message only if includeStreakMessage is true
   if (includeStreakMessage) {
     let today = new Date()
+    today.setHours(0, 0, 0, 0)
     let yesterday = new Date(today)
     yesterday.setDate(today.getDate() - 1)
 
