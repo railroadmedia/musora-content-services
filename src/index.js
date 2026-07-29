@@ -488,6 +488,10 @@ import {
 } from './services/user/profile.ts';
 
 import {
+	verifyOAuthToken
+} from './services/user/session.ts';
+
+import {
 	generateAuthSessionUrl,
 	login,
 	logout
@@ -877,6 +881,7 @@ export {
 	userOnboardingForBrand,
 	verifyImageSRC,
 	verifyLocalDataContext,
+	verifyOAuthToken,
 	whoLikedComment,
 	whoLikedContent,
 	whoLikedPost,

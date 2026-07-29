@@ -484,6 +484,10 @@ import {
 } from './services/user/profile.ts';
 
 import {
+	verifyOAuthToken
+} from './services/user/session.ts';
+
+import {
 	generateAuthSessionUrl,
 	login,
 	logout
@@ -878,6 +882,7 @@ declare module 'musora-content-services' {
 		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
+		verifyOAuthToken,
 		whoLikedComment,
 		whoLikedContent,
 		whoLikedPost,
