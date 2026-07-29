@@ -595,9 +595,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   let sortedPracticeDays = Object.keys(practices)
     .map((dateStr) => {
       const [year, month, day] = dateStr.split('-').map(Number)
-      const newDate = new Date()
-      newDate.setFullYear(year, month - 1, day)
-      return newDate
+      return new Date(year, month - 1, day, 0, 0, 0, 0)
     })
     .sort((a, b) => a - b)
   if (sortedPracticeDays.length === 0) {
