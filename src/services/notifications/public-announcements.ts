@@ -53,8 +53,9 @@ export async function fetchPublicAnnouncement(slug?: string): Promise<PublicAnno
  * @returns {Promise<PublicAnnouncement[]|null>} Array of public announcement objects, or null if none found
  */
 export async function fetchAllPublicAnnouncements(spanDays: number = 365): Promise<PublicAnnouncement[] | null> {
+  const rawNowDate = new Date()
   const rawNow = new Date().getTime()
-  const nowDate = getSanityDate(rawNow)
+  const nowDate = getSanityDate(rawNowDate)
   const startDate = getSanityDate(new Date(rawNow - spanDays * 24 * 60 * 60 * 1000))
 
   const query = `*[_type == 'public-announcement' && published_on >= '${startDate}' && published_on <= '${nowDate}']
