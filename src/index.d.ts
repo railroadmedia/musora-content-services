@@ -17,6 +17,7 @@ import {
 } from './services/awards/award-query.js';
 
 import {
+	getMCSVersion,
 	globalConfig,
 	initializeEnvVar,
 	initializeService
@@ -27,6 +28,10 @@ import {
 	fetchArtistLessons,
 	fetchArtists
 } from './services/content/artist.ts';
+
+import {
+	fetchSongAndLessonCounts
+} from './services/content/counts.ts';
 
 import {
 	fetchGenreBySlug,
@@ -660,6 +665,7 @@ declare module 'musora-content-services' {
 		fetchShowsData,
 		fetchSiblingContent,
 		fetchSimilarItems,
+		fetchSongAndLessonCounts,
 		fetchSongArtistCount,
 		fetchSongById,
 		fetchTabData,
@@ -711,6 +717,7 @@ declare module 'musora-content-services' {
 		getLearningPathLessonsByIds,
 		getLegacyMethods,
 		getLessonContentRows,
+		getMCSVersion,
 		getMonday,
 		getNavigateTo,
 		getNavigateToForMethod,
