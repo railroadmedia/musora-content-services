@@ -204,7 +204,7 @@ function renderImage(block: any): string {
   const ref = block.asset?._ref ?? null
   const percent = block.display_width_percent ?? 100
 
-  const url = sanityImageRefToUrl(ref, percent)
+  const url = sanityImageRefToUrl(ref)
   if (!url) {
     return ''
   }
@@ -223,24 +223,12 @@ function escapeHtml(text: string): string {
     .replace(/>/g, '&gt;')
 }
 
-/**
- * @param {string|null} ref
- * @param {number} widthPercent - Percentage of the asset's original width to request from the CDN.
- * @returns {string|null}
- */
-function sanityImageRefToUrl(ref: string | null | undefined, widthPercent: number = 100): string | null {
-  const match = ref?.match(/^image-([a-f0-9]+)-(\d+)x(\d+)-(\w+)$/)
+function sanityImageRefToUrl(ref: string | null | undefined): string | null {
+  const match = ref?.match(/^image-([a-f0-9]+)-(\d+x\d+)-(\w+)$/)
   if (!match) {
     return null
   }
-  const [, assetId, originalWidth, originalHeight, format] = match
+  const [, assetId, dimensions, format] = match
   const { projectId, dataset } = globalConfig.sanityConfig
-  let url = `https://cdn.sanity.io/images/${projectId}/${dataset}/${assetId}-${originalWidth}x${originalHeight}.${format}`
-
-  if (widthPercent < 100) {
-    const width = Math.round((Number(originalWidth) * widthPercent) / 100)
-    url += `?w=${width}`
-  }
-
-  return url
+  return `https://cdn.sanity.io/images/${projectId}/${dataset}/${assetId}-${dimensions}.${format}`
 }
