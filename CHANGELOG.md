@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.167.6](https://github.com/railroadmedia/musora-content-services/compare/v2.167.5...v2.167.6) (2026-07-29)
+
+### [2.167.5](https://github.com/railroadmedia/musora-content-services/compare/v2.167.4...v2.167.5) (2026-07-24)
+
+### [2.167.4](https://github.com/railroadmedia/musora-content-services/compare/v2.167.3...v2.167.4) (2026-07-22)
+
+### [2.167.3](https://github.com/railroadmedia/musora-content-services/compare/v2.167.2...v2.167.3) (2026-07-22)
+
+
+### Bug Fixes
+
+* add gen-version script ([#1015](https://github.com/railroadmedia/musora-content-services/issues/1015)) ([c047e38](https://github.com/railroadmedia/musora-content-services/commit/c047e38f5a20d34dc9a69e2eb3cf3f31861aa8f1))
+* **BR-819:** add learning path id for learning path intro in recent a… ([#1008](https://github.com/railroadmedia/musora-content-services/issues/1008)) ([267423f](https://github.com/railroadmedia/musora-content-services/commit/267423f525ee12824acfe45e771fd2271d566ed6))
+
+### [2.167.2](https://github.com/railroadmedia/musora-content-services/compare/v2.167.1...v2.167.2) (2026-07-17)
+
+
+### Bug Fixes
+
+* **BEHLTP-210:** add non-destructive notification polling pause ([#1009](https://github.com/railroadmedia/musora-content-services/issues/1009)) ([3c0d783](https://github.com/railroadmedia/musora-content-services/commit/3c0d783ee7ae4f54c77f9d37299ba182eaa3ebb5))
+
+### [2.167.1](https://github.com/railroadmedia/musora-content-services/compare/v2.167.0...v2.167.1) (2026-07-13)
+
+
+### Bug Fixes
+
+* **accounts:** allow confirmation email for extra options ([5437d11](https://github.com/railroadmedia/musora-content-services/commit/5437d114437dbe5b4e316ebc440ce957cd9a496c))
+
+## [2.167.0](https://github.com/railroadmedia/musora-content-services/compare/v2.165.5...v2.167.0) (2026-07-13)
+
+
+### Features
+
+* **BEHLPT-186:**  subscription upgrade endpoints ([#1003](https://github.com/railroadmedia/musora-content-services/issues/1003)) ([9da55f2](https://github.com/railroadmedia/musora-content-services/commit/9da55f24708976190317a3b69381acbccce2f33c))
+
+
+### Bug Fixes
+
+* **BR-658:** add playbass logo for ceritificates ([#1006](https://github.com/railroadmedia/musora-content-services/issues/1006)) ([da52391](https://github.com/railroadmedia/musora-content-services/commit/da5239178c3526c685b84220009f1f4e0774deb9))
+* **BR-671:** fix Latin/World style search ([#1002](https://github.com/railroadmedia/musora-content-services/issues/1002)) ([25fdff8](https://github.com/railroadmedia/musora-content-services/commit/25fdff80c6279e8568ea057ac250f7e057717ccf))
+
 ## [2.166.0](https://github.com/railroadmedia/musora-content-services/compare/v2.165.5...v2.166.0) (2026-07-02)
 
 

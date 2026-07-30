@@ -268,6 +268,34 @@ describe('Sanity Query Builder', () => {
     })
   })
 
+  describe('Stringable (toString)', () => {
+    test('toString returns the same value as build()', () => {
+      const builder = query().and('_type == "course"').select('_id')
+      expect(builder.toString()).toBe(builder.build())
+    })
+
+    test('coerces to its built query in a template literal', () => {
+      const builder = query().and('_type == "song"')
+      const interpolated = `count(${builder})`
+      expect(interpolated).toBe(`count(${builder.build()})`)
+    })
+
+    test('coerces via String() and string concatenation', () => {
+      const builder = query().and('brand == "drumeo"')
+      expect(String(builder)).toBe(builder.build())
+      expect('' + builder).toBe(builder.build())
+    })
+
+    test('reflects state at the time of coercion, not at creation', () => {
+      const builder = query()
+      const before = `${builder}`
+      builder.and('_type == "course"')
+      const after = `${builder}`
+      expect(before).toBe('*[]')
+      expect(after).toBe('*[_type == "course"]')
+    })
+  })
+
   describe('Method Chaining', () => {
     test('returns same builder instance for chaining', () => {
       const builder = query()

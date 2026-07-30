@@ -32,6 +32,7 @@ export interface QueryBuilder {
   dereference(): QueryBuilder
   postFilter(expr: string): QueryBuilder
   build(): string
+  toString(): string
 
   _state(): QueryBuilderState
 }
@@ -146,6 +147,10 @@ export const query = (selector?: string): QueryBuilder => {
         ${state.ordering}
         ${state.slice}
       `.trim()
+    },
+
+    toString() {
+      return builder.build()
     },
 
     _state() {

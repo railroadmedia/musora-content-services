@@ -21,6 +21,7 @@ import {
 } from './services/awards/award-query.js';
 
 import {
+	getMCSVersion,
 	globalConfig,
 	initializeEnvVar,
 	initializeService
@@ -31,6 +32,10 @@ import {
 	fetchArtistLessons,
 	fetchArtists
 } from './services/content/artist.ts';
+
+import {
+	fetchSongAndLessonCounts
+} from './services/content/counts.ts';
 
 import {
 	fetchGenreBySlug,
@@ -455,6 +460,7 @@ import {
 
 import {
 	getOnboardingRecommendedContent,
+	getOnboardingStatus,
 	initializeOnboardingFlow,
 	startOnboarding,
 	updateOnboarding,
@@ -469,6 +475,11 @@ import {
 	fetchPlayerSettings,
 	updatePlayerSettings
 } from './services/user/playerSettings.ts';
+
+import {
+	fetchPracticeGoals,
+	updatePracticeGoals
+} from './services/user/practiceGoals.ts';
 
 import {
 	deleteProfilePicture,
@@ -634,6 +645,7 @@ export {
 	fetchPlaylistItems,
 	fetchPost,
 	fetchPosts,
+	fetchPracticeGoals,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
@@ -649,6 +661,7 @@ export {
 	fetchShowsData,
 	fetchSiblingContent,
 	fetchSimilarItems,
+	fetchSongAndLessonCounts,
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchTabData,
@@ -700,12 +713,14 @@ export {
 	getLearningPathLessonsByIds,
 	getLegacyMethods,
 	getLessonContentRows,
+	getMCSVersion,
 	getMonday,
 	getNavigateTo,
 	getNavigateToForMethod,
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
+	getOnboardingStatus,
 	getOwnedContent,
 	getPermissionsAdapter,
 	getPermissionsVersion,
@@ -851,6 +866,7 @@ export {
 	updatePlayerSettings,
 	updatePlaylist,
 	updatePost,
+	updatePracticeGoals,
 	updatePracticeNotes,
 	updateProfileVisibility,
 	updateThread,

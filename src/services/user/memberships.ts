@@ -23,8 +23,14 @@ export interface MembershipData {
 export interface UserMembershipResponse {
   user_membership_data: MembershipData[]
   can_upgrade_membership: boolean // pre multiUserAccount data
+  need_lifetime_upgrade: boolean
   sub_account_data: MultiUserAccountResponse // post multiUserAccount data
   upgrade_options: UpgradeOption[] // post multiuser account data
+  user_subscriber_data: {
+    has_had_apple_subscription: boolean
+    has_had_google_subscription: boolean
+    has_had_web_subscription: boolean
+  }
 }
 
 /**

@@ -3,6 +3,7 @@ import {fetchLiveEvent} from "./sanity"
 import { DataContext, PollingStateVersionKey } from './dataContext'
 
 const pollingStateContext = new DataContext(PollingStateVersionKey, fetchLiveEventPollingState)
+const NOTIFICATION_POLLING_INTERVAL_MS = 60_000
 
 /**
  * API for managing notifications and live event polling.
@@ -12,6 +13,7 @@ class EventsAPI {
     this.brand = 'drumeo'
     this.onNotificationStateUpdated = []
     this.pollingInterval = null
+    this.isNotificationPollingPaused = false
     this.isLiveEventPollingActive = true
     this.resumeLiveEventTimeout = null
   }
@@ -27,6 +29,7 @@ class EventsAPI {
    */
   async initialize({ brand = 'drumeo' } = {}) {
     this.brand = brand;
+    this.isNotificationPollingPaused = false;
     await this.setupAutoEvents();
     await this.checkNotifications();
   }
@@ -80,13 +83,54 @@ class EventsAPI {
         const ttlMs = pauseUntil - now;
         await this.pauseLiveEventCheck(ttlMs);
       }
-      this.pollingInterval = setInterval(() => {
-        this.checkNotifications();
-      }, 60000);
+      this.startNotificationInterval();
     } catch (error) {
       console.error('EventsApi: Failed to setup auto events:', error);
       this.checkNotifications();
     }
+  }
+
+  /**
+   * Starts notification polling unless it is already active or explicitly paused.
+   */
+  startNotificationInterval() {
+    if (this.pollingInterval || this.isNotificationPollingPaused) {
+      return;
+    }
+
+    this.pollingInterval = setInterval(() => {
+      this.checkNotifications();
+    }, NOTIFICATION_POLLING_INTERVAL_MS);
+  }
+
+  /**
+   * Stops notification polling without removing notification subscribers.
+   */
+  stopNotificationInterval() {
+    if (!this.pollingInterval) {
+      return;
+    }
+
+    clearInterval(this.pollingInterval);
+    this.pollingInterval = null;
+  }
+
+  /**
+   * Pauses notification polling without resetting initialized state or subscribers.
+   */
+  pauseNotificationPolling() {
+    this.isNotificationPollingPaused = true;
+    this.stopNotificationInterval();
+  }
+
+  /**
+   * Resumes notification polling and immediately refreshes notification state.
+   * @returns {Promise<void>}
+   */
+  resumeNotificationPolling() {
+    this.isNotificationPollingPaused = false;
+    this.startNotificationInterval();
+    return this.checkNotifications();
   }
 
 
@@ -149,10 +193,8 @@ class EventsAPI {
   }
 
   destroy() {
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
-      this.pollingInterval = null;
-    }
+    this.isNotificationPollingPaused = true;
+    this.stopNotificationInterval();
 
     if (this.resumeLiveEventTimeout) {
       clearTimeout(this.resumeLiveEventTimeout);

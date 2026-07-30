@@ -25,6 +25,7 @@ export interface InviteResponse {
   is_user_part_of_existing_mua: boolean
   primary_user_name: string
   product_name: string
+  tier_key: string
   // These fields leak user information and are excluded entirely for the public endpoint
   existing_user_details?: User
   email?: string

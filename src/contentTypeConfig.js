@@ -315,6 +315,7 @@ export const getNextLessonLessonParentTypes = [
   'song-tutorial',
   'learning-path-v2',
   'skill-pack',
+  'documentary',
 ]
 
 export const progressTypesMapping = {
@@ -432,6 +433,7 @@ export let contentTypeConfig = {
       `"badge" : ${contentAwardField}.badge.asset->url`,
       `"badge_rear" : ${contentAwardField}.badge_rear.asset->url`,
       `"badge_logo" : ${contentAwardField}.logo.asset->url`,
+      '"learning_path_id": *[_type == "learning-path-v2" && references(^._id)][0].railcontent_id',
     ],
     includeChildFields: true,
   },

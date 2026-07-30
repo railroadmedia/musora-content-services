@@ -22,17 +22,27 @@ export async function status(email: string): Promise<{ requires_setup: boolean }
   )
 }
 
+export interface SendAccountSetupEmailOptions {
+  has_skipped_paywall?: boolean
+  [key: string]: any
+}
+
 /**
- * @param {string} email - The email address to send the account setup email to.
+ * @param {Send} email - The email address to send the account setup email to.
  * @returns {Promise<void>} - A promise that resolves when the email is sent or an HttpError if the request fails.
  * @throws {HttpError} - Throws HttpError if the request fails.
  */
-export async function sendAccountSetupEmail(email: string, token?: string): Promise<void> {
+export async function sendAccountSetupEmail(
+  email: string,
+  token?: string,
+  options: SendAccountSetupEmailOptions = { has_skipped_paywall: false }
+): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<void>(
     `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/send-setup-email`,
     {
       token,
+      ...options,
     }
   )
 }

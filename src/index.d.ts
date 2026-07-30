@@ -17,6 +17,7 @@ import {
 } from './services/awards/award-query.js';
 
 import {
+	getMCSVersion,
 	globalConfig,
 	initializeEnvVar,
 	initializeService
@@ -27,6 +28,10 @@ import {
 	fetchArtistLessons,
 	fetchArtists
 } from './services/content/artist.ts';
+
+import {
+	fetchSongAndLessonCounts
+} from './services/content/counts.ts';
 
 import {
 	fetchGenreBySlug,
@@ -451,6 +456,7 @@ import {
 
 import {
 	getOnboardingRecommendedContent,
+	getOnboardingStatus,
 	initializeOnboardingFlow,
 	startOnboarding,
 	updateOnboarding,
@@ -465,6 +471,11 @@ import {
 	fetchPlayerSettings,
 	updatePlayerSettings
 } from './services/user/playerSettings.ts';
+
+import {
+	fetchPracticeGoals,
+	updatePracticeGoals
+} from './services/user/practiceGoals.ts';
 
 import {
 	deleteProfilePicture,
@@ -635,6 +646,7 @@ declare module 'musora-content-services' {
 		fetchPlaylistItems,
 		fetchPost,
 		fetchPosts,
+		fetchPracticeGoals,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
@@ -650,6 +662,7 @@ declare module 'musora-content-services' {
 		fetchShowsData,
 		fetchSiblingContent,
 		fetchSimilarItems,
+		fetchSongAndLessonCounts,
 		fetchSongArtistCount,
 		fetchSongById,
 		fetchTabData,
@@ -701,12 +714,14 @@ declare module 'musora-content-services' {
 		getLearningPathLessonsByIds,
 		getLegacyMethods,
 		getLessonContentRows,
+		getMCSVersion,
 		getMonday,
 		getNavigateTo,
 		getNavigateToForMethod,
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getOnboardingRecommendedContent,
+		getOnboardingStatus,
 		getOwnedContent,
 		getPermissionsAdapter,
 		getPermissionsVersion,
@@ -852,6 +867,7 @@ declare module 'musora-content-services' {
 		updatePlayerSettings,
 		updatePlaylist,
 		updatePost,
+		updatePracticeGoals,
 		updatePracticeNotes,
 		updateProfileVisibility,
 		updateThread,
