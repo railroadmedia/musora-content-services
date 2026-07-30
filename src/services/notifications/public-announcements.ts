@@ -1,5 +1,4 @@
 import { fetchSanity, getSanityDate } from '../sanity.js'
-import { toHTML } from '@portabletext/to-html'
 import { globalConfig } from '../config.js'
 
 interface PublicAnnouncement {
@@ -70,6 +69,11 @@ export async function fetchAllPublicAnnouncements(spanDays: number = 365): Promi
   return await fetchSanity(query, true, {processNeedAccess: false, processPageType: false})
 }
 
+interface ListStackEntry {
+  tag: 'ul' | 'ol'
+  level: number
+}
+
 /**
  * @param {Array<Object>} blocks - Sanity Portable Text / block content array
  * @returns {string} HTML string
@@ -78,24 +82,165 @@ export function blockContentToHtml(blocks: any[]): string {
   if (!blocks) {
     return ''
   }
-  return toHTML(blocks, {
-    components: {
-      types: {
-        image: ({ value }) => {
-          const url = sanityImageRefToUrl(value?.asset?._ref)
-          return url ? `<img src="${url}" />` : ''
-        },
-      },
-    },
-  })
+
+  let html = ''
+  const listStack: ListStackEntry[] = []
+
+  for (const block of blocks) {
+    const listItem = block.listItem ?? null
+
+    if (!listItem) {
+      html += closeLists(listStack, 0)
+      html += block._type === 'image' ? renderImage(block) : renderBlock(block)
+      continue
+    }
+
+    const level = block.level ?? 1
+    const tag: 'ul' | 'ol' = listItem === 'number' ? 'ol' : 'ul'
+
+    while (
+      listStack.length &&
+      (listStack[listStack.length - 1].level > level ||
+        (listStack[listStack.length - 1].level === level && listStack[listStack.length - 1].tag !== tag))
+    ) {
+      const closed = listStack.pop()
+      html += `</${closed.tag}>`
+    }
+
+    while (!listStack.length || listStack[listStack.length - 1].level < level) {
+      listStack.push({ tag, level: listStack.length + 1 })
+      html += `<${tag}>`
+    }
+
+    html += `<li>${renderInline(block)}</li>`
+  }
+
+  html += closeLists(listStack, 0)
+  return html
 }
 
-function sanityImageRefToUrl(ref: string | undefined): string | null {
-  const match = ref?.match(/^image-([a-f0-9]+)-(\d+x\d+)-(\w+)$/)
+function closeLists(listStack: ListStackEntry[], downToLevel: number): string {
+  let html = ''
+  while (listStack.length && listStack[listStack.length - 1].level > downToLevel) {
+    const closed = listStack.pop()
+    html += `</${closed.tag}>`
+  }
+  return html
+}
+
+function renderInline(block: any): string {
+  const markDefsByKey: Record<string, any> = {}
+  for (const markDef of block.markDefs ?? []) {
+    markDefsByKey[markDef._key] = markDef
+  }
+
+  let inner = ''
+  for (const child of block.children ?? []) {
+    inner += renderSpan(child, markDefsByKey)
+  }
+
+  return inner === '' ? '&nbsp;' : inner
+}
+
+function renderBlock(block: any): string {
+  const tag = ((): string => {
+    switch (block.style ?? 'normal') {
+      case 'h1':
+        return 'h1'
+      case 'h2':
+        return 'h2'
+      case 'h3':
+        return 'h3'
+      case 'h4':
+        return 'h4'
+      case 'blockquote':
+        return 'blockquote'
+      default:
+        return 'p'
+    }
+  })()
+
+  const inner = renderInline(block)
+
+  return `<${tag}>${inner}</${tag}>`
+}
+
+function renderSpan(child: any, markDefsByKey: Record<string, any>): string {
+  let text = escapeHtml(child.text ?? '')
+  text = text.replace(/\n/g, '<br />')
+
+  for (const mark of child.marks ?? []) {
+    switch (true) {
+      case mark === 'strong':
+        text = `<strong>${text}</strong>`
+        break
+      case mark === 'em':
+        text = `<em>${text}</em>`
+        break
+      case mark === 'underline':
+        text = `<u>${text}</u>`
+        break
+      case mark === 'code':
+        text = `<code>${text}</code>`
+        break
+      case markDefsByKey[mark] !== undefined:
+        text = renderMarkDef(markDefsByKey[mark], text)
+        break
+    }
+  }
+
+  return text
+}
+
+function renderMarkDef(markDef: any, text: string): string {
+  if (markDef?._type !== 'link') {
+    return text
+  }
+  const href = escapeHtml(markDef.href ?? '')
+  return `<a href="${href}">${text}</a>`
+}
+
+function renderImage(block: any): string {
+  const ref = block.asset?._ref ?? null
+  const percent = block.display_width_percent ?? 100
+
+  const url = sanityImageRefToUrl(ref, percent)
+  if (!url) {
+    return ''
+  }
+
+  return percent < 100
+    ? `<img src="${url}" style="width:${percent}%;max-width:100%;" />`
+    : `<img src="${url}" />`
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+/**
+ * @param {string|null} ref
+ * @param {number} widthPercent - Percentage of the asset's original width to request from the CDN.
+ * @returns {string|null}
+ */
+function sanityImageRefToUrl(ref: string | null | undefined, widthPercent: number = 100): string | null {
+  const match = ref?.match(/^image-([a-f0-9]+)-(\d+)x(\d+)-(\w+)$/)
   if (!match) {
     return null
   }
-  const [, assetId, dimensions, format] = match
+  const [, assetId, originalWidth, originalHeight, format] = match
   const { projectId, dataset } = globalConfig.sanityConfig
-  return `https://cdn.sanity.io/images/${projectId}/${dataset}/${assetId}-${dimensions}.${format}`
+  let url = `https://cdn.sanity.io/images/${projectId}/${dataset}/${assetId}-${originalWidth}x${originalHeight}.${format}`
+
+  if (widthPercent < 100) {
+    const width = Math.round((Number(originalWidth) * widthPercent) / 100)
+    url += `?w=${width}`
+  }
+
+  return url
 }
