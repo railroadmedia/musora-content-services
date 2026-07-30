@@ -479,6 +479,11 @@ import {
 } from './services/user/playerSettings.ts';
 
 import {
+	fetchPracticeGoals,
+	updatePracticeGoals
+} from './services/user/practiceGoals.ts';
+
+import {
 	deleteProfilePicture,
 	otherStats,
 	updateProfileVisibility
@@ -649,6 +654,7 @@ declare module 'musora-content-services' {
 		fetchPlaylistItems,
 		fetchPost,
 		fetchPosts,
+		fetchPracticeGoals,
 		fetchPublicAnnouncement,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
@@ -870,6 +876,7 @@ declare module 'musora-content-services' {
 		updatePlayerSettings,
 		updatePlaylist,
 		updatePost,
+		updatePracticeGoals,
 		updatePracticeNotes,
 		updateProfileVisibility,
 		updateThread,

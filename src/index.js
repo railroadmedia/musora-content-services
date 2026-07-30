@@ -483,6 +483,11 @@ import {
 } from './services/user/playerSettings.ts';
 
 import {
+	fetchPracticeGoals,
+	updatePracticeGoals
+} from './services/user/practiceGoals.ts';
+
+import {
 	deleteProfilePicture,
 	otherStats,
 	updateProfileVisibility
@@ -648,6 +653,7 @@ export {
 	fetchPlaylistItems,
 	fetchPost,
 	fetchPosts,
+	fetchPracticeGoals,
 	fetchPublicAnnouncement,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
@@ -869,6 +875,7 @@ export {
 	updatePlayerSettings,
 	updatePlaylist,
 	updatePost,
+	updatePracticeGoals,
 	updatePracticeNotes,
 	updateProfileVisibility,
 	updateThread,
