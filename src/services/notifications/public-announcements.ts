@@ -14,6 +14,7 @@ interface PublicAnnouncement {
 interface ForumData {
   category_id: string
   forum_id: string
+  url: string
 }
 
 /**
