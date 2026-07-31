@@ -27,6 +27,18 @@ export interface UserMembershipResponse {
   sub_account_data: MultiUserAccountResponse // post multiUserAccount data
   upgrade_options: UpgradeOption[] // post multiuser account data
   user_subscriber_data: {
+    active_subscription: {
+      subscribed_on: string
+      renews_on: string
+      plan: string
+      platform: 'web' | 'apple' | 'google'
+      product_sku: string
+      rc_product_ids: {
+        apple: string
+        google: string
+      }
+      tier_key: string
+    }
     has_had_apple_subscription: boolean
     has_had_google_subscription: boolean
     has_had_web_subscription: boolean

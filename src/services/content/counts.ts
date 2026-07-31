@@ -45,3 +45,23 @@ export async function fetchSongAndLessonCounts(
 
   return { ...counts, total: counts.songs + counts.lessons }
 }
+
+export interface LearningPathCount {
+  total: number
+}
+
+export async function fetchLearningPathCount(brand?: Brands | string): Promise<LearningPathCount> {
+  const learningPathFilter = f.combine(
+    f.typeIn(['learning-path-v2']),
+    f.statusIn(['published']),
+    f.defined('railcontent_id'),
+    brand ? f.brand(brand) : f.empty
+  )
+
+  const q = `{
+    "total": count(${query().and(learningPathFilter)})
+  }`
+
+  const count = (await sanityClient.executeQuery<LearningPathCount>(q)) ?? { total: 0 }
+  return count
+}
