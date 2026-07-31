@@ -113,15 +113,7 @@ export async function getUserWeeklyStats() {
   }
 
   const streakData = await streakCalculator.getStreakData()
- console.log('rox::: getUserWeeklyStats ',  {
-   data: {
-     dailyActiveStats: dailyStats,
-     streakMessage: streakData.streakMessage,
-     practices: weekPractices,
-     currentWeekPracticeDays: streakData.currentWeekPracticeDays,
-     todaysPracticeSeconds: streakData.todaysPracticeSeconds,
-   }
- })
+
   return {
     data: {
       dailyActiveStats: dailyStats,
@@ -493,7 +485,7 @@ export async function getPracticeSessions(params = {}, options = {}) {
  * @param {number} [params.page=1] - The page number, only applied when `limit` is set.
  * @param {number} [params.limit] - Max sessions to return; omit to return all of the week's sessions unpaginated.
  * @returns {Promise<Object>} - A promise that resolves to an object containing:
- *   - `sessionsByDate`: Formatted practice sessions grouped by date (YYYY-MM-DD), paginated if `limit` is set.
+ *   - `practices`: An array of formatted practice session data for the week (paginated if `limit` is set).
  *   - `practiceDuration`: Total practice duration (in seconds) for the whole week, regardless of pagination.
  *   - `total`: Total number of sessions for the week, regardless of pagination.
  *
@@ -515,10 +507,10 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
     db.practices.pull()
   }
 
-  const query = await db.practices.queryAll(Q.where('date', Q.oneOf(weekDays)), Q.sortBy('date', 'desc'))
+  const query = await db.practices.queryAll(Q.where('date', Q.oneOf(weekDays)), Q.sortBy('created_at', 'asc'))
   const data = query.data
 
-  if (!data.length) return { data: { sessionsByDate: {}, practiceDuration: 0, total: 0 } }
+  if (!data.length) return { data: { practices: [], practiceDuration: 0, total: 0 } }
 
   // Total reflects the full week, not just the current page, so goal-progress
   // math stays correct regardless of how the session list is paginated.
@@ -529,13 +521,7 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
   const pagedData = limit ? data.slice((page - 1) * limit, page * limit) : data
   const formattedMeta = await formatPracticeMeta(pagedData)
 
-  const sessionsByDate = formattedMeta.reduce((acc, practice) => {
-    acc[practice.date] = acc[practice.date] || []
-    acc[practice.date].push(practice)
-    return acc
-  }, {})
-
-  return { data: { sessionsByDate, practiceDuration, total: data.length } }
+  return { data: { practices: formattedMeta, practiceDuration, total: data.length } }
 }
 
 /**
@@ -651,12 +637,7 @@ export function getStreaksAndMessage(practices) {
     practices,
     true
   )
-console.log('rox::: getStreakMessage', {
-  currentDailyStreak,
-  currentWeeklyStreak,
-  streakMessage,
-  currentWeekPracticeDays,
-})
+
   return {
     currentDailyStreak,
     currentWeeklyStreak,
