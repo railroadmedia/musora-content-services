@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.169.0-0](https://github.com/railroadmedia/musora-content-services/compare/v2.168.0...v2.169.0-0) (2026-07-31)
+
+
+### Features
+
+* **TP-1300:** add badge field to Liker, ForumUser, and User interfaces ([8a3ee80](https://github.com/railroadmedia/musora-content-services/commit/8a3ee802722a0d9dcd41a6a3998ff2a7a3352aeb))
+
 ## [2.168.0](https://github.com/railroadmedia/musora-content-services/compare/v2.167.6...v2.168.0) (2026-07-30)
 
 
