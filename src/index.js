@@ -34,6 +34,7 @@ import {
 } from './services/content/artist.ts';
 
 import {
+	fetchLearningPathCount,
 	fetchSongAndLessonCounts
 } from './services/content/counts.ts';
 
@@ -618,6 +619,7 @@ export {
 	fetchInvite,
 	fetchLastSubscriptionPlatform,
 	fetchLatestThreads,
+	fetchLearningPathCount,
 	fetchLearningPathLessons,
 	fetchLearningPathProgressCheckLessons,
 	fetchLeaving,

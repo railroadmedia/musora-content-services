@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.168.0](https://github.com/railroadmedia/musora-content-services/compare/v2.167.6...v2.168.0) (2026-07-30)
+
+
+### Features
+
+* **BEHLTP-186:** split membership and subscriber data for membership controller- [#1414](https://github.com/railroadmedia/musora-content-services/issues/1414) ([#1022](https://github.com/railroadmedia/musora-content-services/issues/1022)) ([728f03a](https://github.com/railroadmedia/musora-content-services/commit/728f03ae25a8ddb0ee337a7dd6034bb65ba56297))
+
 ### [2.167.6](https://github.com/railroadmedia/musora-content-services/compare/v2.167.5...v2.167.6) (2026-07-29)
 
 ### [2.167.5](https://github.com/railroadmedia/musora-content-services/compare/v2.167.4...v2.167.5) (2026-07-24)
