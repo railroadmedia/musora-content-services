@@ -8,12 +8,7 @@ export interface StreakData {
   streakMessage: string
   calculatedAt: number // timestamp
   lastPracticeDate: string | null
-  // Calendar days with at least one recorded practice since Monday of the current
-  // week — used for the weekly practice-days target progress (US-CPT-2/US-CPT-4).
   currentWeekPracticeDays: number
-  // Total practice seconds recorded today — used for the daily practice-minutes
-  // target progress (US-CPT-2). Derived from the same already-fetched practice
-  // data as the rest of this cache, so it costs nothing extra to include here.
   todaysPracticeSeconds: number
 }
 export interface PracticeData {

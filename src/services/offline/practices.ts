@@ -24,27 +24,8 @@ export async function getPracticeSessionsOffline(
   const query = await db.practices.queryAll(
     Q.where('date', day),
     Q.sortBy('created_at', 'asc'))
-  const practices = query.data
 
-  if (!practices.length)
-    return { data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 } }
-
-  const practiceDuration = Math.round(practices.reduce(
-    (total, practice) => total + (practice.duration_seconds || 0),
-    0
-  ))
-
-  const pagedPractices = limit ? practices.slice((page - 1) * limit, page * limit) : practices
-
-  return {
-    data: {
-      practices: pagedPractices,
-      practiceDuration,
-      total: practices.length,
-      currentPage: page,
-      totalPages: limit ? Math.ceil(practices.length / limit) : 1,
-    },
-  }
+  return formatPracticeSessionDataOffline(query.data, page, limit)
 }
 
 /**
@@ -66,8 +47,11 @@ export async function getWeeklyPracticeSessionsOffline(
   const query = await db.practices.queryAll(
     Q.where('date', Q.oneOf(weekDays)),
     Q.sortBy('created_at', 'asc'))
-  const practices = query.data
 
+  return formatPracticeSessionDataOffline(query.data, page, limit)
+}
+
+function formatPracticeSessionDataOffline(practices: any[], page: number, limit?: number) {
   if (!practices.length)
     return { data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 } }
 

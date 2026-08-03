@@ -462,35 +462,11 @@ export async function getPracticeSessions(params = {}, options = {}) {
     data = query.data
   }
 
-  if (!data.length)
-    return { data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 } }
-
-  // Total reflects the full day, not just the current page, so goal-progress
-  // math stays correct regardless of how the session list is paginated.
-  const practiceDuration = Math.round(
-    data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0)
-  )
-
-  const pagedData = limit ? data.slice((page - 1) * limit, page * limit) : data
-  const formattedMeta = await formatPracticeMeta(pagedData)
-
-  return {
-    data: {
-      practices: formattedMeta,
-      practiceDuration,
-      total: data.length,
-      currentPage: page,
-      totalPages: limit ? Math.ceil(data.length / limit) : 1,
-    },
-  }
+  return formatPracticeSessionData(data, page, limit)
 }
 
 /**
- * Retrieves and formats the current user's practice sessions for the current
- * Monday-Sunday week, enriched with content metadata (title, thumbnail, etc.) in a
- * single batched lookup — for the weekly practice view where individual sessions can
- * be displayed, edited, or deleted (unlike getUserWeeklyStats, which only returns raw
- * per-day counts).
+ * Retrieves and formats the current user's practice sessions for the current Monday-Sunday week
  *
  * @param {Object} [params={}] - Parameters for fetching the week's practice sessions.
  * @param {number} [params.page=1] - The page number, only applied when `limit` is set.
@@ -523,11 +499,13 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
   const query = await db.practices.queryAll(Q.where('date', Q.oneOf(weekDays)), Q.sortBy('created_at', 'asc'))
   const data = query.data
 
+  return formatPracticeSessionData(data, page, limit)
+}
+
+async function formatPracticeSessionData(data, page, limit) {
   if (!data.length)
     return { data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 } }
 
-  // Total reflects the full week, not just the current page, so goal-progress
-  // math stays correct regardless of how the session list is paginated.
   const practiceDuration = Math.round(
     data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0)
   )
