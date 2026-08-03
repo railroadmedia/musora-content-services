@@ -425,6 +425,8 @@ export async function restorePracticeSession(date) {
  *   - `practices`: An array of formatted practice session data (paginated if `limit` is set).
  *   - `practiceDuration`: Total practice duration (in seconds) for the whole day, regardless of pagination.
  *   - `total`: Total number of sessions for the day, regardless of pagination.
+ *   - `currentPage`: The page number returned
+ *   - `totalPages`: Total number of pages for the day
  *
  * @example
  * // Get practice sessions for the current user on a specific day
@@ -460,7 +462,8 @@ export async function getPracticeSessions(params = {}, options = {}) {
     data = query.data
   }
 
-  if (!data.length) return { data: { practices: [], practiceDuration: 0, total: 0 } }
+  if (!data.length)
+    return { data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 } }
 
   // Total reflects the full day, not just the current page, so goal-progress
   // math stays correct regardless of how the session list is paginated.
@@ -471,7 +474,15 @@ export async function getPracticeSessions(params = {}, options = {}) {
   const pagedData = limit ? data.slice((page - 1) * limit, page * limit) : data
   const formattedMeta = await formatPracticeMeta(pagedData)
 
-  return { data: { practices: formattedMeta, practiceDuration, total: data.length } }
+  return {
+    data: {
+      practices: formattedMeta,
+      practiceDuration,
+      total: data.length,
+      currentPage: page,
+      totalPages: limit ? Math.ceil(data.length / limit) : 1,
+    },
+  }
 }
 
 /**
@@ -488,6 +499,8 @@ export async function getPracticeSessions(params = {}, options = {}) {
  *   - `practices`: An array of formatted practice session data for the week (paginated if `limit` is set).
  *   - `practiceDuration`: Total practice duration (in seconds) for the whole week, regardless of pagination.
  *   - `total`: Total number of sessions for the week, regardless of pagination.
+ *   - `currentPage`: The page number returned
+ *   - `totalPages`: Total number of pages for the week
  *
  * @example
  * getWeeklyPracticeSessions()
@@ -510,7 +523,8 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
   const query = await db.practices.queryAll(Q.where('date', Q.oneOf(weekDays)), Q.sortBy('created_at', 'asc'))
   const data = query.data
 
-  if (!data.length) return { data: { practices: [], practiceDuration: 0, total: 0 } }
+  if (!data.length)
+    return { data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 } }
 
   // Total reflects the full week, not just the current page, so goal-progress
   // math stays correct regardless of how the session list is paginated.
@@ -521,7 +535,15 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
   const pagedData = limit ? data.slice((page - 1) * limit, page * limit) : data
   const formattedMeta = await formatPracticeMeta(pagedData)
 
-  return { data: { practices: formattedMeta, practiceDuration, total: data.length } }
+  return {
+    data: {
+      practices: formattedMeta,
+      practiceDuration,
+      total: data.length,
+      currentPage: page,
+      totalPages: limit ? Math.ceil(data.length / limit) : 1,
+    },
+  }
 }
 
 /**
