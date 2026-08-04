@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.169.0](https://github.com/railroadmedia/musora-content-services/compare/v2.168.0...v2.169.0) (2026-08-04)
+
+
+### Features
+
+* **BEHSTP-415:** MCS public announcement fetch fn's ([#1010](https://github.com/railroadmedia/musora-content-services/issues/1010)) ([d504fb1](https://github.com/railroadmedia/musora-content-services/commit/d504fb105ba5303bfe7327ddef24fe468bdec374))
+
 ## [2.168.0](https://github.com/railroadmedia/musora-content-services/compare/v2.167.6...v2.168.0) (2026-07-30)
 
 
