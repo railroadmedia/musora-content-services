@@ -200,6 +200,17 @@ describe('navigate-to decorator', () => {
       expect(result.navigateTo).toMatchObject({ id: 101, child: { id: 202 } })
     })
 
+    test('two-depth: prefetches grandchild ids in a single batched call', async () => {
+      const { default: repositoryProxy } = require('../../../../../src/services/sync/repository-proxy')
+      const courseA = parent(101, 'course', [child(201), child(202)])
+      const collection = parent(1, 'course-collection', [courseA])
+      await decorateNavigateTo(collection)
+
+      expect(repositoryProxy.contentProgress.getSomeProgressByContentIds).toHaveBeenCalledTimes(1)
+      const [requestedIds] = repositoryProxy.contentProgress.getSomeProgressByContentIds.mock.calls[0]
+      expect(requestedIds).toEqual(expect.arrayContaining([1, 101, 201, 202]))
+    })
+
     test('decorates every item in an array', async () => {
       const items = [parent(1, 'course', [child(101)]), parent(2, 'lesson', [child(201)])]
       const result = await decorateNavigateTo(items)
