@@ -34,7 +34,8 @@ export async function getEndScreen({
   brand
 }: GetEndScreenParams): Promise<EndScreenResult> {
   const userData = await getUserData()
-  const isAdmin = userData?.is_admin ?? false
+
+  const isAdmin = userData?.has_all_content_access ?? false
 
   if (playlist) {
     const nextItem = next_item ??

@@ -25,6 +25,7 @@ describe('Membership Checks', function() {
       isAdmin: true,
       isModerator: false,
       isABasicMember: false,
+      hasAllContentAccess: true,
     }
     const freeUserPermissions = {
       permissions: [134],
@@ -58,6 +59,7 @@ describe('Membership Checks', function() {
       isAdmin: true,
       isModerator: false,
       isABasicMember: false,
+      hasAllContentAccess: true,
     }
     const freeUserPermissions = {
       permissions: [134],
@@ -111,12 +113,13 @@ describe('PermissionsV2Adapter.generatePermissionsFilter', function() {
     ).toBe(' railcontent_id in [1] ')
   })
 
-  test('isAdmin', () => {
+  test('hasAllContentAccess', () => {
     const adminUser = {
       permissions: [],
       isAdmin: true,
       isModerator: false,
       isABasicMember: false,
+      hasAllContentAccess: true,
     }
 
     expect(

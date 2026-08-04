@@ -412,30 +412,45 @@ const mockUsers = {
     isModerator: false,
     permissions: [],
     isABasicMember: false,
+    hasAllContentAccess: true,
+    isForumModerator: false,
+    isCommentModerator: false,
   },
   free: {
     isAdmin: false,
     isModerator: false,
     permissions: [],
     isABasicMember: false,
+    hasAllContentAccess: false,
+    isForumModerator: false,
+    isCommentModerator: false,
   },
   basicMember: {
     isAdmin: false,
     isModerator: false,
     permissions: [78, 91, 92],
     isABasicMember: true,
+    hasAllContentAccess: false,
+    isForumModerator: false,
+    isCommentModerator: false,
   },
   plusMember: {
     isAdmin: false,
     isModerator: false,
     permissions: [78, 108, 91, 92],
     isABasicMember: true,
+    hasAllContentAccess: false,
+    isForumModerator: false,
+    isCommentModerator: false,
   },
   ownedOnly: {
     isAdmin: false,
     isModerator: false,
     permissions: [100000234, 100000567], // Owned content IDs: 234, 567
     isABasicMember: false,
+    hasAllContentAccess: false,
+    isForumModerator: false,
+    isCommentModerator: false,
   },
 }
 
@@ -444,9 +459,10 @@ const createMockAdapter = (userData: UserPermissions) => {
   return {
     fetchUserPermissions: jest.fn().mockResolvedValue(userData),
     isAdmin: jest.fn((data) => data?.isAdmin ?? false),
+    hasAllContentAccess: jest.fn((data) => data?.hasAllContentAccess ?? false),
     generatePermissionsFilter: jest.fn((data, options = {}) => {
       // V2 Adapter logic implementation
-      if (data.isAdmin) return null
+      if (data.hasAllContentAccess) return null
 
       const prefix = options.prefix || ''
       const userPermissionIds = data?.permissions ?? []
@@ -677,7 +693,7 @@ describe('Filters - Async Methods (Integration)', () => {
     test('adapter returns null for admin', async () => {
       const mockAdapter = setupMockAdapter(mockUsers.admin)
       const result = await Filters.permissions()
-      expect(mockAdapter.isAdmin).toHaveBeenCalledWith(mockUsers.admin)
+      expect(mockAdapter.hasAllContentAccess).toHaveBeenCalledWith(mockUsers.admin)
       expect(result).toBe('')
     })
 
@@ -699,9 +715,9 @@ describe('Filters - Async Methods (Integration)', () => {
       expect(result).toContain('unlisted')
     })
 
-    test('config.isAdmin: true overrides user data', async () => {
+    test('config.hasAllContentAccess: true overrides user data', async () => {
       setupMockAdapter(mockUsers.free)
-      const result = await Filters.status({ isAdmin: true })
+      const result = await Filters.status({ hasAllContentAccess: true })
       expect(result).toContain('draft')
       expect(result).toContain('unlisted')
     })
@@ -766,10 +782,10 @@ describe('Filters - Async Methods (Integration)', () => {
       expect(mockAdapter.fetchUserPermissions).toHaveBeenCalled()
     })
 
-    test('admin detection via adapter.isAdmin()', async () => {
+    test('admin detection via adapter.hasAllContentAccess()', async () => {
       const mockAdapter = setupMockAdapter(mockUsers.admin)
       const result = await Filters.status()
-      expect(mockAdapter.isAdmin).toHaveBeenCalled()
+      expect(mockAdapter.hasAllContentAccess).toHaveBeenCalled()
       expect(result).toContain('draft')
     })
 
@@ -1143,6 +1159,9 @@ describe('Filters - Async Methods (Integration)', () => {
         permissions: [],
         isABasicMember: false,
         isModerator: false,
+        hasAllContentAccess: false,
+        isForumModerator: false,
+        isCommentModerator: false,
       }
       setupMockAdapter(emptyUser)
 
