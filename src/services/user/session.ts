@@ -19,5 +19,22 @@ export async function verifyOAuthToken(
 ): Promise<AuthResponse> {
   const apiUrl = `/api/user-management-system/v1/oauth/${encodeURIComponent(provider)}/verify`
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post(apiUrl, params)
+  return httpClient.post<AuthResponse>(apiUrl, params)
+}
+
+export interface RedirectToOAuthProviderOptions {
+  redirect_to?: string
+  flow?: string
+  brand?: string
+  [key: string]: string | undefined
+}
+
+export async function redirectToOAuthProvider(
+  provider: OAuthProvider,
+  options: RedirectToOAuthProviderOptions
+): Promise<void> {
+  const queryParams = new URLSearchParams(options as Record<string, string>).toString()
+  const apiUrl = `/api/user-management-system/v1/oauth/${encodeURIComponent(provider)}/redirect?${queryParams}`
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get(apiUrl)
 }
