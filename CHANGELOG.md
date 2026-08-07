@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.169.4](https://github.com/railroadmedia/musora-content-services/compare/v2.169.3...v2.169.4) (2026-08-07)
+
+
+### Bug Fixes
+
+* **BR-716:** apply timezone handling to practice streak calculations ([#1020](https://github.com/railroadmedia/musora-content-services/issues/1020)) ([28f89f6](https://github.com/railroadmedia/musora-content-services/commit/28f89f6d7c61f37eb3dea75455ef74ff08cd0f85))
+
 ### [2.169.3](https://github.com/railroadmedia/musora-content-services/compare/v2.169.2...v2.169.3) (2026-08-07)
 
 
