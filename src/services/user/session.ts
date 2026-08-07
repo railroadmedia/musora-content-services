@@ -25,7 +25,7 @@ export async function verifyOAuthToken(
 export interface RedirectToOAuthProviderOptions {
   redirect_to?: string
   flow?: string
-  brand?: string
+  theme?: string
   [key: string]: string | undefined
 }
 
