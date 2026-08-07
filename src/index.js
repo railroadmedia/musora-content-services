@@ -267,6 +267,7 @@ import {
 
 import {
 	getPracticeSessionsOffline,
+	getWeeklyPracticeSessionsOffline,
 	otherStatsOffline
 } from './services/offline/practices.ts';
 
@@ -516,6 +517,7 @@ import {
 	getStreaksAndMessage,
 	getUserMonthlyStats,
 	getUserWeeklyStats,
+	getWeeklyPracticeSessions,
 	recordUserActivity,
 	recordUserPractice,
 	removeUserPractice,
@@ -771,6 +773,8 @@ export {
 	getUserSignature,
 	getUserWeeklyStats,
 	getWeekNumber,
+	getWeeklyPracticeSessions,
+	getWeeklyPracticeSessionsOffline,
 	globalConfig,
 	grant30DaysAccessForLifetime,
 	guidedCourses,
