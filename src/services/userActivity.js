@@ -18,32 +18,50 @@ import { mapContentsThatWereLastProgressedFromMethod } from "./content-org/learn
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 const streakMessages = {
-  startStreak: 'Start your streak by taking any lesson!',
-  restartStreak: 'Restart your streak by taking any lesson!',
+  startStreak: { part1: 'Start your streak by taking any lesson!', part2: '' },
+  restartStreak: { part1: 'Restart your streak by taking any lesson!', part2: '' },
 
   // Messages when last active day is today
-  dailyStreak: (streak) =>
-    `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak! Way to keep it going!`,
-  dailyStreakShort: (streak) =>
-    `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
-  weeklyStreak: (streak) =>
-    `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep up the momentum!`,
-  greatJobWeeklyStreak: (streak) =>
-    `Great job! You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep it going!`,
+  dailyStreak: (streak) => ({
+    part1: `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
+    part2: 'Way to keep it going!',
+  }),
+  dailyStreakShort: (streak) => ({
+    part1: `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
+    part2: '',
+  }),
+  weeklyStreak: (streak) => ({
+    part1: `You have ${getIndefiniteArticle(streak)} ${streak} week streak!`,
+    part2: 'Way to keep up the momentum!',
+  }),
+  greatJobWeeklyStreak: (streak) => ({
+    part1: `Great job! You have ${getIndefiniteArticle(streak)} ${streak} week streak!`,
+    part2: 'Way to keep it going!',
+  }),
 
   // Messages when last active day is NOT today
-  dailyStreakReminder: (streak) =>
-    `You have ${getIndefiniteArticle(streak)} ${streak} day streak! Keep it going with any lesson or song!`,
-  weeklyStreakKeepUp: (streak) =>
-    `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep up the momentum!`,
-  weeklyStreakReminder: (streak) =>
-    `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep it going with any lesson or song!`,
+  dailyStreakReminder: (streak) => ({
+    part1: `You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
+    part2: 'Keep it going with any lesson or song!',
+  }),
+  weeklyStreakKeepUp: (streak) => ({
+    part1: `You have ${getIndefiniteArticle(streak)} ${streak} week streak!`,
+    part2: 'Keep up the momentum!',
+  }),
+  weeklyStreakReminder: (streak) => ({
+    part1: `You have ${getIndefiniteArticle(streak)} ${streak} week streak!`,
+    part2: 'Keep it going with any lesson or song!',
+  }),
 }
 
 function getIndefiniteArticle(streak) {
   return streak === 8 || (streak >= 80 && streak <= 89) || (streak >= 800 && streak <= 899)
     ? 'an'
     : 'a'
+}
+
+function joinStreakMessageParts(part1, part2) {
+  return part2 ? `${part1} ${part2}` : part1
 }
 
 async function getUserPractices(userId) {
@@ -118,6 +136,8 @@ export async function getUserWeeklyStats() {
     data: {
       dailyActiveStats: dailyStats,
       streakMessage: streakData.streakMessage,
+      streakMessagePart1: streakData.streakMessagePart1,
+      streakMessagePart2: streakData.streakMessagePart2,
       practices: weekPractices,
       currentWeekPracticeDays: streakData.currentWeekPracticeDays,
       todaysPracticeSeconds: streakData.todaysPracticeSeconds,
@@ -633,15 +653,21 @@ export async function updatePracticeNotes(payload) {
 }
 
 export function getStreaksAndMessage(practices) {
-  let { currentDailyStreak, currentWeeklyStreak, streakMessage, currentWeekPracticeDays } = calculateStreaks(
-    practices,
-    true
-  )
+  let {
+    currentDailyStreak,
+    currentWeeklyStreak,
+    streakMessage,
+    streakMessagePart1,
+    streakMessagePart2,
+    currentWeekPracticeDays,
+  } = calculateStreaks(practices, true)
 
   return {
     currentDailyStreak,
     currentWeeklyStreak,
     streakMessage,
+    streakMessagePart1,
+    streakMessagePart2,
     currentWeekPracticeDays,
   }
 }
@@ -651,7 +677,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   let currentDailyStreak = 0
   let currentWeeklyStreak = 0
   let lastActiveDay = null
-  let streakMessage = ''
+  let streakMessageParts = { part1: '', part2: '' }
 
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   let sortedPracticeDays = Object.keys(practices)
@@ -667,7 +693,12 @@ function calculateStreaks(practices, includeStreakMessage = false) {
       currentDailyStreak: 0,
       currentWeeklyStreak: 0,
       currentWeekPracticeDays: 0,
-      streakMessage: streakMessages.startStreak,
+      streakMessage: joinStreakMessageParts(
+        streakMessages.startStreak.part1,
+        streakMessages.startStreak.part2
+      ),
+      streakMessagePart1: streakMessages.startStreak.part1,
+      streakMessagePart2: streakMessages.startStreak.part2,
     }
   }
   lastActiveDay = sortedPracticeDays[sortedPracticeDays.length - 1]
@@ -737,13 +768,13 @@ function calculateStreaks(practices, includeStreakMessage = false) {
 
     if (isSameDate(lastActiveDay, today)) {
       if (hasYesterdayPractice) {
-        streakMessage = streakMessages.dailyStreak(currentDailyStreak)
+        streakMessageParts = streakMessages.dailyStreak(currentDailyStreak)
       } else if (hasCurrentWeekPreviousPractice) {
-        streakMessage = streakMessages.weeklyStreak(currentWeeklyStreak)
+        streakMessageParts = streakMessages.weeklyStreak(currentWeeklyStreak)
       } else if (hasLastWeekPractice) {
-        streakMessage = streakMessages.greatJobWeeklyStreak(currentWeeklyStreak)
+        streakMessageParts = streakMessages.greatJobWeeklyStreak(currentWeeklyStreak)
       } else {
-        streakMessage = streakMessages.dailyStreakShort(currentDailyStreak)
+        streakMessageParts = streakMessages.dailyStreakShort(currentDailyStreak)
       }
     } else {
       if (
@@ -751,18 +782,25 @@ function calculateStreaks(practices, includeStreakMessage = false) {
         (hasYesterdayPractice && sortedPracticeDays.length == 1) ||
         (hasYesterdayPractice && !hasLastWeekPractice && hasOlderPractice)
       ) {
-        streakMessage = streakMessages.dailyStreakReminder(currentDailyStreak)
+        streakMessageParts = streakMessages.dailyStreakReminder(currentDailyStreak)
       } else if (hasCurrentWeekPractice) {
-        streakMessage = streakMessages.weeklyStreakKeepUp(currentWeeklyStreak)
+        streakMessageParts = streakMessages.weeklyStreakKeepUp(currentWeeklyStreak)
       } else if (hasLastWeekPractice) {
-        streakMessage = streakMessages.weeklyStreakReminder(currentWeeklyStreak)
+        streakMessageParts = streakMessages.weeklyStreakReminder(currentWeeklyStreak)
       } else {
-        streakMessage = streakMessages.restartStreak
+        streakMessageParts = streakMessages.restartStreak
       }
     }
   }
 
-  return { currentDailyStreak, currentWeeklyStreak, streakMessage, currentWeekPracticeDays }
+  return {
+    currentDailyStreak,
+    currentWeeklyStreak,
+    streakMessage: joinStreakMessageParts(streakMessageParts.part1, streakMessageParts.part2),
+    streakMessagePart1: streakMessageParts.part1,
+    streakMessagePart2: streakMessageParts.part2,
+    currentWeekPracticeDays,
+  }
 }
 
 /**

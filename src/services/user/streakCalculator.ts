@@ -6,6 +6,8 @@ export interface StreakData {
   currentDailyStreak: number
   currentWeeklyStreak: number
   streakMessage: string
+  streakMessagePart1: string
+  streakMessagePart2: string
   calculatedAt: number // timestamp
   lastPracticeDate: string | null
   currentWeekPracticeDays: number
@@ -30,13 +32,21 @@ class StreakCalculator {
   async recalculate(): Promise<StreakData> {
     const allPractices = await this.fetchAllPractices()
 
-    const { currentDailyStreak, currentWeeklyStreak, streakMessage, currentWeekPracticeDays } =
-      getStreaksAndMessage(allPractices)
+    const {
+      currentDailyStreak,
+      currentWeeklyStreak,
+      streakMessage,
+      streakMessagePart1,
+      streakMessagePart2,
+      currentWeekPracticeDays,
+    } = getStreaksAndMessage(allPractices)
 
     this.cache = {
       currentDailyStreak: currentDailyStreak,
       currentWeeklyStreak: currentWeeklyStreak,
       streakMessage: streakMessage,
+      streakMessagePart1: streakMessagePart1,
+      streakMessagePart2: streakMessagePart2,
       calculatedAt: Date.now(),
       lastPracticeDate: this.getLastPracticeDate(allPractices),
       currentWeekPracticeDays: currentWeekPracticeDays,
