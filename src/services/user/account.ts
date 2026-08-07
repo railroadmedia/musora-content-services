@@ -20,9 +20,9 @@ export interface AccountStatus {
  *
  * @throws {HttpError} - Throws HttpError if the request fails.
  */
-export async function status(email: string): Promise<OAuthProvider> {
+export async function status(email: string): Promise<AccountStatus> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return await httpClient.post<OAuthProvider>(
+  return await httpClient.post<AccountStatus>(
     `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`,
     []
   )
