@@ -1,5 +1,5 @@
+import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import { HttpClient } from '@/infrastructure/http'
 import { AuthResponse } from './types'
 
 export interface VerifyOAuthTokenParams {
