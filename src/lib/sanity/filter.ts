@@ -23,7 +23,7 @@ export interface StatusConfig {
   statuses?: string[]
   bypassStatuses?: boolean
   isSingle?: boolean
-  isAdmin?: boolean
+  hasAllContentAccess?: boolean
   prefix?: Prefix
 }
 
@@ -349,7 +349,7 @@ export class Filters {
     const adapter = getPermissionsAdapter()
     const userData = config.userData || (await adapter.fetchUserPermissions())
 
-    if (adapter.isAdmin(userData)) return ''
+    if (adapter.hasAllContentAccess(userData)) return ''
 
     const permissionsFilter = adapter.generatePermissionsFilter(userData, {
       prefix: config.prefix || '',
@@ -373,9 +373,9 @@ export class Filters {
     // Auto-determine statuses if not provided
     if (statuses.length === 0) {
       const userData = await getPermissionsAdapter().fetchUserPermissions()
-      const isAdmin = getPermissionsAdapter().isAdmin(userData)
+      const hasAllContentAccess = getPermissionsAdapter().hasAllContentAccess(userData)
 
-      if (config.isAdmin || isAdmin) {
+      if (config.hasAllContentAccess || hasAllContentAccess) {
         statuses = [
           STATUS_DRAFT,
           STATUS_SCHEDULED,
