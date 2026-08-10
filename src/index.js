@@ -5,6 +5,26 @@ import {
 } from './services/eventsAPI';
 
 import {
+	createLiveWaveform,
+	downsamplePeaks,
+	drawStaticWaveform,
+	fetchAndDecodeAudio,
+	formatDuration,
+	formatTime,
+	generateWaveformPeaks,
+	getCombinedAudioUrl,
+	getExtensionForMimeType,
+	getMimeTypeForExtension,
+	getSupportedFormats,
+	getWaveformPeaks,
+	isFormatSupported,
+	listRecordings,
+	startSession,
+	stopSession,
+	uploadChunk
+} from './services/audioRecording.js';
+
+import {
 	registerAwardCallback,
 	registerProgressCallback
 } from './services/awards/award-callbacks.js';
@@ -495,6 +515,7 @@ import {
 } from './services/user/profile.ts';
 
 import {
+	redirectToOAuthProvider,
 	verifyOAuthToken
 } from './services/user/session.ts';
 
@@ -568,6 +589,7 @@ export {
 	createComment,
 	createForumCategory,
 	createInvites,
+	createLiveWaveform,
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
@@ -587,6 +609,8 @@ export {
 	deleteThread,
 	deleteUserActivity,
 	doesUserHaveMembership,
+	downsamplePeaks,
+	drawStaticWaveform,
 	duplicatePlaylist,
 	editComment,
 	emitProgressSaved,
@@ -596,6 +620,7 @@ export {
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPublicAnnouncements,
+	fetchAndDecodeAudio,
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
@@ -696,6 +721,8 @@ export {
 	filterCoursesInCourseCollections,
 	flushWatchSession,
 	followThread,
+	formatDuration,
+	formatTime,
 	generateAuthSessionUrl,
 	generateCommentUrl,
 	generateContentUrl,
@@ -703,6 +730,7 @@ export {
 	generateForumPostUrl,
 	generatePlaylistUrl,
 	generateRecordId,
+	generateWaveformPeaks,
 	getActiveDiscussions,
 	getActivePath,
 	getAllCompleted,
@@ -711,6 +739,7 @@ export {
 	getAllStartedOrCompleted,
 	getAwardStatistics,
 	getBadgeFields,
+	getCombinedAudioUrl,
 	getCompletedAwards,
 	getCompletedAwardsByUser,
 	getContentAwards,
@@ -720,6 +749,7 @@ export {
 	getEndScreen,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
+	getExtensionForMimeType,
 	getHierarchies,
 	getHierarchy,
 	getIdsWhereLastAccessedFromMethod,
@@ -729,6 +759,7 @@ export {
 	getLegacyMethods,
 	getLessonContentRows,
 	getMCSVersion,
+	getMimeTypeForExtension,
 	getMonday,
 	getNavigateTo,
 	getNavigateToForMethod,
@@ -761,6 +792,7 @@ export {
 	getSortOrder,
 	getStartedOrCompletedProgressOnly,
 	getStreaksAndMessage,
+	getSupportedFormats,
 	getTabResults,
 	getTimeRemainingUntilLocal,
 	getToday,
@@ -770,6 +802,7 @@ export {
 	getUserPinProgressKey,
 	getUserSignature,
 	getUserWeeklyStats,
+	getWaveformPeaks,
 	getWeekNumber,
 	globalConfig,
 	grant30DaysAccessForLifetime,
@@ -781,6 +814,7 @@ export {
 	isBucketUrl,
 	isContentLiked,
 	isContentLikedByIds,
+	isFormatSupported,
 	isNextDay,
 	isNextLessonLocked,
 	isSameDate,
@@ -792,6 +826,7 @@ export {
 	likeContent,
 	likePlaylist,
 	likePost,
+	listRecordings,
 	lockThread,
 	login,
 	logout,
@@ -818,6 +853,7 @@ export {
 	recordUserPractice,
 	recordWatchSession,
 	recordWatchSessionOffline,
+	redirectToOAuthProvider,
 	registerAwardCallback,
 	registerProgressCallback,
 	removeContentAsInterested,
@@ -852,7 +888,9 @@ export {
 	startLearningPath,
 	startLiveEventPolling,
 	startOnboarding,
+	startSession,
 	status,
+	stopSession,
 	toDayjs,
 	toLocalDay,
 	togglePlaylistPrivate,
@@ -887,6 +925,7 @@ export {
 	updateThread,
 	updateUserPractice,
 	upgradeSubscription,
+	uploadChunk,
 	uploadPicture,
 	uploadPictureFromS3,
 	userOnboardingForBrand,

@@ -1,6 +1,26 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	createLiveWaveform,
+	downsamplePeaks,
+	drawStaticWaveform,
+	fetchAndDecodeAudio,
+	formatDuration,
+	formatTime,
+	generateWaveformPeaks,
+	getCombinedAudioUrl,
+	getExtensionForMimeType,
+	getMimeTypeForExtension,
+	getSupportedFormats,
+	getWaveformPeaks,
+	isFormatSupported,
+	listRecordings,
+	startSession,
+	stopSession,
+	uploadChunk
+} from './services/audioRecording.js';
+
+import {
 	registerAwardCallback,
 	registerProgressCallback
 } from './services/awards/award-callbacks.js';
@@ -491,6 +511,7 @@ import {
 } from './services/user/profile.ts';
 
 import {
+	redirectToOAuthProvider,
 	verifyOAuthToken
 } from './services/user/session.ts';
 
@@ -569,6 +590,7 @@ declare module 'musora-content-services' {
 		createComment,
 		createForumCategory,
 		createInvites,
+		createLiveWaveform,
 		createPlaylist,
 		createPost,
 		createPracticeNotes,
@@ -588,6 +610,8 @@ declare module 'musora-content-services' {
 		deleteThread,
 		deleteUserActivity,
 		doesUserHaveMembership,
+		downsamplePeaks,
+		drawStaticWaveform,
 		duplicatePlaylist,
 		editComment,
 		emitProgressSaved,
@@ -597,6 +621,7 @@ declare module 'musora-content-services' {
 		fetchAll,
 		fetchAllFilterOptions,
 		fetchAllPublicAnnouncements,
+		fetchAndDecodeAudio,
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
@@ -697,6 +722,8 @@ declare module 'musora-content-services' {
 		filterCoursesInCourseCollections,
 		flushWatchSession,
 		followThread,
+		formatDuration,
+		formatTime,
 		generateAuthSessionUrl,
 		generateCommentUrl,
 		generateContentUrl,
@@ -704,6 +731,7 @@ declare module 'musora-content-services' {
 		generateForumPostUrl,
 		generatePlaylistUrl,
 		generateRecordId,
+		generateWaveformPeaks,
 		getActiveDiscussions,
 		getActivePath,
 		getAllCompleted,
@@ -712,6 +740,7 @@ declare module 'musora-content-services' {
 		getAllStartedOrCompleted,
 		getAwardStatistics,
 		getBadgeFields,
+		getCombinedAudioUrl,
 		getCompletedAwards,
 		getCompletedAwardsByUser,
 		getContentAwards,
@@ -721,6 +750,7 @@ declare module 'musora-content-services' {
 		getEndScreen,
 		getEnrichedLearningPath,
 		getEnrichedLearningPaths,
+		getExtensionForMimeType,
 		getHierarchies,
 		getHierarchy,
 		getIdsWhereLastAccessedFromMethod,
@@ -730,6 +760,7 @@ declare module 'musora-content-services' {
 		getLegacyMethods,
 		getLessonContentRows,
 		getMCSVersion,
+		getMimeTypeForExtension,
 		getMonday,
 		getNavigateTo,
 		getNavigateToForMethod,
@@ -762,6 +793,7 @@ declare module 'musora-content-services' {
 		getSortOrder,
 		getStartedOrCompletedProgressOnly,
 		getStreaksAndMessage,
+		getSupportedFormats,
 		getTabResults,
 		getTimeRemainingUntilLocal,
 		getToday,
@@ -771,6 +803,7 @@ declare module 'musora-content-services' {
 		getUserPinProgressKey,
 		getUserSignature,
 		getUserWeeklyStats,
+		getWaveformPeaks,
 		getWeekNumber,
 		globalConfig,
 		grant30DaysAccessForLifetime,
@@ -782,6 +815,7 @@ declare module 'musora-content-services' {
 		isBucketUrl,
 		isContentLiked,
 		isContentLikedByIds,
+		isFormatSupported,
 		isNextDay,
 		isNextLessonLocked,
 		isSameDate,
@@ -793,6 +827,7 @@ declare module 'musora-content-services' {
 		likeContent,
 		likePlaylist,
 		likePost,
+		listRecordings,
 		lockThread,
 		login,
 		logout,
@@ -819,6 +854,7 @@ declare module 'musora-content-services' {
 		recordUserPractice,
 		recordWatchSession,
 		recordWatchSessionOffline,
+		redirectToOAuthProvider,
 		registerAwardCallback,
 		registerProgressCallback,
 		removeContentAsInterested,
@@ -853,7 +889,9 @@ declare module 'musora-content-services' {
 		startLearningPath,
 		startLiveEventPolling,
 		startOnboarding,
+		startSession,
 		status,
+		stopSession,
 		toDayjs,
 		toLocalDay,
 		togglePlaylistPrivate,
@@ -888,6 +926,7 @@ declare module 'musora-content-services' {
 		updateThread,
 		updateUserPractice,
 		upgradeSubscription,
+		uploadChunk,
 		uploadPicture,
 		uploadPictureFromS3,
 		userOnboardingForBrand,
