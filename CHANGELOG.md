@@ -2,7 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [2.169.0-0](https://github.com/railroadmedia/musora-content-services/compare/v2.168.0...v2.169.0-0) (2026-07-31)
+### [2.169.4](https://github.com/railroadmedia/musora-content-services/compare/v2.169.3...v2.169.4) (2026-08-07)
+
+
+### Bug Fixes
+
+* **BR-716:** apply timezone handling to practice streak calculations ([#1020](https://github.com/railroadmedia/musora-content-services/issues/1020)) ([28f89f6](https://github.com/railroadmedia/musora-content-services/commit/28f89f6d7c61f37eb3dea75455ef74ff08cd0f85))
+
+### [2.169.3](https://github.com/railroadmedia/musora-content-services/compare/v2.169.2...v2.169.3) (2026-08-07)
+
+
+### Bug Fixes
+
+* import alias ([03e8001](https://github.com/railroadmedia/musora-content-services/commit/03e8001f14598b106154786f7aefc7dca7caa03b))
+
+### [2.169.2](https://github.com/railroadmedia/musora-content-services/compare/v2.169.1...v2.169.2) (2026-08-07)
+
+
+### Bug Fixes
+
+* function return type ([9762230](https://github.com/railroadmedia/musora-content-services/commit/97622301bccb6dbbf79a546427fd5fac0fef62bd))
+
+### [2.169.1](https://github.com/railroadmedia/musora-content-services/compare/v2.169.0...v2.169.1) (2026-08-07)
+
+## [2.169.0](https://github.com/railroadmedia/musora-content-services/compare/v2.168.0...v2.169.0) (2026-08-04)
+
 
 ### Features
 

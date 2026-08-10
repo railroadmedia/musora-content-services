@@ -6,17 +6,23 @@ import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
 import { clearAllCachedData } from '../dataContext.js'
 import { Onboarding } from './onboarding'
+import { OAuthProvider } from './session'
 import { AuthResponse } from './types'
+
+export interface AccountStatus {
+  requires_setup: boolean
+  last_login_provider?: OAuthProvider
+}
 
 /**
  * @param {string} email - The email address to check the account status for.
- * @returns {Promise<{requires_setup: boolean}>} - A promise that resolves to an object indicating whether account setup is required, or an HttpError if the request fails.
+ * @returns {Promise<OAuthProvider>} - A promise that resolves to an object indicating whether account setup is required, or an HttpError if the request fails.
  *
  * @throws {HttpError} - Throws HttpError if the request fails.
  */
-export async function status(email: string): Promise<{ requires_setup: boolean }> {
+export async function status(email: string): Promise<AccountStatus> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return await httpClient.post<{ requires_setup: boolean }>(
+  return await httpClient.post<AccountStatus>(
     `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`,
     []
   )

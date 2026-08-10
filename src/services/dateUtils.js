@@ -46,9 +46,9 @@ export function isSameDate(date1, date2) {
 
 // Check if two dates are consecutive days
 export function isNextDay(date1, date2) {
-  const d1 = dayjs(date1).startOf('day')
-  const d2 = dayjs(date2).startOf('day')
-  return d2.diff(d1, 'day') === 1
+  const d1 = toLocalDay(date1)
+  const d2 = toLocalDay(date2)
+  return Math.round(d2.diff(d1, 'day', true)) === 1
 }
 export function getTimeRemainingUntilLocal(targetUtcIsoString, { withTotalSeconds } = {}) {
   const targetUTC = new Date(targetUtcIsoString)
