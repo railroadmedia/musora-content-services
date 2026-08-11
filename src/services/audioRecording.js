@@ -101,14 +101,14 @@ export function downsamplePeaks(peaks, targetCount) {
 /**
  * Start a recording session
  */
-export async function startSession(apiBase, userId, contentId = null) {
+export async function startSession(apiBase, userId, contentId = null, videoTimeMs = null) {
   const response = await fetch(`${apiBase}/start`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: JSON.stringify({ user_id: userId, content_id: contentId }),
+    body: JSON.stringify({ user_id: userId, content_id: contentId, video_time_ms: videoTimeMs }),
   });
 
   if (!response.ok) {
