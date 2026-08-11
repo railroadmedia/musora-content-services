@@ -27,38 +27,29 @@ const RECORDING_FORMATS = [
   'audio/aac',
 ];
 
-/**
- * Check if a MIME type is supported by MediaRecorder
- */
+let apiBase = null;
+
+export function configure(options) {
+  apiBase = options.apiBase;
+}
+
 export function isFormatSupported(mimeType) {
   return typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(mimeType);
 }
 
-/**
- * Get list of supported recording formats
- */
 export function getSupportedFormats() {
   return RECORDING_FORMATS.filter(isFormatSupported);
 }
 
-/**
- * Get file extension for a MIME type
- */
 export function getExtensionForMimeType(mimeType) {
   const base = mimeType.split(';')[0].trim();
   return EXTENSIONS[base] || 'bin';
 }
 
-/**
- * Get MIME type for a file extension
- */
 export function getMimeTypeForExtension(extension) {
   return MIME_TYPES[extension] || 'application/octet-stream';
 }
 
-/**
- * Format duration in milliseconds to MM:SS
- */
 export function formatDuration(ms) {
   const secs = Math.floor(ms / 1000);
   const mins = Math.floor(secs / 60);
@@ -66,9 +57,6 @@ export function formatDuration(ms) {
   return `${mins}:${s.toString().padStart(2, '0')}`;
 }
 
-/**
- * Format time in seconds to MM:SS
- */
 export function formatTime(seconds) {
   if (!seconds || !isFinite(seconds)) return '0:00';
   const mins = Math.floor(seconds / 60);
@@ -98,10 +86,7 @@ export function downsamplePeaks(peaks, targetCount) {
   return result;
 }
 
-/**
- * Start a recording session
- */
-export async function startSession(apiBase, userId, contentId = null, videoTimeMs = null) {
+export async function startSession(userId, contentId = null, videoTimeMs = null) {
   const response = await fetch(`${apiBase}/start`, {
     method: 'POST',
     headers: {
@@ -119,17 +104,22 @@ export async function startSession(apiBase, userId, contentId = null, videoTimeM
   return response.json();
 }
 
-/**
- * Upload a chunk to the server
- */
-export async function uploadChunk(apiBase, folder, index, extension, blob, videoTimeMs = 0, peaks = null) {
+export async function uploadChunk(folder, index, extension, chunk, videoTimeMs = 0, peaks = null) {
   const body = new FormData();
   body.append('folder', folder);
   body.append('index', index);
   body.append('extension', extension);
   body.append('video_time_ms', videoTimeMs);
   body.append('recorded_at', Date.now());
-  body.append('chunk', blob, `${String(index).padStart(4, '0')}.${extension}`);
+
+  // React Native can't reliably build a Blob from an in-memory chunk without a
+  // filesystem library, so it passes a base64 string instead; web passes a Blob.
+  if (typeof chunk === 'string') {
+    body.append('chunk_base64', chunk);
+  } else {
+    body.append('chunk', chunk, `${String(index).padStart(4, '0')}.${extension}`);
+  }
+
   if (peaks && peaks.length > 0) {
     body.append('peaks', JSON.stringify(peaks));
   }
@@ -149,10 +139,7 @@ export async function uploadChunk(apiBase, folder, index, extension, blob, video
   return payload;
 }
 
-/**
- * Stop a recording session and save metadata
- */
-export async function stopSession(apiBase, userId, folder, durationMs, chunkCount, format) {
+export async function stopSession(userId, folder, durationMs, chunkCount, format, reason = null) {
   const response = await fetch(`${apiBase}/stop`, {
     method: 'POST',
     headers: {
@@ -165,6 +152,7 @@ export async function stopSession(apiBase, userId, folder, durationMs, chunkCoun
       duration_ms: durationMs,
       chunk_count: chunkCount,
       format,
+      reason,
     }),
   });
 
@@ -177,9 +165,162 @@ export async function stopSession(apiBase, userId, folder, durationMs, chunkCoun
 }
 
 /**
+ * Log a pause/resume event against a session, for session-boundary reconstitution
+ */
+export async function logEvent(folder, type, videoTimeMs) {
+  const response = await fetch(`${apiBase}/event`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({ folder, type, video_time_ms: videoTimeMs }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.message || err.error || 'Failed to log event');
+  }
+
+  return response.json();
+}
+
+/**
+ * Manages the pause/resume/timeout state machine for a recording session, so every
+ * platform (web, mobile) applying the "pause >X breaks the session" rule behaves the
+ * same way. Caller drives it from its own play/pause signal; this owns the grace timer,
+ * the pause/resume event logging, and the stop reason ('manual' vs 'timeout').
+ */
+export function createSessionController(folder, options = {}) {
+  const graceMs = options.graceMs ?? 180000;
+  const onTimeout = options.onTimeout ?? (() => {});
+  const startedAt = Date.now();
+
+  let paused = false;
+  let pausedAt = null;
+  let totalPausedMs = 0;
+  let timer = null;
+  let stopReason = 'manual';
+
+  function elapsedMs() {
+    return Date.now() - startedAt;
+  }
+
+  // MediaRecorder.pause() genuinely stops capturing audio, so the wall-clock elapsed
+  // time overcounts whenever a pause happened — this is what actually ended up recorded.
+  function activeElapsedMs() {
+    const openPauseMs = paused && pausedAt !== null ? Date.now() - pausedAt : 0;
+    return elapsedMs() - totalPausedMs - openPauseMs;
+  }
+
+  function pause() {
+    if (paused) return;
+    paused = true;
+    pausedAt = Date.now();
+
+    logEvent(folder, 'pause', elapsedMs()).catch(error => {
+      console.warn('Failed to log pause event:', error);
+    });
+
+    timer = setTimeout(() => {
+      stopReason = 'timeout';
+      timer = null;
+      onTimeout();
+    }, graceMs);
+  }
+
+  function resume() {
+    if (!paused) return;
+    paused = false;
+
+    if (pausedAt !== null) {
+      totalPausedMs += Date.now() - pausedAt;
+      pausedAt = null;
+    }
+
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+
+    logEvent(folder, 'resume', elapsedMs()).catch(error => {
+      console.warn('Failed to log resume event:', error);
+    });
+  }
+
+  function finish() {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+
+    return stopReason;
+  }
+
+  return {
+    pause,
+    resume,
+    finish,
+    activeElapsedMs,
+    isPaused: () => paused,
+    elapsedMs,
+  };
+}
+
+/**
+ * Incrementally decodes WebM chunks as they're recorded, then at record-stop rewrites
+ * chunk 1's header in place with real Duration + Cues, so native players can show
+ * duration and seek. Only relevant for WebM (Firefox); MP4/M4A already have both.
+ *
+ * `ebml` is the ts-ebml module/namespace ({ Decoder, Reader, tools }). Pass it explicitly
+ * (e.g. a CDN-loaded global) where no bundler is available; omit it to dynamically
+ * import the real 'ts-ebml' package where one is (this only executes the import when
+ * no `ebml` is given, so environments that always pass one never need to resolve it).
+ */
+export async function createWebmSeekabilityFixer(ebml) {
+  const lib = ebml ?? await import('ts-ebml');
+  const decoder = new lib.Decoder();
+  const reader = new lib.Reader();
+
+  let queue = Promise.resolve();
+  let firstChunkBuffer = null;
+
+  function feedChunk(chunkIndex, blob) {
+    queue = queue
+      .then(() => blob.arrayBuffer())
+      .then(buffer => {
+        if (chunkIndex === 1) {
+          firstChunkBuffer = buffer;
+        }
+        decoder.decode(buffer).forEach(elm => reader.read(elm));
+      });
+  }
+
+  async function finish(folder, extension) {
+    if (!firstChunkBuffer) return;
+
+    await queue;
+    reader.stop();
+
+    if (reader.metadataSize > firstChunkBuffer.byteLength) {
+      console.warn(`WebM header (${reader.metadataSize}B) spans past chunk 1 (${firstChunkBuffer.byteLength}B) — skipping seekability fix.`);
+      return;
+    }
+
+    const refined = lib.tools.makeMetadataSeekable(reader.metadatas, reader.duration, reader.cues);
+    const tail = firstChunkBuffer.slice(reader.metadataSize);
+    const fixedFirstChunk = new Blob([refined, tail], { type: 'audio/webm' });
+
+    await uploadChunk(folder, 1, extension, fixedFirstChunk);
+  }
+
+  return { feedChunk, finish };
+}
+
+/**
  * List recordings for a user
  */
-export async function listRecordings(apiBase, userId, contentId = null, date = null) {
+export async function listRecordings(userId, contentId = null, date = null) {
   let url = `${apiBase}/list?user_id=${userId}`;
   if (contentId) url += `&content_id=${encodeURIComponent(contentId)}`;
   if (date) url += `&date=${encodeURIComponent(date)}`;
@@ -199,14 +340,14 @@ export async function listRecordings(apiBase, userId, contentId = null, date = n
 /**
  * Get combined audio URL for a recording
  */
-export function getCombinedAudioUrl(apiBase, folder) {
+export function getCombinedAudioUrl(folder) {
   return `${apiBase}/combined?folder=${encodeURIComponent(folder)}`;
 }
 
 /**
  * Fetch stored waveform peaks for a recording
  */
-export async function getWaveformPeaks(apiBase, folder) {
+export async function getWaveformPeaks(folder) {
   const response = await fetch(`${apiBase}/waveform?folder=${encodeURIComponent(folder)}`, {
     headers: { 'Accept': 'application/json' },
   });
@@ -347,6 +488,7 @@ export function createLiveWaveform(canvas, mediaStream, options = {}) {
   let animationId = null;
   let history = [];
   let chunkPeaks = [];
+  let paused = false;
 
   const barWidth = options.barWidth || 2;
   const gap = options.gap || 1;
@@ -366,6 +508,14 @@ export function createLiveWaveform(canvas, mediaStream, options = {}) {
   }
 
   function draw() {
+    // Frozen on the last drawn frame while paused — the mic stream itself keeps
+    // running, so without this the waveform would keep reacting to sound the
+    // recorder isn't actually capturing.
+    if (paused) {
+      animationId = requestAnimationFrame(draw);
+      return;
+    }
+
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
     analyser.getByteTimeDomainData(dataArray);
@@ -432,10 +582,17 @@ export function createLiveWaveform(canvas, mediaStream, options = {}) {
       chunkPeaks = [];
       return peaks;
     },
+    pause() {
+      paused = true;
+    },
+    resume() {
+      paused = false;
+    },
   };
 }
 
 export default {
+  configure,
   MIME_TYPES,
   EXTENSIONS,
   RECORDING_FORMATS,
@@ -449,6 +606,9 @@ export default {
   startSession,
   uploadChunk,
   stopSession,
+  logEvent,
+  createSessionController,
+  createWebmSeekabilityFixer,
   listRecordings,
   getCombinedAudioUrl,
   getWaveformPeaks,

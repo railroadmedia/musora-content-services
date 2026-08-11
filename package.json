@@ -51,6 +51,7 @@
     "docdash": "^2.0.2",
     "fflate": "^0.8.2",
     "groqd": "^0.15.12",
+    "ts-ebml": "^3.0.2",
     "valibot": "^1.0.0"
   },
   "peerDependencies": {
