@@ -179,11 +179,10 @@ export async function stopSession(apiBase, userId, folder, durationMs, chunkCoun
 /**
  * List recordings for a user
  */
-export async function listRecordings(apiBase, userId, contentId = null) {
+export async function listRecordings(apiBase, userId, contentId = null, date = null) {
   let url = `${apiBase}/list?user_id=${userId}`;
-  if (contentId) {
-    url += `&content_id=${encodeURIComponent(contentId)}`;
-  }
+  if (contentId) url += `&content_id=${encodeURIComponent(contentId)}`;
+  if (date) url += `&date=${encodeURIComponent(date)}`;
 
   const response = await fetch(url, {
     headers: { 'Accept': 'application/json' },
