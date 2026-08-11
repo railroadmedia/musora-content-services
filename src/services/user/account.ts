@@ -91,6 +91,30 @@ export async function setupAccount(props: AccountSetupProps): Promise<AccountSet
   return res
 }
 
+export interface PendingAccountProps {
+  email: string
+  revenuecatAppUserId?: string
+}
+
+/**
+ * @param {Object} props - The parameters for creating the pending account.
+ * @property {string} email - The email address for the account.
+ * @property {string} [revenuecatAppUserId] - The RevenueCat App User ID for MA environments.
+ *
+ * @returns {Promise<AccountSetupResponse>} - A promise that resolves when the pending account is created or an HttpError if the request fails.
+ * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
+ */
+export async function createPendingAccount(props: PendingAccountProps): Promise<AccountSetupResponse> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return await httpClient.post<AccountSetupResponse>(
+    `/api/user-management-system/v1/accounts/pending`,
+    {
+      email: props.email,
+      mobile_app_id: props.revenuecatAppUserId,
+    }
+  )
+}
+
 /**
  * @param {string} email - The email address to send the password reset email to.
  * @returns {Promise<void>} - A promise that resolves when the email change request is made.
