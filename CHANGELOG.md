@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.172.0](https://github.com/railroadmedia/musora-content-services/compare/v2.171.0...v2.172.0) (2026-08-12)
+
+
+### Features
+
+* adds previous_email param to pending account creation ([#1028](https://github.com/railroadmedia/musora-content-services/issues/1028)) ([997d5ab](https://github.com/railroadmedia/musora-content-services/commit/997d5ab9883353a4a5f35000c92f9ff322e730b5))
+
 ## [2.171.0](https://github.com/railroadmedia/musora-content-services/compare/v2.170.0...v2.171.0) (2026-08-12)
 
 
