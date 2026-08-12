@@ -410,6 +410,7 @@ import {
 
 import {
 	confirmEmailChange,
+	createPendingAccount,
 	deleteAccount,
 	numberOfActiveUsers,
 	requestEmailChange,
@@ -569,6 +570,7 @@ declare module 'musora-content-services' {
 		createComment,
 		createForumCategory,
 		createInvites,
+		createPendingAccount,
 		createPlaylist,
 		createPost,
 		createPracticeNotes,

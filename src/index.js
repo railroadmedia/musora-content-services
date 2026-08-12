@@ -414,6 +414,7 @@ import {
 
 import {
 	confirmEmailChange,
+	createPendingAccount,
 	deleteAccount,
 	numberOfActiveUsers,
 	requestEmailChange,
@@ -568,6 +569,7 @@ export {
 	createComment,
 	createForumCategory,
 	createInvites,
+	createPendingAccount,
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
