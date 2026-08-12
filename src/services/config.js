@@ -23,8 +23,27 @@ export let globalConfig = {
 const excludeFromGeneratedIndex = []
 
 /**
+ * @param {*} target
+ * @param {*} source
+ * @returns {*}
+ */
+function deepMerge(target, source) {
+  if (source === undefined) return target
+  if (typeof source !== 'object' || source === null || Array.isArray(source)) return source
+
+  const merged = { ...target }
+  for (const key of Object.keys(source)) {
+    merged[key] = deepMerge(target?.[key], source[key])
+  }
+  return merged
+}
+
+/**
  * Initializes the service with the given configuration.
  * This function must be called before using any other functions in this library.
+ * Can be called multiple times with partial config (e.g. once for env-level settings
+ * before a user is known, again once the user resolves) - each call deep-merges over
+ * the prior config rather than replacing it.
  * Automatically initializes award definitions with 24-hour cache in the background.
  *
  * @param {Config} config - Configuration object containing API settings.
@@ -88,14 +107,14 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 export function initializeService(config) {
-  globalConfig.sanityConfig = config.sanityConfig
-  globalConfig.railcontentConfig = config.railcontentConfig
-  globalConfig.sessionConfig = config.sessionConfig || config.railcontentConfig
-  globalConfig.baseUrl = config.baseUrl || config.railcontentConfig.baseUrl
-  globalConfig.localStorage = config.localStorage
-  globalConfig.isMA = config.isMA || false
-  globalConfig.localTimezoneString = config.localTimezoneString || null
-  globalConfig.permissionsVersion = config.permissionsVersion || 'v2'
+  globalConfig.sanityConfig = deepMerge(globalConfig.sanityConfig, config.sanityConfig)
+  globalConfig.railcontentConfig = deepMerge(globalConfig.railcontentConfig, config.railcontentConfig)
+  globalConfig.sessionConfig = deepMerge(globalConfig.sessionConfig, config.sessionConfig)
+  globalConfig.baseUrl = config.baseUrl ?? globalConfig.baseUrl
+  globalConfig.localStorage = config.localStorage ?? globalConfig.localStorage
+  globalConfig.isMA = config.isMA ?? globalConfig.isMA
+  globalConfig.localTimezoneString = config.localTimezoneString ?? globalConfig.localTimezoneString
+  globalConfig.permissionsVersion = config.permissionsVersion ?? globalConfig.permissionsVersion
 
   if (config.localStorage) {
     import('./awards/internal/award-definitions')
