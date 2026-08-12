@@ -112,12 +112,14 @@ export async function setupAccount(props: AccountSetupProps): Promise<AccountSet
 export interface PendingAccountProps {
   email: string
   revenuecatAppUserId?: string
+  previousEmail?: string
 }
 
 /**
  * @param {Object} props - The parameters for creating the pending account.
  * @property {string} email - The email address for the account.
  * @property {string} [revenuecatAppUserId] - The RevenueCat App User ID for MA environments.
+ * @property {string} [previousEmail] - The previous email address, if this account replaces an existing one.
  *
  * @returns {Promise<AccountSetupResponse>} - A promise that resolves when the pending account is created or an HttpError if the request fails.
  * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
@@ -129,6 +131,7 @@ export async function createPendingAccount(props: PendingAccountProps): Promise<
     {
       email: props.email,
       mobile_app_id: props.revenuecatAppUserId,
+      previous_email: props.previousEmail,
     }
   )
 }
