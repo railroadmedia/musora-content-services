@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.174.0](https://github.com/railroadmedia/musora-content-services/compare/v2.173.0...v2.174.0) (2026-08-12)
+
+
+### Features
+
+* **MU2-1818:** Add OAuth provider list/unlink session APIs ([#1026](https://github.com/railroadmedia/musora-content-services/issues/1026)) ([9440a1a](https://github.com/railroadmedia/musora-content-services/commit/9440a1a2e5e4d459d9f889b6178c419893ece402))
+
 ## [2.173.0](https://github.com/railroadmedia/musora-content-services/compare/v2.171.0...v2.173.0) (2026-08-12)
 
 
