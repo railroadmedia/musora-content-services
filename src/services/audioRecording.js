@@ -472,11 +472,29 @@ export function drawStaticWaveform(canvas, peaks, options = {}) {
   return scaledPeaks;
 }
 
+// RMS + peak blend for one analyser frame — shared by the data-only capture and the
+// visual waveform, so both agree on what "amplitude" means.
+function computeAmplitude(analyser) {
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+  analyser.getByteTimeDomainData(dataArray);
+
+  let sumSquares = 0;
+  let peak = 0;
+  for (let i = 0; i < bufferLength; i++) {
+    const v = (dataArray[i] - 128) / 128;
+    sumSquares += v * v;
+    peak = Math.max(peak, Math.abs(v));
+  }
+  const rms = Math.sqrt(sumSquares / bufferLength);
+  return Math.min(1, Math.max(0.02, rms * 2, peak * 0.7));
+}
+
 /**
- * Create live waveform visualizer with peak capture for storage
+ * Captures live microphone amplitude for chunk peaks, without rendering anything —
+ * the data half of createLiveWaveform, for recorder UIs that don't show a waveform.
  */
-export function createLiveWaveform(canvas, mediaStream, options = {}) {
-  const ctx = canvas.getContext('2d');
+export function createPeakCapture(mediaStream, options = {}) {
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const analyser = audioContext.createAnalyser();
   analyser.fftSize = options.fftSize || 2048;
@@ -486,8 +504,51 @@ export function createLiveWaveform(canvas, mediaStream, options = {}) {
   source.connect(analyser);
 
   let animationId = null;
-  let history = [];
   let chunkPeaks = [];
+  let paused = false;
+
+  function sample() {
+    if (!paused) {
+      chunkPeaks.push(computeAmplitude(analyser));
+    }
+    animationId = requestAnimationFrame(sample);
+  }
+
+  sample();
+
+  return {
+    analyser,
+    stop() {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+      audioContext.close();
+    },
+    flushChunkPeaks() {
+      const peaks = [...chunkPeaks];
+      chunkPeaks = [];
+      return peaks;
+    },
+    pause() {
+      paused = true;
+    },
+    resume() {
+      paused = false;
+    },
+  };
+}
+
+/**
+ * Create live waveform visualizer with peak capture for storage. Thin rendering
+ * layer over createPeakCapture — use that directly if you don't need the canvas.
+ */
+export function createLiveWaveform(canvas, mediaStream, options = {}) {
+  const capture = createPeakCapture(mediaStream, options);
+  const ctx = canvas.getContext('2d');
+
+  let animationId = null;
+  let history = [];
   let paused = false;
 
   const barWidth = options.barWidth || 2;
@@ -516,27 +577,10 @@ export function createLiveWaveform(canvas, mediaStream, options = {}) {
       return;
     }
 
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    analyser.getByteTimeDomainData(dataArray);
-
     const rect = canvas.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
-
-    // Calculate RMS and peak for better accuracy
-    let sumSquares = 0;
-    let peak = 0;
-    for (let i = 0; i < bufferLength; i++) {
-      const v = (dataArray[i] - 128) / 128;
-      sumSquares += v * v;
-      peak = Math.max(peak, Math.abs(v));
-    }
-    const rms = Math.sqrt(sumSquares / bufferLength);
-    const amplitude = Math.min(1, Math.max(0.02, rms * 2, peak * 0.7));
-
-    // Record for chunk storage
-    chunkPeaks.push(amplitude);
+    const amplitude = computeAmplitude(capture.analyser);
 
     history.push(amplitude);
     const maxBars = Math.floor(width / (barWidth + gap));
@@ -574,19 +618,17 @@ export function createLiveWaveform(canvas, mediaStream, options = {}) {
         cancelAnimationFrame(animationId);
         animationId = null;
       }
-      audioContext.close();
+      capture.stop();
     },
     resize: initCanvas,
-    flushChunkPeaks() {
-      const peaks = [...chunkPeaks];
-      chunkPeaks = [];
-      return peaks;
-    },
+    flushChunkPeaks: capture.flushChunkPeaks,
     pause() {
       paused = true;
+      capture.pause();
     },
     resume() {
       paused = false;
+      capture.resume();
     },
   };
 }
@@ -616,4 +658,5 @@ export default {
   generateWaveformPeaks,
   drawStaticWaveform,
   createLiveWaveform,
+  createPeakCapture,
 };
