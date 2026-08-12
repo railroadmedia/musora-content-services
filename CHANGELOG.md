@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.171.0](https://github.com/railroadmedia/musora-content-services/compare/v2.170.0...v2.171.0) (2026-08-12)
+
+
+### Features
+
+* adds create pending user fn ([#1025](https://github.com/railroadmedia/musora-content-services/issues/1025)) ([c4ba8ef](https://github.com/railroadmedia/musora-content-services/commit/c4ba8ef3a118718236d177885372781714a08c9a))
+
 ## [2.170.0](https://github.com/railroadmedia/musora-content-services/compare/v2.169.4...v2.170.0) (2026-08-10)
 
 ## [2.169.0-0](https://github.com/railroadmedia/musora-content-services/compare/v2.168.0...v2.169.0-0) (2026-07-31)
