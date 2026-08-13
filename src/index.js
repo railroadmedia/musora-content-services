@@ -496,6 +496,9 @@ import {
 } from './services/user/profile.ts';
 
 import {
+	listOAuthProviders,
+	redirectToOAuthProvider,
+	unlinkOAuthProvider,
 	verifyOAuthToken
 } from './services/user/session.ts';
 
@@ -794,6 +797,7 @@ export {
 	likeContent,
 	likePlaylist,
 	likePost,
+	listOAuthProviders,
 	lockThread,
 	login,
 	logout,
@@ -820,6 +824,7 @@ export {
 	recordUserPractice,
 	recordWatchSession,
 	recordWatchSessionOffline,
+	redirectToOAuthProvider,
 	registerAwardCallback,
 	registerProgressCallback,
 	removeContentAsInterested,
@@ -870,6 +875,7 @@ export {
 	unlikeContent,
 	unlikePlaylist,
 	unlikePost,
+	unlinkOAuthProvider,
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
