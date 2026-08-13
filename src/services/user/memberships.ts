@@ -75,6 +75,8 @@ export interface UpgradeProduct {
   tier: 'plus' | 'basic' | '' // deprecated in favour of membership_level
   membership_level: 'plus' | 'basic' | ''
   plan_type: 'family' | 'duo' | 'solo'
+  tier_key: string
+  rank: number | null
 }
 
 export interface UpgradeOption {
