@@ -24,6 +24,12 @@ function getCollectionFromAward(award) {
   return null
 }
 
+function haveSameLessonIds(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false
+  const setA = new Set(a)
+  return b.every(id => setA.has(id))
+}
+
 
 export class AwardManager {
   async onContentCompleted(contentId) {
@@ -138,6 +144,18 @@ export class AwardManager {
         completedLessonIds,
         totalLessons: childIds.length,
         completedCount
+      }
+
+      const existing = await db.userAwardProgress.getByAwardId(award._id)
+      const existingProgressData = existing?.data?.progress_data
+      const isUnchanged = existing?.data
+        && existing.data.progress_percentage === progressPercentage
+        && existingProgressData?.totalLessons === progressData.totalLessons
+        && existingProgressData?.completedCount === progressData.completedCount
+        && haveSameLessonIds(existingProgressData?.completedLessonIds, progressData.completedLessonIds)
+
+      if (isUnchanged) {
+        return
       }
 
       await db.userAwardProgress.recordAwardProgress(award._id, progressPercentage, {
