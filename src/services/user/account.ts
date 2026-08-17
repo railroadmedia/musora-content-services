@@ -115,6 +115,7 @@ export interface PendingAccountProps {
   previousEmail?: string
 }
 
+// Not AccountSetupResponse -- this is the permanent shape for this endpoint.
 export interface PendingAccountResponse {
   user_id: number
 }
