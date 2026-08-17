@@ -166,7 +166,7 @@ export async function resetPassword(props: PasswordResetProps): Promise<AuthResp
     email: props.email,
     password: props.password,
     password_confirmation: props.passwordConfirmation,
-    token: props.password,
+    token: props.token,
     device_name: props.deviceName,
     device_token: props.deviceToken,
     platform: props.platform,
