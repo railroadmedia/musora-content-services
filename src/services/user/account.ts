@@ -115,18 +115,22 @@ export interface PendingAccountProps {
   previousEmail?: string
 }
 
+export interface PendingAccountResponse {
+  user_id: number
+}
+
 /**
  * @param {Object} props - The parameters for creating the pending account.
  * @property {string} email - The email address for the account.
  * @property {string} [revenuecatAppUserId] - The RevenueCat App User ID for MA environments.
  * @property {string} [previousEmail] - The previous email address, if this account replaces an existing one.
  *
- * @returns {Promise<AccountSetupResponse>} - A promise that resolves when the pending account is created or an HttpError if the request fails.
+ * @returns {Promise<PendingAccountResponse>} - A promise that resolves when the pending account is created or an HttpError if the request fails.
  * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
  */
-export async function createPendingAccount(props: PendingAccountProps): Promise<AccountSetupResponse> {
+export async function createPendingAccount(props: PendingAccountProps): Promise<PendingAccountResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return await httpClient.post<AccountSetupResponse>(
+  return await httpClient.post<PendingAccountResponse>(
     `/api/user-management-system/v1/accounts/pending`,
     {
       email: props.email,
