@@ -5,6 +5,7 @@ import { AwardMessageGenerator } from './message-generator'
 import db from '../../sync/repository-proxy'
 import { STATE, COLLECTION_TYPE } from '../../sync/models/ContentProgress'
 import {getProgressStateByIds} from "../../contentProgress.js";
+import UserAwardProgressRepository from '../../sync/repositories/user-award-progress'
 
 async function getCompletionStates(contentIds, collection = null) {
   const progress = await getProgressStateByIds(contentIds, collection)
@@ -50,8 +51,8 @@ export class AwardManager {
 
   async evaluateAward(award) {
     try {
-      const hasCompleted = await db.userAwardProgress.hasCompletedAward(award._id)
-      if (hasCompleted) {
+      const existing = await db.userAwardProgress.getByAwardId(award._id)
+      if (existing?.data && UserAwardProgressRepository.isCompleted(existing.data)) {
         console.log(`Award ${award._id} already completed, skipping evaluation`)
         return
       }
@@ -63,7 +64,7 @@ export class AwardManager {
         console.log(`Award ${award._id} is now eligible, granting award`)
         await this.grantAward(award, collection)
       } else {
-        await this.updateAwardProgress(award, collection)
+        await this.updateAwardProgress(award, collection, existing)
       }
     } catch (error) {
       console.error(`Error checking award ${award._id}:`, error)
@@ -120,7 +121,7 @@ export class AwardManager {
     })
   }
 
-  async updateAwardProgress(award, collection) {
+  async updateAwardProgress(award, collection, existing) {
     try {
       const childIds = getEligibleChildIds(award)
 
@@ -145,8 +146,6 @@ export class AwardManager {
         totalLessons: childIds.length,
         completedCount
       }
-
-      const existing = await db.userAwardProgress.getByAwardId(award._id)
       const existingProgressData = existing?.data?.progress_data
       const isUnchanged = existing?.data
         && existing.data.progress_percentage === progressPercentage
@@ -154,13 +153,11 @@ export class AwardManager {
         && existingProgressData?.completedCount === progressData.completedCount
         && haveSameLessonIds(existingProgressData?.completedLessonIds, progressData.completedLessonIds)
 
-      if (isUnchanged) {
-        return
+      if (!isUnchanged) {
+        await db.userAwardProgress.recordAwardProgress(award._id, progressPercentage, {
+          progressData
+        })
       }
-
-      await db.userAwardProgress.recordAwardProgress(award._id, progressPercentage, {
-        progressData
-      })
 
       awardEvents.emitAwardProgress({
         awardId: award._id,

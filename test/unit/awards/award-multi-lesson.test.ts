@@ -231,7 +231,9 @@ describe('Award Progress Calculation', () => {
     const childId = 416448
 
     test('skips evaluation when award is already completed', async () => {
-      db.userAwardProgress.hasCompletedAward.mockResolvedValue(true)
+      db.userAwardProgress.getByAwardId.mockResolvedValue({
+        data: { completed_at: new Date().toISOString(), progress_percentage: 100 }
+      })
       mockAllCompleted(db)
 
       await awardManager.onContentCompleted(childId)

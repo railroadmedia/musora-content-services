@@ -197,7 +197,9 @@ describe('Award Completion Flow - E2E Scenarios', () => {
 
   describe('Scenario: User already earned the award', () => {
     beforeEach(() => {
-      db.userAwardProgress.hasCompletedAward.mockResolvedValue(true)
+      db.userAwardProgress.getByAwardId.mockResolvedValue({
+        data: { completed_at: new Date().toISOString(), progress_percentage: 100 }
+      })
       mockAllCompleted(db)
     })
 
