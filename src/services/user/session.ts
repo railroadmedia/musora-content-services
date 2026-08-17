@@ -40,13 +40,13 @@ export async function redirectToOAuthProvider(
 }
 
 export async function listOAuthProviders(): Promise<OAuthProvider[]> {
-  const userId = globalConfig.userId
+  const userId = globalConfig.sessionConfig.userId
   const apiUrl = `/api/user-management-system/v1/sessions/${encodeURIComponent(userId)}/oauth`
   return new HttpClient(globalConfig.baseUrl).get<OAuthProvider[]>(apiUrl)
 }
 
 export async function unlinkOAuthProvider(provider: OAuthProvider): Promise<void> {
-  const userId = globalConfig.userId
+  const userId = globalConfig.sessionConfig.userId
   const apiUrl = `/api/user-management-system/v1/sessions/${encodeURIComponent(userId)}/oauth/${encodeURIComponent(provider)}`
   return new HttpClient(globalConfig.baseUrl).delete(apiUrl)
 }

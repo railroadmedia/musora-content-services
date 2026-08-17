@@ -124,7 +124,9 @@ export interface PendingAccountProps {
  * @returns {Promise<AccountSetupResponse>} - A promise that resolves when the pending account is created or an HttpError if the request fails.
  * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
  */
-export async function createPendingAccount(props: PendingAccountProps): Promise<AccountSetupResponse> {
+export async function createPendingAccount(
+  props: PendingAccountProps
+): Promise<AccountSetupResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return await httpClient.post<AccountSetupResponse>(
     `/api/user-management-system/v1/accounts/pending`,
@@ -153,28 +155,21 @@ export interface PasswordResetProps {
   password: string
   passwordConfirmation: string
   token: string
+  deviceName?: string
+  deviceToken?: string
+  platform?: string
 }
-/**
- * @param {Object} params - The parameters for resetting the password.
- * @property {string} email - The email address for the account.
- * @property {string} password - The new password for the account.
- * @property {string} passwordConfirmation - The confirmation of the new password.
- * @property {string} token - The token sent to the user's email for verification.
- * @returns {Promise<void>} - A promise that resolves when the password reset is complete or an HttpError if the request fails.
- * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
- */
-export async function resetPassword({
-  email,
-  password,
-  passwordConfirmation,
-  token,
-}: PasswordResetProps): Promise<void> {
+
+export async function resetPassword(props: PasswordResetProps): Promise<AuthResponse | null> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post(`/api/user-management-system/v1/accounts/password/reset`, {
-    email,
-    password,
-    password_confirmation: passwordConfirmation,
-    token,
+    email: props.email,
+    password: props.password,
+    password_confirmation: props.passwordConfirmation,
+    token: props.password,
+    device_name: props.deviceName,
+    device_token: props.deviceToken,
+    platform: props.platform,
   })
 }
 
