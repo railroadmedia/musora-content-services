@@ -492,6 +492,9 @@ import {
 } from './services/user/profile.ts';
 
 import {
+	listOAuthProviders,
+	redirectToOAuthProvider,
+	unlinkOAuthProvider,
 	verifyOAuthToken
 } from './services/user/session.ts';
 
@@ -795,6 +798,7 @@ declare module 'musora-content-services' {
 		likeContent,
 		likePlaylist,
 		likePost,
+		listOAuthProviders,
 		lockThread,
 		login,
 		logout,
@@ -821,6 +825,7 @@ declare module 'musora-content-services' {
 		recordUserPractice,
 		recordWatchSession,
 		recordWatchSessionOffline,
+		redirectToOAuthProvider,
 		registerAwardCallback,
 		registerProgressCallback,
 		removeContentAsInterested,
@@ -871,6 +876,7 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		unlikePlaylist,
 		unlikePost,
+		unlinkOAuthProvider,
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
