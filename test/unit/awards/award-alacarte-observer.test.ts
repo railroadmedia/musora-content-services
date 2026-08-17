@@ -155,7 +155,7 @@ describe('Award Observer - A La Carte Progress (null collection)', () => {
     beforeEach(() => {
       mockDb.userAwardProgress.getByAwardId.mockResolvedValue({
         data: { completed_at: new Date().toISOString(), progress_percentage: 100 }
-      })
+      } as any)
     })
 
     test('does not re-grant already completed award', async () => {
