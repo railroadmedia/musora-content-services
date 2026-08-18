@@ -6,17 +6,23 @@ import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
 import { clearAllCachedData } from '../dataContext.js'
 import { Onboarding } from './onboarding'
+import { OAuthProvider } from './session'
 import { AuthResponse } from './types'
+
+export interface AccountStatus {
+  requires_setup: boolean
+  last_login_provider?: OAuthProvider
+}
 
 /**
  * @param {string} email - The email address to check the account status for.
- * @returns {Promise<{requires_setup: boolean}>} - A promise that resolves to an object indicating whether account setup is required, or an HttpError if the request fails.
+ * @returns {Promise<OAuthProvider>} - A promise that resolves to an object indicating whether account setup is required, or an HttpError if the request fails.
  *
  * @throws {HttpError} - Throws HttpError if the request fails.
  */
-export async function status(email: string): Promise<{ requires_setup: boolean }> {
+export async function status(email: string): Promise<AccountStatus> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return await httpClient.post<{ requires_setup: boolean }>(
+  return await httpClient.post<AccountStatus>(
     `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`,
     []
   )
@@ -101,6 +107,33 @@ export async function setupAccount(props: AccountSetupProps): Promise<AccountSet
   )
 
   return res
+}
+
+export interface PendingAccountProps {
+  email: string
+  revenuecatAppUserId?: string
+  previousEmail?: string
+}
+
+/**
+ * @param {Object} props - The parameters for creating the pending account.
+ * @property {string} email - The email address for the account.
+ * @property {string} [revenuecatAppUserId] - The RevenueCat App User ID for MA environments.
+ * @property {string} [previousEmail] - The previous email address, if this account replaces an existing one.
+ *
+ * @returns {Promise<AccountSetupResponse>} - A promise that resolves when the pending account is created or an HttpError if the request fails.
+ * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
+ */
+export async function createPendingAccount(props: PendingAccountProps): Promise<AccountSetupResponse> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return await httpClient.post<AccountSetupResponse>(
+    `/api/user-management-system/v1/accounts/pending`,
+    {
+      email: props.email,
+      mobile_app_id: props.revenuecatAppUserId,
+      previous_email: props.previousEmail,
+    }
+  )
 }
 
 /**

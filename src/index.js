@@ -240,6 +240,28 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	deleteAllNotifications,
+	deleteNotification,
+	fetchLiveEventPollingState,
+	fetchNotificationSettings,
+	fetchNotifications,
+	fetchUnreadCount,
+	markAllNotificationsAsRead,
+	markNotificationAsRead,
+	markNotificationAsUnread,
+	pauseLiveEventPolling,
+	restoreNotification,
+	startLiveEventPolling,
+	updateNotificationSetting
+} from './services/notifications/notifications.js';
+
+import {
+	blockContentToHtml,
+	fetchAllPublicAnnouncements,
+	fetchPublicAnnouncement
+} from './services/notifications/public-announcements.ts';
+
+import {
 	getRecentActivityOffline
 } from './services/offline/activities.ts';
 
@@ -393,6 +415,7 @@ import {
 
 import {
 	confirmEmailChange,
+	createPendingAccount,
 	deleteAccount,
 	numberOfActiveUsers,
 	requestEmailChange,
@@ -445,22 +468,6 @@ import {
 } from './services/user/memberships.ts';
 
 import {
-	deleteAllNotifications,
-	deleteNotification,
-	fetchLiveEventPollingState,
-	fetchNotificationSettings,
-	fetchNotifications,
-	fetchUnreadCount,
-	markAllNotificationsAsRead,
-	markNotificationAsRead,
-	markNotificationAsUnread,
-	pauseLiveEventPolling,
-	restoreNotification,
-	startLiveEventPolling,
-	updateNotificationSetting
-} from './services/user/notifications.js';
-
-import {
 	getOnboardingRecommendedContent,
 	getOnboardingStatus,
 	initializeOnboardingFlow,
@@ -488,6 +495,13 @@ import {
 	otherStats,
 	updateProfileVisibility
 } from './services/user/profile.ts';
+
+import {
+	listOAuthProviders,
+	redirectToOAuthProvider,
+	unlinkOAuthProvider,
+	verifyOAuthToken
+} from './services/user/session.ts';
 
 import {
 	generateAuthSessionUrl,
@@ -535,6 +549,7 @@ export {
 	applyCloudflareWrapper,
 	applySanityTransformations,
 	assignModeratorToComment,
+	blockContentToHtml,
 	blockUser,
 	blockedUsers,
 	buildEntityAndTotalQuery,
@@ -559,6 +574,7 @@ export {
 	createComment,
 	createForumCategory,
 	createInvites,
+	createPendingAccount,
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
@@ -586,6 +602,7 @@ export {
 	extractSanityUrl,
 	fetchAll,
 	fetchAllFilterOptions,
+	fetchAllPublicAnnouncements,
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
@@ -650,6 +667,7 @@ export {
 	fetchPost,
 	fetchPosts,
 	fetchPracticeGoals,
+	fetchPublicAnnouncement,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
@@ -783,6 +801,7 @@ export {
 	likeContent,
 	likePlaylist,
 	likePost,
+	listOAuthProviders,
 	lockThread,
 	login,
 	logout,
@@ -809,6 +828,7 @@ export {
 	recordUserPractice,
 	recordWatchSession,
 	recordWatchSessionOffline,
+	redirectToOAuthProvider,
 	registerAwardCallback,
 	registerProgressCallback,
 	removeContentAsInterested,
@@ -859,6 +879,7 @@ export {
 	unlikeContent,
 	unlikePlaylist,
 	unlikePost,
+	unlinkOAuthProvider,
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
@@ -883,6 +904,7 @@ export {
 	userOnboardingForBrand,
 	verifyImageSRC,
 	verifyLocalDataContext,
+	verifyOAuthToken,
 	whoLikedComment,
 	whoLikedContent,
 	whoLikedPost,

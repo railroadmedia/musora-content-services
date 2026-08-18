@@ -236,6 +236,28 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	deleteAllNotifications,
+	deleteNotification,
+	fetchLiveEventPollingState,
+	fetchNotificationSettings,
+	fetchNotifications,
+	fetchUnreadCount,
+	markAllNotificationsAsRead,
+	markNotificationAsRead,
+	markNotificationAsUnread,
+	pauseLiveEventPolling,
+	restoreNotification,
+	startLiveEventPolling,
+	updateNotificationSetting
+} from './services/notifications/notifications.js';
+
+import {
+	blockContentToHtml,
+	fetchAllPublicAnnouncements,
+	fetchPublicAnnouncement
+} from './services/notifications/public-announcements.ts';
+
+import {
 	getRecentActivityOffline
 } from './services/offline/activities.ts';
 
@@ -389,6 +411,7 @@ import {
 
 import {
 	confirmEmailChange,
+	createPendingAccount,
 	deleteAccount,
 	numberOfActiveUsers,
 	requestEmailChange,
@@ -441,22 +464,6 @@ import {
 } from './services/user/memberships.ts';
 
 import {
-	deleteAllNotifications,
-	deleteNotification,
-	fetchLiveEventPollingState,
-	fetchNotificationSettings,
-	fetchNotifications,
-	fetchUnreadCount,
-	markAllNotificationsAsRead,
-	markNotificationAsRead,
-	markNotificationAsUnread,
-	pauseLiveEventPolling,
-	restoreNotification,
-	startLiveEventPolling,
-	updateNotificationSetting
-} from './services/user/notifications.js';
-
-import {
 	getOnboardingRecommendedContent,
 	getOnboardingStatus,
 	initializeOnboardingFlow,
@@ -484,6 +491,13 @@ import {
 	otherStats,
 	updateProfileVisibility
 } from './services/user/profile.ts';
+
+import {
+	listOAuthProviders,
+	redirectToOAuthProvider,
+	unlinkOAuthProvider,
+	verifyOAuthToken
+} from './services/user/session.ts';
 
 import {
 	generateAuthSessionUrl,
@@ -536,6 +550,7 @@ declare module 'musora-content-services' {
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
+		blockContentToHtml,
 		blockUser,
 		blockedUsers,
 		buildEntityAndTotalQuery,
@@ -560,6 +575,7 @@ declare module 'musora-content-services' {
 		createComment,
 		createForumCategory,
 		createInvites,
+		createPendingAccount,
 		createPlaylist,
 		createPost,
 		createPracticeNotes,
@@ -587,6 +603,7 @@ declare module 'musora-content-services' {
 		extractSanityUrl,
 		fetchAll,
 		fetchAllFilterOptions,
+		fetchAllPublicAnnouncements,
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
@@ -651,6 +668,7 @@ declare module 'musora-content-services' {
 		fetchPost,
 		fetchPosts,
 		fetchPracticeGoals,
+		fetchPublicAnnouncement,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
@@ -784,6 +802,7 @@ declare module 'musora-content-services' {
 		likeContent,
 		likePlaylist,
 		likePost,
+		listOAuthProviders,
 		lockThread,
 		login,
 		logout,
@@ -810,6 +829,7 @@ declare module 'musora-content-services' {
 		recordUserPractice,
 		recordWatchSession,
 		recordWatchSessionOffline,
+		redirectToOAuthProvider,
 		registerAwardCallback,
 		registerProgressCallback,
 		removeContentAsInterested,
@@ -860,6 +880,7 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		unlikePlaylist,
 		unlikePost,
+		unlinkOAuthProvider,
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
@@ -884,6 +905,7 @@ declare module 'musora-content-services' {
 		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
+		verifyOAuthToken,
 		whoLikedComment,
 		whoLikedContent,
 		whoLikedPost,

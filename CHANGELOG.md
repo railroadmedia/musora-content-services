@@ -2,6 +2,74 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.174.0](https://github.com/railroadmedia/musora-content-services/compare/v2.173.0...v2.174.0) (2026-08-12)
+
+
+### Features
+
+* **MU2-1818:** Add OAuth provider list/unlink session APIs ([#1026](https://github.com/railroadmedia/musora-content-services/issues/1026)) ([9440a1a](https://github.com/railroadmedia/musora-content-services/commit/9440a1a2e5e4d459d9f889b6178c419893ece402))
+
+## [2.173.0](https://github.com/railroadmedia/musora-content-services/compare/v2.171.0...v2.173.0) (2026-08-12)
+
+
+### Features
+
+* adds previous_email param to pending account creation ([#1028](https://github.com/railroadmedia/musora-content-services/issues/1028)) ([997d5ab](https://github.com/railroadmedia/musora-content-services/commit/997d5ab9883353a4a5f35000c92f9ff322e730b5))
+
+## [2.172.0](https://github.com/railroadmedia/musora-content-services/compare/v2.171.0...v2.172.0) (2026-08-12)
+
+
+### Features
+
+* adds previous_email param to pending account creation ([#1028](https://github.com/railroadmedia/musora-content-services/issues/1028)) ([997d5ab](https://github.com/railroadmedia/musora-content-services/commit/997d5ab9883353a4a5f35000c92f9ff322e730b5))
+
+## [2.171.0](https://github.com/railroadmedia/musora-content-services/compare/v2.170.0...v2.171.0) (2026-08-12)
+
+
+### Features
+
+* adds create pending user fn ([#1025](https://github.com/railroadmedia/musora-content-services/issues/1025)) ([c4ba8ef](https://github.com/railroadmedia/musora-content-services/commit/c4ba8ef3a118718236d177885372781714a08c9a))
+
+## [2.170.0](https://github.com/railroadmedia/musora-content-services/compare/v2.169.4...v2.170.0) (2026-08-10)
+
+## [2.169.0-0](https://github.com/railroadmedia/musora-content-services/compare/v2.168.0...v2.169.0-0) (2026-07-31)
+
+
+### Features
+
+* **TP-1300:** add badge field to Liker, ForumUser, and User interfaces ([8a3ee80](https://github.com/railroadmedia/musora-content-services/commit/8a3ee802722a0d9dcd41a6a3998ff2a7a3352aeb))
+
+### [2.169.4](https://github.com/railroadmedia/musora-content-services/compare/v2.169.3...v2.169.4) (2026-08-07)
+
+
+### Bug Fixes
+
+* **BR-716:** apply timezone handling to practice streak calculations ([#1020](https://github.com/railroadmedia/musora-content-services/issues/1020)) ([28f89f6](https://github.com/railroadmedia/musora-content-services/commit/28f89f6d7c61f37eb3dea75455ef74ff08cd0f85))
+
+### [2.169.3](https://github.com/railroadmedia/musora-content-services/compare/v2.169.2...v2.169.3) (2026-08-07)
+
+
+### Bug Fixes
+
+* import alias ([03e8001](https://github.com/railroadmedia/musora-content-services/commit/03e8001f14598b106154786f7aefc7dca7caa03b))
+
+### [2.169.2](https://github.com/railroadmedia/musora-content-services/compare/v2.169.1...v2.169.2) (2026-08-07)
+
+
+### Bug Fixes
+
+* function return type ([9762230](https://github.com/railroadmedia/musora-content-services/commit/97622301bccb6dbbf79a546427fd5fac0fef62bd))
+
+### [2.169.1](https://github.com/railroadmedia/musora-content-services/compare/v2.169.0...v2.169.1) (2026-08-07)
+
+## [2.169.0](https://github.com/railroadmedia/musora-content-services/compare/v2.168.0...v2.169.0) (2026-08-04)
+
+
+### Features
+
+* **TP-1300:** add badge field to Liker, ForumUser, and User interfaces ([8a3ee80](https://github.com/railroadmedia/musora-content-services/commit/8a3ee802722a0d9dcd41a6a3998ff2a7a3352aeb))
+* **BEHSTP-415:** MCS public announcement fetch fn's ([#1010](https://github.com/railroadmedia/musora-content-services/issues/1010)) ([d504fb1](https://github.com/railroadmedia/musora-content-services/commit/d504fb105ba5303bfe7327ddef24fe468bdec374))
+
 ## [2.168.0](https://github.com/railroadmedia/musora-content-services/compare/v2.167.6...v2.168.0) (2026-07-30)
 
 

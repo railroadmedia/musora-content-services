@@ -1,4 +1,4 @@
-import {fetchLiveEventPollingState, fetchUnreadCount, pauseLiveEventPolling} from "./user/notifications"
+import {fetchLiveEventPollingState, fetchUnreadCount, pauseLiveEventPolling} from "./notifications/notifications.js"
 import {fetchLiveEvent} from "./sanity"
 import { DataContext, PollingStateVersionKey } from './dataContext'
 

@@ -47,7 +47,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
    */
   doesUserNeedAccess(content: ContentItem, userPermissions: UserPermissions): boolean {
     // Admins always have access
-    if (this.isAdmin(userPermissions)) {
+    if (this.hasAllContentAccess(userPermissions)) {
       return false
     }
 
@@ -108,7 +108,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     }
 
     // Admins bypass permission filter
-    if (this.isAdmin(userPermissions)) {
+    if (this.hasAllContentAccess(userPermissions)) {
       return null
     }
 
