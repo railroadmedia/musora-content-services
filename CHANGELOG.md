@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.176.0](https://github.com/railroadmedia/musora-content-services/compare/v2.175.0...v2.176.0) (2026-08-18)
+
+
+### Features
+
+* **BEHLTP-306:** add tier_key and rank to UpgradeProduct type ([#1030](https://github.com/railroadmedia/musora-content-services/issues/1030)) ([e1cf01f](https://github.com/railroadmedia/musora-content-services/commit/e1cf01fe3d41444e9724e61788e0d3d55df55c88)), closes [#1463](https://github.com/railroadmedia/musora-content-services/issues/1463)
+
 ## [2.175.0](https://github.com/railroadmedia/musora-content-services/compare/v2.174.0...v2.175.0) (2026-08-18)
 
 
