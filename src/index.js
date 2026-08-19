@@ -5,28 +5,31 @@ import {
 } from './services/eventsAPI';
 
 import {
-	configure,
-	createLiveWaveform,
-	createPeakCapture,
-	createWebmSeekabilityFixer,
-	downsamplePeaks,
-	drawStaticWaveform,
-	fetchAndDecodeAudio,
 	formatDurationMs,
-	generateWaveformPeaks,
 	getCombinedAudioUrl,
 	getExtensionForMimeType,
 	getMimeTypeForExtension,
 	getSupportedFormats,
-	getWaveformPeaks,
 	isFormatSupported,
 	listRecordings,
-	logEvent,
 	startSession,
 	stopSession,
-	trackAudioRecordingSession,
-	uploadChunk
-} from './services/audioRecording.js';
+	trackAudioRecordingSession
+} from './services/audioRecording/audioRecording.js';
+
+import {
+	createLiveWaveform,
+	createPeakCapture,
+	downsamplePeaks,
+	drawStaticWaveform,
+	fetchAndDecodeAudio,
+	generateWaveformPeaks,
+	getWaveformPeaks
+} from './services/audioRecording/waveformPeaks.js';
+
+import {
+	createAudioChunkUploader
+} from './services/audioRecording/webmSeekabilityFixer.js';
 
 import {
 	registerAwardCallback,
@@ -579,7 +582,6 @@ export {
 	closeComment,
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
-	configure,
 	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusCompletedMany,
@@ -591,6 +593,7 @@ export {
 	contentStatusStartedOffline,
 	convertToTimeZone,
 	createAccount,
+	createAudioChunkUploader,
 	createComment,
 	createForumCategory,
 	createInvites,
@@ -601,7 +604,6 @@ export {
 	createPracticeNotes,
 	createTestUser,
 	createThread,
-	createWebmSeekabilityFixer,
 	deleteAccount,
 	deleteAllNotifications,
 	deleteComment,
@@ -834,7 +836,6 @@ export {
 	likePost,
 	listRecordings,
 	lockThread,
-	logEvent,
 	login,
 	logout,
 	mapContentToParent,
@@ -933,7 +934,6 @@ export {
 	updateThread,
 	updateUserPractice,
 	upgradeSubscription,
-	uploadChunk,
 	uploadPicture,
 	uploadPictureFromS3,
 	userOnboardingForBrand,
