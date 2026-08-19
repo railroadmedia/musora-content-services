@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.177.0](https://github.com/railroadmedia/musora-content-services/compare/v2.176.0...v2.177.0) (2026-08-19)
+
+
+### Features
+
+* make built GROQ queries runnable with a typed result ([#1036](https://github.com/railroadmedia/musora-content-services/issues/1036)) ([70b45bc](https://github.com/railroadmedia/musora-content-services/commit/70b45bc446d08ce97ac8708840b205c7c35cb5b7)), closes [#1034](https://github.com/railroadmedia/musora-content-services/issues/1034)
+* **query:** add composite() for multi-key GROQ projections ([#1034](https://github.com/railroadmedia/musora-content-services/issues/1034)) ([ea4f2ca](https://github.com/railroadmedia/musora-content-services/commit/ea4f2caf84a59b7a737b7f1ff9e6c9dc32942810))
+
+
+### Bug Fixes
+
+* **BEH-1590:** login as user on mobile app ([#1033](https://github.com/railroadmedia/musora-content-services/issues/1033)) ([a5f9ef4](https://github.com/railroadmedia/musora-content-services/commit/a5f9ef41ab42b04f961d53bc4cd8e29a89dc4b2b))
+* escape values interpolated into GROQ filter strings ([#1035](https://github.com/railroadmedia/musora-content-services/issues/1035)) ([bc34d4b](https://github.com/railroadmedia/musora-content-services/commit/bc34d4bef8a33a25ea7e93fa51d7d415aefcfe69)), closes [#1034](https://github.com/railroadmedia/musora-content-services/issues/1034)
+* password reset mobile token and sessionConfig access ([#1031](https://github.com/railroadmedia/musora-content-services/issues/1031)) ([0f7633c](https://github.com/railroadmedia/musora-content-services/commit/0f7633c23cd03d9402347200dd66d6243e8a66c5))
+
 ## [2.176.0](https://github.com/railroadmedia/musora-content-services/compare/v2.175.0...v2.176.0) (2026-08-18)
 
 
