@@ -498,6 +498,7 @@ import {
 
 import {
 	listOAuthProviders,
+	loginAsUser,
 	redirectToOAuthProvider,
 	unlinkOAuthProvider,
 	verifyOAuthToken
@@ -804,6 +805,7 @@ export {
 	listOAuthProviders,
 	lockThread,
 	login,
+	loginAsUser,
 	logout,
 	mapContentToParent,
 	markAllNotificationsAsRead,

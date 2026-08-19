@@ -494,6 +494,7 @@ import {
 
 import {
 	listOAuthProviders,
+	loginAsUser,
 	redirectToOAuthProvider,
 	unlinkOAuthProvider,
 	verifyOAuthToken
@@ -805,6 +806,7 @@ declare module 'musora-content-services' {
 		listOAuthProviders,
 		lockThread,
 		login,
+		loginAsUser,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
