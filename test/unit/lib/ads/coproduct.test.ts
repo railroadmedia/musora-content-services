@@ -56,6 +56,38 @@ describe('Coproduct', () => {
     })
   })
 
+  describe('mapAsync', () => {
+    test('awaits the function and wraps the resolved value for a right', async () => {
+      const result = await Coproduct.right<string, number>(2).mapAsync(async (n) => n * 3)
+      expect(result.isRight()).toBe(true)
+      expect(result.drop()).toBe(6)
+    })
+
+    test('does not call the function on a left and preserves the error', async () => {
+      const fn = jest.fn()
+      const result = await Coproduct.left<string, number>('boom').mapAsync(fn)
+      expect(fn).not.toHaveBeenCalled()
+      expect(result.isLeft()).toBe(true)
+      expect(result.drop()).toBe('boom')
+    })
+
+    test('returns a new instance rather than mutating', async () => {
+      const original = Coproduct.right<string, number>(2)
+      const mapped = await original.mapAsync(async (n) => n * 2)
+      expect(mapped).not.toBe(original)
+      expect(original.drop()).toBe(2)
+    })
+
+    test('propagates a rejection instead of converting it to a left', async () => {
+      const failure = new Error('async boom')
+      await expect(
+        Coproduct.right<string, number>(2).mapAsync(async () => {
+          throw failure
+        })
+      ).rejects.toBe(failure)
+    })
+  })
+
   describe('mapLeft and flatMapLeft', () => {
     test('mapLeft transforms a left value', () => {
       const result = Coproduct.left<string, number>('boom').mapLeft((e) => e.toUpperCase())

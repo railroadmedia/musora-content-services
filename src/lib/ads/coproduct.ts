@@ -30,6 +30,11 @@ export abstract class Coproduct<L, R>
    */
   abstract map<T>(fn: (r: R) => T): Coproduct<L, T>
   /**
+   * Maps the right value of the Coproduct with an asynchronous function.
+   * A rejection propagates: there is no way to build an L from it.
+   */
+  abstract mapAsync<T>(fn: (r: R) => Promise<T>): Promise<Coproduct<L, T>>
+  /**
    * @extends Monad
    * Applies a function to the right value of the Coproduct, returning a new Coproduct.
    */
@@ -79,6 +84,10 @@ export class Left<L, R> extends Coproduct<L, R> {
   }
 
   map<T>(_fn: (r: R) => T): Coproduct<L, T> {
+    return new Left(this.value)
+  }
+
+  async mapAsync<T>(_fn: (r: R) => Promise<T>): Promise<Coproduct<L, T>> {
     return new Left(this.value)
   }
 
@@ -133,6 +142,10 @@ export class Right<L, R> extends Coproduct<L, R> {
 
   map<T>(fn: (r: R) => T): Coproduct<L, T> {
     return new Right(fn(this.value))
+  }
+
+  async mapAsync<T>(fn: (r: R) => Promise<T>): Promise<Coproduct<L, T>> {
+    return new Right(await fn(this.value))
   }
 
   flatMap<T>(fn: (r: R) => Coproduct<L, T>): Coproduct<L, T> {

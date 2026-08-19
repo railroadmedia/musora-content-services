@@ -1,4 +1,10 @@
 import { Filters as f } from './filter'
+import { decorateAll, type FieldDecorator } from './decorators/base'
+import { accessDecorator, decorateAccess } from './decorators/need-access'
+import { lifetimeUpgradeDecorator } from './decorators/need-lifetime-upgrade'
+import { pageTypeDecorator } from './decorators/page-type'
+import { decorateNavigateTo } from './decorators/navigate-to'
+import { fetchUserPermissions, type UserPermissions } from '../../services/permissions'
 import { groq } from './groq'
 import { composite, query } from './query'
 import { run, sanityRunner, QueryRunner, SanityQueryError } from './runner'
@@ -85,3 +91,114 @@ export function buildRunnerForTests(): QueryRunner<Song[]> {
 }
 
 export const productionRunner = sanityRunner()
+
+interface Lesson {
+  id: number
+  type: string
+  brand: string
+  thumbnail: string
+  published_on: string | null
+  status: string
+  permission_id?: number[]
+  children?: Lesson[]
+  [key: string]: unknown
+}
+
+export async function fetchLessonsWithoutPermissions(brand: string) {
+  const result = await groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>()
+
+  return result
+    .map((lessons) =>
+      decorateAll<Lesson>(lessons ?? [], [pageTypeDecorator as FieldDecorator<Lesson>])
+    )
+    .recover([])
+}
+
+export async function fetchDecoratedLessons(brand: string) {
+  const [result, permissions] = await Promise.all([
+    groq()
+      .and(f.combine(f.typeIn(['course']), f.brand(brand)))
+      .slice(0, 10)
+      .run<Lesson[]>(),
+    fetchUserPermissions(),
+  ])
+
+  return result
+    .map((lessons) =>
+      decorateAll<Lesson>(lessons ?? [], [
+        accessDecorator(permissions) as FieldDecorator<Lesson>,
+        lifetimeUpgradeDecorator(permissions) as FieldDecorator<Lesson>,
+        pageTypeDecorator as FieldDecorator<Lesson>,
+      ])
+    )
+    .recover([])
+}
+
+export async function fetchLessonsWithNavigation(brand: string) {
+  const [result, permissions] = await Promise.all([
+    groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>(),
+    fetchUserPermissions(),
+  ])
+
+  const decorated = await result
+    .map((lessons) =>
+      decorateAll<Lesson>(lessons ?? [], [accessDecorator(permissions) as FieldDecorator<Lesson>])
+    )
+    .mapAsync((lessons) => decorateNavigateTo(lessons) as Promise<Lesson[]>)
+
+  return decorated.recover([])
+}
+
+export async function fetchWithACustomDecorator(brand: string) {
+  const isFree: FieldDecorator<Lesson> = {
+    field: 'is_free',
+    compute: (lesson) => lesson.permission_id === undefined,
+  }
+
+  const result = await groq().and(f.brand(brand)).run<Lesson[]>()
+
+  return result.map((lessons) => decorateAll<Lesson>(lessons ?? [], [isFree])).recover([])
+}
+
+export async function fetchWhenPermissionsMayBeUnavailable(brand: string) {
+  const queryError = (error: unknown) =>
+    Either.left<SanityQueryError, UserPermissions>(
+      new SanityQueryError('Failed to fetch user permissions', '', error)
+    )
+
+  const [result, permissions] = await Promise.all([
+    groq().and(f.brand(brand)).run<Lesson[]>(),
+    fetchUserPermissions()
+      .then(Either.right<SanityQueryError, UserPermissions>)
+      .catch(queryError),
+  ])
+
+  return result
+    .flatMap((lessons) =>
+      permissions.map((userPermissions) =>
+        decorateAll<Lesson>(lessons ?? [], [
+          accessDecorator(userPermissions) as FieldDecorator<Lesson>,
+        ])
+      )
+    )
+    .fold(
+      (error) => `undecorated: ${error.message}`,
+      (lessons) => `${lessons.length} lessons`
+    )
+}
+
+export async function decorateManuallyForPreciseTypes(brand: string) {
+  const [result, permissions] = await Promise.all([
+    groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>(),
+    fetchUserPermissions(),
+  ])
+
+  const decorated = await result
+    .map((lessons) => decorateAccess(lessons ?? [], permissions))
+    .mapAsync((lessons) => decorateNavigateTo(lessons))
+
+  return decorated.fold(
+    () => [],
+    (lessons) => lessons.map((lesson) => [lesson.need_access, lesson.navigateTo] as const)
+  )
+}
