@@ -101,6 +101,63 @@ describe('Filters - Pure Synchronous Functions', () => {
       })
     })
 
+    describe('escaping of interpolated values', () => {
+      test('a quote in a search term cannot close the string literal', () => {
+        const injection = 'x" || _type == "user'
+
+        expect(Filters.searchMatch('title', injection)).toBe(
+          'title match "x\\" || _type == \\"user*"'
+        )
+        expect(Filters.titleMatch(injection)).toBe('title match "x\\" || _type == \\"user*"')
+      })
+
+      test('a trailing backslash cannot escape the closing quote', () => {
+        expect(Filters.titleMatch('rock\\')).toBe('title match "rock\\\\*"')
+      })
+
+      test('escapes quotes in slug, brand and type', () => {
+        expect(Filters.slug('a" || true || "')).toBe('slug.current == "a\\" || true || \\""')
+        expect(Filters.brand('drumeo" || "')).toBe('brand == "drumeo\\" || \\""')
+        expect(Filters.type('song" || "')).toBe('_type == "song\\" || \\""')
+      })
+
+      test('escapes quotes in reference filters', () => {
+        expect(Filters.references('id" || "')).toBe('references("id\\" || \\"")')
+        expect(Filters.referencesField('slug.current', 'x" || "')).toBe(
+          'references(*[slug.current == "x\\" || \\""]._id)'
+        )
+      })
+
+      test('escapes quotes in published date filters', () => {
+        expect(Filters.publishedBefore('2024-01-01" || "')).toBe(
+          'published_on <= "2024-01-01\\" || \\""'
+        )
+        expect(Filters.publishedAfter('2024-01-01" || "')).toBe(
+          'published_on >= "2024-01-01\\" || \\""'
+        )
+      })
+
+      test('escapes single quotes inside array literals', () => {
+        expect(Filters.typeIn(["song' || true || '"])).toBe("_type in ['song\\' || true || \\'']")
+        expect(Filters.statusIn(["published' || '"])).toBe("status in ['published\\' || \\'']")
+      })
+
+      test('coerces id filters to numbers so they cannot carry an expression', () => {
+        expect(Filters.railcontentId('1 || true' as unknown as number)).toBe(
+          'railcontent_id == NaN'
+        )
+        expect(Filters.idIn([123, '1 || true'] as unknown as number[])).toBe(
+          'railcontent_id in [123,NaN]'
+        )
+      })
+
+      test('leaves ordinary values untouched', () => {
+        expect(Filters.titleMatch('Señor')).toBe('title match "Señor*"')
+        expect(Filters.slug('guitar-basics')).toBe('slug.current == "guitar-basics"')
+        expect(Filters.typeIn(['song', 'workout'])).toBe("_type in ['song','workout']")
+      })
+    })
+
     describe('publishedBefore', () => {
       test('generates published_on <= filter', () => {
         const date = '2024-01-01T00:00:00.000Z'
