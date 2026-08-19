@@ -267,6 +267,7 @@ import {
 
 import {
 	getPracticeSessionsOffline,
+	getWeeklyPracticeSessionsOffline,
 	otherStatsOffline
 } from './services/offline/practices.ts';
 
@@ -497,6 +498,7 @@ import {
 
 import {
 	listOAuthProviders,
+	loginAsUser,
 	redirectToOAuthProvider,
 	unlinkOAuthProvider,
 	verifyOAuthToken
@@ -520,6 +522,7 @@ import {
 	getStreaksAndMessage,
 	getUserMonthlyStats,
 	getUserWeeklyStats,
+	getWeeklyPracticeSessions,
 	recordUserActivity,
 	recordUserPractice,
 	removeUserPractice,
@@ -776,6 +779,8 @@ export {
 	getUserSignature,
 	getUserWeeklyStats,
 	getWeekNumber,
+	getWeeklyPracticeSessions,
+	getWeeklyPracticeSessionsOffline,
 	globalConfig,
 	grant30DaysAccessForLifetime,
 	guidedCourses,
@@ -800,6 +805,7 @@ export {
 	listOAuthProviders,
 	lockThread,
 	login,
+	loginAsUser,
 	logout,
 	mapContentToParent,
 	markAllNotificationsAsRead,

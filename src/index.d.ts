@@ -263,6 +263,7 @@ import {
 
 import {
 	getPracticeSessionsOffline,
+	getWeeklyPracticeSessionsOffline,
 	otherStatsOffline
 } from './services/offline/practices.ts';
 
@@ -493,6 +494,7 @@ import {
 
 import {
 	listOAuthProviders,
+	loginAsUser,
 	redirectToOAuthProvider,
 	unlinkOAuthProvider,
 	verifyOAuthToken
@@ -516,6 +518,7 @@ import {
 	getStreaksAndMessage,
 	getUserMonthlyStats,
 	getUserWeeklyStats,
+	getWeeklyPracticeSessions,
 	recordUserActivity,
 	recordUserPractice,
 	removeUserPractice,
@@ -777,6 +780,8 @@ declare module 'musora-content-services' {
 		getUserSignature,
 		getUserWeeklyStats,
 		getWeekNumber,
+		getWeeklyPracticeSessions,
+		getWeeklyPracticeSessionsOffline,
 		globalConfig,
 		grant30DaysAccessForLifetime,
 		guidedCourses,
@@ -801,6 +806,7 @@ declare module 'musora-content-services' {
 		listOAuthProviders,
 		lockThread,
 		login,
+		loginAsUser,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,

@@ -50,3 +50,11 @@ export async function unlinkOAuthProvider(provider: OAuthProvider): Promise<void
   const apiUrl = `/api/user-management-system/v1/sessions/${encodeURIComponent(userId)}/oauth/${encodeURIComponent(provider)}`
   return new HttpClient(globalConfig.baseUrl).delete(apiUrl)
 }
+
+export async function loginAsUser(userId: string): Promise<AuthResponse> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post<AuthResponse>(
+    `/api/user-management-system/v1/sessions/${encodeURIComponent(userId)}`,
+    {}
+  )
+}

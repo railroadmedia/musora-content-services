@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.176.0](https://github.com/railroadmedia/musora-content-services/compare/v2.175.0...v2.176.0) (2026-08-18)
+
+
+### Features
+
+* **BEHLTP-306:** add tier_key and rank to UpgradeProduct type ([#1030](https://github.com/railroadmedia/musora-content-services/issues/1030)) ([e1cf01f](https://github.com/railroadmedia/musora-content-services/commit/e1cf01fe3d41444e9724e61788e0d3d55df55c88)), closes [#1463](https://github.com/railroadmedia/musora-content-services/issues/1463)
+
+## [2.175.0](https://github.com/railroadmedia/musora-content-services/compare/v2.174.0...v2.175.0) (2026-08-18)
+
+
+### Features
+
+* **BEHSTP-441:** New method: getWeeklyPracticeSessions and expose Weekly Goal Progress in getUserWeeklyStats ([04ba10c](https://github.com/railroadmedia/musora-content-services/commit/04ba10c39ab50e9c35bc01e0289c4d8ead941bff))
+* **BEHSTP-463:** new method getWeeklyPracticeSessionsOffline ([b321cfc](https://github.com/railroadmedia/musora-content-services/commit/b321cfc358e7ac88128957c5dcca2f64e529aa39))
+* **BEHSTP-474:** split streak message into part1/part2 for new FE design ([a3912db](https://github.com/railroadmedia/musora-content-services/commit/a3912db2ad37eed491f8ceda69edd32fa825dc44))
+
+
+### Bug Fixes
+
+* **BEHSTP-441:** return getWeeklyPracticeSessions as a flat practices array ([1fc7ef3](https://github.com/railroadmedia/musora-content-services/commit/1fc7ef3c38a528d1206467867bc43cfb0e2501d0))
+
 ## [2.174.0](https://github.com/railroadmedia/musora-content-services/compare/v2.173.0...v2.174.0) (2026-08-12)
 
 
