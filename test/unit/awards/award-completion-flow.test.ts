@@ -183,6 +183,42 @@ describe('Award Completion Flow - E2E Scenarios', () => {
     })
   })
 
+  describe('Scenario: Recomputed progress matches existing progress', () => {
+    const multiLessonAward = getAwardByContentId(417049)
+    const parentCourseId = 417049
+
+    beforeEach(() => {
+      db.userAwardProgress.getByAwardId.mockResolvedValue({
+        data: {
+          progress_percentage: 50,
+          progress_data: {
+            completedLessonIds: [417045, 417046],
+            totalLessons: 4,
+            completedCount: 2
+          }
+        }
+      })
+      mockCompletionStates(db, [417045, 417046])
+    })
+
+    test('skips recordAwardProgress when recomputed progress is unchanged', async () => {
+      await awardManager.onContentCompleted(parentCourseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).not.toHaveBeenCalled()
+    })
+
+    test('still emits awardProgress event even when the write is skipped', async () => {
+      await awardManager.onContentCompleted(parentCourseId)
+
+      expect(listeners.progress).toHaveBeenCalledWith(
+        expect.objectContaining({
+          awardId: multiLessonAward._id,
+          progressPercentage: 50
+        })
+      )
+    })
+  })
+
   describe('Scenario: Content has no associated award', () => {
     test('completes gracefully without errors', async () => {
       const nonExistentCourseId = 999999
