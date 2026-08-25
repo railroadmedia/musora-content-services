@@ -497,6 +497,10 @@ import {
 } from './services/user/profile.ts';
 
 import {
+	sendRevenueCatPurchaseMetadata
+} from './services/user/revenuecat.ts';
+
+import {
 	listOAuthProviders,
 	loginAsUser,
 	redirectToOAuthProvider,
@@ -858,6 +862,7 @@ export {
 	searchAlgolia,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
+	sendRevenueCatPurchaseMetadata,
 	setStudentViewForUser,
 	setUserPinnedProgressRow,
 	setUserSignature,
