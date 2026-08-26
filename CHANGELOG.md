@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.177.1](https://github.com/railroadmedia/musora-content-services/compare/v2.177.0...v2.177.1) (2026-08-26)
+
+
+### Bug Fixes
+
+* **TP-1323:** add a condition when updating award progress ([#1029](https://github.com/railroadmedia/musora-content-services/issues/1029)) ([67933b8](https://github.com/railroadmedia/musora-content-services/commit/67933b8eb1d55dd01200cca68b9ef0c199f84d72))
+
 ## [2.177.0](https://github.com/railroadmedia/musora-content-services/compare/v2.176.0...v2.177.0) (2026-08-19)
 
 
