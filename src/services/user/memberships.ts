@@ -82,6 +82,7 @@ export interface UpgradeProduct {
 export interface UpgradeOption {
   annual_savings: number
   lowest_monthly_cost: number
+  upgrade_type: string
   products: UpgradeProduct[] // annual + monthly products, or solely annual product with the same configuration information
 }
 
