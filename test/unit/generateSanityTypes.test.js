@@ -20,6 +20,7 @@ describe('generate-sanity-types', () => {
             { type: 'object', name: 'first_week', title: 'First Week', fields: [{ type: 'text', name: 'copy' }] },
             { type: 'array', name: 'items', of: [{ type: 'object', fields: [{ type: 'string', name: 'question' }] }] },
             { type: 'reference', name: 'instructor' },
+            { type: 's3-files.media', name: 'resource_aws' },
           ],
         },
       ],
@@ -35,6 +36,7 @@ describe('generate-sanity-types', () => {
     expect(output).toContain('_key: string')
     expect(output).toContain('question?: string')
     expect(output).toContain('instructor?: { _type: "reference"; _ref: string }')
+    expect(output).toContain('resource_aws?: { _type: "s3-files.media"; asset: { _type: "reference"; _ref: string } }')
   })
 
   it('splits a document into a discriminated union when fields are conditionally hidden', () => {
@@ -57,6 +59,22 @@ describe('generate-sanity-types', () => {
     expect(output).toMatch(/brand: "musora"\n\s+members_count\?: string/)
     expect(output).toMatch(/brand: "drumeo"\n\s+paths_count\?: string/)
     expect(output).toContain('} & (')
+  })
+
+  it('inlines the portable text block type instead of importing it', () => {
+    const output = generate({
+      types: [
+        {
+          type: 'document',
+          name: 'announcement',
+          fields: [{ type: 'array', name: 'message', of: [{ type: 'block' }] }],
+        },
+      ],
+    })
+
+    expect(output).toContain('export type PortableTextBlock = {')
+    expect(output).not.toContain('import type')
+    expect(output).toContain('message?: PortableTextBlock[]')
   })
 
   it('ignores non-document types', () => {
