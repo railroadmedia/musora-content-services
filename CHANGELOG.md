@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.178.0](https://github.com/railroadmedia/musora-content-services/compare/v2.177.1...v2.178.0) (2026-08-28)
+
+
+### Features
+
+* **BEHLTP-318:** add sendRevenueCatPurchaseMetadata for MA purchase_intent handoff ([#1037](https://github.com/railroadmedia/musora-content-services/issues/1037)) ([1ba4f9d](https://github.com/railroadmedia/musora-content-services/commit/1ba4f9dd6c171423a7b2a5f775571744450ef3be))
+
 ### [2.177.1](https://github.com/railroadmedia/musora-content-services/compare/v2.177.0...v2.177.1) (2026-08-26)
 
 
