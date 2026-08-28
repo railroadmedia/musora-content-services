@@ -82,4 +82,40 @@ describe('generate-sanity-types', () => {
 
     expect(output).not.toContain('IgnoredDocument')
   })
+
+  it('fails loudly instead of dropping fields when conditional fields key off multiple discriminants', () => {
+    const schema = {
+      types: [
+        {
+          type: 'document',
+          name: 'stats',
+          fields: [
+            { type: 'string', name: 'brand', options: { list: ['musora', 'drumeo'] } },
+            { type: 'string', name: 'tier', options: { list: ['free', 'paid'] } },
+            { type: 'string', name: 'members_count', hiddenWhen: { field: 'brand', operator: '!==', value: 'musora' } },
+            { type: 'string', name: 'upgrade_copy', hiddenWhen: { field: 'tier', operator: '!==', value: 'paid' } },
+          ],
+        },
+      ],
+    }
+
+    expect(() => generate(schema)).toThrow(/multiple discriminants/)
+  })
+
+  it('fails loudly when the discriminant field has no static string option list', () => {
+    const schema = {
+      types: [
+        {
+          type: 'document',
+          name: 'stats',
+          fields: [
+            { type: 'string', name: 'brand' },
+            { type: 'string', name: 'members_count', hiddenWhen: { field: 'brand', operator: '!==', value: 'musora' } },
+          ],
+        },
+      ],
+    }
+
+    expect(() => generate(schema)).toThrow(/no static string option list/)
+  })
 })

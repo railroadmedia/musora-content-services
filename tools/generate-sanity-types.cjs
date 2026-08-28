@@ -39,12 +39,17 @@ const pascalCase = (name) =>
 
 const isRequired = (field) => field.required === true
 
-const stringUnion = (field) => {
-  const list = field.options && field.options.list
+const stringListValues = (field) => {
+  const list = field && field.type === 'string' && field.options && field.options.list
   if (!Array.isArray(list) || !list.length) return null
   const values = list.map((item) => (item && typeof item === 'object' ? item.value : item))
   if (values.some((value) => typeof value !== 'string')) return null
-  return values.map((value) => JSON.stringify(value)).join(' | ')
+  return values
+}
+
+const stringUnion = (field) => {
+  const values = stringListValues(field)
+  return values && values.map((value) => JSON.stringify(value)).join(' | ')
 }
 
 const indent = (depth) => '  '.repeat(depth)
@@ -89,13 +94,21 @@ const isHiddenFor = (rule, value) =>
 
 const discriminantOf = (type) => {
   const rules = (type.fields || []).filter((field) => field.hiddenWhen)
+  if (!rules.length) return null
+
   const names = new Set(rules.map((rule) => rule.hiddenWhen.field))
-  if (names.size !== 1) return null
+  if (names.size !== 1) {
+    throw new Error(
+      `${type.name}: conditional fields keyed off multiple discriminants (${[...names].join(', ')}) are not supported`
+    )
+  }
 
   const name = [...names][0]
   const field = (type.fields || []).find((candidate) => candidate.name === name)
-  const values = field && field.type === 'string' && field.options && field.options.list
-  if (!Array.isArray(values) || !values.every((value) => typeof value === 'string')) return null
+  const values = stringListValues(field)
+  if (!values) {
+    throw new Error(`${type.name}: discriminant field "${name}" has no static string option list`)
+  }
 
   return { name, values }
 }
@@ -143,6 +156,22 @@ const renderDocument = (type) => {
 
   const variants = variantsOf(type, discriminant).map((variant) => renderVariant(discriminant, variant))
   return `${head}\n} & (\n${variants.join('\n')}\n)\n`
+}
+
+if (!process.argv[2] && process.stdin.isTTY) {
+  console.error(
+    [
+      'Usage: generate-sanity-types.cjs [schema.json] < schema.json',
+      '',
+      'This only converts an already-exported schema to TypeScript; it does not export the schema itself.',
+      'To export the schema from musora-platform-backend and generate types in one step:',
+      '',
+      '  docker exec railenvironmentdocker_php-8-octane bash -c \\',
+      '    "cd /app/musora-platform-backend && php artisan sanity:export-schema --workspace=marketing --mcs" \\',
+      '    | node tools/generate-sanity-types.cjs > src/lib/sanity/types/marketing.d.ts',
+    ].join('\n')
+  )
+  process.exit(1)
 }
 
 const source = process.argv[2] ? fs.readFileSync(process.argv[2], 'utf8') : fs.readFileSync(0, 'utf8')
