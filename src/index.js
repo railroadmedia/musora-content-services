@@ -229,6 +229,13 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	fetchMarketingFaqs,
+	fetchMarketingPracticeGoals,
+	fetchMarketingStats,
+	fetchMarketingTestimonials
+} from './services/marketing/marketing.ts';
+
+import {
 	acceptInvite,
 	createAccount,
 	createInvites,
@@ -649,6 +656,10 @@ export {
 	fetchLiveEvent,
 	fetchLiveEventPollingState,
 	fetchLiveStreamData,
+	fetchMarketingFaqs,
+	fetchMarketingPracticeGoals,
+	fetchMarketingStats,
+	fetchMarketingTestimonials,
 	fetchMemberships,
 	fetchMetadata,
 	fetchMethodV2IntroVideo,
