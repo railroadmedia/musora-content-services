@@ -1,9 +1,9 @@
 # Plan: feature flags for the frontend and mobile app (mcs)
 
-Status: proposed.
+Status: implemented.
 Scope: new `src/services/feature-flags/`, plus `src/services/config.js`,
 `src/services/state.ts`, `jsdoc.json`, and the generated `src/index.js` / `src/index.d.ts`.
-Depends on: one new backend endpoint, `GET /api/feature/v1/flags` — see **Backend** below.
+Depends on: railroadmedia/musora-platform-backend#1617, which adds `GET /api/feature/v1/flags`.
 Related: `src/services/permissions/` — the closest existing module in shape, and the
 pattern this borrows for caching.
 
