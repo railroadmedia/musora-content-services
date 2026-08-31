@@ -154,6 +154,8 @@ export const setStatus = async (
     { skipPush: true }
   )
 
+  // we only check this on `setStatus` (not `setStatusMany`) because this function is used
+  //  to "start" GCs on enrollment, through `enrollUserInGuidedCourse`.
   if (!skipBubbleTrickle) {
     const bubbled = await computeBubbleTrickleProgresses(
       contentId,
