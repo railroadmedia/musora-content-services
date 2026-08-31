@@ -46,3 +46,61 @@ export async function fetchMarketingFaqs(
     faq ? { ...faq, questions: faq.questions?.filter((question) => !question.web_only) } : faq
   )
 }
+
+export interface MarketingBundle {
+  stats: (StatsDocument & { total_student_count?: string }) | null
+  practiceGoals: PracticeGoalDocument | null
+  testimonials: TestimonialDocument | null
+  faqs: FaqDocument | null
+}
+
+const brandDocumentQuery = (type: string, brand: Brands | string) =>
+  groq().and(f.combine(f.type(type), f.brand(brand))).first()
+
+export async function fetchMarketingAll(
+  brand: Brands | string,
+  includeWebOnlyFaqs: boolean = true
+): Promise<Either<SanityQueryError, MarketingBundle | null>> {
+  const isMusora = brand === Brands.Musora
+
+  const result = await groq
+    .composite({
+      stats: brandDocumentQuery('stats', brand),
+      ...(isMusora ? {} : { musoraStats: brandDocumentQuery('stats', Brands.Musora) }),
+      practiceGoals: brandDocumentQuery('practice-goal', brand),
+      testimonials: brandDocumentQuery('testimonial', brand),
+      faqs: brandDocumentQuery('faq', brand),
+    })
+    .run<MarketingBundle & { musoraStats?: (StatsDocument & { total_student_count?: string }) | null }>()
+
+  const merged = result.map((bundle) => {
+    if (!bundle) return bundle
+
+    const { musoraStats, ...rest } = bundle
+
+    return {
+      ...rest,
+      stats: isMusora
+        ? rest.stats
+        : rest.stats
+          ? { ...rest.stats, total_student_count: musoraStats?.total_student_count }
+          : rest.stats,
+    }
+  })
+
+  if (includeWebOnlyFaqs) return merged
+
+  return merged.map((bundle) =>
+    bundle
+      ? {
+          ...bundle,
+          faqs: bundle.faqs
+            ? {
+                ...bundle.faqs,
+                questions: bundle.faqs.questions?.filter((question) => !question.web_only),
+              }
+            : bundle.faqs,
+        }
+      : bundle
+  )
+}

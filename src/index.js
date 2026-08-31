@@ -229,6 +229,7 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	fetchMarketingAll,
 	fetchMarketingFaqs,
 	fetchMarketingPracticeGoals,
 	fetchMarketingStats,
@@ -656,6 +657,7 @@ export {
 	fetchLiveEvent,
 	fetchLiveEventPollingState,
 	fetchLiveStreamData,
+	fetchMarketingAll,
 	fetchMarketingFaqs,
 	fetchMarketingPracticeGoals,
 	fetchMarketingStats,
