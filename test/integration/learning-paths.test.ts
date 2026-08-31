@@ -88,6 +88,7 @@ const {
   onLearningPathCompletedActions,
   mapLearningPathParentsTo,
   mapContentsThatWereLastProgressedFromMethod,
+  resetLearningPathCachesForTests,
 } = require('../../src/services/content-org/learning-paths.ts')
 
 const ctx = initializeTestDB()
@@ -108,6 +109,7 @@ function setApiResponses(r: ApiResponses) {
 }
 
 beforeEach(() => {
+  resetLearningPathCachesForTests()
   HttpClient.GET.mockReset()
   HttpClient.POST.mockReset()
   sanity.fetchByRailContentId.mockReset()
@@ -222,7 +224,7 @@ describe('getDailySession', () => {
   test('returns response when present', async () => {
     const resp = { active_learning_path_id: 5, daily_session: [] }
     setApiResponses({ dailySession: resp })
-    const result = await getDailySession('drumeo', new Date('2026-01-01T10:00:00Z'), true)
+    const result = await getDailySession('drumeo', new Date('2026-01-01T10:00:00Z'))
     expect(result).toEqual(resp)
     expect(HttpClient.GET.mock.calls[0][0]).toContain('/daily-session/get?brand=drumeo')
   })
@@ -231,7 +233,7 @@ describe('getDailySession', () => {
     setApiResponses({ dailySession: '' })
     const created = { active_learning_path_id: 9, daily_session: [] }
     HttpClient.POST.mockResolvedValueOnce(created)
-    const result = await getDailySession('pianote', new Date('2026-01-01T10:00:00Z'), true)
+    const result = await getDailySession('pianote', new Date('2026-01-01T10:00:00Z'))
     expect(result).toEqual(created)
     expect(HttpClient.POST).toHaveBeenCalledTimes(1)
   })
@@ -251,7 +253,7 @@ describe('getDailySession', () => {
   test('returns null and logs when GET throws', async () => {
     const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     HttpClient.GET.mockImplementationOnce(() => Promise.reject(new Error('boom')))
-    const result = await getDailySession('drumeo', new Date('2026-01-01T10:00:00Z'), true)
+    const result = await getDailySession('drumeo', new Date('2026-01-01T10:00:00Z'))
     expect(result).toBeNull()
     expect(errSpy).toHaveBeenCalled()
     errSpy.mockRestore()
@@ -295,7 +297,7 @@ describe('getActivePath', () => {
   test('returns response', async () => {
     const resp = { user_id: 1, brand: 'drumeo', active_learning_path_id: 42 }
     setApiResponses({ activePath: resp })
-    const result = await getActivePath('drumeo', true)
+    const result = await getActivePath('drumeo')
     expect(result).toEqual(resp)
     expect(HttpClient.GET.mock.calls[0][0]).toContain('/active-path/get?brand=drumeo')
   })
