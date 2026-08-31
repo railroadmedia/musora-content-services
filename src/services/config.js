@@ -104,6 +104,24 @@ export function initializeService(config) {
         console.error('Failed to initialize award definitions:', error)
       })
   }
+
+  /*
+   * Reset unconditionally: this runs again whenever the session changes, and one
+   * user must never read the flags fetched for another. Fetching needs a
+   * session, since flags are evaluated for a user -- a logged-out caller reads
+   * defaults rather than sending a request that can only be refused.
+   */
+  import('./feature-flags')
+    .then(({ featureFlags }) => {
+      featureFlags.reset()
+
+      if (globalConfig.sessionConfig?.token || globalConfig.sessionConfig?.userId) {
+        return featureFlags.refresh()
+      }
+    })
+    .catch(error => {
+      console.error('Failed to initialize feature flags:', error)
+    })
 }
 
 export function initializeEnvVar(config) {
