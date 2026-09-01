@@ -10,11 +10,27 @@ import type {
   TestimonialDocument,
 } from '../../lib/sanity/types/marketing'
 
-const fetchBrandDocument = <T>(type: string, brand: Brands | string) =>
-  groq()
-    .and(f.combine(f.type(type), f.brand(brand)))
-    .first()
-    .run<T>()
+const excludeFromGeneratedIndex = ['brandDocumentQuery', 'faqProjection', 'statsProjection']
+
+export function brandDocumentQuery(type: string, brand: Brands | string, projection?: string[]) {
+  const builder = groq().and(f.combine(f.type(type), f.brand(brand))).first()
+  return projection ? builder.select(...projection) : builder
+}
+
+const fetchBrandDocument = <T>(type: string, brand: Brands | string, projection?: string[]) =>
+  brandDocumentQuery(type, brand, projection).run<T>()
+
+export function faqProjection(includeWebOnly: boolean): string[] | undefined {
+  return includeWebOnly ? undefined : ['...', 'questions[!web_only]']
+}
+
+const musoraStatsFilter = f.combine(f.type('stats'), f.brand(Brands.Musora))
+
+export function statsProjection(isMusora: boolean): string[] | undefined {
+  return isMusora
+    ? undefined
+    : ['...', `"total_student_count": *[${musoraStatsFilter}][0].total_student_count`]
+}
 
 export async function fetchMarketingStats(
   brand: Brands | string
@@ -38,13 +54,7 @@ export async function fetchMarketingFaqs(
   brand: Brands | string,
   includeWebOnly: boolean = true
 ): Promise<Either<SanityQueryError, FaqDocument | null>> {
-  const result = await fetchBrandDocument<FaqDocument>('faq', brand)
-
-  if (includeWebOnly) return result
-
-  return result.map((faq) =>
-    faq ? { ...faq, questions: faq.questions?.filter((question) => !question.web_only) } : faq
-  )
+  return fetchBrandDocument<FaqDocument>('faq', brand, faqProjection(includeWebOnly))
 }
 
 export interface MarketingBundle {
@@ -54,53 +64,18 @@ export interface MarketingBundle {
   faqs: FaqDocument | null
 }
 
-const brandDocumentQuery = (type: string, brand: Brands | string) =>
-  groq().and(f.combine(f.type(type), f.brand(brand))).first()
-
 export async function fetchMarketingAll(
   brand: Brands | string,
   includeWebOnlyFaqs: boolean = true
 ): Promise<Either<SanityQueryError, MarketingBundle | null>> {
   const isMusora = brand === Brands.Musora
 
-  const result = await groq
+  return groq
     .composite({
-      stats: brandDocumentQuery('stats', brand),
-      ...(isMusora ? {} : { musoraStats: brandDocumentQuery('stats', Brands.Musora) }),
+      stats: brandDocumentQuery('stats', brand, statsProjection(isMusora)),
       practiceGoals: brandDocumentQuery('practice-goal', brand),
       testimonials: brandDocumentQuery('testimonial', brand),
-      faqs: brandDocumentQuery('faq', brand),
+      faqs: brandDocumentQuery('faq', brand, faqProjection(includeWebOnlyFaqs)),
     })
-    .run<MarketingBundle & { musoraStats?: (StatsDocument & { total_student_count?: string }) | null }>()
-
-  const merged = result.map((bundle) => {
-    if (!bundle) return bundle
-
-    const { musoraStats, ...rest } = bundle
-
-    return {
-      ...rest,
-      stats: isMusora
-        ? rest.stats
-        : rest.stats
-          ? { ...rest.stats, total_student_count: musoraStats?.total_student_count }
-          : rest.stats,
-    }
-  })
-
-  if (includeWebOnlyFaqs) return merged
-
-  return merged.map((bundle) =>
-    bundle
-      ? {
-          ...bundle,
-          faqs: bundle.faqs
-            ? {
-                ...bundle.faqs,
-                questions: bundle.faqs.questions?.filter((question) => !question.web_only),
-              }
-            : bundle.faqs,
-        }
-      : bundle
-  )
+    .run<MarketingBundle>()
 }
