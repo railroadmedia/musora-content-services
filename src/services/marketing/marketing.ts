@@ -10,10 +10,17 @@ import type {
   TestimonialDocument,
 } from '../../lib/sanity/types/marketing'
 
-const excludeFromGeneratedIndex = ['brandDocumentQuery', 'faqProjection', 'statsProjection']
+const excludeFromGeneratedIndex = [
+  'fetchBrandDocument',
+  'brandDocumentQuery',
+  'faqProjection',
+  'statsProjection',
+]
 
 export function brandDocumentQuery(type: string, brand: Brands | string, projection?: string[]) {
-  const builder = groq().and(f.combine(f.type(type), f.brand(brand))).first()
+  const builder = groq()
+    .and(f.combine(f.type(type), f.brand(brand)))
+    .first()
   return projection ? builder.select(...projection) : builder
 }
 
