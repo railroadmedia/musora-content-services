@@ -24,12 +24,11 @@ export function faqProjection(includeWebOnly: boolean): string[] | undefined {
   return includeWebOnly ? undefined : ['...', 'questions[!web_only]']
 }
 
-const musoraStatsFilter = f.combine(f.type('stats'), f.brand(Brands.Musora))
-
 export function statsProjection(isMusora: boolean): string[] | undefined {
-  return isMusora
-    ? undefined
-    : ['...', `"total_student_count": *[${musoraStatsFilter}][0].total_student_count`]
+  if (isMusora) return undefined
+
+  const musoraFilter = f.combine(f.type('stats'), f.brand(Brands.Musora))
+  return ['...', `"total_student_count": *[${musoraFilter}][0].total_student_count`]
 }
 
 export async function fetchMarketingStats(
