@@ -290,6 +290,7 @@ import {
 
 import {
 	getPracticeSessionsOffline,
+	getWeeklyPracticeSessionsOffline,
 	otherStatsOffline
 } from './services/offline/practices.ts';
 
@@ -437,6 +438,7 @@ import {
 
 import {
 	confirmEmailChange,
+	createPendingAccount,
 	deleteAccount,
 	numberOfActiveUsers,
 	requestEmailChange,
@@ -518,7 +520,14 @@ import {
 } from './services/user/profile.ts';
 
 import {
+	sendRevenueCatPurchaseMetadata
+} from './services/user/revenuecat.ts';
+
+import {
+	listOAuthProviders,
+	loginAsUser,
 	redirectToOAuthProvider,
+	unlinkOAuthProvider,
 	verifyOAuthToken
 } from './services/user/session.ts';
 
@@ -540,6 +549,7 @@ import {
 	getStreaksAndMessage,
 	getUserMonthlyStats,
 	getUserWeeklyStats,
+	getWeeklyPracticeSessions,
 	recordUserActivity,
 	recordUserPractice,
 	removeUserPractice,
@@ -600,6 +610,7 @@ declare module 'musora-content-services' {
 		createInvites,
 		createLiveWaveform,
 		createPeakCapture,
+		createPendingAccount,
 		createPlaylist,
 		createPost,
 		createPracticeNotes,
@@ -813,6 +824,8 @@ declare module 'musora-content-services' {
 		getUserWeeklyStats,
 		getWaveformPeaks,
 		getWeekNumber,
+		getWeeklyPracticeSessions,
+		getWeeklyPracticeSessionsOffline,
 		globalConfig,
 		grant30DaysAccessForLifetime,
 		guidedCourses,
@@ -835,9 +848,11 @@ declare module 'musora-content-services' {
 		likeContent,
 		likePlaylist,
 		likePost,
+		listOAuthProviders,
 		listRecordings,
 		lockThread,
 		login,
+		loginAsUser,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
@@ -890,6 +905,7 @@ declare module 'musora-content-services' {
 		searchAlgolia,
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
+		sendRevenueCatPurchaseMetadata,
 		setStudentViewForUser,
 		setUserPinnedProgressRow,
 		setUserSignature,
@@ -916,6 +932,7 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		unlikePlaylist,
 		unlikePost,
+		unlinkOAuthProvider,
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,

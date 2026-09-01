@@ -64,6 +64,11 @@ const project: Monoid<string> = {
 
 export const filterOps = { and, or }
 
+export const composite = (parts: Record<string, QueryBuilder | string>): string =>
+  `{ ${Object.entries(parts)
+    .map(([key, value]) => `"${key}": ${value}`)
+    .join(', ')} }`
+
 export const query = (selector?: string): QueryBuilder => {
   let state: QueryBuilderState = {
     filter: and.empty,

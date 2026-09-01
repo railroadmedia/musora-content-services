@@ -2,6 +2,95 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.178.1](https://github.com/railroadmedia/musora-content-services/compare/v2.178.0...v2.178.1) (2026-08-31)
+
+## [2.178.0](https://github.com/railroadmedia/musora-content-services/compare/v2.177.1...v2.178.0) (2026-08-28)
+
+
+### Features
+
+* **BEHLTP-318:** add sendRevenueCatPurchaseMetadata for MA purchase_intent handoff ([#1037](https://github.com/railroadmedia/musora-content-services/issues/1037)) ([1ba4f9d](https://github.com/railroadmedia/musora-content-services/commit/1ba4f9dd6c171423a7b2a5f775571744450ef3be))
+
+### [2.177.1](https://github.com/railroadmedia/musora-content-services/compare/v2.177.0...v2.177.1) (2026-08-26)
+
+
+### Bug Fixes
+
+* **TP-1323:** add a condition when updating award progress ([#1029](https://github.com/railroadmedia/musora-content-services/issues/1029)) ([67933b8](https://github.com/railroadmedia/musora-content-services/commit/67933b8eb1d55dd01200cca68b9ef0c199f84d72))
+
+## [2.177.0](https://github.com/railroadmedia/musora-content-services/compare/v2.176.0...v2.177.0) (2026-08-19)
+
+
+### Features
+
+* make built GROQ queries runnable with a typed result ([#1036](https://github.com/railroadmedia/musora-content-services/issues/1036)) ([70b45bc](https://github.com/railroadmedia/musora-content-services/commit/70b45bc446d08ce97ac8708840b205c7c35cb5b7)), closes [#1034](https://github.com/railroadmedia/musora-content-services/issues/1034)
+* **query:** add composite() for multi-key GROQ projections ([#1034](https://github.com/railroadmedia/musora-content-services/issues/1034)) ([ea4f2ca](https://github.com/railroadmedia/musora-content-services/commit/ea4f2caf84a59b7a737b7f1ff9e6c9dc32942810))
+
+
+### Bug Fixes
+
+* **BEH-1590:** login as user on mobile app ([#1033](https://github.com/railroadmedia/musora-content-services/issues/1033)) ([a5f9ef4](https://github.com/railroadmedia/musora-content-services/commit/a5f9ef41ab42b04f961d53bc4cd8e29a89dc4b2b))
+* escape values interpolated into GROQ filter strings ([#1035](https://github.com/railroadmedia/musora-content-services/issues/1035)) ([bc34d4b](https://github.com/railroadmedia/musora-content-services/commit/bc34d4bef8a33a25ea7e93fa51d7d415aefcfe69)), closes [#1034](https://github.com/railroadmedia/musora-content-services/issues/1034)
+* password reset mobile token and sessionConfig access ([#1031](https://github.com/railroadmedia/musora-content-services/issues/1031)) ([0f7633c](https://github.com/railroadmedia/musora-content-services/commit/0f7633c23cd03d9402347200dd66d6243e8a66c5))
+
+## [2.176.0](https://github.com/railroadmedia/musora-content-services/compare/v2.175.0...v2.176.0) (2026-08-18)
+
+
+### Features
+
+* **BEHLTP-306:** add tier_key and rank to UpgradeProduct type ([#1030](https://github.com/railroadmedia/musora-content-services/issues/1030)) ([e1cf01f](https://github.com/railroadmedia/musora-content-services/commit/e1cf01fe3d41444e9724e61788e0d3d55df55c88)), closes [#1463](https://github.com/railroadmedia/musora-content-services/issues/1463)
+
+## [2.175.0](https://github.com/railroadmedia/musora-content-services/compare/v2.174.0...v2.175.0) (2026-08-18)
+
+
+### Features
+
+* **BEHSTP-441:** New method: getWeeklyPracticeSessions and expose Weekly Goal Progress in getUserWeeklyStats ([04ba10c](https://github.com/railroadmedia/musora-content-services/commit/04ba10c39ab50e9c35bc01e0289c4d8ead941bff))
+* **BEHSTP-463:** new method getWeeklyPracticeSessionsOffline ([b321cfc](https://github.com/railroadmedia/musora-content-services/commit/b321cfc358e7ac88128957c5dcca2f64e529aa39))
+* **BEHSTP-474:** split streak message into part1/part2 for new FE design ([a3912db](https://github.com/railroadmedia/musora-content-services/commit/a3912db2ad37eed491f8ceda69edd32fa825dc44))
+
+
+### Bug Fixes
+
+* **BEHSTP-441:** return getWeeklyPracticeSessions as a flat practices array ([1fc7ef3](https://github.com/railroadmedia/musora-content-services/commit/1fc7ef3c38a528d1206467867bc43cfb0e2501d0))
+
+## [2.174.0](https://github.com/railroadmedia/musora-content-services/compare/v2.173.0...v2.174.0) (2026-08-12)
+
+
+### Features
+
+* **MU2-1818:** Add OAuth provider list/unlink session APIs ([#1026](https://github.com/railroadmedia/musora-content-services/issues/1026)) ([9440a1a](https://github.com/railroadmedia/musora-content-services/commit/9440a1a2e5e4d459d9f889b6178c419893ece402))
+
+## [2.173.0](https://github.com/railroadmedia/musora-content-services/compare/v2.171.0...v2.173.0) (2026-08-12)
+
+
+### Features
+
+* adds previous_email param to pending account creation ([#1028](https://github.com/railroadmedia/musora-content-services/issues/1028)) ([997d5ab](https://github.com/railroadmedia/musora-content-services/commit/997d5ab9883353a4a5f35000c92f9ff322e730b5))
+
+## [2.172.0](https://github.com/railroadmedia/musora-content-services/compare/v2.171.0...v2.172.0) (2026-08-12)
+
+
+### Features
+
+* adds previous_email param to pending account creation ([#1028](https://github.com/railroadmedia/musora-content-services/issues/1028)) ([997d5ab](https://github.com/railroadmedia/musora-content-services/commit/997d5ab9883353a4a5f35000c92f9ff322e730b5))
+
+## [2.171.0](https://github.com/railroadmedia/musora-content-services/compare/v2.170.0...v2.171.0) (2026-08-12)
+
+
+### Features
+
+* adds create pending user fn ([#1025](https://github.com/railroadmedia/musora-content-services/issues/1025)) ([c4ba8ef](https://github.com/railroadmedia/musora-content-services/commit/c4ba8ef3a118718236d177885372781714a08c9a))
+
+## [2.170.0](https://github.com/railroadmedia/musora-content-services/compare/v2.169.4...v2.170.0) (2026-08-10)
+
+## [2.169.0-0](https://github.com/railroadmedia/musora-content-services/compare/v2.168.0...v2.169.0-0) (2026-07-31)
+
+
+### Features
+
+* **TP-1300:** add badge field to Liker, ForumUser, and User interfaces ([8a3ee80](https://github.com/railroadmedia/musora-content-services/commit/8a3ee802722a0d9dcd41a6a3998ff2a7a3352aeb))
+
 ### [2.169.4](https://github.com/railroadmedia/musora-content-services/compare/v2.169.3...v2.169.4) (2026-08-07)
 
 
@@ -30,6 +119,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
+* **TP-1300:** add badge field to Liker, ForumUser, and User interfaces ([8a3ee80](https://github.com/railroadmedia/musora-content-services/commit/8a3ee802722a0d9dcd41a6a3998ff2a7a3352aeb))
 * **BEHSTP-415:** MCS public announcement fetch fn's ([#1010](https://github.com/railroadmedia/musora-content-services/issues/1010)) ([d504fb1](https://github.com/railroadmedia/musora-content-services/commit/d504fb105ba5303bfe7327ddef24fe468bdec374))
 
 ## [2.168.0](https://github.com/railroadmedia/musora-content-services/compare/v2.167.6...v2.168.0) (2026-07-30)

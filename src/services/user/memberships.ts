@@ -75,11 +75,15 @@ export interface UpgradeProduct {
   tier: 'plus' | 'basic' | '' // deprecated in favour of membership_level
   membership_level: 'plus' | 'basic' | ''
   plan_type: 'family' | 'duo' | 'solo'
+  tier_key: string
+  rank: number | null
 }
 
 export interface UpgradeOption {
   annual_savings: number
   lowest_monthly_cost: number
+  upgrade_type: string
+  is_prorated_charge: boolean
   products: UpgradeProduct[] // annual + monthly products, or solely annual product with the same configuration information
 }
 

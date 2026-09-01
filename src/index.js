@@ -294,6 +294,7 @@ import {
 
 import {
 	getPracticeSessionsOffline,
+	getWeeklyPracticeSessionsOffline,
 	otherStatsOffline
 } from './services/offline/practices.ts';
 
@@ -441,6 +442,7 @@ import {
 
 import {
 	confirmEmailChange,
+	createPendingAccount,
 	deleteAccount,
 	numberOfActiveUsers,
 	requestEmailChange,
@@ -522,7 +524,14 @@ import {
 } from './services/user/profile.ts';
 
 import {
+	sendRevenueCatPurchaseMetadata
+} from './services/user/revenuecat.ts';
+
+import {
+	listOAuthProviders,
+	loginAsUser,
 	redirectToOAuthProvider,
+	unlinkOAuthProvider,
 	verifyOAuthToken
 } from './services/user/session.ts';
 
@@ -544,6 +553,7 @@ import {
 	getStreaksAndMessage,
 	getUserMonthlyStats,
 	getUserWeeklyStats,
+	getWeeklyPracticeSessions,
 	recordUserActivity,
 	recordUserPractice,
 	removeUserPractice,
@@ -599,6 +609,7 @@ export {
 	createInvites,
 	createLiveWaveform,
 	createPeakCapture,
+	createPendingAccount,
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
@@ -812,6 +823,8 @@ export {
 	getUserWeeklyStats,
 	getWaveformPeaks,
 	getWeekNumber,
+	getWeeklyPracticeSessions,
+	getWeeklyPracticeSessionsOffline,
 	globalConfig,
 	grant30DaysAccessForLifetime,
 	guidedCourses,
@@ -834,9 +847,11 @@ export {
 	likeContent,
 	likePlaylist,
 	likePost,
+	listOAuthProviders,
 	listRecordings,
 	lockThread,
 	login,
+	loginAsUser,
 	logout,
 	mapContentToParent,
 	markAllNotificationsAsRead,
@@ -889,6 +904,7 @@ export {
 	searchAlgolia,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
+	sendRevenueCatPurchaseMetadata,
 	setStudentViewForUser,
 	setUserPinnedProgressRow,
 	setUserSignature,
@@ -915,6 +931,7 @@ export {
 	unlikeContent,
 	unlikePlaylist,
 	unlikePost,
+	unlinkOAuthProvider,
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,

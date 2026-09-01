@@ -109,6 +109,38 @@ export async function setupAccount(props: AccountSetupProps): Promise<AccountSet
   return res
 }
 
+export interface PendingAccountProps {
+  email: string
+  revenuecatAppUserId?: string
+  previousEmail?: string
+}
+
+// Not AccountSetupResponse -- this is the permanent shape for this endpoint.
+export interface PendingAccountResponse {
+  user_id: number
+}
+
+/**
+ * @param {Object} props - The parameters for creating the pending account.
+ * @property {string} email - The email address for the account.
+ * @property {string} [revenuecatAppUserId] - The RevenueCat App User ID for MA environments.
+ * @property {string} [previousEmail] - The previous email address, if this account replaces an existing one.
+ *
+ * @returns {Promise<PendingAccountResponse>} - A promise that resolves when the pending account is created or an HttpError if the request fails.
+ * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
+ */
+export async function createPendingAccount(props: PendingAccountProps): Promise<PendingAccountResponse> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return await httpClient.post<PendingAccountResponse>(
+    `/api/user-management-system/v1/accounts/pending`,
+    {
+      email: props.email,
+      mobile_app_id: props.revenuecatAppUserId,
+      previous_email: props.previousEmail,
+    }
+  )
+}
+
 /**
  * @param {string} email - The email address to send the password reset email to.
  * @returns {Promise<void>} - A promise that resolves when the email change request is made.
@@ -126,28 +158,21 @@ export interface PasswordResetProps {
   password: string
   passwordConfirmation: string
   token: string
+  deviceName?: string
+  deviceToken?: string
+  platform?: string
 }
-/**
- * @param {Object} params - The parameters for resetting the password.
- * @property {string} email - The email address for the account.
- * @property {string} password - The new password for the account.
- * @property {string} passwordConfirmation - The confirmation of the new password.
- * @property {string} token - The token sent to the user's email for verification.
- * @returns {Promise<void>} - A promise that resolves when the password reset is complete or an HttpError if the request fails.
- * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
- */
-export async function resetPassword({
-  email,
-  password,
-  passwordConfirmation,
-  token,
-}: PasswordResetProps): Promise<void> {
+
+export async function resetPassword(props: PasswordResetProps): Promise<AuthResponse | null> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post(`/api/user-management-system/v1/accounts/password/reset`, {
-    email,
-    password,
-    password_confirmation: passwordConfirmation,
-    token,
+    email: props.email,
+    password: props.password,
+    password_confirmation: props.passwordConfirmation,
+    token: props.token,
+    device_name: props.deviceName,
+    device_token: props.deviceToken,
+    platform: props.platform,
   })
 }
 

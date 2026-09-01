@@ -18,32 +18,50 @@ import { mapContentsThatWereLastProgressedFromMethod } from "./content-org/learn
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 const streakMessages = {
-  startStreak: 'Start your streak by taking any lesson!',
-  restartStreak: 'Restart your streak by taking any lesson!',
+  startStreak: { part1: 'Start your streak by taking any lesson!', part2: '' },
+  restartStreak: { part1: 'Restart your streak by taking any lesson!', part2: '' },
 
   // Messages when last active day is today
-  dailyStreak: (streak) =>
-    `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak! Way to keep it going!`,
-  dailyStreakShort: (streak) =>
-    `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
-  weeklyStreak: (streak) =>
-    `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep up the momentum!`,
-  greatJobWeeklyStreak: (streak) =>
-    `Great job! You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep it going!`,
+  dailyStreak: (streak) => ({
+    part1: `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
+    part2: 'Way to keep it going!',
+  }),
+  dailyStreakShort: (streak) => ({
+    part1: `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
+    part2: '',
+  }),
+  weeklyStreak: (streak) => ({
+    part1: `You have ${getIndefiniteArticle(streak)} ${streak} week streak!`,
+    part2: 'Way to keep up the momentum!',
+  }),
+  greatJobWeeklyStreak: (streak) => ({
+    part1: `Great job! You have ${getIndefiniteArticle(streak)} ${streak} week streak!`,
+    part2: 'Way to keep it going!',
+  }),
 
   // Messages when last active day is NOT today
-  dailyStreakReminder: (streak) =>
-    `You have ${getIndefiniteArticle(streak)} ${streak} day streak! Keep it going with any lesson or song!`,
-  weeklyStreakKeepUp: (streak) =>
-    `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep up the momentum!`,
-  weeklyStreakReminder: (streak) =>
-    `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep it going with any lesson or song!`,
+  dailyStreakReminder: (streak) => ({
+    part1: `You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
+    part2: 'Keep it going with any lesson or song!',
+  }),
+  weeklyStreakKeepUp: (streak) => ({
+    part1: `You have ${getIndefiniteArticle(streak)} ${streak} week streak!`,
+    part2: 'Keep up the momentum!',
+  }),
+  weeklyStreakReminder: (streak) => ({
+    part1: `You have ${getIndefiniteArticle(streak)} ${streak} week streak!`,
+    part2: 'Keep it going with any lesson or song!',
+  }),
 }
 
 function getIndefiniteArticle(streak) {
   return streak === 8 || (streak >= 80 && streak <= 89) || (streak >= 800 && streak <= 899)
     ? 'an'
     : 'a'
+}
+
+function joinStreakMessageParts(part1, part2) {
+  return part2 ? `${part1} ${part2}` : part1
 }
 
 async function getUserPractices(userId) {
@@ -118,7 +136,11 @@ export async function getUserWeeklyStats() {
     data: {
       dailyActiveStats: dailyStats,
       streakMessage: streakData.streakMessage,
+      streakMessagePart1: streakData.streakMessagePart1,
+      streakMessagePart2: streakData.streakMessagePart2,
       practices: weekPractices,
+      currentWeekPracticeDays: streakData.currentWeekPracticeDays,
+      todaysPracticeSeconds: streakData.todaysPracticeSeconds,
     },
   }
 }
@@ -417,9 +439,14 @@ export async function restorePracticeSession(date) {
  * @param {Object} params - Parameters for fetching practice sessions.
  * @param {string} params.day - The date for which practice sessions should be retrieved (format: YYYY-MM-DD).
  * @param {number} [params.userId=globalConfig.sessionConfig.userId] - Optional user ID to retrieve sessions for a specific user. Defaults to the logged-in user.
+ * @param {number} [params.page=1] - The page number, only applied when `limit` is set.
+ * @param {number} [params.limit] - Max sessions to return; omit to return all of the day's sessions unpaginated.
  * @returns {Promise<Object>} - A promise that resolves to an object containing:
- *   - `practices`: An array of formatted practice session data.
- *   - `practiceDuration`: Total practice duration (in seconds) for the given day.
+ *   - `practices`: An array of formatted practice session data (paginated if `limit` is set).
+ *   - `practiceDuration`: Total practice duration (in seconds) for the whole day, regardless of pagination.
+ *   - `total`: Total number of sessions for the day, regardless of pagination.
+ *   - `currentPage`: The page number returned
+ *   - `totalPages`: Total number of pages for the day
  *
  * @example
  * // Get practice sessions for the current user on a specific day
@@ -434,7 +461,7 @@ export async function restorePracticeSession(date) {
  *   .catch(error => console.error(error));
  */
 export async function getPracticeSessions(params = {}, options = {}) {
-  const { day, userId = globalConfig.sessionConfig.userId } = params
+  const { day, userId = globalConfig.sessionConfig.userId, page = 1, limit } = params
 
   let data
 
@@ -455,15 +482,66 @@ export async function getPracticeSessions(params = {}, options = {}) {
     data = query.data
   }
 
-  if (!data.length) return { data: { practices: [], practiceDuration: 0 } }
+  return formatPracticeSessionData(data, page, limit)
+}
 
-  const formattedMeta = await formatPracticeMeta(data)
-  const practiceDuration = Math.round(formattedMeta.reduce(
-    (total, practice) => total + (practice.duration || 0),
-    0
-  ))
+/**
+ * Retrieves and formats the current user's practice sessions for the current Monday-Sunday week
+ *
+ * @param {Object} [params={}] - Parameters for fetching the week's practice sessions.
+ * @param {number} [params.page=1] - The page number, only applied when `limit` is set.
+ * @param {number} [params.limit] - Max sessions to return; omit to return all of the week's sessions unpaginated.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing:
+ *   - `practices`: An array of formatted practice session data for the week (paginated if `limit` is set).
+ *   - `practiceDuration`: Total practice duration (in seconds) for the whole week, regardless of pagination.
+ *   - `total`: Total number of sessions for the week, regardless of pagination.
+ *   - `currentPage`: The page number returned
+ *   - `totalPages`: Total number of pages for the week
+ *
+ * @example
+ * getWeeklyPracticeSessions()
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function getWeeklyPracticeSessions(params = {}, options = {}) {
+  const { page = 1, limit } = params
 
-  return { data: { practices: formattedMeta, practiceDuration } }
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const startOfWeek = getMonday(new Date(), timeZone)
+  const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
+
+  if (options.pull) {
+    await db.practices.pull()
+  } else {
+    db.practices.pull()
+  }
+
+  const query = await db.practices.queryAll(Q.where('date', Q.oneOf(weekDays)), Q.sortBy('created_at', 'asc'))
+  const data = query.data
+
+  return formatPracticeSessionData(data, page, limit)
+}
+
+async function formatPracticeSessionData(data, page, limit) {
+  if (!data.length)
+    return { data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 } }
+
+  const practiceDuration = Math.round(
+    data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0)
+  )
+
+  const pagedData = limit ? data.slice((page - 1) * limit, page * limit) : data
+  const formattedMeta = await formatPracticeMeta(pagedData)
+
+  return {
+    data: {
+      practices: formattedMeta,
+      practiceDuration,
+      total: data.length,
+      currentPage: page,
+      totalPages: limit ? Math.ceil(data.length / limit) : 1,
+    },
+  }
 }
 
 /**
@@ -575,12 +653,22 @@ export async function updatePracticeNotes(payload) {
 }
 
 export function getStreaksAndMessage(practices) {
-  let { currentDailyStreak, currentWeeklyStreak, streakMessage } = calculateStreaks(practices, true)
+  let {
+    currentDailyStreak,
+    currentWeeklyStreak,
+    streakMessage,
+    streakMessagePart1,
+    streakMessagePart2,
+    currentWeekPracticeDays,
+  } = calculateStreaks(practices, true)
 
   return {
     currentDailyStreak,
     currentWeeklyStreak,
     streakMessage,
+    streakMessagePart1,
+    streakMessagePart2,
+    currentWeekPracticeDays,
   }
 }
 
@@ -589,7 +677,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   let currentDailyStreak = 0
   let currentWeeklyStreak = 0
   let lastActiveDay = null
-  let streakMessage = ''
+  let streakMessageParts = { part1: '', part2: '' }
 
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   let sortedPracticeDays = Object.keys(practices)
@@ -602,7 +690,13 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     return {
       currentDailyStreak: 0,
       currentWeeklyStreak: 0,
-      streakMessage: streakMessages.startStreak,
+      currentWeekPracticeDays: 0,
+      streakMessage: joinStreakMessageParts(
+        streakMessages.startStreak.part1,
+        streakMessages.startStreak.part2
+      ),
+      streakMessagePart1: streakMessages.startStreak.part1,
+      streakMessagePart2: streakMessages.startStreak.part2,
     }
   }
   lastActiveDay = sortedPracticeDays[sortedPracticeDays.length - 1]
@@ -647,14 +741,18 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   }
   currentWeeklyStreak = weeklyStreak
 
+  // Qualifying days (calendar days with at least one recorded practice) within the
+  // current Monday-anchored week — used for the weekly practice-days target progress.
+  let today = new Date()
+  let currentWeekStart = getMonday(today, timeZone)
+  let currentWeekPracticeDays = sortedPracticeDays.filter((date) => date >= currentWeekStart).length
+
   // Calculate streak message only if includeStreakMessage is true
   if (includeStreakMessage) {
-    let today = new Date()
     today.setHours(0, 0, 0, 0)
     let yesterday = new Date(today)
     yesterday.setDate(today.getDate() - 1)
 
-    let currentWeekStart = getMonday(today, timeZone)
     let lastWeekStart = currentWeekStart.subtract(7, 'days')
 
     let hasYesterdayPractice = sortedPracticeDays.some((date) => isSameDate(date, yesterday))
@@ -669,13 +767,13 @@ function calculateStreaks(practices, includeStreakMessage = false) {
 
     if (isSameDate(lastActiveDay, today)) {
       if (hasYesterdayPractice) {
-        streakMessage = streakMessages.dailyStreak(currentDailyStreak)
+        streakMessageParts = streakMessages.dailyStreak(currentDailyStreak)
       } else if (hasCurrentWeekPreviousPractice) {
-        streakMessage = streakMessages.weeklyStreak(currentWeeklyStreak)
+        streakMessageParts = streakMessages.weeklyStreak(currentWeeklyStreak)
       } else if (hasLastWeekPractice) {
-        streakMessage = streakMessages.greatJobWeeklyStreak(currentWeeklyStreak)
+        streakMessageParts = streakMessages.greatJobWeeklyStreak(currentWeeklyStreak)
       } else {
-        streakMessage = streakMessages.dailyStreakShort(currentDailyStreak)
+        streakMessageParts = streakMessages.dailyStreakShort(currentDailyStreak)
       }
     } else {
       if (
@@ -683,18 +781,25 @@ function calculateStreaks(practices, includeStreakMessage = false) {
         (hasYesterdayPractice && sortedPracticeDays.length == 1) ||
         (hasYesterdayPractice && !hasLastWeekPractice && hasOlderPractice)
       ) {
-        streakMessage = streakMessages.dailyStreakReminder(currentDailyStreak)
+        streakMessageParts = streakMessages.dailyStreakReminder(currentDailyStreak)
       } else if (hasCurrentWeekPractice) {
-        streakMessage = streakMessages.weeklyStreakKeepUp(currentWeeklyStreak)
+        streakMessageParts = streakMessages.weeklyStreakKeepUp(currentWeeklyStreak)
       } else if (hasLastWeekPractice) {
-        streakMessage = streakMessages.weeklyStreakReminder(currentWeeklyStreak)
+        streakMessageParts = streakMessages.weeklyStreakReminder(currentWeeklyStreak)
       } else {
-        streakMessage = streakMessages.restartStreak
+        streakMessageParts = streakMessages.restartStreak
       }
     }
   }
 
-  return { currentDailyStreak, currentWeeklyStreak, streakMessage }
+  return {
+    currentDailyStreak,
+    currentWeeklyStreak,
+    streakMessage: joinStreakMessageParts(streakMessageParts.part1, streakMessageParts.part2),
+    streakMessagePart1: streakMessageParts.part1,
+    streakMessagePart2: streakMessageParts.part2,
+    currentWeekPracticeDays,
+  }
 }
 
 /**
@@ -805,6 +910,7 @@ async function formatPracticeMeta(practices = []) {
     return {
       id: practice.id,
       auto: practice.auto,
+      date: practice.date,
       thumbnail: practice.content_id ? content?.thumbnail : practice.thumbnail_url || '',
       thumbnail_url: practice.content_id ? content?.thumbnail : practice.thumbnail_url || '',
       duration: practice.duration_seconds || 0,
