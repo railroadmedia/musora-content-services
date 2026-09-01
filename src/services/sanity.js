@@ -2128,8 +2128,8 @@ export async function fetchTabData(
   }).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
-    start: start,
-    end: progressIds ? progressIds.length + start : end, // sanity doesnt order progress correctly, so must return all and sort client side
+    start: progressIds ? 0 : start,
+    end: progressIds ? progressIds.length : end, // sanity doesnt order progress correctly, so must return all and sort client side
   })
 
   let results = await fetchSanity(query, true, { processNeedAccess: true })
