@@ -73,7 +73,7 @@ export interface MarketingBundle {
 export async function fetchMarketingAll(
   brand: Brands | string,
   includeWebOnlyFaqs: boolean = true
-): Promise<Either<SanityQueryError, MarketingBundle | null>> {
+): Promise<Either<SanityQueryError, MarketingBundle>> {
   const isMusora = brand === Brands.Musora
 
   return groq
