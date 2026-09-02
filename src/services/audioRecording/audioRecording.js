@@ -65,21 +65,54 @@ export function formatDurationMs(ms) {
   return `${mins}:${s.toString().padStart(2, '0')}`
 }
 
-export async function startSession(userId, contentId = null, videoTimeMs = null) {
+/**
+ * Start a recording session. `extras` carries the sync anchors the ML side needs and is
+ * written straight into the session's metadata.json by the backend:
+ *   - timing:  { play_to_gum_ms, gum_to_recorder_start_ms } — microphone start latency,
+ *              measured on the device with performance.now()
+ *   - capture: { user_agent, sample_rate, channel_count, echo_cancellation,
+ *                noise_suppression, auto_gain_control } — the settings the browser
+ *                actually applied to the mic track (MediaStreamTrack.getSettings())
+ * `started_at` is the device wall clock in ms so the recording's t=0 can be placed on the
+ * same timeline as each chunk's recorded_at.
+ */
+export async function startSession(userId, contentId = null, videoTimeMs = null, extras = {}) {
   return POST(`${BASE_PATH}/start`, {
     user_id: userId,
     content_id: contentId,
     video_time_ms: videoTimeMs,
+    started_at: extras.startedAt ?? Date.now(),
+    timing: extras.timing ?? null,
+    capture: extras.capture ?? null,
   })
 }
 
-export async function uploadChunk(folder, index, extension, chunk, videoTimeMs = 0, peaks = null) {
+/**
+ * `videoTimeMs` is the video position when the chunk CLOSED (MediaRecorder hands chunks
+ * over on its own timeslice, not on video frames). `timing` lets the caller add:
+ *   - videoTimeStartMs: video position when the chunk opened
+ *   - chunkDurationMs:  wall-clock length of the chunk excluding any paused time
+ *   - firstDataDelayMs: (chunk 1 only) ms from MediaRecorder.start() to first data
+ */
+export async function uploadChunk(
+  folder,
+  index,
+  extension,
+  chunk,
+  videoTimeMs = 0,
+  peaks = null,
+  timing = null
+) {
   const body = new FormData()
   body.append('folder', folder)
   body.append('index', index)
   body.append('extension', extension)
   body.append('video_time_ms', videoTimeMs)
   body.append('recorded_at', Date.now())
+
+  if (timing?.videoTimeStartMs != null) body.append('video_time_start_ms', timing.videoTimeStartMs)
+  if (timing?.chunkDurationMs != null) body.append('chunk_duration_ms', timing.chunkDurationMs)
+  if (timing?.firstDataDelayMs != null) body.append('first_data_delay_ms', timing.firstDataDelayMs)
 
   // React Native can't reliably build a Blob from an in-memory chunk without a
   // filesystem library, so it passes a base64 string instead; web passes a Blob.
@@ -96,7 +129,19 @@ export async function uploadChunk(folder, index, extension, chunk, videoTimeMs =
   return POST(`${BASE_PATH}/chunk`, body)
 }
 
-export async function stopSession(userId, folder, durationMs, chunkCount, format, reason = null) {
+/**
+ * `reason` null is a pause checkpoint; a reason marks the session finished. `videoTimeMs`
+ * is the video position at stop and is what the 'end' event records as its video time.
+ */
+export async function stopSession(
+  userId,
+  folder,
+  durationMs,
+  chunkCount,
+  format,
+  reason = null,
+  videoTimeMs = null
+) {
   return POST(`${BASE_PATH}/stop`, {
     user_id: userId,
     folder,
@@ -104,14 +149,25 @@ export async function stopSession(userId, folder, durationMs, chunkCount, format
     chunk_count: chunkCount,
     format,
     reason,
+    stopped_at: Date.now(),
+    video_time_ms: videoTimeMs,
   })
 }
 
 /**
- * Log a pause/resume event against a session, for session-boundary reconstitution
+ * Log a pause/resume event against a session, for session-boundary reconstitution.
+ * `videoTimeMs` is the VIDEO position at the event; `elapsedMs` is how far into the
+ * recording (wall clock since start) it happened. They are different numbers and the ML
+ * side needs both to map recording time onto the lesson timeline.
  */
-export async function logEvent(folder, type, videoTimeMs) {
-  return POST(`${BASE_PATH}/event`, { folder, type, video_time_ms: videoTimeMs })
+export async function logEvent(folder, type, videoTimeMs, elapsedMs = null) {
+  return POST(`${BASE_PATH}/event`, {
+    folder,
+    type,
+    video_time_ms: videoTimeMs,
+    elapsed_ms: elapsedMs,
+    at: Date.now(),
+  })
 }
 
 /**
@@ -120,10 +176,14 @@ export async function logEvent(folder, type, videoTimeMs) {
  * platform (web, mobile) applying the "pause >X breaks the session" rule behaves the
  * same way. Owns the grace timer, the pause/resume event logging, and the stop reason
  * ('manual' vs 'timeout').
+ *
+ * Pass `getVideoTimeMs` so pause/resume events carry the real video position; without
+ * it they fall back to recording-elapsed time, which is NOT a video time.
  */
 export function trackAudioRecordingSession(folder, options = {}) {
   const graceMs = options.graceMs ?? 180000
   const onTimeout = options.onTimeout ?? (() => {})
+  const getVideoTimeMs = typeof options.getVideoTimeMs === 'function' ? options.getVideoTimeMs : null
   const startedAt = Date.now()
 
   let paused = false
@@ -143,12 +203,17 @@ export function trackAudioRecordingSession(folder, options = {}) {
     return elapsedMs() - totalPausedMs - openPauseMs
   }
 
+  function videoTimeOrElapsed() {
+    const t = getVideoTimeMs ? getVideoTimeMs() : null
+    return Number.isFinite(t) && t >= 0 ? Math.round(t) : elapsedMs()
+  }
+
   function pause() {
     if (paused) return
     paused = true
     pausedAt = Date.now()
 
-    logEvent(folder, 'pause', elapsedMs()).catch((error) => {
+    logEvent(folder, 'pause', videoTimeOrElapsed(), elapsedMs()).catch((error) => {
       console.warn('Failed to log pause event:', error)
     })
 
@@ -173,7 +238,7 @@ export function trackAudioRecordingSession(folder, options = {}) {
       timer = null
     }
 
-    logEvent(folder, 'resume', elapsedMs()).catch((error) => {
+    logEvent(folder, 'resume', videoTimeOrElapsed(), elapsedMs()).catch((error) => {
       console.warn('Failed to log resume event:', error)
     })
   }

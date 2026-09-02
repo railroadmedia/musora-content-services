@@ -74,9 +74,9 @@ export async function createWebmSeekabilityFixer(ebml) {
 export async function createAudioChunkUploader(folder, extension) {
   const fixer = extension === 'webm' ? await createWebmSeekabilityFixer() : null
 
-  function upload(index, chunk, videoTimeMs, peaks) {
+  function upload(index, chunk, videoTimeMs, peaks, timing = null) {
     fixer?.feedChunk(index, chunk)
-    return uploadChunk(folder, index, extension, chunk, videoTimeMs, peaks)
+    return uploadChunk(folder, index, extension, chunk, videoTimeMs, peaks, timing)
   }
 
   function finish() {
