@@ -7,6 +7,7 @@
       "src/services/gamification",
       "src/services/multi-user-accounts",
       "src/services/awards",
+      "src/services/feature-flags",
       "src/services/api",
       "src/services/progress-row",
       "src/services/config.js",

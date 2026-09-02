@@ -163,6 +163,10 @@ import {
 } from './services/endScreen/endScreen.ts';
 
 import {
+	featureFlags
+} from './services/feature-flags/index.ts';
+
+import {
 	createForumCategory,
 	deleteForumCategory,
 	fetchForumCategories,
@@ -606,6 +610,7 @@ declare module 'musora-content-services' {
 		enrollUserInGuidedCourse,
 		extractFromRecordId,
 		extractSanityUrl,
+		featureFlags,
 		fetchAll,
 		fetchAllFilterOptions,
 		fetchAllPublicAnnouncements,

@@ -167,6 +167,10 @@ import {
 } from './services/endScreen/endScreen.ts';
 
 import {
+	featureFlags
+} from './services/feature-flags/index.ts';
+
+import {
 	createForumCategory,
 	deleteForumCategory,
 	fetchForumCategories,
@@ -605,6 +609,7 @@ export {
 	enrollUserInGuidedCourse,
 	extractFromRecordId,
 	extractSanityUrl,
+	featureFlags,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPublicAnnouncements,
