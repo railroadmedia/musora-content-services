@@ -160,14 +160,24 @@ export async function stopSession(
  * recording (wall clock since start) it happened. They are different numbers and the ML
  * side needs both to map recording time onto the lesson timeline.
  */
-export async function logEvent(folder, type, videoTimeMs, elapsedMs = null) {
+export async function logEvent(folder, type, videoTimeMs, elapsedMs = null, extra = {}) {
   return POST(`${BASE_PATH}/event`, {
     folder,
     type,
     video_time_ms: videoTimeMs,
     elapsed_ms: elapsedMs,
     at: Date.now(),
+    ...extra,
   })
+}
+
+/**
+ * Log a seek made while recording. `fromVideoTimeMs` is where the video was, `toVideoTimeMs`
+ * where it landed, `elapsedMs` how far into the recording it happened. The recorder also
+ * closes the current chunk at this moment so the chunk anchors stay exact across the jump.
+ */
+export async function logSeekEvent(folder, fromVideoTimeMs, toVideoTimeMs, elapsedMs = null) {
+  return logEvent(folder, 'seek', toVideoTimeMs, elapsedMs, { from_video_time_ms: fromVideoTimeMs })
 }
 
 /**
@@ -306,6 +316,7 @@ export default {
   uploadChunk,
   stopSession,
   logEvent,
+  logSeekEvent,
   trackAudioRecordingSession,
   listRecordings,
   getCombinedAudioUrl,

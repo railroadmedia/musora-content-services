@@ -8,6 +8,7 @@ import {
 	getSupportedFormats,
 	isFormatSupported,
 	listRecordings,
+	logSeekEvent,
 	startSession,
 	stopSession,
 	trackAudioRecordingSession
@@ -841,6 +842,7 @@ declare module 'musora-content-services' {
 		listOAuthProviders,
 		listRecordings,
 		lockThread,
+		logSeekEvent,
 		login,
 		loginAsUser,
 		logout,

@@ -12,6 +12,7 @@ import {
 	getSupportedFormats,
 	isFormatSupported,
 	listRecordings,
+	logSeekEvent,
 	startSession,
 	stopSession,
 	trackAudioRecordingSession
@@ -840,6 +841,7 @@ export {
 	listOAuthProviders,
 	listRecordings,
 	lockThread,
+	logSeekEvent,
 	login,
 	loginAsUser,
 	logout,
