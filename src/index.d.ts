@@ -14,12 +14,7 @@ import {
 } from './services/audioRecording/audioRecording.js';
 
 import {
-	createLiveWaveform,
-	createPeakCapture,
 	downsamplePeaks,
-	drawStaticWaveform,
-	fetchAndDecodeAudio,
-	generateWaveformPeaks,
 	getWaveformPeaks
 } from './services/audioRecording/waveformPeaks.js';
 
@@ -598,8 +593,6 @@ declare module 'musora-content-services' {
 		createComment,
 		createForumCategory,
 		createInvites,
-		createLiveWaveform,
-		createPeakCapture,
 		createPlaylist,
 		createPost,
 		createPracticeNotes,
@@ -620,7 +613,6 @@ declare module 'musora-content-services' {
 		deleteUserActivity,
 		doesUserHaveMembership,
 		downsamplePeaks,
-		drawStaticWaveform,
 		duplicatePlaylist,
 		editComment,
 		emitProgressSaved,
@@ -630,7 +622,6 @@ declare module 'musora-content-services' {
 		fetchAll,
 		fetchAllFilterOptions,
 		fetchAllPublicAnnouncements,
-		fetchAndDecodeAudio,
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
@@ -739,7 +730,6 @@ declare module 'musora-content-services' {
 		generateForumPostUrl,
 		generatePlaylistUrl,
 		generateRecordId,
-		generateWaveformPeaks,
 		getActiveDiscussions,
 		getActivePath,
 		getAllCompleted,

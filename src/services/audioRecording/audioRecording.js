@@ -218,10 +218,11 @@ export async function listRecordings(userId = null, contentId = null, date = nul
 
 /**
  * Get combined audio URL for a recording. This is consumed directly by an <audio src>
- * or a manual fetch (see waveformPeaks.js's fetchAndDecodeAudio) rather than through
- * HttpClient — a native media element can't attach an Authorization header, so the
- * /combined route can only be reached this way if it accepts session cookies
- * (HttpClient's credentials: 'include') or the caller re-attaches a token itself.
+ * or a manual fetch (see fetchAndDecodeAudio in musora-platform-frontend's
+ * waveform.utils.ts) rather than through HttpClient — a native media element can't
+ * attach an Authorization header, so the /combined route can only be reached this way
+ * if it accepts session cookies (HttpClient's credentials: 'include') or the caller
+ * re-attaches a token itself.
  */
 export function getCombinedAudioUrl(folder) {
   return `${globalConfig.baseUrl ?? ''}${BASE_PATH}/combined?folder=${encodeURIComponent(folder)}`

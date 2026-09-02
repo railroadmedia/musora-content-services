@@ -18,12 +18,7 @@ import {
 } from './services/audioRecording/audioRecording.js';
 
 import {
-	createLiveWaveform,
-	createPeakCapture,
 	downsamplePeaks,
-	drawStaticWaveform,
-	fetchAndDecodeAudio,
-	generateWaveformPeaks,
 	getWaveformPeaks
 } from './services/audioRecording/waveformPeaks.js';
 
@@ -597,8 +592,6 @@ export {
 	createComment,
 	createForumCategory,
 	createInvites,
-	createLiveWaveform,
-	createPeakCapture,
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
@@ -619,7 +612,6 @@ export {
 	deleteUserActivity,
 	doesUserHaveMembership,
 	downsamplePeaks,
-	drawStaticWaveform,
 	duplicatePlaylist,
 	editComment,
 	emitProgressSaved,
@@ -629,7 +621,6 @@ export {
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPublicAnnouncements,
-	fetchAndDecodeAudio,
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
@@ -738,7 +729,6 @@ export {
 	generateForumPostUrl,
 	generatePlaylistUrl,
 	generateRecordId,
-	generateWaveformPeaks,
 	getActiveDiscussions,
 	getActivePath,
 	getAllCompleted,
