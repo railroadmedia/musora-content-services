@@ -44,6 +44,24 @@ const requestPush = (skipPush: boolean, reason: string): void => {
   if (!skipPush) db.contentProgress.requestPushUnsynced(reason)
 }
 
+export const markCompleted = (contentId: number, collection?: CollectionParameter) =>
+  setStatus(contentId, true, withDefaultCollection(collection))
+
+export const markCompletedMany = (contentIds: number[], collection?: CollectionParameter) =>
+  setStatusMany(contentIds, true, withDefaultCollection(collection))
+
+export const markStarted = (
+  contentId: number,
+  collection?: CollectionParameter,
+  { skipPush = false, skipBubbleTrickle = false }: SetStatusOptions = {}
+) => setStatus(contentId, false, withDefaultCollection(collection), { skipPush, skipBubbleTrickle })
+
+export const reset = (
+  contentId: number,
+  collection?: CollectionParameter,
+  { skipPush = false }: ResetOptions = {}
+) => resetStatus(contentId, withDefaultCollection(collection), { skipPush })
+
 export const save = async (
   contentId: number,
   progress: number,
@@ -231,24 +249,6 @@ export const setStatusMany = async (
 
   return response
 }
-
-export const markCompleted = (contentId: number, collection?: CollectionParameter) =>
-  setStatus(contentId, true, withDefaultCollection(collection))
-
-export const markCompletedMany = (contentIds: number[], collection?: CollectionParameter) =>
-  setStatusMany(contentIds, true, withDefaultCollection(collection))
-
-export const markStarted = (
-  contentId: number,
-  collection?: CollectionParameter,
-  { skipPush = false, skipBubbleTrickle = false }: SetStatusOptions = {}
-) => setStatus(contentId, false, withDefaultCollection(collection), { skipPush, skipBubbleTrickle })
-
-export const reset = (
-  contentId: number,
-  collection?: CollectionParameter,
-  { skipPush = false }: ResetOptions = {}
-) => resetStatus(contentId, withDefaultCollection(collection), { skipPush })
 
 const resetStatus = async (
   contentId: number,
