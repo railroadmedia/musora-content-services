@@ -5,6 +5,8 @@
 
 import { GET, POST } from '../../infrastructure/http/HttpClient.ts'
 import { globalConfig } from '../config.js'
+import { fetchByRailContentIds } from '../sanity.js'
+import { decorateAsync } from '../../lib/sanity/decorators/base.ts'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -193,7 +195,8 @@ export async function logSeekEvent(folder, fromVideoTimeMs, toVideoTimeMs, elaps
 export function trackAudioRecordingSession(folder, options = {}) {
   const graceMs = options.graceMs ?? 180000
   const onTimeout = options.onTimeout ?? (() => {})
-  const getVideoTimeMs = typeof options.getVideoTimeMs === 'function' ? options.getVideoTimeMs : null
+  const getVideoTimeMs =
+    typeof options.getVideoTimeMs === 'function' ? options.getVideoTimeMs : null
   const startedAt = Date.now()
 
   let paused = false
@@ -292,6 +295,43 @@ export async function listRecordings(userId = null, contentId = null, date = nul
 }
 
 /**
+ * Recordings grouped by lesson, for the "My Recordings" library — one row per lesson the
+ * user has recorded on, newest first. The backend only returns raw session aggregates
+ * (content_id, recording_count, latest folder/date/duration); the lesson's title/thumbnail
+ * are fetched here (batched into one Sanity query) and attached under `content`, so this is
+ * shared between FE and MA instead of each re-implementing the Sanity lookup.
+ */
+export async function getMyRecordings(limit = 20) {
+  const { recordings } = await GET(`${BASE_PATH}/my-recordings?limit=${limit}`)
+
+  if (!recordings.length) {
+    return []
+  }
+
+  const contentIds = recordings.map((recording) => recording.content_id)
+  const contentById = new Map(
+    (await fetchByRailContentIds(contentIds)).map((content) => [content.id, content])
+  )
+
+  return decorateAsync(
+    recordings,
+    'content',
+    async (recording) => contentById.get(recording.content_id) ?? null
+  )
+}
+
+/**
+ * Lesson ids the user has at least one recording for — a lightweight "has recording" check
+ * (e.g. for a practice tracker indicator), not the full getMyRecordings() summary.
+ *
+ * @returns {Promise<Array<number>>}
+ */
+export async function getRecordedContentIds() {
+  const { content_ids } = await GET(`${BASE_PATH}/recorded-content-ids`)
+  return content_ids
+}
+
+/**
  * Get combined audio URL for a recording. This is consumed directly by an <audio src>
  * or a manual fetch (see fetchAndDecodeAudio in musora-platform-frontend's
  * waveform.utils.ts) rather than through HttpClient — a native media element can't
@@ -319,5 +359,7 @@ export default {
   logSeekEvent,
   trackAudioRecordingSession,
   listRecordings,
+  getMyRecordings,
+  getRecordedContentIds,
   getCombinedAudioUrl,
 }
