@@ -139,7 +139,7 @@ describe('updateOneId', () => {
     store.destroy()
 
     expect(handler).toHaveBeenCalledTimes(1)
-    expect(handler.mock.calls[0][0][0].value).toBe('updated')
+    expect(handler.mock.calls[0][0][0][0].value).toBe('updated')
   })
 })
 
@@ -241,7 +241,7 @@ describe('events', () => {
     store.destroy()
 
     expect(handler).toHaveBeenCalledTimes(1)
-    expect(handler.mock.calls[0][0][0].value).toBe('event-test')
+    expect(handler.mock.calls[0][0][0][0].value).toBe('event-test')
   })
 
   test('upserted fires on upsertOne', async () => {
@@ -263,7 +263,7 @@ describe('events', () => {
     store.destroy()
 
     expect(handler).toHaveBeenCalledTimes(1)
-    expect(handler.mock.calls[0][0]).toContain('del-evt')
+    expect(handler.mock.calls[0][0][0][0]).toBe('del-evt')
   })
 
   test('off unsubscribes handler', async () => {

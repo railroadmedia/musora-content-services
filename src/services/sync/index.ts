@@ -76,3 +76,5 @@ export type ModelClass<T extends BaseModel = BaseModel> = {
   new (...args: any[]): T
   table: string
 }
+
+export type { CompressionWorkerConstructor } from './introspection/compression'
