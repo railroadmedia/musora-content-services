@@ -13,6 +13,7 @@ import {
 	logSeekEvent,
 	startSession,
 	stopSession,
+	stopSessionOnPageExit,
 	trackAudioRecordingSession
 } from './services/audioRecording/audioRecording.js';
 
@@ -912,6 +913,7 @@ declare module 'musora-content-services' {
 		startSession,
 		status,
 		stopSession,
+		stopSessionOnPageExit,
 		toDayjs,
 		toLocalDay,
 		togglePlaylistPrivate,

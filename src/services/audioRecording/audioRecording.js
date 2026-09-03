@@ -157,6 +157,39 @@ export async function stopSession(
 }
 
 /**
+ * Stop a session from a `pagehide` handler (tab closed, reload, navigation out of the SPA).
+ * Ordinary fetches started during unload are cancelled, so this bypasses HttpClient and
+ * uses fetch with `keepalive`, which the browser finishes after the page is gone. Same
+ * payload as stopSession(); the last partial chunk may not make it, which the backend
+ * records under missing_chunks.
+ */
+export function stopSessionOnPageExit(folder, durationMs, chunkCount, format, videoTimeMs = null) {
+  const headers = { 'Content-Type': 'application/json', Accept: 'application/json' }
+  const token = globalConfig.sessionConfig?.token
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
+  try {
+    return fetch(`${globalConfig.baseUrl ?? ''}${BASE_PATH}/stop`, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      keepalive: true,
+      body: JSON.stringify({
+        folder,
+        duration_ms: durationMs,
+        chunk_count: chunkCount,
+        format,
+        reason: 'page_exit',
+        stopped_at: Date.now(),
+        video_time_ms: videoTimeMs,
+      }),
+    })
+  } catch (error) {
+    return Promise.reject(error)
+  }
+}
+
+/**
  * Log a pause/resume event against a session, for session-boundary reconstitution.
  * `videoTimeMs` is the VIDEO position at the event; `elapsedMs` is how far into the
  * recording (wall clock since start) it happened. They are different numbers and the ML
@@ -355,6 +388,7 @@ export default {
   startSession,
   uploadChunk,
   stopSession,
+  stopSessionOnPageExit,
   logEvent,
   logSeekEvent,
   trackAudioRecordingSession,
