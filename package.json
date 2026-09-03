@@ -7,6 +7,7 @@
   "scripts": {
     "prepare": "node scripts/gen-version.cjs",
     "build-index": "node tools/generate-index.cjs",
+    "gen-sanity-types": "node tools/generate-sanity-types.cjs",
     "release": "standard-version",
     "doc": "jsdoc -c jsdoc.json --verbose",
     "test": "jest",

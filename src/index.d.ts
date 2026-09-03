@@ -225,6 +225,14 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	fetchMarketingAll,
+	fetchMarketingFaqs,
+	fetchMarketingPracticeGoals,
+	fetchMarketingStats,
+	fetchMarketingTestimonials
+} from './services/marketing/marketing.ts';
+
+import {
 	acceptInvite,
 	createAccount,
 	createInvites,
@@ -654,6 +662,11 @@ declare module 'musora-content-services' {
 		fetchLiveEvent,
 		fetchLiveEventPollingState,
 		fetchLiveStreamData,
+		fetchMarketingAll,
+		fetchMarketingFaqs,
+		fetchMarketingPracticeGoals,
+		fetchMarketingStats,
+		fetchMarketingTestimonials,
 		fetchMemberships,
 		fetchMetadata,
 		fetchMethodV2IntroVideo,
