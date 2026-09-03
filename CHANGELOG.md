@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.179.0](https://github.com/railroadmedia/musora-content-services/compare/v2.178.1...v2.179.0) (2026-09-03)
+
+
+### Features
+
+* **MU2-1877:** Add Sanity type generation and marketing query functions ([#1040](https://github.com/railroadmedia/musora-content-services/issues/1040)) ([a232299](https://github.com/railroadmedia/musora-content-services/commit/a232299286ce22fa04591a812c65039544682e37))
+
+
+### Bug Fixes
+
+* **BR-725:** fetch tab data with progress applied ([#1044](https://github.com/railroadmedia/musora-content-services/issues/1044)) ([d19baf1](https://github.com/railroadmedia/musora-content-services/commit/d19baf1565d54a5e6179b6ae21b184ceb64c8aee))
+
 ### [2.178.1](https://github.com/railroadmedia/musora-content-services/compare/v2.178.0...v2.178.1) (2026-08-31)
 
 ## [2.178.0](https://github.com/railroadmedia/musora-content-services/compare/v2.177.1...v2.178.0) (2026-08-28)
