@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.180.0](https://github.com/railroadmedia/musora-content-services/compare/v2.179.0...v2.180.0) (2026-09-04)
+
+
+### Features
+
+* **TP-1335:** consolidate duplicated user data fetches ([#1039](https://github.com/railroadmedia/musora-content-services/issues/1039)) ([bb2af2c](https://github.com/railroadmedia/musora-content-services/commit/bb2af2cddce8da519a414b24d7b86cc96639faaf))
+* **TP-1354:** daily session / active path get optimisations ([#1041](https://github.com/railroadmedia/musora-content-services/issues/1041)) ([bca652c](https://github.com/railroadmedia/musora-content-services/commit/bca652ccf181b1ba943fe6e9b14b375bf4bebfc9))
+
 ## [2.179.0](https://github.com/railroadmedia/musora-content-services/compare/v2.178.1...v2.179.0) (2026-09-03)
 
 
