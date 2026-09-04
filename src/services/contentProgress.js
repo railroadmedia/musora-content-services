@@ -18,6 +18,7 @@ const excludeFromGeneratedIndex = [
   'bubbleAndTrickleProgressesSafely',
   'bubbleProgress',
   'buildNavigateTo',
+  'clampProgressToExisting',
   'computeBubbleTrickleProgresses',
   'duplicateProgressForIds',
   'duplicateProgressToALaCarte',
@@ -629,7 +630,7 @@ export async function saveContentProgress(
     if (isOffline) {
       await duplicateProgressToALaCarteOffline(allProgresses, metadata, collection)
     } else {
-      await duplicateProgressToALaCarte(allProgresses, collection)
+      await duplicateProgressToALaCarte(allProgresses, collection, currentSeconds)
     }
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return
@@ -790,6 +791,14 @@ export function filterOutNegativeProgress(progresses, existingProgresses) {
   )
 }
 
+export function clampProgressToExisting(progresses, existingProgresses) {
+  return Object.fromEntries(
+    Object.entries(progresses).map(
+      ([id, progress]) => [id, Math.max(progress, existingProgresses[id]?.progress ?? 0)],
+    ),
+  )
+}
+
 export async function computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy, {
   bubble = true,
   trickle = true,
@@ -814,16 +823,16 @@ export async function handleLearningPathProgressActions(progresses, collection) 
   }
 }
 
-export async function duplicateProgressToALaCarte(progresses, collection) {
+export async function duplicateProgressToALaCarte(progresses, collection, currentSeconds = undefined) {
 
   // a-la-cart LPs not set up.
-  let filteredProgresses = filterOutLearningPathsForDuplication(progresses, collection)
+  const filteredProgresses = filterOutLearningPathsForDuplication(progresses, collection)
 
   const externalProgresses = await getProgressDataByIds(Object.keys(filteredProgresses), null)
 
-  filteredProgresses = filterOutNegativeProgress(filteredProgresses, externalProgresses)
+  const clampedProgresses = clampProgressToExisting(filteredProgresses, externalProgresses)
 
-  await duplicateProgressForIds(filteredProgresses)
+  await duplicateProgressForIds(clampedProgresses, currentSeconds)
 }
 
 export function filterOutLearningPathsForDuplication(progresses, collection) {
@@ -839,9 +848,9 @@ export function filterOutLearningPathsForDuplication(progresses, collection) {
   )
 }
 
-export async function duplicateProgressForIds(entries) {
+export async function duplicateProgressForIds(entries, currentSeconds = undefined) {
   return Promise.all(Object.entries(entries).map(([id, pct]) => {
-    return saveContentProgress(parseInt(id), null, pct, undefined, { skipPush: true, accessedDirectly: false })
+    return saveContentProgress(parseInt(id), null, pct, currentSeconds, { skipPush: true, accessedDirectly: false })
   }))
 }
 
