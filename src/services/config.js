@@ -9,6 +9,7 @@ export let globalConfig = {
   sanityConfig: {},
   railcontentConfig: {},
   sessionConfig: {},
+  sessionUser: null,
   localStorage: null,
   isMA: false,
   localTimezoneString: null, // In format: America/Vancouver
@@ -108,4 +109,8 @@ export function initializeService(config) {
 
 export function initializeEnvVar(config) {
   globalConfig.appEnv = config.appEnv
+}
+
+export function setSessionUserData(userData) {
+  globalConfig.sessionUser = userData || null
 }
