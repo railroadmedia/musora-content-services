@@ -376,6 +376,30 @@ export function getCombinedAudioUrl(folder) {
   return `${globalConfig.baseUrl ?? ''}${BASE_PATH}/combined?folder=${encodeURIComponent(folder)}`
 }
 
+/**
+ * Create (or return the existing) share link for a recording. Owner only; idempotent —
+ * re-sharing an already-shared recording returns the same token, not a new one. The link
+ * never expires on its own, only via unshareRecording().
+ */
+export async function shareRecording(folder) {
+  return POST(`${BASE_PATH}/share`, { folder })
+}
+
+/**
+ * Revoke a recording's share link, if one exists. Owner only.
+ */
+export async function unshareRecording(folder) {
+  return POST(`${BASE_PATH}/unshare`, { folder })
+}
+
+/**
+ * Playback URL for a shared recording — any signed-in user holding the token can reach it,
+ * not just the owner. Same <audio src> vs. manual-fetch caveat as getCombinedAudioUrl.
+ */
+export function getSharedCombinedAudioUrl(token) {
+  return `${globalConfig.baseUrl ?? ''}${BASE_PATH}/shared/${encodeURIComponent(token)}/combined`
+}
+
 export default {
   MIME_TYPES,
   EXTENSIONS,
@@ -396,4 +420,7 @@ export default {
   getMyRecordings,
   getRecordedContentIds,
   getCombinedAudioUrl,
+  shareRecording,
+  unshareRecording,
+  getSharedCombinedAudioUrl,
 }

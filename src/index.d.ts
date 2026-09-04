@@ -7,14 +7,17 @@ import {
 	getMimeTypeForExtension,
 	getMyRecordings,
 	getRecordedContentIds,
+	getSharedCombinedAudioUrl,
 	getSupportedFormats,
 	isFormatSupported,
 	listRecordings,
 	logSeekEvent,
+	shareRecording,
 	startSession,
 	stopSession,
 	stopSessionOnPageExit,
-	trackAudioRecordingSession
+	trackAudioRecordingSession,
+	unshareRecording
 } from './services/audioRecording/audioRecording.js';
 
 import {
@@ -804,6 +807,7 @@ declare module 'musora-content-services' {
 		getResumeTimeSecondsByRecordIds,
 		getSanityDate,
 		getScheduleContentRows,
+		getSharedCombinedAudioUrl,
 		getSongTypesFor,
 		getSortOrder,
 		getStartedOrCompletedProgressOnly,
@@ -907,6 +911,7 @@ declare module 'musora-content-services' {
 		setUserPinnedProgressRow,
 		setUserSignature,
 		setupAccount,
+		shareRecording,
 		startLearningPath,
 		startLiveEventPolling,
 		startOnboarding,
@@ -934,6 +939,7 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
+		unshareRecording,
 		updateBrand,
 		updateDailySession,
 		updateDisplayName,

@@ -11,14 +11,17 @@ import {
 	getMimeTypeForExtension,
 	getMyRecordings,
 	getRecordedContentIds,
+	getSharedCombinedAudioUrl,
 	getSupportedFormats,
 	isFormatSupported,
 	listRecordings,
 	logSeekEvent,
+	shareRecording,
 	startSession,
 	stopSession,
 	stopSessionOnPageExit,
-	trackAudioRecordingSession
+	trackAudioRecordingSession,
+	unshareRecording
 } from './services/audioRecording/audioRecording.js';
 
 import {
@@ -803,6 +806,7 @@ export {
 	getResumeTimeSecondsByRecordIds,
 	getSanityDate,
 	getScheduleContentRows,
+	getSharedCombinedAudioUrl,
 	getSongTypesFor,
 	getSortOrder,
 	getStartedOrCompletedProgressOnly,
@@ -906,6 +910,7 @@ export {
 	setUserPinnedProgressRow,
 	setUserSignature,
 	setupAccount,
+	shareRecording,
 	startLearningPath,
 	startLiveEventPolling,
 	startOnboarding,
@@ -933,6 +938,7 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
+	unshareRecording,
 	updateBrand,
 	updateDailySession,
 	updateDisplayName,
