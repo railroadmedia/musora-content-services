@@ -46,7 +46,7 @@ export class FetchQueryExecutor implements QueryExecutor {
   private buildUrl(config: SanityConfig): string {
     const perspective = config.perspective ?? 'published'
     const api = config.useCachedAPI ? 'apicdn' : 'api'
-    return `https://${config.projectId}.${api}.sanity.io/v${config.version}/data/query/${config.dataset}?perspective=${perspective}`
+    return `https://sanity.musora.com/${config.projectId}/${api}/v${config.version}/${config.dataset}?perspective=${perspective}`
   }
 
   private buildRequest(

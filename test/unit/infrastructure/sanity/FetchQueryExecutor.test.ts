@@ -38,7 +38,7 @@ describe('FetchQueryExecutor', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [url, options] = fetchMock.mock.calls[0]
     expect(url).toBe(
-      'https://proj.api.sanity.io/v2021-06-07/data/query/prod?perspective=published'
+      'https://sanity.musora.com/proj/api/v2021-06-07/prod?perspective=published'
     )
     expect(options.method).toBe('POST')
     expect(options.headers['Authorization']).toBe('Bearer tok')
@@ -52,7 +52,7 @@ describe('FetchQueryExecutor', () => {
     await executor.execute({ query: 'q' }, { ...baseConfig, useCachedAPI: true })
 
     expect(fetchMock.mock.calls[0][0]).toBe(
-      'https://proj.apicdn.sanity.io/v2021-06-07/data/query/prod?perspective=published&query=q'
+      'https://sanity.musora.com/proj/apicdn/v2021-06-07/prod?perspective=published&query=q'
     )
   })
 
@@ -63,7 +63,7 @@ describe('FetchQueryExecutor', () => {
 
     const [url, options] = fetchMock.mock.calls[0]
     expect(url).toBe(
-      'https://proj.api.sanity.io/v2021-06-07/data/query/prod?perspective=published&query=' +
+      'https://sanity.musora.com/proj/api/v2021-06-07/prod?perspective=published&query=' +
         encodeURIComponent('*[_type == "foo"]')
     )
     expect(options.method).toBe('GET')
@@ -78,7 +78,7 @@ describe('FetchQueryExecutor', () => {
 
     const [url, options] = fetchMock.mock.calls[0]
     expect(url).toBe(
-      'https://proj.api.sanity.io/v2021-06-07/data/query/prod?perspective=published'
+      'https://sanity.musora.com/proj/api/v2021-06-07/prod?perspective=published'
     )
     expect(options.method).toBe('POST')
     expect(options.body).toBe(JSON.stringify({ query: 'q', params: { id: 1 } }))
@@ -92,7 +92,7 @@ describe('FetchQueryExecutor', () => {
 
     const [url, options] = fetchMock.mock.calls[0]
     expect(url).toBe(
-      'https://proj.api.sanity.io/v2021-06-07/data/query/prod?perspective=published'
+      'https://sanity.musora.com/proj/api/v2021-06-07/prod?perspective=published'
     )
     expect(options.method).toBe('POST')
     expect(options.body).toBe(JSON.stringify({ query: longQuery }))
