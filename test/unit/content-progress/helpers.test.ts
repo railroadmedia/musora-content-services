@@ -1,5 +1,6 @@
 import { initializeTestService } from '../../initializeTests.js'
 import {
+  clampProgressToExisting,
   duplicateProgressForIds,
   extractFromRecordId,
   filterOutLearningPathsForDuplication,
@@ -92,6 +93,51 @@ describe('filterOutNegativeProgress', () => {
     expect(result).not.toBe(progresses)
     expect(progresses).toHaveProperty('101', 10)
     expect(result).not.toHaveProperty('101')
+  })
+})
+
+describe('clampProgressToExisting', () => {
+  beforeEach(() => {
+    initializeTestService()
+    mockProgressRecords = []
+  })
+
+  test('clamps entry up to existing when new progress is less than existing', () => {
+    const result = clampProgressToExisting({ 101: 30 }, { 101: { progress: 70 } })
+    expect(result).toHaveProperty('101', 70)
+  })
+
+  test('keeps entry when new progress equals existing', () => {
+    const result = clampProgressToExisting({ 101: 50 }, { 101: { progress: 50 } })
+    expect(result).toHaveProperty('101', 50)
+  })
+
+  test('keeps entry when new progress is greater than existing', () => {
+    const result = clampProgressToExisting({ 101: 80 }, { 101: { progress: 50 } })
+    expect(result).toHaveProperty('101', 80)
+  })
+
+  test('keeps entry when there is no existing record', () => {
+    const result = clampProgressToExisting({ 101: 30 }, {})
+    expect(result).toHaveProperty('101', 30)
+  })
+
+  test('never drops an id, even when regressed, in a mixed set', () => {
+    const result = clampProgressToExisting(
+      { 101: 20, 102: 80, 103: 40 },
+      { 101: { progress: 70 }, 102: { progress: 20 }, 103: { progress: 0 } },
+    )
+    expect(result).toHaveProperty('101', 70)
+    expect(result).toHaveProperty('102', 80)
+    expect(result).toHaveProperty('103', 40)
+  })
+
+  test('returns a new object and does not mutate input', () => {
+    const progresses: Record<string, number> = { 101: 10 }
+    const result = clampProgressToExisting(progresses, { 101: { progress: 50 } })
+    expect(result).not.toBe(progresses)
+    expect(progresses).toHaveProperty('101', 10)
+    expect(result).toHaveProperty('101', 50)
   })
 })
 
