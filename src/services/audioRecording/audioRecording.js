@@ -76,13 +76,16 @@ export function formatDurationMs(ms) {
  *                noise_suppression, auto_gain_control } — the settings the browser
  *                actually applied to the mic track (MediaStreamTrack.getSettings())
  * `started_at` is the device wall clock in ms so the recording's t=0 can be placed on the
- * same timeline as each chunk's recorded_at.
+ * same timeline as each chunk's recorded_at. `date` defaults to the device's own local
+ * calendar day (not UTC) — pass `extras.date` to override, otherwise a recording made
+ * right around midnight always lands on the day the user actually experienced.
  */
 export async function startSession(userId, contentId = null, videoTimeMs = null, extras = {}) {
   return POST(`${BASE_PATH}/start`, {
     user_id: userId,
     content_id: contentId,
     video_time_ms: videoTimeMs,
+    date: extras.date ?? new Date().toLocaleDateString('sv-SE'), // YYYY-MM-DD wall clock date in user's timezone
     started_at: extras.startedAt ?? Date.now(),
     timing: extras.timing ?? null,
     capture: extras.capture ?? null,
@@ -355,12 +358,20 @@ export async function getMyRecordings(limit = 20) {
 
 /**
  * Lesson ids the user has at least one recording for — a lightweight "has recording" check
- * (e.g. for a practice tracker indicator), not the full getMyRecordings() summary.
+ * (e.g. for a daily or weekly practice tracker indicator), not the full getMyRecordings()
+ * summary. Pass only `startDate` (YYYY-MM-DD) to scope it to that single calendar day
+ * (daily tracker), or both `startDate` and `endDate` for an inclusive range (weekly
+ * tracker); omit both for all-time.
  *
  * @returns {Promise<Array<number>>}
  */
-export async function getRecordedContentIds() {
-  const { content_ids } = await GET(`${BASE_PATH}/recorded-content-ids`)
+export async function getRecordedContentIds(startDate = null, endDate = null) {
+  const params = new URLSearchParams()
+  if (startDate) params.set('start_date', startDate)
+  if (endDate) params.set('end_date', endDate)
+
+  const query = params.toString()
+  const { content_ids } = await GET(`${BASE_PATH}/recorded-content-ids${query ? `?${query}` : ''}`)
   return content_ids
 }
 
