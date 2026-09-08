@@ -41,9 +41,9 @@ function deepMerge(target, source) {
 /**
  * Initializes the service with the given configuration.
  * This function must be called before using any other functions in this library.
- * Can be called multiple times with partial config (e.g. once for env-level settings
- * before a user is known, again once the user resolves) - each call deep-merges over
- * the prior config rather than replacing it.
+ * Each call replaces the prior config wholesale - pass the full config every time.
+ * For a partial update to just the session (e.g. userId resolving after boot),
+ * use {@link updateSessionConfig} instead.
  * Automatically initializes award definitions with 24-hour cache in the background.
  *
  * @param {Config} config - Configuration object containing API settings.
@@ -107,14 +107,14 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 export function initializeService(config) {
-  globalConfig.sanityConfig = deepMerge(globalConfig.sanityConfig, config.sanityConfig)
-  globalConfig.railcontentConfig = deepMerge(globalConfig.railcontentConfig, config.railcontentConfig)
-  globalConfig.sessionConfig = deepMerge(globalConfig.sessionConfig, config.sessionConfig ?? config.railcontentConfig)
-  globalConfig.baseUrl = config.baseUrl ?? config.railcontentConfig?.baseUrl ?? globalConfig.baseUrl
-  globalConfig.localStorage = config.localStorage ?? globalConfig.localStorage
-  globalConfig.isMA = config.isMA ?? globalConfig.isMA
-  globalConfig.localTimezoneString = config.localTimezoneString ?? globalConfig.localTimezoneString
-  globalConfig.permissionsVersion = config.permissionsVersion ?? globalConfig.permissionsVersion
+  globalConfig.sanityConfig = config.sanityConfig
+  globalConfig.railcontentConfig = config.railcontentConfig
+  globalConfig.sessionConfig = config.sessionConfig || config.railcontentConfig
+  globalConfig.baseUrl = config.baseUrl || config.railcontentConfig?.baseUrl
+  globalConfig.localStorage = config.localStorage
+  globalConfig.isMA = config.isMA || false
+  globalConfig.localTimezoneString = config.localTimezoneString || null
+  globalConfig.permissionsVersion = config.permissionsVersion || 'v2'
 
   if (config.localStorage) {
     import('./awards/internal/award-definitions')
@@ -123,6 +123,18 @@ export function initializeService(config) {
         console.error('Failed to initialize award definitions:', error)
       })
   }
+}
+
+/**
+ * Deep-merges partial session data (e.g. userId) into the existing sessionConfig
+ * without touching any other part of globalConfig. Use this for reactive updates
+ * (e.g. a watcher that re-syncs userId once a user resolves) instead of calling
+ * initializeService again, since initializeService replaces sessionConfig wholesale.
+ *
+ * @param {*} sessionConfig
+ */
+export function updateSessionConfig(sessionConfig) {
+  globalConfig.sessionConfig = deepMerge(globalConfig.sessionConfig, sessionConfig)
 }
 
 export function initializeEnvVar(config) {
