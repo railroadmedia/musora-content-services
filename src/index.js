@@ -21,9 +21,11 @@ import {
 } from './services/awards/award-query.js';
 
 import {
+	getMCSVersion,
 	globalConfig,
 	initializeEnvVar,
-	initializeService
+	initializeService,
+	updateSessionConfig
 } from './services/config.js';
 
 import {
@@ -31,6 +33,10 @@ import {
 	fetchArtistLessons,
 	fetchArtists
 } from './services/content/artist.ts';
+
+import {
+	fetchSongAndLessonCounts
+} from './services/content/counts.ts';
 
 import {
 	fetchGenreBySlug,
@@ -650,6 +656,7 @@ export {
 	fetchShowsData,
 	fetchSiblingContent,
 	fetchSimilarItems,
+	fetchSongAndLessonCounts,
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchTabData,
@@ -701,6 +708,7 @@ export {
 	getLearningPathLessonsByIds,
 	getLegacyMethods,
 	getLessonContentRows,
+	getMCSVersion,
 	getMonday,
 	getNavigateTo,
 	getNavigateToForMethod,
@@ -855,6 +863,7 @@ export {
 	updatePost,
 	updatePracticeNotes,
 	updateProfileVisibility,
+	updateSessionConfig,
 	updateThread,
 	updateUserPractice,
 	upgradeSubscription,
