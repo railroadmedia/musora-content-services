@@ -109,8 +109,8 @@ if (process.env.NODE_ENV === 'development') {
 export function initializeService(config) {
   globalConfig.sanityConfig = deepMerge(globalConfig.sanityConfig, config.sanityConfig)
   globalConfig.railcontentConfig = deepMerge(globalConfig.railcontentConfig, config.railcontentConfig)
-  globalConfig.sessionConfig = deepMerge(globalConfig.sessionConfig, config.sessionConfig)
-  globalConfig.baseUrl = config.baseUrl ?? globalConfig.baseUrl
+  globalConfig.sessionConfig = deepMerge(globalConfig.sessionConfig, config.sessionConfig ?? config.railcontentConfig)
+  globalConfig.baseUrl = config.baseUrl ?? config.railcontentConfig?.baseUrl ?? globalConfig.baseUrl
   globalConfig.localStorage = config.localStorage ?? globalConfig.localStorage
   globalConfig.isMA = config.isMA ?? globalConfig.isMA
   globalConfig.localTimezoneString = config.localTimezoneString ?? globalConfig.localTimezoneString
