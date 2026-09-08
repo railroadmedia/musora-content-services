@@ -24,7 +24,8 @@ import {
 	getMCSVersion,
 	globalConfig,
 	initializeEnvVar,
-	initializeService
+	initializeService,
+	updateSessionConfig
 } from './services/config.js';
 
 import {
@@ -916,6 +917,7 @@ export {
 	updatePracticeGoals,
 	updatePracticeNotes,
 	updateProfileVisibility,
+	updateSessionConfig,
 	updateThread,
 	updateUserPractice,
 	upgradeSubscription,

@@ -20,7 +20,8 @@ import {
 	getMCSVersion,
 	globalConfig,
 	initializeEnvVar,
-	initializeService
+	initializeService,
+	updateSessionConfig
 } from './services/config.js';
 
 import {
@@ -917,6 +918,7 @@ declare module 'musora-content-services' {
 		updatePracticeGoals,
 		updatePracticeNotes,
 		updateProfileVisibility,
+		updateSessionConfig,
 		updateThread,
 		updateUserPractice,
 		upgradeSubscription,
