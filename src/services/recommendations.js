@@ -4,7 +4,6 @@
 
 import { globalConfig } from './config.js'
 import { GET, HttpClient } from '../infrastructure/http/HttpClient.ts'
-import { fetchByRailContentIds } from './sanity.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -14,7 +13,7 @@ import { fetchByRailContentIds } from './sanity.js'
 const excludeFromGeneratedIndex = []
 
 const RECOMMENDER_URL = 'https://recommender.musora.com'
-const recommenderClient = new HttpClient(RECOMMENDER_URL)
+const recommenderClient = new HttpClient(RECOMMENDER_URL, null, null, null, 'omit')
 
 /**
  * Fetches similar content to the provided content id
@@ -32,23 +31,23 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
   if (!content_id) {
     return []
   }
-    content_id = parseInt(content_id)
-    const data = {
-      brand: brand,
-      content_ids: content_id,
-      num_similar: count + 1,
-      page_size: count + 1,
-      page: 1,
-      exclude_interacted: true
-    }
-    const url = `/similar_items/`
-    try {
-      const response = await recommenderClient.post(url, data)
-      return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
-    } catch (error) {
-      console.error('Fetch error:', error)
-      return null
-    }
+  content_id = parseInt(content_id)
+  const data = {
+    brand: brand,
+    content_ids: content_id,
+    num_similar: count + 1,
+    page_size: count + 1,
+    page: 1,
+    exclude_interacted: true,
+  }
+  const url = `/similar_items/`
+  try {
+    const response = await recommenderClient.post(url, data)
+    return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
+  } catch (error) {
+    console.error('Fetch error:', error)
+    return null
+  }
 }
 
 /**
@@ -134,9 +133,10 @@ export async function rankItems(brand, content_ids) {
 export async function recommendations(brand, { section = '', contentTypes = [] } = {}) {
   section = section.toUpperCase().replace('-', '_')
   const sectionString = section ? `&section=${section}` : ''
-  const contentTypesString = contentTypes.length > 0
-    ? contentTypes.map(type => `&content_types[]=${encodeURIComponent(type)}`).join('')
-    : ''
+  const contentTypesString =
+    contentTypes.length > 0
+      ? contentTypes.map((type) => `&content_types[]=${encodeURIComponent(type)}`).join('')
+      : ''
   const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}${contentTypesString}`
   return await GET(url)
 }

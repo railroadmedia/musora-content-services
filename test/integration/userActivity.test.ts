@@ -1,5 +1,11 @@
 import { initializeTestService } from '../initializeTests.js'
-import { getUserMonthlyStats, getUserWeeklyStats, recordUserPractice } from '../../src/services/userActivity.js'
+import {
+  getUserMonthlyStats,
+  getUserWeeklyStats,
+  recordUserPractice,
+  getPracticeSessions,
+  getWeeklyPracticeSessions,
+} from '../../src/services/userActivity.js'
 
 let mockPracticesData: {
   date: string;
@@ -12,10 +18,24 @@ jest.mock('../../src/services/sync/repository-proxy.ts', () => {
       queryAll: jest.fn().mockImplementation(() => Promise.resolve({ data: mockPracticesData })),
       getAll: jest.fn().mockImplementation(() => Promise.resolve({ data: mockPracticesData })),
       recordManualPractice: jest.fn().mockResolvedValue({ success: true }),
+      pull: jest.fn().mockResolvedValue(undefined),
     }
   }
   return { default: mockFns, ...mockFns }
 })
+
+jest.mock('../../src/services/sanity.js', () => ({
+  ...jest.requireActual('../../src/services/sanity.js'),
+  fetchByRailContentIds: jest.fn(),
+}))
+
+jest.mock('../../src/services/contentAggregator.js', () => ({
+  addContextToContent: jest.fn().mockResolvedValue([]),
+}))
+
+jest.mock('../../src/services/content-org/learning-paths.ts', () => ({
+  mapContentsThatWereLastProgressedFromMethod: jest.fn((contents) => Promise.resolve(contents)),
+}))
 
 jest.mock('../../src/services/user/streakCalculator.ts', () => ({
   streakCalculator: {
@@ -98,5 +118,83 @@ describe('User Activity API Tests', function () {
       300,
       { title: null, category_id: null, thumbnail_url: null, instrument_id: null }
     )
+  })
+
+  describe('getPracticeSessions', () => {
+    test('returns all sessions unpaginated when limit is omitted', async () => {
+      const result = await getPracticeSessions({ day: '2025-03-16' })
+
+      expect(result.data.practices).toHaveLength(mockPracticesData.length)
+      expect(result.data.total).toBe(mockPracticesData.length)
+      expect(result.data.currentPage).toBe(1)
+      expect(result.data.totalPages).toBe(1)
+      expect(result.data.practiceDuration).toBe(
+        mockPracticesData.reduce((sum, p) => sum + p.duration_seconds, 0)
+      )
+    })
+
+    test('paginates when limit is provided', async () => {
+      const result = await getPracticeSessions({ day: '2025-03-16', page: 2, limit: 5 })
+
+      expect(result.data.practices).toHaveLength(5)
+      expect(result.data.total).toBe(mockPracticesData.length)
+      expect(result.data.currentPage).toBe(2)
+      expect(result.data.totalPages).toBe(Math.ceil(mockPracticesData.length / 5))
+      expect(result.data.practiceDuration).toBe(
+        mockPracticesData.reduce((sum, p) => sum + p.duration_seconds, 0)
+      )
+    })
+
+    test('returns an empty result when there are no sessions', async () => {
+      mockPracticesData = []
+      const result = await getPracticeSessions({ day: '2025-03-16' })
+
+      expect(result.data).toEqual({
+        practices: [],
+        practiceDuration: 0,
+        total: 0,
+        currentPage: 1,
+        totalPages: 1,
+      })
+    })
+  })
+
+  describe('getWeeklyPracticeSessions', () => {
+    test('returns all sessions unpaginated when limit is omitted', async () => {
+      const result = await getWeeklyPracticeSessions()
+
+      expect(result.data.practices).toHaveLength(mockPracticesData.length)
+      expect(result.data.total).toBe(mockPracticesData.length)
+      expect(result.data.currentPage).toBe(1)
+      expect(result.data.totalPages).toBe(1)
+    })
+
+    test('paginates when limit is provided', async () => {
+      const result = await getWeeklyPracticeSessions({ page: 1, limit: 4 })
+
+      expect(result.data.practices).toHaveLength(4)
+      expect(result.data.total).toBe(mockPracticesData.length)
+      expect(result.data.currentPage).toBe(1)
+      expect(result.data.totalPages).toBe(Math.ceil(mockPracticesData.length / 4))
+    })
+
+    test('awaits the sync pull when options.pull is true', async () => {
+      const result = await getWeeklyPracticeSessions({}, { pull: true })
+
+      expect(result.data.total).toBe(mockPracticesData.length)
+    })
+
+    test('returns an empty result when there are no sessions', async () => {
+      mockPracticesData = []
+      const result = await getWeeklyPracticeSessions()
+
+      expect(result.data).toEqual({
+        practices: [],
+        practiceDuration: 0,
+        total: 0,
+        currentPage: 1,
+        totalPages: 1,
+      })
+    })
   })
 })

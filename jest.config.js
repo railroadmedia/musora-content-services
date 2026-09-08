@@ -38,6 +38,8 @@ export default {
     '!src/services/user/interests.js',
     '!src/services/user/payments.ts',
     '!src/services/user/chat.js',
+    '!src/**/examples.ts',
+    '!src/**/examples/**',
   ],
 
   // The directory where Jest should output its coverage files
@@ -165,9 +167,8 @@ export default {
     'dotenv/config',
     '<rootDir>/test/setupConsole.js',
     '<rootDir>/test/setupNetworkGuard.js',
-    '<rootDir>/test/setupTimers.js'
+    '<rootDir>/test/setupTimers.js',
   ],
-
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
   // slowTestThreshold: 5,

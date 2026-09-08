@@ -101,6 +101,63 @@ describe('Filters - Pure Synchronous Functions', () => {
       })
     })
 
+    describe('escaping of interpolated values', () => {
+      test('a quote in a search term cannot close the string literal', () => {
+        const injection = 'x" || _type == "user'
+
+        expect(Filters.searchMatch('title', injection)).toBe(
+          'title match "x\\" || _type == \\"user*"'
+        )
+        expect(Filters.titleMatch(injection)).toBe('title match "x\\" || _type == \\"user*"')
+      })
+
+      test('a trailing backslash cannot escape the closing quote', () => {
+        expect(Filters.titleMatch('rock\\')).toBe('title match "rock\\\\*"')
+      })
+
+      test('escapes quotes in slug, brand and type', () => {
+        expect(Filters.slug('a" || true || "')).toBe('slug.current == "a\\" || true || \\""')
+        expect(Filters.brand('drumeo" || "')).toBe('brand == "drumeo\\" || \\""')
+        expect(Filters.type('song" || "')).toBe('_type == "song\\" || \\""')
+      })
+
+      test('escapes quotes in reference filters', () => {
+        expect(Filters.references('id" || "')).toBe('references("id\\" || \\"")')
+        expect(Filters.referencesField('slug.current', 'x" || "')).toBe(
+          'references(*[slug.current == "x\\" || \\""]._id)'
+        )
+      })
+
+      test('escapes quotes in published date filters', () => {
+        expect(Filters.publishedBefore('2024-01-01" || "')).toBe(
+          'published_on <= "2024-01-01\\" || \\""'
+        )
+        expect(Filters.publishedAfter('2024-01-01" || "')).toBe(
+          'published_on >= "2024-01-01\\" || \\""'
+        )
+      })
+
+      test('escapes single quotes inside array literals', () => {
+        expect(Filters.typeIn(["song' || true || '"])).toBe("_type in ['song\\' || true || \\'']")
+        expect(Filters.statusIn(["published' || '"])).toBe("status in ['published\\' || \\'']")
+      })
+
+      test('coerces id filters to numbers so they cannot carry an expression', () => {
+        expect(Filters.railcontentId('1 || true' as unknown as number)).toBe(
+          'railcontent_id == NaN'
+        )
+        expect(Filters.idIn([123, '1 || true'] as unknown as number[])).toBe(
+          'railcontent_id in [123,NaN]'
+        )
+      })
+
+      test('leaves ordinary values untouched', () => {
+        expect(Filters.titleMatch('Señor')).toBe('title match "Señor*"')
+        expect(Filters.slug('guitar-basics')).toBe('slug.current == "guitar-basics"')
+        expect(Filters.typeIn(['song', 'workout'])).toBe("_type in ['song','workout']")
+      })
+    })
+
     describe('publishedBefore', () => {
       test('generates published_on <= filter', () => {
         const date = '2024-01-01T00:00:00.000Z'
@@ -412,30 +469,45 @@ const mockUsers = {
     isModerator: false,
     permissions: [],
     isABasicMember: false,
+    hasAllContentAccess: true,
+    isForumModerator: false,
+    isCommentModerator: false,
   },
   free: {
     isAdmin: false,
     isModerator: false,
     permissions: [],
     isABasicMember: false,
+    hasAllContentAccess: false,
+    isForumModerator: false,
+    isCommentModerator: false,
   },
   basicMember: {
     isAdmin: false,
     isModerator: false,
     permissions: [78, 91, 92],
     isABasicMember: true,
+    hasAllContentAccess: false,
+    isForumModerator: false,
+    isCommentModerator: false,
   },
   plusMember: {
     isAdmin: false,
     isModerator: false,
     permissions: [78, 108, 91, 92],
     isABasicMember: true,
+    hasAllContentAccess: false,
+    isForumModerator: false,
+    isCommentModerator: false,
   },
   ownedOnly: {
     isAdmin: false,
     isModerator: false,
     permissions: [100000234, 100000567], // Owned content IDs: 234, 567
     isABasicMember: false,
+    hasAllContentAccess: false,
+    isForumModerator: false,
+    isCommentModerator: false,
   },
 }
 
@@ -444,9 +516,10 @@ const createMockAdapter = (userData: UserPermissions) => {
   return {
     fetchUserPermissions: jest.fn().mockResolvedValue(userData),
     isAdmin: jest.fn((data) => data?.isAdmin ?? false),
+    hasAllContentAccess: jest.fn((data) => data?.hasAllContentAccess ?? false),
     generatePermissionsFilter: jest.fn((data, options = {}) => {
       // V2 Adapter logic implementation
-      if (data.isAdmin) return null
+      if (data.hasAllContentAccess) return null
 
       const prefix = options.prefix || ''
       const userPermissionIds = data?.permissions ?? []
@@ -677,7 +750,7 @@ describe('Filters - Async Methods (Integration)', () => {
     test('adapter returns null for admin', async () => {
       const mockAdapter = setupMockAdapter(mockUsers.admin)
       const result = await Filters.permissions()
-      expect(mockAdapter.isAdmin).toHaveBeenCalledWith(mockUsers.admin)
+      expect(mockAdapter.hasAllContentAccess).toHaveBeenCalledWith(mockUsers.admin)
       expect(result).toBe('')
     })
 
@@ -699,9 +772,9 @@ describe('Filters - Async Methods (Integration)', () => {
       expect(result).toContain('unlisted')
     })
 
-    test('config.isAdmin: true overrides user data', async () => {
+    test('config.hasAllContentAccess: true overrides user data', async () => {
       setupMockAdapter(mockUsers.free)
-      const result = await Filters.status({ isAdmin: true })
+      const result = await Filters.status({ hasAllContentAccess: true })
       expect(result).toContain('draft')
       expect(result).toContain('unlisted')
     })
@@ -766,10 +839,10 @@ describe('Filters - Async Methods (Integration)', () => {
       expect(mockAdapter.fetchUserPermissions).toHaveBeenCalled()
     })
 
-    test('admin detection via adapter.isAdmin()', async () => {
+    test('admin detection via adapter.hasAllContentAccess()', async () => {
       const mockAdapter = setupMockAdapter(mockUsers.admin)
       const result = await Filters.status()
-      expect(mockAdapter.isAdmin).toHaveBeenCalled()
+      expect(mockAdapter.hasAllContentAccess).toHaveBeenCalled()
       expect(result).toContain('draft')
     })
 
@@ -1143,6 +1216,9 @@ describe('Filters - Async Methods (Integration)', () => {
         permissions: [],
         isABasicMember: false,
         isModerator: false,
+        hasAllContentAccess: false,
+        isForumModerator: false,
+        isCommentModerator: false,
       }
       setupMockAdapter(emptyUser)
 

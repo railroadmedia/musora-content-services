@@ -1,4 +1,52 @@
-import { query } from '../../../src/lib/sanity/query'
+import { composite, query } from '../../../src/lib/sanity/query'
+import Filters from '../../../src/lib/sanity/filter'
+
+describe('Composite Projections', () => {
+  test('builds single key with builder value', () => {
+    const result = composite({ data: query().and('_type == "song"') })
+    expect(result).toBe('{ "data": *[_type == "song"] }')
+  })
+
+  test('preserves key order and separates without trailing comma', () => {
+    const result = composite({
+      first: query().and('_type == "song"'),
+      second: query().and('_type == "course"'),
+    })
+    expect(result).toBe('{ "first": *[_type == "song"], "second": *[_type == "course"] }')
+    expect(result).not.toMatch(/,\s*}$/)
+  })
+
+  test('passes string values through verbatim', () => {
+    const result = composite({ total: Filters.count('_type == "song"') })
+    expect(result).toBe('{ "total": count(*[_type == "song"]) }')
+  })
+
+  test('builds mixed builder and string values', () => {
+    const result = composite({
+      data: query().and('_type == "song"').slice(0, 10),
+      total: Filters.count('_type == "song"'),
+    })
+    expect(result).toBe(
+      '{ "data": *[_type == "song"]\n        \n        \n        \n        [0...10], "total": count(*[_type == "song"]) }'
+    )
+  })
+
+  test('quotes keys that are identifier safe', () => {
+    const result = composite({ data: query() })
+    expect(result).toContain('"data":')
+  })
+
+  test('builds empty object for empty parts', () => {
+    expect(composite({})).toBe('{  }')
+  })
+
+  test('stringifies builders eagerly so later mutation is ignored', () => {
+    const builder = query().and('_type == "song"')
+    const result = composite({ data: builder })
+    builder.and('brand == "drumeo"')
+    expect(result).toBe('{ "data": *[_type == "song"] }')
+  })
+})
 
 describe('Sanity Query Builder', () => {
   describe('Basic Query Building', () => {
@@ -265,6 +313,34 @@ describe('Sanity Query Builder', () => {
       expect(result).toContain('{ _id, title, brand, difficulty, publishedOn }')
       expect(result).toContain('| order(publishedOn desc)')
       expect(result).toContain('[0...20]')
+    })
+  })
+
+  describe('Stringable (toString)', () => {
+    test('toString returns the same value as build()', () => {
+      const builder = query().and('_type == "course"').select('_id')
+      expect(builder.toString()).toBe(builder.build())
+    })
+
+    test('coerces to its built query in a template literal', () => {
+      const builder = query().and('_type == "song"')
+      const interpolated = `count(${builder})`
+      expect(interpolated).toBe(`count(${builder.build()})`)
+    })
+
+    test('coerces via String() and string concatenation', () => {
+      const builder = query().and('brand == "drumeo"')
+      expect(String(builder)).toBe(builder.build())
+      expect('' + builder).toBe(builder.build())
+    })
+
+    test('reflects state at the time of coercion, not at creation', () => {
+      const builder = query()
+      const before = `${builder}`
+      builder.and('_type == "course"')
+      const after = `${builder}`
+      expect(before).toBe('*[]')
+      expect(after).toBe('*[_type == "course"]')
     })
   })
 

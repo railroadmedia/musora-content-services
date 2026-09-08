@@ -30,12 +30,38 @@ const excludeFromGeneratedIndex = [
   'onLearningPathCompletedActions',
   'mapContentsThatWereLastProgressedFromMethod',
   'mapLearningPathParentsTo',
+  'resetLearningPathCachesForTests',
 ]
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
-let dailySessionPromise: Promise<DailySessionResponse | ''> | null = null
-let activePathPromise: Promise<ActiveLearningPathResponse | ''> | null = null
+const dailySessionPromises = new Map<string, Promise<DailySessionResponse | ''>>()
+const activePathPromises = new Map<string, Promise<ActiveLearningPathResponse | ''>>()
+
+function clearLearningPathCaches(): void {
+  dailySessionPromises.clear()
+  activePathPromises.clear()
+}
+
+export function resetLearningPathCachesForTests(): void {
+  clearLearningPathCaches()
+}
+
+function rememberValue<T>(cache: Map<string, Promise<T>>, key: string, value: T | null): void {
+  if (value === null) {
+    cache.delete(key)
+  } else {
+    cache.set(key, Promise.resolve(value))
+  }
+}
+
+function activePathKey(brand: string): string {
+  return `active-path:${brand}`
+}
+
+function dailySessionKey(brand: string, dateWithTimezone: string): string {
+  return `daily-session:${brand}:${dateWithTimezone}`
+}
 
 interface ActiveLearningPathResponse {
   user_id: number
@@ -67,38 +93,25 @@ interface CollectionObject {
  * If the daily session doesn't exist, it will be created.
  * @param brand
  * @param userDate - local datetime. must have date and time - format 2025-10-31T13:45:00
- * @param forceRefresh - force cache refresh
  */
-export async function getDailySession(
-  brand: string,
-  userDate: Date,
-  forceRefresh: boolean = false,
-) {
-  if (dailySessionPromise && !forceRefresh) {
-    return dailySessionPromise
-  }
-
-  dailySessionPromise = (async () => {
-    const dateWithTimezone = formatLocalDateTime(userDate)
-    const url = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
-
-    const response = await GET(url, {
-      cache: forceRefresh ? 'reload' : 'default',
-    }) as DailySessionResponse | ''
-
-    if (!response) {
-      return await updateDailySession(brand, userDate, false)
-    }
-    return response as DailySessionResponse
-  })()
+export async function getDailySession(brand: string, userDate: Date) {
+  const dateWithTimezone = formatLocalDateTime(userDate)
+  const key = dailySessionKey(brand, dateWithTimezone)
 
   try {
-    return await dailySessionPromise
+    return await dataPromiseGET(dailySessionPromises, key, async () => {
+      const url = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
+
+      const response = await GET(url) as DailySessionResponse | ''
+
+      if (!response) {
+        return await updateDailySession(brand, userDate, false)
+      }
+      return response as DailySessionResponse
+    })
   } catch (error) {
     console.error('Error fetching daily session:', (error as any).message)
     return null
-  } finally {
-    dailySessionPromise = null
   }
 }
 
@@ -114,6 +127,7 @@ export async function updateDailySession(
   keepFirstLearningPath: boolean = false,
 ) {
   const dateWithTimezone = formatLocalDateTime(userDate)
+  const key = dailySessionKey(brand, dateWithTimezone)
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
   const body = {
     brand: brand,
@@ -122,14 +136,10 @@ export async function updateDailySession(
   }
   try {
     const response = (await POST(url, body)) as DailySessionResponse | ''
+    rememberValue(dailySessionPromises, key, response !== '' ? response : null)
 
-    if (response || response === '') { // refresh cached value
-      const urlGet: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
-      dataPromiseGET(urlGet, true).then(() => {
-        dailySessionPromise = null
-      })
-
-    }
+    const urlGet: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
+    GET(urlGet, { cache: 'reload' }).catch(() => {})
 
     return (response !== '' ? response : null)
   } catch (error: any) {
@@ -144,15 +154,13 @@ function formatLocalDateTime(date: Date): string {
 /**
  * Gets user's active learning path.
  * @param brand
- * @param forceRefresh - force cache refresh
  */
-export async function getActivePath(brand: string, forceRefresh: boolean = false) {
+export async function getActivePath(brand: string) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
 
-  const response = await dataPromiseGET(url, forceRefresh) as ActiveLearningPathResponse
-  activePathPromise = null
-
-  return response
+  return (await dataPromiseGET(activePathPromises, activePathKey(brand), () =>
+    GET(url) as Promise<ActiveLearningPathResponse>,
+  )) as ActiveLearningPathResponse
 }
 
 /**
@@ -166,36 +174,36 @@ export async function startLearningPath(brand: string, learningPathId: number) {
 
   const response = (await POST(url, body)) as ActiveLearningPathResponse
 
-  // manual BE call to avoid recursive POST<->GET calls
   if (response) {
+    rememberValue(activePathPromises, activePathKey(brand), response)
+    dailySessionPromises.delete(dailySessionKey(brand, formatLocalDateTime(new Date())))
+
     const urlGet: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
-    dataPromiseGET(urlGet, true).then(() => {
-      activePathPromise = null
-    })
+    GET(urlGet, { cache: 'reload' }).catch(() => {})
   }
 
   return response
 }
 
-async function dataPromiseGET(
-  url: string,
-  forceRefresh: boolean,
-): Promise<DailySessionResponse | ActiveLearningPathResponse | ''> {
-  if (url.includes('daily-session')) {
-    if (!dailySessionPromise || forceRefresh) {
-      dailySessionPromise = GET(url, {
-        cache: forceRefresh ? 'reload' : 'default',
-      }) as Promise<DailySessionResponse>
-    }
-    return dailySessionPromise
-  } else if (url.includes('active-path')) {
-    if (!activePathPromise || forceRefresh) {
-      activePathPromise = GET(url, {
-        cache: forceRefresh ? 'reload' : 'default',
-      }) as Promise<ActiveLearningPathResponse>
-    }
-    return activePathPromise
+function dataPromiseGET<T>(
+  cache: Map<string, Promise<T>>,
+  key: string,
+  fetcher: () => Promise<T>,
+): Promise<T> {
+  if (cache.has(key)) {
+    return cache.get(key)!
   }
+
+  const promise = fetcher()
+  cache.set(key, promise)
+  promise
+    .then((value) => {
+      if (!value && cache.get(key) === promise) cache.delete(key)
+    })
+    .catch(() => {
+      if (cache.get(key) === promise) cache.delete(key)
+    })
+  return promise
 }
 
 /**
@@ -203,6 +211,8 @@ async function dataPromiseGET(
  */
 export async function resetAllLearningPaths() {
   const url: string = `${LEARNING_PATHS_PATH}/reset`
+
+  clearLearningPathCaches()
 
   return await Promise.all([
     devFetchAllLearningPathsAndIntroVideoIdsForDelete().then(async (all) => {
@@ -509,7 +519,16 @@ async function methodIntroVideoCompleteActions(brand: string, learningPathId: nu
   const dateWithTimezone = formatLocalDateTime(userDate)
   const url: string = `${LEARNING_PATHS_PATH}/method-intro-video-complete-actions`
   const body = { brand: brand, learningPathId: learningPathId, userDate: dateWithTimezone }
-  return (await POST(url, body)) as DailySessionResponse
+  const response = (await POST(url, body)) as DailySessionResponse
+
+  rememberValue(activePathPromises, activePathKey(brand), {
+    user_id: response.user_id,
+    brand: response.brand,
+    active_learning_path_id: response.active_learning_path_id,
+  })
+  rememberValue(dailySessionPromises, dailySessionKey(brand, dateWithTimezone), response)
+
+  return response
 }
 
 interface completeLearningPathIntroVideo {
@@ -557,6 +576,7 @@ export async function completeLearningPathIntroVideo(
   } else {
     response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
 
+    activePathPromises.delete(activePathKey(brand))
     const activePath = await getActivePath(brand)
     if (activePath.active_learning_path_id === learningPathId && !lateMethodSetup) { // don't update dailies if they were just set by completeMethodIntroVideoCompleteActions.
       response.update_dailies_response = await updateDailySession(brand, new Date(), true)

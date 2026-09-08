@@ -51,7 +51,6 @@ export async function fetchInstructors(
       `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .postFilter(postFilter)
-    .build()
 
   const q = `{
     "data": ${data},
@@ -151,9 +150,8 @@ export async function fetchInstructorLessons(
     .order(sort)
     .slice(offset, limit)
     .select((await getFieldsForContentTypeWithFilteredChildren(contentType, true)) as string)
-    .build()
 
-  const total = query().and(restrictions).build()
+  const total = query().and(restrictions)
 
   const q = `{
     "data": ${data},

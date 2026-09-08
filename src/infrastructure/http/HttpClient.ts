@@ -17,17 +17,21 @@ export class HttpClient {
   private token: string | null
   private headerProvider: HeaderProvider
   private requestExecutor: RequestExecutor
+  private credentials: RequestCredentials
+  private inFlightGetRequests: Map<string, Promise<any>> = new Map()
 
   constructor(
     baseUrl: string = '',
-    token: string | null = null,
-    headerProvider: HeaderProvider = new DefaultHeaderProvider(),
-    requestExecutor: RequestExecutor = new FetchRequestExecutor()
+    token?: string | null,
+    headerProvider?: HeaderProvider,
+    requestExecutor?: RequestExecutor,
+    credentials?: RequestCredentials
   ) {
     this.baseUrl = baseUrl || globalConfig?.baseUrl || ''
     this.token = token || globalConfig?.sessionConfig?.token || null
-    this.headerProvider = headerProvider
-    this.requestExecutor = requestExecutor
+    this.headerProvider = headerProvider || new DefaultHeaderProvider()
+    this.requestExecutor = requestExecutor || new FetchRequestExecutor()
+    this.credentials = credentials || 'include'
   }
 
   public setToken(token: string): void {
@@ -35,11 +39,24 @@ export class HttpClient {
   }
 
   public clearToken(): void {
-    this.token = null;
+    this.token = null
   }
 
   public async get<T>(url: string, options: _RequestOptions = {}): Promise<T> {
-    return this.request<T>(url, 'GET', options)
+    const key = `GET:${this.resolveUrl(url)}:${options.dataVersion || ''}`
+
+    const inFlightRequest = this.inFlightGetRequests.get(key)
+    if (inFlightRequest) {
+      return inFlightRequest
+    }
+
+    const request = this.request<T>(url, 'GET', options).finally(() => {
+      this.inFlightGetRequests.delete(key)
+    })
+    
+    this.inFlightGetRequests.set(key, request)
+
+    return request
   }
 
   public async post<T>(url: string, data: any, options: _RequestOptions = {}): Promise<T> {
@@ -101,7 +118,7 @@ export class HttpClient {
     const options: RequestOptions = {
       method,
       headers,
-      credentials: 'include',
+      credentials: this.credentials,
     }
 
     if (cache) {

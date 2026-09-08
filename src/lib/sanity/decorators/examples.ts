@@ -27,6 +27,9 @@ const perms: UserPermissions = {
   isAdmin: false,
   isModerator: false,
   isABasicMember: true,
+  hasAllContentAccess: false,
+  isForumModerator: false,
+  isCommentModerator: false,
 }
 
 const rows: ContentRow[] = [

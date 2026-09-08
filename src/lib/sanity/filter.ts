@@ -23,7 +23,7 @@ export interface StatusConfig {
   statuses?: string[]
   bypassStatuses?: boolean
   isSingle?: boolean
-  isAdmin?: boolean
+  hasAllContentAccess?: boolean
   prefix?: Prefix
 }
 
@@ -66,8 +66,14 @@ const applyPrefix = (prefix: Prefix, filter: string): string => {
   return filter.replace(/\b([a-z_][a-z0-9_]*)\s*(==|!=|<=|>=|<|>|in|match)/gi, `${prefix}$1 $2`)
 }
 
+const escapeDoubleQuoted = (value: string | number): string =>
+  String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+
+const escapeSingleQuoted = (value: string | number): string =>
+  String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+
 const arrayToStringRepresentation = (arr: string[]): string => {
-  return '[' + arr.map((item) => `'${item}'`).join(',') + ']'
+  return '[' + arr.map((item) => `'${escapeSingleQuoted(item)}'`).join(',') + ']'
 }
 
 // ============================================
@@ -87,7 +93,7 @@ export class Filters {
    * @example Filters.brand('drumeo') // "brand == 'drumeo'"
    */
   static brand(brand: string): string {
-    return `brand == "${brand}"`
+    return `brand == "${escapeDoubleQuoted(brand)}"`
   }
 
   /**
@@ -96,7 +102,7 @@ export class Filters {
    * @example Filters.type('song') // "_type == 'song'"
    */
   static type(type: string): string {
-    return `_type == "${type}"`
+    return `_type == "${escapeDoubleQuoted(type)}"`
   }
 
   /**
@@ -114,7 +120,7 @@ export class Filters {
    * @example Filters.slug('guitar-basics') // "slug.current == 'guitar-basics'"
    */
   static slug(slug: string): string {
-    return `slug.current == "${slug}"`
+    return `slug.current == "${escapeDoubleQuoted(slug)}"`
   }
 
   /**
@@ -123,7 +129,7 @@ export class Filters {
    * @example Filters.railcontentId(12345) // "railcontent_id == 12345"
    */
   static railcontentId(id: number): string {
-    return `railcontent_id == ${id}`
+    return `railcontent_id == ${Number(id)}`
   }
 
   /**
@@ -141,7 +147,7 @@ export class Filters {
    * @example Filters.idIn([123, 456, 789]) // "railcontent_id in [123,456,789]"
    */
   static idIn(ids: number[]): string {
-    return `railcontent_id in [${ids.join(',')}]`
+    return `railcontent_id in [${ids.map(Number).join(',')}]`
   }
 
   /**
@@ -150,7 +156,7 @@ export class Filters {
    * @example Filters.references('abc123') // "references('abc123')"
    */
   static references(id: string): string {
-    return `references("${id}")`
+    return `references("${escapeDoubleQuoted(id)}")`
   }
 
   static referencesIDWithFilter(filter: string): string {
@@ -172,7 +178,7 @@ export class Filters {
    * @example Filters.referencesField('slug.current', 'john-doe')
    */
   static referencesField(field: string, value: string): string {
-    return `references(*[${field} == "${value}"]._id)`
+    return `references(*[${field} == "${escapeDoubleQuoted(value)}"]._id)`
   }
 
   /**
@@ -181,7 +187,7 @@ export class Filters {
    * @example Filters.titleMatch('guitar') // "title match 'guitar*'"
    */
   static titleMatch(term: string): string {
-    return `title match "${term}*"`
+    return `title match "${escapeDoubleQuoted(term)}*"`
   }
 
   /**
@@ -191,7 +197,7 @@ export class Filters {
    * @example Filters.searchMatch('description', 'beginner') // "description match 'beginner*'"
    */
   static searchMatch(field: string, term?: string): string {
-    return term ? `${field} match "${term}*"` : Filters.empty
+    return term ? `${field} match "${escapeDoubleQuoted(term)}*"` : Filters.empty
   }
 
   /**
@@ -200,7 +206,7 @@ export class Filters {
    * @example Filters.publishedBefore('2024-01-01') // "published_on <= '2024-01-01'"
    */
   static publishedBefore(date: string): string {
-    return `published_on <= "${date}"`
+    return `published_on <= "${escapeDoubleQuoted(date)}"`
   }
 
   /**
@@ -209,7 +215,7 @@ export class Filters {
    * @example Filters.publishedAfter('2024-01-01') // "published_on >= '2024-01-01'"
    */
   static publishedAfter(date: string): string {
-    return `published_on >= "${date}"`
+    return `published_on >= "${escapeDoubleQuoted(date)}"`
   }
 
   /**
@@ -349,7 +355,7 @@ export class Filters {
     const adapter = getPermissionsAdapter()
     const userData = config.userData || (await adapter.fetchUserPermissions())
 
-    if (adapter.isAdmin(userData)) return ''
+    if (adapter.hasAllContentAccess(userData)) return ''
 
     const permissionsFilter = adapter.generatePermissionsFilter(userData, {
       prefix: config.prefix || '',
@@ -373,9 +379,9 @@ export class Filters {
     // Auto-determine statuses if not provided
     if (statuses.length === 0) {
       const userData = await getPermissionsAdapter().fetchUserPermissions()
-      const isAdmin = getPermissionsAdapter().isAdmin(userData)
+      const hasAllContentAccess = getPermissionsAdapter().hasAllContentAccess(userData)
 
-      if (config.isAdmin || isAdmin) {
+      if (config.hasAllContentAccess || hasAllContentAccess) {
         statuses = [
           STATUS_DRAFT,
           STATUS_SCHEDULED,

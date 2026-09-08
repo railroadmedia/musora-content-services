@@ -23,8 +23,26 @@ export interface MembershipData {
 export interface UserMembershipResponse {
   user_membership_data: MembershipData[]
   can_upgrade_membership: boolean // pre multiUserAccount data
+  need_lifetime_upgrade: boolean
   sub_account_data: MultiUserAccountResponse // post multiUserAccount data
   upgrade_options: UpgradeOption[] // post multiuser account data
+  user_subscriber_data: {
+    active_subscription: {
+      subscribed_on: string
+      renews_on: string
+      plan: string
+      platform: 'web' | 'apple' | 'google'
+      product_sku: string
+      rc_product_ids: {
+        apple: string
+        google: string
+      }
+      tier_key: string
+    }
+    has_had_apple_subscription: boolean
+    has_had_google_subscription: boolean
+    has_had_web_subscription: boolean
+  }
 }
 
 /**
@@ -47,15 +65,25 @@ export interface UpgradeProduct {
   id: number
   name: string
   sku: string
+  rc_product_ids: {
+    apple: string
+    google: string
+  }
   price: number
   monthly_price: number
   includes_trial: boolean
-  tier: 'plus' | 'basic' | ''
+  tier: 'plus' | 'basic' | '' // deprecated in favour of membership_level
+  membership_level: 'plus' | 'basic' | ''
+  plan_type: 'family' | 'duo' | 'solo'
+  tier_key: string
+  rank: number | null
 }
 
 export interface UpgradeOption {
   annual_savings: number
   lowest_monthly_cost: number
+  upgrade_type: string
+  is_prorated_charge: boolean
   products: UpgradeProduct[] // annual + monthly products, or solely annual product with the same configuration information
 }
 
@@ -142,6 +170,7 @@ export async function fetchRechargeTokens(): Promise<RechargeTokens> {
  * Upgrades the user's subscription or provides a prefilled add-to-cart URL.
  *
  * @param {boolean} featureFlag - MultiUserAccount feature Flag - default false
+ * @param {string} sku- product sku to upgrade to, required if feature flag is set
  *
  * @returns {Promise<UpgradeSubscriptionResponse>} A promise that resolves to an object containing either:
  *  - {string} action - The action performed (e.g., 'instant_upgrade').
@@ -157,10 +186,11 @@ export async function fetchRechargeTokens(): Promise<RechargeTokens> {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function upgradeSubscription(featureFlag = false): Promise<UpgradeSubscriptionResponse> {
+export async function upgradeSubscription(featureFlag = false, sku): Promise<UpgradeSubscriptionResponse> {
   let featureFlagValue = featureFlag ? 1 : 0
+  let skuValue = sku ? `&sku=${sku}` : ''
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<UpgradeSubscriptionResponse>(`${baseUrl}/v1/update-subscription?${multiUserAccountFeatureFlag}=${featureFlagValue}`)
+  return httpClient.get<UpgradeSubscriptionResponse>(`${baseUrl}/v1/update-subscription?${multiUserAccountFeatureFlag}=${featureFlagValue}${skuValue}`)
 }
 
 /**
@@ -288,4 +318,12 @@ export async function fetchHasActivePlatformSubscription(): Promise<boolean> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   const response = await httpClient.get<SubscriptionPlatform>(`${baseUrl}/v1/subscription-platform`)
   return response.has_active_platform_subscription
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+export async function grant30DaysAccessForLifetime(): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  await httpClient.post<void>(`${baseUrl}/v1/grant-30-days-access-for-lifetime`, {})
 }

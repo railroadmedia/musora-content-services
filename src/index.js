@@ -21,9 +21,11 @@ import {
 } from './services/awards/award-query.js';
 
 import {
+	getMCSVersion,
 	globalConfig,
 	initializeEnvVar,
-	initializeService
+	initializeService,
+	updateSessionConfig
 } from './services/config.js';
 
 import {
@@ -31,6 +33,11 @@ import {
 	fetchArtistLessons,
 	fetchArtists
 } from './services/content/artist.ts';
+
+import {
+	fetchLearningPathCount,
+	fetchSongAndLessonCounts
+} from './services/content/counts.ts';
 
 import {
 	fetchGenreBySlug,
@@ -223,6 +230,14 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	fetchMarketingAll,
+	fetchMarketingFaqs,
+	fetchMarketingPracticeGoals,
+	fetchMarketingStats,
+	fetchMarketingTestimonials
+} from './services/marketing/marketing.ts';
+
+import {
 	acceptInvite,
 	createAccount,
 	createInvites,
@@ -234,11 +249,34 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	deleteAllNotifications,
+	deleteNotification,
+	fetchLiveEventPollingState,
+	fetchNotificationSettings,
+	fetchNotifications,
+	fetchUnreadCount,
+	markAllNotificationsAsRead,
+	markNotificationAsRead,
+	markNotificationAsUnread,
+	pauseLiveEventPolling,
+	restoreNotification,
+	startLiveEventPolling,
+	updateNotificationSetting
+} from './services/notifications/notifications.js';
+
+import {
+	blockContentToHtml,
+	fetchAllPublicAnnouncements,
+	fetchPublicAnnouncement
+} from './services/notifications/public-announcements.ts';
+
+import {
 	getRecentActivityOffline
 } from './services/offline/activities.ts';
 
 import {
 	getPracticeSessionsOffline,
+	getWeeklyPracticeSessionsOffline,
 	otherStatsOffline
 } from './services/offline/practices.ts';
 
@@ -386,6 +424,7 @@ import {
 
 import {
 	confirmEmailChange,
+	createPendingAccount,
 	deleteAccount,
 	numberOfActiveUsers,
 	requestEmailChange,
@@ -432,28 +471,14 @@ import {
 	fetchMemberships,
 	fetchRechargeTokens,
 	getUpgradePrice,
+	grant30DaysAccessForLifetime,
 	restorePurchases,
 	upgradeSubscription
 } from './services/user/memberships.ts';
 
 import {
-	deleteAllNotifications,
-	deleteNotification,
-	fetchLiveEventPollingState,
-	fetchNotificationSettings,
-	fetchNotifications,
-	fetchUnreadCount,
-	markAllNotificationsAsRead,
-	markNotificationAsRead,
-	markNotificationAsUnread,
-	pauseLiveEventPolling,
-	restoreNotification,
-	startLiveEventPolling,
-	updateNotificationSetting
-} from './services/user/notifications.js';
-
-import {
 	getOnboardingRecommendedContent,
+	getOnboardingStatus,
 	initializeOnboardingFlow,
 	startOnboarding,
 	updateOnboarding,
@@ -465,10 +490,32 @@ import {
 } from './services/user/payments.ts';
 
 import {
+	fetchPlayerSettings,
+	updatePlayerSettings
+} from './services/user/playerSettings.ts';
+
+import {
+	fetchPracticeGoals,
+	updatePracticeGoals
+} from './services/user/practiceGoals.ts';
+
+import {
 	deleteProfilePicture,
 	otherStats,
 	updateProfileVisibility
 } from './services/user/profile.ts';
+
+import {
+	sendRevenueCatPurchaseMetadata
+} from './services/user/revenuecat.ts';
+
+import {
+	listOAuthProviders,
+	loginAsUser,
+	redirectToOAuthProvider,
+	unlinkOAuthProvider,
+	verifyOAuthToken
+} from './services/user/session.ts';
 
 import {
 	generateAuthSessionUrl,
@@ -488,6 +535,7 @@ import {
 	getStreaksAndMessage,
 	getUserMonthlyStats,
 	getUserWeeklyStats,
+	getWeeklyPracticeSessions,
 	recordUserActivity,
 	recordUserPractice,
 	removeUserPractice,
@@ -515,6 +563,7 @@ export {
 	applyCloudflareWrapper,
 	applySanityTransformations,
 	assignModeratorToComment,
+	blockContentToHtml,
 	blockUser,
 	blockedUsers,
 	buildEntityAndTotalQuery,
@@ -539,6 +588,7 @@ export {
 	createComment,
 	createForumCategory,
 	createInvites,
+	createPendingAccount,
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
@@ -566,6 +616,7 @@ export {
 	extractSanityUrl,
 	fetchAll,
 	fetchAllFilterOptions,
+	fetchAllPublicAnnouncements,
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
@@ -601,6 +652,7 @@ export {
 	fetchInvite,
 	fetchLastSubscriptionPlatform,
 	fetchLatestThreads,
+	fetchLearningPathCount,
 	fetchLearningPathLessons,
 	fetchLearningPathProgressCheckLessons,
 	fetchLeaving,
@@ -610,6 +662,11 @@ export {
 	fetchLiveEvent,
 	fetchLiveEventPollingState,
 	fetchLiveStreamData,
+	fetchMarketingAll,
+	fetchMarketingFaqs,
+	fetchMarketingPracticeGoals,
+	fetchMarketingStats,
+	fetchMarketingTestimonials,
 	fetchMemberships,
 	fetchMetadata,
 	fetchMethodV2IntroVideo,
@@ -623,10 +680,13 @@ export {
 	fetchPackData,
 	fetchParentChildRelationshipsFor,
 	fetchPlayAlongsCount,
+	fetchPlayerSettings,
 	fetchPlaylist,
 	fetchPlaylistItems,
 	fetchPost,
 	fetchPosts,
+	fetchPracticeGoals,
+	fetchPublicAnnouncement,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
@@ -642,6 +702,7 @@ export {
 	fetchShowsData,
 	fetchSiblingContent,
 	fetchSimilarItems,
+	fetchSongAndLessonCounts,
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchTabData,
@@ -693,12 +754,14 @@ export {
 	getLearningPathLessonsByIds,
 	getLegacyMethods,
 	getLessonContentRows,
+	getMCSVersion,
 	getMonday,
 	getNavigateTo,
 	getNavigateToForMethod,
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
+	getOnboardingStatus,
 	getOwnedContent,
 	getPermissionsAdapter,
 	getPermissionsVersion,
@@ -734,7 +797,10 @@ export {
 	getUserSignature,
 	getUserWeeklyStats,
 	getWeekNumber,
+	getWeeklyPracticeSessions,
+	getWeeklyPracticeSessionsOffline,
 	globalConfig,
+	grant30DaysAccessForLifetime,
 	guidedCourses,
 	hasAnyMethodV2IntroCompleted,
 	initializeEnvVar,
@@ -754,8 +820,10 @@ export {
 	likeContent,
 	likePlaylist,
 	likePost,
+	listOAuthProviders,
 	lockThread,
 	login,
+	loginAsUser,
 	logout,
 	mapContentToParent,
 	markAllNotificationsAsRead,
@@ -780,6 +848,7 @@ export {
 	recordUserPractice,
 	recordWatchSession,
 	recordWatchSessionOffline,
+	redirectToOAuthProvider,
 	registerAwardCallback,
 	registerProgressCallback,
 	removeContentAsInterested,
@@ -807,6 +876,7 @@ export {
 	searchAlgolia,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
+	sendRevenueCatPurchaseMetadata,
 	setStudentViewForUser,
 	setUserPinnedProgressRow,
 	setUserSignature,
@@ -830,6 +900,7 @@ export {
 	unlikeContent,
 	unlikePlaylist,
 	unlikePost,
+	unlinkOAuthProvider,
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
@@ -840,10 +911,13 @@ export {
 	updateMultiUserAccount,
 	updateNotificationSetting,
 	updateOnboarding,
+	updatePlayerSettings,
 	updatePlaylist,
 	updatePost,
+	updatePracticeGoals,
 	updatePracticeNotes,
 	updateProfileVisibility,
+	updateSessionConfig,
 	updateThread,
 	updateUserPractice,
 	upgradeSubscription,
@@ -852,6 +926,7 @@ export {
 	userOnboardingForBrand,
 	verifyImageSRC,
 	verifyLocalDataContext,
+	verifyOAuthToken,
 	whoLikedComment,
 	whoLikedContent,
 	whoLikedPost,

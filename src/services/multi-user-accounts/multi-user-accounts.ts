@@ -20,9 +20,12 @@ export interface InviteResponse {
   can_be_accepted: boolean
   is_account_valid: boolean
   is_invite_active: boolean
-  can_user_join: boolean
+  can_user_join: boolean // deprecated in favour of is_user_part_of_existing_mua which is more descriptive
+  is_user_active_subscriber: boolean
+  is_user_part_of_existing_mua: boolean
   primary_user_name: string
   product_name: string
+  tier_key: string
   // These fields leak user information and are excluded entirely for the public endpoint
   existing_user_details?: User
   email?: string

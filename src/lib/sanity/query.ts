@@ -32,6 +32,7 @@ export interface QueryBuilder {
   dereference(): QueryBuilder
   postFilter(expr: string): QueryBuilder
   build(): string
+  toString(): string
 
   _state(): QueryBuilderState
 }
@@ -62,6 +63,11 @@ const project: Monoid<string> = {
 }
 
 export const filterOps = { and, or }
+
+export const composite = (parts: Record<string, QueryBuilder | string>): string =>
+  `{ ${Object.entries(parts)
+    .map(([key, value]) => `"${key}": ${value}`)
+    .join(', ')} }`
 
 export const query = (selector?: string): QueryBuilder => {
   let state: QueryBuilderState = {
@@ -146,6 +152,10 @@ export const query = (selector?: string): QueryBuilder => {
         ${state.ordering}
         ${state.slice}
       `.trim()
+    },
+
+    toString() {
+      return builder.build()
     },
 
     _state() {

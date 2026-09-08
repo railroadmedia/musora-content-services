@@ -1,4 +1,5 @@
 import { streakCalculator } from './user/streakCalculator'
+import { setSessionUserData } from './config.js'
 
 /**
  * Clears all client-side cached state in musora-content-services.
@@ -7,4 +8,5 @@ import { streakCalculator } from './user/streakCalculator'
  */
 export function clearState(): void {
   streakCalculator.invalidate()
+  setSessionUserData(null)
 }

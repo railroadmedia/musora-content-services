@@ -38,7 +38,7 @@ export async function reset(): Promise<void> {
 export function isUserFreeTier(userPermissions: UserPermissions): boolean {
   const permissions = userPermissions.permissions
 
-  if (userPermissions.isAdmin) return false
+  if (userPermissions.hasAllContentAccess) return false
 
   return permissions.includes(MEMBERSHIP_PERMISSIONS.free)
     && !permissions.some(p => [MEMBERSHIP_PERMISSIONS.base, MEMBERSHIP_PERMISSIONS.plus].includes(p))
@@ -46,7 +46,7 @@ export function isUserFreeTier(userPermissions: UserPermissions): boolean {
 
 export function doesUserHaveMembership(userPermissions: UserPermissions): boolean {
   const permissions = userPermissions.permissions
-  return userPermissions.isAdmin
+  return userPermissions.hasAllContentAccess
   || permissions.includes(MEMBERSHIP_PERMISSIONS.base)
   || permissions.includes(MEMBERSHIP_PERMISSIONS.plus)
 }

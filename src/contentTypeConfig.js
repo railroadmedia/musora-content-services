@@ -73,6 +73,7 @@ export const DEFAULT_FIELDS = [
   'live_event_end_time',
   'enrollment_start_time',
   'enrollment_end_time',
+  'membership_tier',
 ]
 
 // these are identical... why
@@ -314,6 +315,7 @@ export const getNextLessonLessonParentTypes = [
   'song-tutorial',
   'learning-path-v2',
   'skill-pack',
+  'documentary',
 ]
 
 export const progressTypesMapping = {
@@ -328,6 +330,7 @@ export const progressTypesMapping = {
     'course-lesson',
     'routine',
   ],
+  method: [LEARNING_PATH_LESSON],
   course: ['course'],
   show: showsLessonTypes,
   'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-lesson'],
@@ -430,6 +433,7 @@ export let contentTypeConfig = {
       `"badge" : ${contentAwardField}.badge.asset->url`,
       `"badge_rear" : ${contentAwardField}.badge_rear.asset->url`,
       `"badge_logo" : ${contentAwardField}.logo.asset->url`,
+      '"learning_path_id": *[_type == "learning-path-v2" && references(^._id)][0].railcontent_id',
     ],
     includeChildFields: true,
   },
@@ -695,9 +699,7 @@ export let contentTypeConfig = {
     }`,
   ],
   'new-and-scheduled': {
-    fields: [
-      'show_in_new_feed',
-    ],
+    fields: ['show_in_new_feed'],
     includeChildFields: true,
   },
 }
@@ -876,7 +878,14 @@ function createTypeConditions(lessonTypes) {
  * Filter handler registry - maps filter keys to their handler functions
  */
 const filterHandlers = {
-  style: (value) => `"${value}" in genre[]->name`,
+  style: (value) => {
+    const hasMultipleStyles = value.includes('/')
+    const styles = [value]
+    if (hasMultipleStyles) {
+      styles.push(...value.split('/').map((s) => s.trim()))
+    }
+    return styles.map((style) => `"${style}" in genre[]->name`).join(' || ')
+  },
 
   difficulty: (value) => {
     return `difficulty_string == "${value}"`
