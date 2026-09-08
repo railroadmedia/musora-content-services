@@ -110,7 +110,7 @@ export function initializeService(config) {
   globalConfig.sanityConfig = config.sanityConfig
   globalConfig.railcontentConfig = config.railcontentConfig
   globalConfig.sessionConfig = config.sessionConfig || config.railcontentConfig
-  globalConfig.baseUrl = config.baseUrl || config.railcontentConfig?.baseUrl
+  globalConfig.baseUrl = config.baseUrl || config.railcontentConfig.baseUrl
   globalConfig.localStorage = config.localStorage
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
