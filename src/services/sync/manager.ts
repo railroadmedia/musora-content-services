@@ -5,7 +5,7 @@ import SyncRunScope from './run-scope'
 import { SyncStrategy } from './strategies'
 import { default as SyncStore, SyncStoreConfig } from './store'
 
-import { ModelClass, SyncUserScope } from './index'
+import { ModelClass, SyncUserScope, CompressionWorkerConstructor as IntrospectionCompressionWorkerConstructor } from './index'
 import SyncRetry from './retry'
 import SyncContext from './context'
 import { SyncError } from './errors'
@@ -14,6 +14,7 @@ import { SyncTelemetry } from './telemetry/index'
 import createStoreConfigs from './store-configs'
 import { contentProgressObserver } from '../awards/internal/content-progress-observer'
 import { repairStaleSyncedRecords } from './stale-record-cleanup'
+import setupIntrospection, { triggerManualDump } from './introspection'
 
 export type SyncTeardownMode = 'reset' | 'destroyOrReset' | 'abortWrites'
 
@@ -62,9 +63,11 @@ export default class SyncManager {
   private initDatabase: (userScope: SyncUserScope) => Database
   private destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>
   private abortWritesToDatabase?: (adapter: DatabaseAdapter) => Promise<void>
+  private IntrospectionCompressionWorker?: IntrospectionCompressionWorkerConstructor
 
   private teardownPromise: Promise<void> | null = null
   private database: Database | null = null
+  private teardownIntrospection: (() => Promise<void>) | null = null
 
   constructor(
     userScope: SyncUserScope,
@@ -73,7 +76,8 @@ export default class SyncManager {
     teardownDatabase: {
       destroy?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>
       abort?: (adapter: DatabaseAdapter) => Promise<void>
-    } = {}
+    } = {},
+    IntrospectionCompressionWorker?: IntrospectionCompressionWorkerConstructor
   ) {
     this.id = (SyncManager.counter++).toString()
 
@@ -84,6 +88,7 @@ export default class SyncManager {
     this.initDatabase = initDatabase
     this.destroyDatabase = teardownDatabase.destroy
     this.abortWritesToDatabase = teardownDatabase.abort
+    this.IntrospectionCompressionWorker = IntrospectionCompressionWorker
 
     this.storeConfigsRegistry = this.registerStoreConfigs(createStoreConfigs())
     this.storesRegistry = {}
@@ -151,6 +156,8 @@ export default class SyncManager {
     Object.entries(this.storeConfigsRegistry).forEach(([table, storeConfig]) => {
       this.storesRegistry[table] = this.createStore(storeConfig, database)
     })
+
+    this.teardownIntrospection = setupIntrospection(this.context, database, this.storesRegistry, this.IntrospectionCompressionWorker)
 
     this.context.start()
     this.retry.start()
@@ -259,6 +266,8 @@ export default class SyncManager {
           this.context.stop()
 
           contentProgressObserver.stop()
+
+          await this.teardownIntrospection?.()
         } catch (error) {
           // capture, but don't rethrow
           this.telemetry.capture(error)
@@ -301,5 +310,12 @@ export default class SyncManager {
 
   abort(reason?: string) {
     this.runScope.abort(reason)
+  }
+
+  triggerIntrospectionDump() {
+    if (!this.database) {
+      throw new SyncError('Cannot trigger introspection dump - database not available')
+    }
+    return triggerManualDump(this.database, this.context, this.IntrospectionCompressionWorker)
   }
 }
