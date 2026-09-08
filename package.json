@@ -1,12 +1,13 @@
 {
   "name": "musora-content-services",
-  "version": "2.167.3",
+  "version": "2.180.0",
   "description": "A package for Musoras content services ",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
     "prepare": "node scripts/gen-version.cjs",
     "build-index": "node tools/generate-index.cjs",
+    "gen-sanity-types": "node tools/generate-sanity-types.cjs",
     "release": "standard-version",
     "doc": "jsdoc -c jsdoc.json --verbose",
     "test": "jest",
@@ -45,6 +46,7 @@
     "ts-jest": "^29.2.4"
   },
   "dependencies": {
+    "@portabletext/to-html": "^2.0.14",
     "@sanity/client": "^5.4.2",
     "dayjs": "^1.11.13",
     "docdash": "^2.0.2",

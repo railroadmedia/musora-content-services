@@ -26,6 +26,23 @@ export interface UserMembershipResponse {
   need_lifetime_upgrade: boolean
   sub_account_data: MultiUserAccountResponse // post multiUserAccount data
   upgrade_options: UpgradeOption[] // post multiuser account data
+  user_subscriber_data: {
+    active_subscription: {
+      subscribed_on: string
+      renews_on: string
+      plan: string
+      platform: 'web' | 'apple' | 'google'
+      product_sku: string
+      rc_product_ids: {
+        apple: string
+        google: string
+      }
+      tier_key: string
+    }
+    has_had_apple_subscription: boolean
+    has_had_google_subscription: boolean
+    has_had_web_subscription: boolean
+  }
 }
 
 /**
@@ -58,11 +75,15 @@ export interface UpgradeProduct {
   tier: 'plus' | 'basic' | '' // deprecated in favour of membership_level
   membership_level: 'plus' | 'basic' | ''
   plan_type: 'family' | 'duo' | 'solo'
+  tier_key: string
+  rank: number | null
 }
 
 export interface UpgradeOption {
   annual_savings: number
   lowest_monthly_cost: number
+  upgrade_type: string
+  is_prorated_charge: boolean
   products: UpgradeProduct[] // annual + monthly products, or solely annual product with the same configuration information
 }
 

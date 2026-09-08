@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { db } from '../sync'
 import { getStreaksAndMessage } from '../../services/userActivity.js'
 
@@ -5,8 +6,12 @@ export interface StreakData {
   currentDailyStreak: number
   currentWeeklyStreak: number
   streakMessage: string
+  streakMessagePart1: string
+  streakMessagePart2: string
   calculatedAt: number // timestamp
   lastPracticeDate: string | null
+  currentWeekPracticeDays: number
+  todaysPracticeSeconds: number
 }
 export interface PracticeData {
   [date: string]: Array<{
@@ -27,14 +32,25 @@ class StreakCalculator {
   async recalculate(): Promise<StreakData> {
     const allPractices = await this.fetchAllPractices()
 
-    const { currentDailyStreak, currentWeeklyStreak, streakMessage } = getStreaksAndMessage(allPractices)
+    const {
+      currentDailyStreak,
+      currentWeeklyStreak,
+      streakMessage,
+      streakMessagePart1,
+      streakMessagePart2,
+      currentWeekPracticeDays,
+    } = getStreaksAndMessage(allPractices)
 
     this.cache = {
       currentDailyStreak: currentDailyStreak,
       currentWeeklyStreak: currentWeeklyStreak,
       streakMessage: streakMessage,
+      streakMessagePart1: streakMessagePart1,
+      streakMessagePart2: streakMessagePart2,
       calculatedAt: Date.now(),
-      lastPracticeDate: this.getLastPracticeDate(allPractices)
+      lastPracticeDate: this.getLastPracticeDate(allPractices),
+      currentWeekPracticeDays: currentWeekPracticeDays,
+      todaysPracticeSeconds: this.getTodaysPracticeSeconds(allPractices),
     }
     return this.cache
   }
@@ -58,6 +74,11 @@ class StreakCalculator {
   private getLastPracticeDate(practices: PracticeData): string | null {
     const dates = Object.keys(practices).sort()
     return dates.length > 0 ? dates[dates.length - 1] : null
+  }
+
+  private getTodaysPracticeSeconds(practices: PracticeData): number {
+    const today = dayjs().format('YYYY-MM-DD')
+    return (practices[today] || []).reduce((total, practice) => total + practice.duration_seconds, 0)
   }
 }
 

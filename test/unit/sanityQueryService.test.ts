@@ -7,8 +7,9 @@ import { getFieldsForContentTypeWithFilteredChildren } from '../../src/contentTy
 jest.mock('../../src/services/permissions/index.ts', () => ({
   ...jest.requireActual('../../src/services/permissions/index.ts'),
   getPermissionsAdapter: jest.fn().mockReturnValue({
-    fetchUserPermissions: jest.fn().mockResolvedValue({ permissions: [108, 91, 92], isAdmin: false }),
+    fetchUserPermissions: jest.fn().mockResolvedValue({ permissions: [108, 91, 92], isAdmin: false, hasAllContentAccess: false }),
     isAdmin: jest.fn().mockReturnValue(false),
+    hasAllContentAccess: jest.fn().mockReturnValue(false),
     generatePermissionsFilter: jest.fn().mockReturnValue(
       `(!defined(permission_v2) || array::intersects(permission_v2, [108,91,92]))`
     ),

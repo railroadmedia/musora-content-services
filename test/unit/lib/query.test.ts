@@ -1,4 +1,52 @@
-import { query } from '../../../src/lib/sanity/query'
+import { composite, query } from '../../../src/lib/sanity/query'
+import Filters from '../../../src/lib/sanity/filter'
+
+describe('Composite Projections', () => {
+  test('builds single key with builder value', () => {
+    const result = composite({ data: query().and('_type == "song"') })
+    expect(result).toBe('{ "data": *[_type == "song"] }')
+  })
+
+  test('preserves key order and separates without trailing comma', () => {
+    const result = composite({
+      first: query().and('_type == "song"'),
+      second: query().and('_type == "course"'),
+    })
+    expect(result).toBe('{ "first": *[_type == "song"], "second": *[_type == "course"] }')
+    expect(result).not.toMatch(/,\s*}$/)
+  })
+
+  test('passes string values through verbatim', () => {
+    const result = composite({ total: Filters.count('_type == "song"') })
+    expect(result).toBe('{ "total": count(*[_type == "song"]) }')
+  })
+
+  test('builds mixed builder and string values', () => {
+    const result = composite({
+      data: query().and('_type == "song"').slice(0, 10),
+      total: Filters.count('_type == "song"'),
+    })
+    expect(result).toBe(
+      '{ "data": *[_type == "song"]\n        \n        \n        \n        [0...10], "total": count(*[_type == "song"]) }'
+    )
+  })
+
+  test('quotes keys that are identifier safe', () => {
+    const result = composite({ data: query() })
+    expect(result).toContain('"data":')
+  })
+
+  test('builds empty object for empty parts', () => {
+    expect(composite({})).toBe('{  }')
+  })
+
+  test('stringifies builders eagerly so later mutation is ignored', () => {
+    const builder = query().and('_type == "song"')
+    const result = composite({ data: builder })
+    builder.and('brand == "drumeo"')
+    expect(result).toBe('{ "data": *[_type == "song"] }')
+  })
+})
 
 describe('Sanity Query Builder', () => {
   describe('Basic Query Building', () => {

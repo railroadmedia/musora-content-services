@@ -106,4 +106,28 @@ export abstract class PermissionsAdapter {
   isModerator(userPermissions: UserPermissions): boolean {
     return userPermissions?.isModerator ?? false
   }
+
+  hasAllContentAccess(userPermissions: UserPermissions): boolean {
+    return userPermissions?.hasAllContentAccess ?? false
+  }
+
+  /**
+   * Check if user is a forum moderator.
+   *
+   * @param userPermissions - The user's permissions
+   * @returns True if user is a forum moderator
+   */
+  isForumModerator(userPermissions: UserPermissions): boolean {
+    return userPermissions?.isForumModerator ?? false
+  }
+
+  /**
+   * Check if user is a comment moderator.
+   *
+   * @param userPermissions - The user's permissions
+   * @returns True if user is a comment moderator
+   */
+  isCommentModerator(userPermissions: UserPermissions): boolean {
+    return userPermissions?.isCommentModerator ?? false
+  }
 }

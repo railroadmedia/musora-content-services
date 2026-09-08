@@ -168,7 +168,9 @@ describe('Award Collection Filtering', () => {
       expect(listeners.granted).toHaveBeenCalledTimes(2)
 
       listeners.granted.mockClear()
-      db.userAwardProgress.hasCompletedAward.mockResolvedValue(true)
+      db.userAwardProgress.getByAwardId.mockResolvedValue({
+        data: { completed_at: new Date().toISOString(), progress_percentage: 100 }
+      })
 
       emitProgress({
         contentId: 418003,

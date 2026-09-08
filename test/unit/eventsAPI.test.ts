@@ -1,7 +1,7 @@
 import eventsAPISingleton from '../../src/services/eventsAPI.js'
 import { initializeTestService } from '../initializeTests.js'
 
-const notificationsModule = require('../../src/services/user/notifications.js')
+const notificationsModule = require('../../src/services/notifications/notifications.js')
 const EventsAPI = eventsAPISingleton.constructor as new () => typeof eventsAPISingleton
 
 function deferred<T>() {

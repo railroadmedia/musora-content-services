@@ -251,7 +251,9 @@ describe('Award Observer Integration - E2E Scenarios', () => {
 
   describe('Scenario: Already completed award', () => {
     beforeEach(() => {
-      db.userAwardProgress.hasCompletedAward.mockResolvedValue(true)
+      db.userAwardProgress.getByAwardId.mockResolvedValue({
+        data: { completed_at: new Date().toISOString(), progress_percentage: 100 }
+      })
     })
 
     test('does not re-grant already completed award', async () => {

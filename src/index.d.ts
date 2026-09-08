@@ -31,6 +31,7 @@ import {
 } from './services/content/artist.ts';
 
 import {
+	fetchLearningPathCount,
 	fetchSongAndLessonCounts
 } from './services/content/counts.ts';
 
@@ -225,6 +226,14 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	fetchMarketingAll,
+	fetchMarketingFaqs,
+	fetchMarketingPracticeGoals,
+	fetchMarketingStats,
+	fetchMarketingTestimonials
+} from './services/marketing/marketing.ts';
+
+import {
 	acceptInvite,
 	createAccount,
 	createInvites,
@@ -236,11 +245,34 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	deleteAllNotifications,
+	deleteNotification,
+	fetchLiveEventPollingState,
+	fetchNotificationSettings,
+	fetchNotifications,
+	fetchUnreadCount,
+	markAllNotificationsAsRead,
+	markNotificationAsRead,
+	markNotificationAsUnread,
+	pauseLiveEventPolling,
+	restoreNotification,
+	startLiveEventPolling,
+	updateNotificationSetting
+} from './services/notifications/notifications.js';
+
+import {
+	blockContentToHtml,
+	fetchAllPublicAnnouncements,
+	fetchPublicAnnouncement
+} from './services/notifications/public-announcements.ts';
+
+import {
 	getRecentActivityOffline
 } from './services/offline/activities.ts';
 
 import {
 	getPracticeSessionsOffline,
+	getWeeklyPracticeSessionsOffline,
 	otherStatsOffline
 } from './services/offline/practices.ts';
 
@@ -388,6 +420,7 @@ import {
 
 import {
 	confirmEmailChange,
+	createPendingAccount,
 	deleteAccount,
 	numberOfActiveUsers,
 	requestEmailChange,
@@ -440,22 +473,6 @@ import {
 } from './services/user/memberships.ts';
 
 import {
-	deleteAllNotifications,
-	deleteNotification,
-	fetchLiveEventPollingState,
-	fetchNotificationSettings,
-	fetchNotifications,
-	fetchUnreadCount,
-	markAllNotificationsAsRead,
-	markNotificationAsRead,
-	markNotificationAsUnread,
-	pauseLiveEventPolling,
-	restoreNotification,
-	startLiveEventPolling,
-	updateNotificationSetting
-} from './services/user/notifications.js';
-
-import {
 	getOnboardingRecommendedContent,
 	getOnboardingStatus,
 	initializeOnboardingFlow,
@@ -474,10 +491,27 @@ import {
 } from './services/user/playerSettings.ts';
 
 import {
+	fetchPracticeGoals,
+	updatePracticeGoals
+} from './services/user/practiceGoals.ts';
+
+import {
 	deleteProfilePicture,
 	otherStats,
 	updateProfileVisibility
 } from './services/user/profile.ts';
+
+import {
+	sendRevenueCatPurchaseMetadata
+} from './services/user/revenuecat.ts';
+
+import {
+	listOAuthProviders,
+	loginAsUser,
+	redirectToOAuthProvider,
+	unlinkOAuthProvider,
+	verifyOAuthToken
+} from './services/user/session.ts';
 
 import {
 	generateAuthSessionUrl,
@@ -497,6 +531,7 @@ import {
 	getStreaksAndMessage,
 	getUserMonthlyStats,
 	getUserWeeklyStats,
+	getWeeklyPracticeSessions,
 	recordUserActivity,
 	recordUserPractice,
 	removeUserPractice,
@@ -529,6 +564,7 @@ declare module 'musora-content-services' {
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
+		blockContentToHtml,
 		blockUser,
 		blockedUsers,
 		buildEntityAndTotalQuery,
@@ -553,6 +589,7 @@ declare module 'musora-content-services' {
 		createComment,
 		createForumCategory,
 		createInvites,
+		createPendingAccount,
 		createPlaylist,
 		createPost,
 		createPracticeNotes,
@@ -580,6 +617,7 @@ declare module 'musora-content-services' {
 		extractSanityUrl,
 		fetchAll,
 		fetchAllFilterOptions,
+		fetchAllPublicAnnouncements,
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
@@ -615,6 +653,7 @@ declare module 'musora-content-services' {
 		fetchInvite,
 		fetchLastSubscriptionPlatform,
 		fetchLatestThreads,
+		fetchLearningPathCount,
 		fetchLearningPathLessons,
 		fetchLearningPathProgressCheckLessons,
 		fetchLeaving,
@@ -624,6 +663,11 @@ declare module 'musora-content-services' {
 		fetchLiveEvent,
 		fetchLiveEventPollingState,
 		fetchLiveStreamData,
+		fetchMarketingAll,
+		fetchMarketingFaqs,
+		fetchMarketingPracticeGoals,
+		fetchMarketingStats,
+		fetchMarketingTestimonials,
 		fetchMemberships,
 		fetchMetadata,
 		fetchMethodV2IntroVideo,
@@ -642,6 +686,8 @@ declare module 'musora-content-services' {
 		fetchPlaylistItems,
 		fetchPost,
 		fetchPosts,
+		fetchPracticeGoals,
+		fetchPublicAnnouncement,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
@@ -752,6 +798,8 @@ declare module 'musora-content-services' {
 		getUserSignature,
 		getUserWeeklyStats,
 		getWeekNumber,
+		getWeeklyPracticeSessions,
+		getWeeklyPracticeSessionsOffline,
 		globalConfig,
 		grant30DaysAccessForLifetime,
 		guidedCourses,
@@ -773,8 +821,10 @@ declare module 'musora-content-services' {
 		likeContent,
 		likePlaylist,
 		likePost,
+		listOAuthProviders,
 		lockThread,
 		login,
+		loginAsUser,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
@@ -799,6 +849,7 @@ declare module 'musora-content-services' {
 		recordUserPractice,
 		recordWatchSession,
 		recordWatchSessionOffline,
+		redirectToOAuthProvider,
 		registerAwardCallback,
 		registerProgressCallback,
 		removeContentAsInterested,
@@ -826,6 +877,7 @@ declare module 'musora-content-services' {
 		searchAlgolia,
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
+		sendRevenueCatPurchaseMetadata,
 		setStudentViewForUser,
 		setUserPinnedProgressRow,
 		setUserSignature,
@@ -849,6 +901,7 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		unlikePlaylist,
 		unlikePost,
+		unlinkOAuthProvider,
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
@@ -862,6 +915,7 @@ declare module 'musora-content-services' {
 		updatePlayerSettings,
 		updatePlaylist,
 		updatePost,
+		updatePracticeGoals,
 		updatePracticeNotes,
 		updateProfileVisibility,
 		updateSessionConfig,
@@ -873,6 +927,7 @@ declare module 'musora-content-services' {
 		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
+		verifyOAuthToken,
 		whoLikedComment,
 		whoLikedContent,
 		whoLikedPost,

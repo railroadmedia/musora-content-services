@@ -89,6 +89,7 @@ export interface User {
   first_access_at: string
   is_challenge_owner: number
   login_as_users: boolean
+  badge: string | null
 }
 
 export interface AuthResponse {
@@ -108,6 +109,17 @@ export interface UpdatePlayerSettingsData {
   auto_next?: boolean
   auto_complete?: boolean
   playlist_auto_next?: boolean
+}
+
+export interface PracticeGoals {
+  weekly_target_days: number | null
+  daily_target_minutes: number | null
+  updated_at: string | null
+}
+
+export interface UpdatePracticeGoalsData {
+  weekly_target_days?: number
+  daily_target_minutes?: number
 }
 
 export interface StreakDTO {

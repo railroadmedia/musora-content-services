@@ -40,6 +40,11 @@ export const setupDefaultMocks = (
 
   db.practices.sumPracticeMinutesForContent.mockResolvedValue(practiceMinutes)
   db.userAwardProgress.hasCompletedAward.mockResolvedValue(hasCompleted)
+  db.userAwardProgress.getByAwardId.mockResolvedValue(
+    hasCompleted
+      ? { data: { completed_at: new Date().toISOString(), progress_percentage: 100 } }
+      : { data: null }
+  )
   db.userAwardProgress.recordAwardProgress.mockResolvedValue({ data: {}, status: 'synced' })
 
   const defaultTimestamp = Math.floor(Date.now() / 1000)

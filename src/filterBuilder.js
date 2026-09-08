@@ -95,7 +95,7 @@ export class FilterBuilder {
     // This must be run before _applyPublishDateRestrictions()
     if (this.bypassStatuses) return this
     if (this.availableContentStatuses.length === 0) {
-      if (this.userData.isAdmin) {
+      if (this.userData.hasAllContentAccess) {
         this.availableContentStatuses = [
           this.STATUS_DRAFT,
           this.STATUS_SCHEDULED,
@@ -136,7 +136,7 @@ export class FilterBuilder {
     if (this.bypassPermissions && !this.showOnlyOwnedContent) return this
     const adapter = getPermissionsAdapter()
     // Check if admin (admins bypass permissions)
-    if (adapter.isAdmin(this.userData) && !this.showOnlyOwnedContent) return this
+    if (adapter.hasAllContentAccess(this.userData) && !this.showOnlyOwnedContent) return this
 
     // Generate permissions filter using adapter
     const permissionsFilter = adapter.generatePermissionsFilter(this.userData, {

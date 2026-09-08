@@ -8,9 +8,9 @@ const PLUS = 92
 const LIFETIME = 108
 const BASE = 91
 
-const lifetimeBase = { permissions: [LIFETIME, BASE], isAdmin: false, isModerator: false, isABasicMember: true }
-const lifetimeBasePlus = { permissions: [LIFETIME, BASE, PLUS], isAdmin: false, isModerator: false, isABasicMember: false }
-const baseOnly = { permissions: [BASE], isAdmin: false, isModerator: false, isABasicMember: true }
+const lifetimeBase = { permissions: [LIFETIME, BASE], isAdmin: false, isModerator: false, isABasicMember: true, hasAllContentAccess: false, isForumModerator: false, isCommentModerator: false }
+const lifetimeBasePlus = { permissions: [LIFETIME, BASE, PLUS], isAdmin: false, isModerator: false, isABasicMember: false, hasAllContentAccess: false, isForumModerator: false, isCommentModerator: false }
+const baseOnly = { permissions: [BASE], isAdmin: false, isModerator: false, isABasicMember: true, hasAllContentAccess: false, isForumModerator: false, isCommentModerator: false }
 
 const plusGatedLocked = { permission_id: [BASE, PLUS], need_access: true, membership_tier: 'plus' }
 const plusGatedUnlocked = { permission_id: [BASE, PLUS], need_access: false, membership_tier: 'plus' }

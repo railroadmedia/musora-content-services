@@ -22,7 +22,7 @@ export function lifetimeUpgradeDecorator(
   return {
     field: NEED_LIFETIME_UPGRADE_FIELD,
     compute: (item) => {
-      if (userPermissions?.isAdmin || !hasLifetime || hasPlus) return false
+      if (userPermissions?.hasAllContentAccess || !hasLifetime || hasPlus) return false
       if (!item.need_access) return false
       return item.membership_tier === 'plus'
       },
