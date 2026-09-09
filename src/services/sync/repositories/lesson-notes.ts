@@ -3,11 +3,14 @@ import LessonNote from '../models/LessonNote'
 import { RecordId } from '@nozbe/watermelondb'
 
 export default class LessonNotesRepository extends SyncRepository<LessonNote> {
-  async getNotesForContent(contentId: number) {
-    return await this.queryAll(
-      Q.where('content_id', contentId),
-      Q.sortBy('created_at', 'asc')
-    )
+  async getNotesForContent(contentId: number, date: string | null = null) {
+    const clauses: Q.Clause[] = [Q.where('content_id', contentId)]
+    if (date !== null) {
+      clauses.push(Q.where('date', date))
+    }
+    clauses.push(Q.sortBy('created_at', 'asc'))
+
+    return await this.queryAll(...clauses)
   }
 
   async createNote(contentId: number, date: string, notes: string, timestampMs: number | null = null) {

@@ -654,16 +654,20 @@ export async function updatePracticeNotes(payload) {
 
 /**
  * Notes attached to a specific lesson, oldest first (the order they were taken in during
- * playback), in addition to the daily/weekly notes above.
+ * playback), in addition to the daily/weekly notes above. Pass `date` to scope it to the
+ * notes taken on that specific day (e.g. for a single practice tracker item), omit it for
+ * every note ever taken on the lesson.
  *
  * @param {number} contentId
+ * @param {string|null} [date] - YYYY-MM-DD
  * @returns {Promise<Object[]>}
  *
  * @example
  * getLessonNotes(12345).then(notes => console.log(notes))
+ * getLessonNotes(12345, '2026-09-08').then(notes => console.log(notes))
  */
-export async function getLessonNotes(contentId) {
-  const result = await db.lessonNotes.getNotesForContent(contentId)
+export async function getLessonNotes(contentId, date = null) {
+  const result = await db.lessonNotes.getNotesForContent(contentId, date)
   return result.data
 }
 

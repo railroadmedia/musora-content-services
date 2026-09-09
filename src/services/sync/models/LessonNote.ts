@@ -32,7 +32,8 @@ export default class LessonNote extends BaseModel<{
   set timestamp_ms(value: number | null) {
     this._setRaw('timestamp_ms', nullableUint(value))
   }
+  // Notes are HTML
   set notes(value: string) {
-    this._setRaw('notes', varchar(3000)(value))
+    this._setRaw('notes', varchar(20000)(value))
   }
 }

@@ -56,6 +56,15 @@ describe('createNote / getNotesForContent', () => {
     expect(result.data).toHaveLength(1)
     expect(result.data[0].notes).toBe('Belongs to 300')
   })
+
+  test('optionally scopes to a specific day', async () => {
+    await repo.createNote(310, '2026-09-01', 'From Sept 1')
+    await repo.createNote(310, '2026-09-08', 'From Sept 8')
+
+    const result = await repo.getNotesForContent(310, '2026-09-01')
+    expect(result.data).toHaveLength(1)
+    expect(result.data[0].notes).toBe('From Sept 1')
+  })
 })
 
 describe('updateNote / deleteNote', () => {
