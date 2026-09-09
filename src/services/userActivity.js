@@ -652,6 +652,90 @@ export async function updatePracticeNotes(payload) {
   })
 }
 
+/**
+ * Notes attached to a specific lesson, oldest first (the order they were taken in during
+ * playback), in addition to the daily/weekly notes above. Pass `date` to scope it to the
+ * notes taken on that specific day (e.g. for a single practice tracker item), omit it for
+ * every note ever taken on the lesson.
+ *
+ * @param {number} contentId
+ * @param {string|null} [date] - YYYY-MM-DD
+ * @returns {Promise<Object[]>}
+ *
+ * @example
+ * getLessonNotes(12345).then(notes => console.log(notes))
+ * getLessonNotes(12345, '2026-09-08').then(notes => console.log(notes))
+ */
+export async function getLessonNotes(contentId, date = null) {
+  const result = await db.lessonNotes.getNotesForContent(contentId, date)
+  return result.data
+}
+
+/**
+ * Creates a new note on a lesson. A lesson can have any number of notes, each a discrete
+ * entry. `timestampMs` is the video position at save time — pass null for notes created
+ * outside the playback experience (e.g. the practice tracker), where there is no position
+ * to capture. `date` defaults to the device's own local calendar day (not UTC) — pass it
+ * explicitly only to override, otherwise a note taken right around midnight always lands
+ * on the day the user actually experienced.
+ *
+ * @param {number} contentId
+ * @param {string} notes
+ * @param {number|null} [timestampMs]
+ * @param {string|null} [date] - YYYY-MM-DD, defaults to today (local)
+ *
+ * @example
+ * createLessonNote(12345, 'Focus on the bridge next time', 95000)
+ */
+export async function createLessonNote(contentId, notes, timestampMs = null, date = null) {
+  return await db.lessonNotes.createNote(
+    contentId,
+    date ?? new Date().toLocaleDateString('sv-SE'), // YYYY-MM-DD wall clock date in user's timezone
+    notes,
+    timestampMs
+  )
+}
+
+/**
+ * Updates an existing lesson note's text. A note's original timestamp is preserved
+ * server-side regardless of what's sent — only the text is ever editable after creation.
+ *
+ * @param {string} id - the local record id from getLessonNotes()
+ * @param {string} notes
+ *
+ * @example
+ * updateLessonNote(note.id, 'Focus on the bridge and the outro next time')
+ */
+export async function updateLessonNote(id, notes) {
+  return await db.lessonNotes.updateNote(id, notes)
+}
+
+/**
+ * Deletes a lesson note.
+ *
+ * @param {string} id - the local record id from getLessonNotes()
+ *
+ * @example
+ * deleteLessonNote(note.id)
+ */
+export async function deleteLessonNote(id) {
+  return await db.lessonNotes.deleteNote(id)
+}
+
+/**
+ * Lesson ids the user has at least one note on — a lightweight "has notes" indicator
+ * (e.g. for a practice tracker card), mirroring getRecordedContentIds() but resolved
+ * from the local, already-synced lesson notes table rather than a network call.
+ *
+ * @returns {Promise<Array<number>>}
+ *
+ * @example
+ * getContentIdsWithLessonNotes().then(ids => console.log(ids))
+ */
+export async function getContentIdsWithLessonNotes() {
+  return await db.lessonNotes.getContentIdsWithNotes()
+}
+
 export function getStreaksAndMessage(practices) {
   let {
     currentDailyStreak,
