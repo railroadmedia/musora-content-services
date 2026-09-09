@@ -23,6 +23,7 @@ interface PlacementQuizResponse {
 interface StorePlacementQuizResponse {
   placement_quiz: PlacementQuizResponse
   recommended_content: OnboardingRecommendedContent
+  error?: any
 }
 
 /**
