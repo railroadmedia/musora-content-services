@@ -5,14 +5,24 @@ import { getByIds } from './queries'
 
 const MAX_DEPTH = 3
 
-export const filterOutNegativeProgress = (
+// keeps progress from regressing, but still writes a record whose resumeTime has moved
+// (e.g. rewatching from an earlier point) so the resume position stays accurate; when
+// resumeTime is omitted (bubbled/trickled ids have no individual resumeTime), an entry
+// is dropped entirely on regression to avoid a needless write.
+export const mergeProgressWithExisting = (
   progresses: Record<number, number>,
-  existingProgresses: Record<number, ProgressSnapshot>
+  existingProgresses: Record<number, ProgressSnapshot>,
+  resumeTime: number | undefined = undefined
 ): Record<number, number> =>
   Object.fromEntries(
-    Object.entries(progresses).filter(
-      ([id, progress]) => progress >= (existingProgresses[Number(id)]?.progress ?? 0)
-    )
+    Object.entries(progresses)
+      .filter(([id, progress]) => {
+        const existing = existingProgresses[Number(id)]
+        const progressIncreased = progress >= (existing?.progress ?? 0)
+        const resumeTimeChanged = resumeTime !== undefined && resumeTime !== (existing?.resume_time ?? null)
+        return progressIncreased || resumeTimeChanged
+      })
+      .map(([id, progress]) => [id, Math.max(progress, existingProgresses[Number(id)]?.progress ?? 0)])
   )
 
 export const getChildrenToDepth = (parentId: number, hierarchy: Hierarchy, depth = 1): number[] => {

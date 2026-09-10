@@ -10,7 +10,7 @@ import { duplicateProgressToALaCarteOffline } from '../offline/progress'
 import {
   bubbleAndTrickleProgressesSafely,
   computeBubbleTrickleProgresses,
-  filterOutNegativeProgress,
+  mergeProgressWithExisting,
 } from './internal/bubble'
 import { filterOutLearningPathsForDuplication } from './internal/learning-path'
 import { snapshotByIds } from './state'
@@ -80,7 +80,7 @@ export const save = async (
   let progresses: Record<number, number> = { [contentId]: progress }
 
   const existingProgress = await snapshotByIds([contentId], activeCollection)
-  progresses = filterOutNegativeProgress(progresses, existingProgress)
+  progresses = mergeProgressWithExisting(progresses, existingProgress, currentSeconds)
   if (Object.keys(progresses).length === 0) return
 
   if (!isOffline) {
@@ -93,10 +93,11 @@ export const save = async (
       await duplicateProgressToALaCarteOffline(
         progresses as Record<string, number>,
         metadata as Record<string, ProgressMetadata>,
-        activeCollection
+        activeCollection,
+        currentSeconds
       )
     } else {
-      await duplicateProgressToALaCarte(progresses, activeCollection)
+      await duplicateProgressToALaCarte(progresses, activeCollection, currentSeconds)
     }
     requestPush(skipPush, 'save-content-progress')
     return
@@ -115,7 +116,8 @@ export const save = async (
     await duplicateProgressToALaCarteOffline(
       progresses as Record<string, number>,
       metadata as Record<string, ProgressMetadata>,
-      activeCollection
+      activeCollection,
+      currentSeconds
     )
     requestPush(skipPush, 'save-content-progress')
     return response
@@ -131,7 +133,7 @@ export const save = async (
   Object.assign(progresses, bubbled)
 
   const existing = await snapshotByIds(Object.keys(bubbled).map(Number), activeCollection)
-  bubbled = filterOutNegativeProgress(bubbled, existing)
+  bubbled = mergeProgressWithExisting(bubbled, existing)
 
   await bubbleAndTrickleProgressesSafely(bubbled, metadata, { accessedDirectly }, activeCollection)
 
@@ -297,18 +299,22 @@ const handleLearningPathProgressActions = async (
 
 const duplicateProgressToALaCarte = async (
   progresses: Record<number, number>,
-  collection: CollectionParameter
+  collection: CollectionParameter,
+  currentSeconds: number | undefined = undefined
 ): Promise<void> => {
   let filtered = filterOutLearningPathsForDuplication(progresses, collection)
   const externalProgresses = await snapshotByIds(Object.keys(filtered).map(Number))
-  filtered = filterOutNegativeProgress(filtered, externalProgresses)
-  await duplicateProgressForIds(filtered)
+  filtered = mergeProgressWithExisting(filtered, externalProgresses, currentSeconds)
+  await duplicateProgressForIds(filtered, currentSeconds)
 }
 
-const duplicateProgressForIds = async (entries: Record<number, number>): Promise<unknown[]> =>
+const duplicateProgressForIds = async (
+  entries: Record<number, number>,
+  currentSeconds: number | undefined = undefined
+): Promise<unknown[]> =>
   Promise.all(
     Object.entries(entries).map(([id, pct]) =>
-      save(parseInt(id, 10), pct, undefined, undefined, {
+      save(parseInt(id, 10), pct, undefined, currentSeconds, {
         skipPush: true,
         accessedDirectly: false,
       })
