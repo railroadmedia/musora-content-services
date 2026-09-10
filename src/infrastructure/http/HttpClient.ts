@@ -18,6 +18,7 @@ export class HttpClient {
   private headerProvider: HeaderProvider
   private requestExecutor: RequestExecutor
   private credentials: RequestCredentials
+  private inFlightGetRequests: Map<string, Promise<any>> = new Map()
 
   constructor(
     baseUrl: string = '',
@@ -42,7 +43,20 @@ export class HttpClient {
   }
 
   public async get<T>(url: string, options: _RequestOptions = {}): Promise<T> {
-    return this.request<T>(url, 'GET', options)
+    const key = `GET:${this.resolveUrl(url)}:${options.dataVersion || ''}`
+
+    const inFlightRequest = this.inFlightGetRequests.get(key)
+    if (inFlightRequest) {
+      return inFlightRequest
+    }
+
+    const request = this.request<T>(url, 'GET', options).finally(() => {
+      this.inFlightGetRequests.delete(key)
+    })
+    
+    this.inFlightGetRequests.set(key, request)
+
+    return request
   }
 
   public async post<T>(url: string, data: any, options: _RequestOptions = {}): Promise<T> {

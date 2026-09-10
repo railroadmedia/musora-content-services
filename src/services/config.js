@@ -9,6 +9,7 @@ export let globalConfig = {
   sanityConfig: {},
   railcontentConfig: {},
   sessionConfig: {},
+  sessionUser: null,
   localStorage: null,
   isMA: false,
   localTimezoneString: null, // In format: America/Vancouver
@@ -23,8 +24,27 @@ export let globalConfig = {
 const excludeFromGeneratedIndex = []
 
 /**
+ * @param {*} target
+ * @param {*} source
+ * @returns {*}
+ */
+function deepMerge(target, source) {
+  if (source === undefined) return target
+  if (typeof source !== 'object' || source === null || Array.isArray(source)) return source
+
+  const merged = { ...target }
+  for (const key of Object.keys(source)) {
+    merged[key] = deepMerge(target?.[key], source[key])
+  }
+  return merged
+}
+
+/**
  * Initializes the service with the given configuration.
  * This function must be called before using any other functions in this library.
+ * Each call replaces the prior config wholesale - pass the full config every time.
+ * For a partial update to just the session (e.g. userId resolving after boot),
+ * use {@link updateSessionConfig} instead.
  * Automatically initializes award definitions with 24-hour cache in the background.
  *
  * @param {Config} config - Configuration object containing API settings.
@@ -106,6 +126,22 @@ export function initializeService(config) {
   }
 }
 
+/**
+ * Deep-merges partial session data (e.g. userId) into the existing sessionConfig
+ * without touching any other part of globalConfig. Use this for reactive updates
+ * (e.g. a watcher that re-syncs userId once a user resolves) instead of calling
+ * initializeService again, since initializeService replaces sessionConfig wholesale.
+ *
+ * @param {*} sessionConfig
+ */
+export function updateSessionConfig(sessionConfig) {
+  globalConfig.sessionConfig = deepMerge(globalConfig.sessionConfig, sessionConfig)
+}
+
 export function initializeEnvVar(config) {
   globalConfig.appEnv = config.appEnv
+}
+
+export function setSessionUserData(userData) {
+  globalConfig.sessionUser = userData || null
 }
