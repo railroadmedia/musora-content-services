@@ -115,6 +115,16 @@ describe('Progress.save', () => {
     expect(record.data?.progress_percent).toBe(50)
     expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
   })
+
+  test('progress lower than existing still updates resumeTime, without regressing percent', async () => {
+    const hierarchy = { metadata: { 810: meta }, parents: {}, children: {} }
+    await Progress.save(810, 70, collectionSelf, 30, { hierarchy, isOffline: true })
+    await Progress.save(810, 20, collectionSelf, 5, { hierarchy, isOffline: true })
+    const record = await db.contentProgress.getOneProgressByContentId(810, null)
+    expect(record.data?.progress_percent).toBe(70)
+    expect(record.data?.resume_time_seconds).toBe(5)
+    expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
+  })
 })
 
 describe('Progress.setStatus', () => {
@@ -186,5 +196,28 @@ describe('Scenario: Completing multiple lessons at once', () => {
     expect(await Progress.state(50001)).toBe('completed')
     expect(await Progress.state(50002)).toBe('completed')
     expect(await Progress.state(50003)).toBe('completed')
+  })
+})
+
+describe('Scenario: Playlist progress duplicates resumeTime to a-la-carte', () => {
+  const playlistCollection = { type: COLLECTION_TYPE.PLAYLIST, id: 60001 }
+
+  test('a-la-carte record picks up resumeTime from the playlist save', async () => {
+    const hierarchy = { metadata: { 60002: meta }, parents: {}, children: {} }
+    await Progress.save(60002, 50, playlistCollection, 100, { hierarchy })
+
+    const aLaCarte = await db.contentProgress.getOneProgressByContentId(60002, null)
+    expect(aLaCarte.data?.progress_percent).toBe(50)
+    expect(aLaCarte.data?.resume_time_seconds).toBe(100)
+  })
+
+  test('later playlist session with lower percent still updates a-la-carte resume time, without regressing percent', async () => {
+    const hierarchy = { metadata: { 60003: meta }, parents: {}, children: {} }
+    await Progress.save(60003, 75, playlistCollection, 150, { hierarchy })
+    await Progress.save(60003, 20, playlistCollection, 20, { hierarchy })
+
+    const aLaCarte = await db.contentProgress.getOneProgressByContentId(60003, null)
+    expect(aLaCarte.data?.progress_percent).toBe(75)
+    expect(aLaCarte.data?.resume_time_seconds).toBe(20)
   })
 })

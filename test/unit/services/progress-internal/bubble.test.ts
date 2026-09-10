@@ -24,7 +24,7 @@ import {
   bubbleAndTrickleProgressesSafely,
   bubbleProgress,
   computeBubbleTrickleProgresses,
-  filterOutNegativeProgress,
+  mergeProgressWithExisting,
   getAncestorAndSiblingIds,
   getChildrenToDepth,
   trickleProgress,
@@ -39,43 +39,43 @@ beforeEach(() => {
   mockEraseProgressMany.mockResolvedValue({ data: null })
 })
 
-describe('filterOutNegativeProgress', () => {
+describe('mergeProgressWithExisting', () => {
   test('drops entry when new progress is less than existing', () => {
-    const result = filterOutNegativeProgress(
+    const result = mergeProgressWithExisting(
       { 101: 30 },
-      { 101: { progress: 70, last_update: 0, status: 'started' } }
+      { 101: { progress: 70, last_update: 0, resume_time: null, status: 'started' } }
     )
     expect(result).not.toHaveProperty('101')
   })
 
   test('keeps entry when new progress equals existing', () => {
-    const result = filterOutNegativeProgress(
+    const result = mergeProgressWithExisting(
       { 101: 50 },
-      { 101: { progress: 50, last_update: 0, status: 'started' } }
+      { 101: { progress: 50, last_update: 0, resume_time: null, status: 'started' } }
     )
     expect(result[101]).toBe(50)
   })
 
   test('keeps entry when new progress is greater than existing', () => {
-    const result = filterOutNegativeProgress(
+    const result = mergeProgressWithExisting(
       { 101: 80 },
-      { 101: { progress: 50, last_update: 0, status: 'started' } }
+      { 101: { progress: 50, last_update: 0, resume_time: null, status: 'started' } }
     )
     expect(result[101]).toBe(80)
   })
 
   test('keeps entry when no existing snapshot', () => {
-    const result = filterOutNegativeProgress({ 101: 10 }, {})
+    const result = mergeProgressWithExisting({ 101: 10 }, {})
     expect(result[101]).toBe(10)
   })
 
   test('drops only entries below existing, keeps others in mixed set', () => {
-    const result = filterOutNegativeProgress(
+    const result = mergeProgressWithExisting(
       { 101: 20, 102: 80, 103: 40 },
       {
-        101: { progress: 70, last_update: 0, status: 'started' },
-        102: { progress: 20, last_update: 0, status: 'started' },
-        103: { progress: 0, last_update: 0, status: '' },
+        101: { progress: 70, last_update: 0, resume_time: null, status: 'started' },
+        102: { progress: 20, last_update: 0, resume_time: null, status: 'started' },
+        103: { progress: 0, last_update: 0, resume_time: null, status: '' },
       }
     )
     expect(result).not.toHaveProperty('101')
@@ -85,11 +85,38 @@ describe('filterOutNegativeProgress', () => {
 
   test('returns new object, does not mutate input', () => {
     const progresses = { 101: 10 }
-    const result = filterOutNegativeProgress(progresses, {
-      101: { progress: 50, last_update: 0, status: 'started' },
+    const result = mergeProgressWithExisting(progresses, {
+      101: { progress: 50, last_update: 0, resume_time: null, status: 'started' },
     })
     expect(result).not.toBe(progresses)
     expect(progresses[101]).toBe(10)
+  })
+
+  test('drops a regressed entry when resumeTime is unchanged', () => {
+    const result = mergeProgressWithExisting(
+      { 101: 30 },
+      { 101: { progress: 70, last_update: 0, resume_time: 120, status: 'started' } },
+      120
+    )
+    expect(result).not.toHaveProperty('101')
+  })
+
+  test('keeps a regressed entry, clamped to existing progress, when resumeTime has moved', () => {
+    const result = mergeProgressWithExisting(
+      { 101: 30 },
+      { 101: { progress: 70, last_update: 0, resume_time: 120, status: 'started' } },
+      20
+    )
+    expect(result[101]).toBe(70)
+  })
+
+  test('keeps the higher existing progress even when the new resumeTime is different and lower', () => {
+    const result = mergeProgressWithExisting(
+      { 101: 10 },
+      { 101: { progress: 50, last_update: 0, resume_time: 30, status: 'started' } },
+      5
+    )
+    expect(result[101]).toBe(50)
   })
 })
 
