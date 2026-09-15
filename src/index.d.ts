@@ -21,7 +21,8 @@ import {
 	globalConfig,
 	initializeEnvVar,
 	initializeService,
-	setSessionUserData
+	setSessionUserData,
+	updateSessionConfig
 } from './services/config.js';
 
 import {
@@ -926,6 +927,7 @@ declare module 'musora-content-services' {
 		updatePracticeGoals,
 		updatePracticeNotes,
 		updateProfileVisibility,
+		updateSessionConfig,
 		updateThread,
 		updateUserPractice,
 		upgradeSubscription,

@@ -25,7 +25,8 @@ import {
 	globalConfig,
 	initializeEnvVar,
 	initializeService,
-	setSessionUserData
+	setSessionUserData,
+	updateSessionConfig
 } from './services/config.js';
 
 import {
@@ -925,6 +926,7 @@ export {
 	updatePracticeGoals,
 	updatePracticeNotes,
 	updateProfileVisibility,
+	updateSessionConfig,
 	updateThread,
 	updateUserPractice,
 	upgradeSubscription,
