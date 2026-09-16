@@ -170,7 +170,12 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, opti
 
   const [contentCardMap, playlistCards, methodCard] = await getCards(brand, limit, userPinnedItem)
 
-  const pinnedCard = await popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard, brand)
+  let pinnedCard = null
+  try {
+    pinnedCard = await popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard, brand) // todo: catch errors in here
+  } catch (error) {
+    console.error('Error popping pinned item:', error)
+  }
 
   let allResultsLength = playlistCards.length + contentCardMap.size
   if (methodCard) {
@@ -236,20 +241,23 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
     if (pinnedPlaylist) {
       item = pinnedPlaylist
     } else {
+      let playlist
       try {
-        const playlist = await fetchPlaylist(pinnedId)
+        playlist = await fetchPlaylist(pinnedId)
+      } catch (error) {
+        if (error?.status !== 404) {
+          throw error
+        }
+        unpinProgressRow(brand)
+      }
 
+      if (playlist) {
         item = processPlaylistItem({
           id: pinnedId,
           playlist: playlist,
           type: 'playlist',
           progressTimestamp: new Date().getTime(),
         })
-      } catch (error) {
-        if (error?.status !== 404) {
-          throw error
-        }
-        unpinProgressRow(brand)
       }
     }
   } else if (progressType === 'method') {
