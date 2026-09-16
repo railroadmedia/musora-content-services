@@ -139,7 +139,7 @@ describe('getProgressRows', () => {
     expect(result.data.find((row) => row.id === 999)).toBeUndefined();
   });
 
-  it('rethrows and does not unpin on non-404 errors fetching the pinned playlist', async () => {
+  it('does not unpin on non-404 errors fetching the pinned playlist, and omits it from results', async () => {
     fetchUserPlaylists.mockResolvedValue({ data: [] });
     getAllStartedOrCompleted.mockResolvedValue([]);
     fetchByRailContentIds.mockResolvedValue([]);
@@ -149,8 +149,10 @@ describe('getProgressRows', () => {
     fetchPlaylist.mockRejectedValue({ status: 500, statusText: 'Internal Server Error' });
     PUT.mockResolvedValue({});
 
-    await expect(getProgressRows({ brand: 'brand1', limit: 8 })).rejects.toMatchObject({ status: 500 });
+    const result = await getProgressRows({ brand: 'brand1', limit: 8 });
 
+    expect(result).toHaveProperty('type', 'progress_rows');
+    expect(result.data.find((row) => row.id === 999)).toBeUndefined();
     expect(PUT).not.toHaveBeenCalledWith(
       expect.stringContaining('/progress/unpin'),
       expect.anything()
