@@ -1,8 +1,9 @@
 import { getProgressRows } from '../../src/services/progress-row/base.js';
-import { fetchUserPlaylists } from '../../src/services/content-org/playlists.js';
+import { fetchUserPlaylists, fetchPlaylist } from '../../src/services/content-org/playlists.js';
 import { fetchByRailContentIds } from '../../src/services/sanity.js';
 import {getAllStartedOrCompleted, getProgressStateByIds} from '../../src/services/contentProgress.js';
 import { initializeTestService } from '../initializeTests.js';
+import { GET, PUT } from '../../src/infrastructure/http/HttpClient';
 import mockData_progress_content from '../mockData/mockData_progress_content.json';
 import mockData_sanity_progress_content from "../mockData/mockData_sanity_progress_content.json";
 
@@ -115,6 +116,59 @@ describe('getProgressRows', () => {
     const result = await getProgressRows({ brand: 'brand1', limit: 8 });
     expect(result).toHaveProperty('type', 'progress_rows');
     expect(result.data).toEqual([]);
+  });
+
+  it('unpins a pinned playlist that no longer exists instead of throwing', async () => {
+    fetchUserPlaylists.mockResolvedValue({ data: [] });
+    getAllStartedOrCompleted.mockResolvedValue([]);
+    fetchByRailContentIds.mockResolvedValue([]);
+    getProgressStateByIds.mockResolvedValue({});
+
+    GET.mockResolvedValue({ id: 999, type: 'playlist' });
+    fetchPlaylist.mockRejectedValue(new Error('playlist not found'));
+    PUT.mockResolvedValue({});
+
+    const result = await getProgressRows({ brand: 'brand1', limit: 8 });
+
+    expect(fetchPlaylist).toHaveBeenCalledWith(999);
+    expect(PUT).toHaveBeenCalledWith(
+      expect.stringContaining('/api/user-management-system/v1/progress/unpin?brand=brand1'),
+      null
+    );
+    expect(result).toHaveProperty('type', 'progress_rows');
+    expect(result.data.find((row) => row.id === 999)).toBeUndefined();
+  });
+
+  it('keeps a pinned playlist that still exists and skips unpinning', async () => {
+    fetchUserPlaylists.mockResolvedValue({ data: [] });
+    getAllStartedOrCompleted.mockResolvedValue([]);
+    fetchByRailContentIds.mockResolvedValue([]);
+    getProgressStateByIds.mockResolvedValue({});
+
+    GET.mockResolvedValue({ id: 999, type: 'playlist' });
+    fetchPlaylist.mockResolvedValue({
+      id: 999,
+      name: 'Playlist 999',
+      duration_formated: '10m',
+      total_items: 1,
+      likes: 0,
+      user: { display_name: 'User1' },
+      brand: 'brand1',
+      first_items_thumbnail_url: 'url1',
+      navigateTo: { id: null, content_id: null },
+    });
+    PUT.mockResolvedValue({});
+
+    const result = await getProgressRows({ brand: 'brand1', limit: 8 });
+
+    expect(fetchPlaylist).toHaveBeenCalledWith(999);
+    expect(PUT).not.toHaveBeenCalledWith(
+      expect.stringContaining('/progress/unpin'),
+      expect.anything()
+    );
+    const pinnedRow = result.data.find((row) => row.id === 999);
+    expect(pinnedRow).toBeDefined();
+    expect(pinnedRow.pinned).toBe(true);
   });
 
   it.skip('check progress rows logic', async () => {
