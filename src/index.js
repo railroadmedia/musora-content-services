@@ -5,8 +5,10 @@ import {
 } from './services/eventsAPI';
 
 import {
+	createAudioChunkUploader,
 	formatDurationMs,
 	getCombinedAudioUrl,
+	getDownloadUrl,
 	getExtensionForMimeType,
 	getMimeTypeForExtension,
 	getMyRecordings,
@@ -28,10 +30,6 @@ import {
 	downsamplePeaks,
 	getWaveformPeaks
 } from './services/audioRecording/waveformPeaks.js';
-
-import {
-	createAudioChunkUploader
-} from './services/audioRecording/webmSeekabilityFixer.js';
 
 import {
 	registerAwardCallback,
@@ -770,6 +768,7 @@ export {
 	getContentIdsWithLessonNotes,
 	getContentRows,
 	getDailySession,
+	getDownloadUrl,
 	getEndScreen,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,

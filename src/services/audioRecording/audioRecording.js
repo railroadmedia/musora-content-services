@@ -388,6 +388,15 @@ export function getCombinedAudioUrl(folder) {
 }
 
 /**
+ * Download URL for a recording — same audio bytes as getCombinedAudioUrl, but the backend
+ * sends it as an attachment (Content-Disposition), so the browser saves it instead of
+ * playing it inline. Meant for a plain `<a :href>`/navigation, not a fetch.
+ */
+export function getDownloadUrl(folder) {
+  return `${globalConfig.baseUrl ?? ''}${BASE_PATH}/download?folder=${encodeURIComponent(folder)}`
+}
+
+/**
  * Create (or return the existing) share link for a recording. Owner only; idempotent —
  * re-sharing an already-shared recording returns the same token, not a new one. The link
  * never expires on its own, only via unshareRecording().
@@ -411,6 +420,51 @@ export function getSharedCombinedAudioUrl(token) {
   return `${globalConfig.baseUrl ?? ''}${BASE_PATH}/shared/${encodeURIComponent(token)}/combined`
 }
 
+/**
+ * Wraps uploadChunk with an optional per-recording enhancement hook, so callers never
+ * need to call uploadChunk directly. `createFormatFixer`, if given, is called with no
+ * arguments to build a fixer exposing `feedChunk(index, blob)` and an async `finish()`
+ * that returns the corrected chunk-1 Blob (or a falsy value to skip) — this function owns
+ * re-uploading it. A failure anywhere in the fixer is caught and logged rather than
+ * blocking the actual upload, which must never depend on it. Deciding *whether* a fixer
+ * is needed (e.g. only for `extension === 'webm'`) is the caller's job, not this
+ * function's — pass `null`/omit for any recording that doesn't need one.
+ *
+ * Only FE currently passes one (the WebM/ts-ebml seekability fixer, which lives there
+ * since MA never produces WebM in the first place); omit it on any platform that has
+ * nothing to fix.
+ */
+export async function createAudioChunkUploader(folder, extension, createFormatFixer = null) {
+  let fixer = null
+  if (createFormatFixer) {
+    try {
+      fixer = await createFormatFixer()
+    } catch (error) {
+      console.warn('Chunk format fixer failed to initialize; uploading chunks unfixed:', error)
+    }
+  }
+
+  function upload(index, chunk, videoTimeMs, peaks, timing = null) {
+    fixer?.feedChunk(index, chunk)
+    return uploadChunk(folder, index, extension, chunk, videoTimeMs, peaks, timing)
+  }
+
+  async function finish() {
+    if (!fixer) return
+
+    try {
+      const fixedFirstChunk = await fixer.finish()
+      if (fixedFirstChunk) {
+        await uploadChunk(folder, 1, extension, fixedFirstChunk)
+      }
+    } catch (error) {
+      console.warn('Chunk format fixer failed to finalize; recording stays as uploaded:', error)
+    }
+  }
+
+  return { upload, finish }
+}
+
 export default {
   MIME_TYPES,
   EXTENSIONS,
@@ -431,7 +485,9 @@ export default {
   getMyRecordings,
   getRecordedContentIds,
   getCombinedAudioUrl,
+  getDownloadUrl,
   shareRecording,
   unshareRecording,
   getSharedCombinedAudioUrl,
+  createAudioChunkUploader,
 }
