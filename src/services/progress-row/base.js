@@ -246,7 +246,9 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
           progressTimestamp: new Date().getTime(),
         })
       } catch (error) {
-        console.error(`Playlist ${pinnedId} is deleted, unpinning it for user.`, error)
+        if (error?.status !== 404) {
+          throw error
+        }
         unpinProgressRow(brand)
       }
     }

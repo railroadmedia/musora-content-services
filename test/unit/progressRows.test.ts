@@ -125,7 +125,7 @@ describe('getProgressRows', () => {
     getProgressStateByIds.mockResolvedValue({});
 
     GET.mockResolvedValue({ id: 999, type: 'playlist' });
-    fetchPlaylist.mockRejectedValue(new Error('playlist not found'));
+    fetchPlaylist.mockRejectedValue({ status: 404, statusText: 'Not Found' });
     PUT.mockResolvedValue({});
 
     const result = await getProgressRows({ brand: 'brand1', limit: 8 });
@@ -137,6 +137,24 @@ describe('getProgressRows', () => {
     );
     expect(result).toHaveProperty('type', 'progress_rows');
     expect(result.data.find((row) => row.id === 999)).toBeUndefined();
+  });
+
+  it('rethrows and does not unpin on non-404 errors fetching the pinned playlist', async () => {
+    fetchUserPlaylists.mockResolvedValue({ data: [] });
+    getAllStartedOrCompleted.mockResolvedValue([]);
+    fetchByRailContentIds.mockResolvedValue([]);
+    getProgressStateByIds.mockResolvedValue({});
+
+    GET.mockResolvedValue({ id: 999, type: 'playlist' });
+    fetchPlaylist.mockRejectedValue({ status: 500, statusText: 'Internal Server Error' });
+    PUT.mockResolvedValue({});
+
+    await expect(getProgressRows({ brand: 'brand1', limit: 8 })).rejects.toMatchObject({ status: 500 });
+
+    expect(PUT).not.toHaveBeenCalledWith(
+      expect.stringContaining('/progress/unpin'),
+      expect.anything()
+    );
   });
 
   it('keeps a pinned playlist that still exists and skips unpinning', async () => {
