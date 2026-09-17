@@ -25,6 +25,7 @@ import {
 	globalConfig,
 	initializeEnvVar,
 	initializeService,
+	setSessionUserData,
 	updateSessionConfig
 } from './services/config.js';
 
@@ -247,6 +248,11 @@ import {
 	rescindInvite,
 	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
+	fetchQuizAnswers,
+	storeQuizAnswers
+} from './services/my-path/placement-quiz.ts';
 
 import {
 	deleteAllNotifications,
@@ -687,6 +693,7 @@ export {
 	fetchPosts,
 	fetchPracticeGoals,
 	fetchPublicAnnouncement,
+	fetchQuizAnswers,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
@@ -877,6 +884,7 @@ export {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	sendRevenueCatPurchaseMetadata,
+	setSessionUserData,
 	setStudentViewForUser,
 	setUserPinnedProgressRow,
 	setUserSignature,
@@ -885,6 +893,7 @@ export {
 	startLiveEventPolling,
 	startOnboarding,
 	status,
+	storeQuizAnswers,
 	toDayjs,
 	toLocalDay,
 	togglePlaylistPrivate,
