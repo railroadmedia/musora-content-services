@@ -6,7 +6,7 @@ const EXPOSURES_URL = '/api/feature/v1/exposures'
 
 type Payload = Record<
   string,
-  { variant: string | null; value: unknown; version: number; reason: string }
+  { variant: string | null; value: unknown; version: number; reason: string; brand?: string | null }
 >
 
 let fetchMock: jest.Mock
@@ -107,7 +107,13 @@ describe('featureFlags', () => {
 
   describe('exposures', () => {
     const rolledOut: Payload = {
-      'checkout-copy': { variant: 'treatment', value: 'treatment', version: 4, reason: 'rollout' },
+      'checkout-copy': {
+        variant: 'treatment',
+        value: 'treatment',
+        version: 4,
+        reason: 'rollout',
+        brand: 'drumeo',
+      },
     }
 
     it('records nothing merely for reading a flag', async () => {
@@ -130,14 +136,16 @@ describe('featureFlags', () => {
       await settle()
 
       expect(bodyOf(requestsTo(EXPOSURES_URL)[0])).toEqual({
-        exposures: [{ flag: 'checkout-copy', variant: 'treatment', version: 4, reason: 'rollout' }],
+        exposures: [
+          { flag: 'checkout-copy', variant: 'treatment', version: 4, reason: 'rollout', brand: 'drumeo' },
+        ],
       })
     })
 
     it('does not report a reason the server would discard', async () => {
       await loadFlags({
-        served: { variant: 'off', value: false, version: 2, reason: 'default' },
-        off: { variant: 'off', value: false, version: 2, reason: 'disabled' },
+        served: { variant: 'off', value: false, version: 2, reason: 'default', brand: 'drumeo' },
+        off: { variant: 'off', value: false, version: 2, reason: 'disabled', brand: 'drumeo' },
       })
 
       featureFlags.recordExposure('served')
@@ -151,7 +159,7 @@ describe('featureFlags', () => {
     it('splits more than fifty exposures across requests', async () => {
       const many: Payload = {}
       for (let i = 0; i < 60; i += 1) {
-        many[`flag-${i}`] = { variant: 'on', value: true, version: 1, reason: 'rollout' }
+        many[`flag-${i}`] = { variant: 'on', value: true, version: 1, reason: 'rollout', brand: 'drumeo' }
       }
       await loadFlags(many)
 

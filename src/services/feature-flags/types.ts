@@ -2,6 +2,8 @@
  * @module FeatureFlags
  */
 
+import { Brand } from '@/lib/brands'
+
 export type EvaluationReason =
   | 'override'
   | 'rule'
@@ -16,6 +18,7 @@ export type FeatureFlagEntry = {
   value: unknown
   version: number
   reason: EvaluationReason
+  brand: Brand | null
 }
 
 export type FeatureFlagPayload = Record<string, FeatureFlagEntry>
@@ -25,4 +28,5 @@ export type ExposureReport = {
   variant: string
   version: number
   reason: EvaluationReason
+  brand: Brand
 }
