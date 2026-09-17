@@ -2,7 +2,7 @@
  * @module ProgressRow
  */
 
-import { getActivePath, fetchLearningPathLessons } from '../../content-org/learning-paths'
+import { getActivePath, fetchLearningPathLessons } from '../../my-path/learning-paths.ts'
 import { fetchMethodV2IntroVideo } from '../../sanity'
 import { getProgressState } from '../../contentProgress'
 import { COLLECTION_TYPE, STATE } from '../../sync/models/ContentProgress'
