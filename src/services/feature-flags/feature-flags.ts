@@ -100,7 +100,7 @@ export const featureFlags = {
    * @param {string} [fallback]
    * @returns {string}
    */
-  variant(flagKey: string, fallback = ''): string {
+  variant(flagKey: string, fallback: string = ''): string {
     const value = read()[flagKey]?.value
 
     return typeof value === 'string' ? value : fallback
@@ -126,7 +126,12 @@ export const featureFlags = {
   recordExposure(flagKey: string): void {
     const entry = read()[flagKey]
 
-    if (!entry || entry.variant === null || !RECORDABLE_REASONS.includes(entry.reason)) {
+    if (
+      !entry ||
+      entry.variant === null ||
+      entry.brand === null ||
+      !RECORDABLE_REASONS.includes(entry.reason)
+    ) {
       return
     }
 
@@ -144,6 +149,7 @@ export const featureFlags = {
       // to the definition this client evaluated under.
       version: entry.version,
       reason: entry.reason,
+      brand: entry.brand,
     })
 
     schedule()

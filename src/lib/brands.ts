@@ -6,3 +6,5 @@ export enum Brands {
   Singeo = 'singeo',
   Playbass = 'playbass',
 }
+
+export type Brand = 'musora' | 'drumeo' | 'pianote' | 'guitareo' | 'singeo' | 'playbass'
