@@ -240,6 +240,7 @@ import {
 	getLearningPathLessonsByIds,
 	isNextLessonLocked,
 	mapContentToParent,
+	resetActiveLearningPath,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -864,6 +865,7 @@ declare module 'musora-content-services' {
 		requestEmailChange,
 		rescindInvite,
 		reset,
+		resetActiveLearningPath,
 		resetAllAwards,
 		resetAllLearningPaths,
 		resetPassword,
