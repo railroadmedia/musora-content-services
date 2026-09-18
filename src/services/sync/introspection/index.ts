@@ -71,23 +71,54 @@ async function readTables(database: Database, modelNames: string[]): Promise<Rec
   return Object.fromEntries(modelNames.map((modelName) => [modelName, byTable[tableForModelName(modelName)]]))
 }
 
-async function uploadSnapshot(payload: string, context: SyncContext): Promise<void> {
+type SnapshotEntry = {
+  client_id: string
+  client_session_id: string
+  client_created_at: number
+  payload: string
+}
+
+const pendingSnapshots: SnapshotEntry[] = []
+let isDrainingSnapshots = false
+
+async function uploadSnapshot(entry: SnapshotEntry): Promise<void> {
   await diagnosticsFetch('/snapshot', {
     method: 'POST',
-    body: JSON.stringify({
-      client_id: context.session.getClientId(),
-      client_session_id: context.session.getSessionId() ?? '',
-      client_created_at: Date.now(),
-      payload,
-    }),
+    body: JSON.stringify(entry),
   })
+}
+
+async function drainSnapshotQueue(context: SyncContext): Promise<void> {
+  if (isDrainingSnapshots) return
+  isDrainingSnapshots = true
+
+  try {
+    while (pendingSnapshots.length && context.connectivity.getValue()) {
+      try {
+        await uploadSnapshot(pendingSnapshots[0])
+      } catch {
+        break
+      }
+      pendingSnapshots.shift()
+    }
+  } finally {
+    isDrainingSnapshots = false
+  }
 }
 
 async function performDump(database: Database, modelNames: string[], context: SyncContext, CompressionWorker?: CompressionWorkerConstructor) {
   const dataset = await readTables(database, modelNames)
   const payload = await compressInWorker(dataset, CompressionWorker)
-  await uploadSnapshot(payload, context)
+
+  pendingSnapshots.push({
+    client_id: context.session.getClientId(),
+    client_session_id: context.session.getSessionId() ?? '',
+    client_created_at: Date.now(),
+    payload,
+  })
   await setLastDumpAt(database, Date.now())
+  drainSnapshotQueue(context)
+
   return payload
 }
 
@@ -169,10 +200,24 @@ async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<a
 export default function setup(context: SyncContext, database: Database, storesRegistry: Record<string, SyncStore<any>>, CompressionWorker?: CompressionWorkerConstructor) {
   let timer: ReturnType<typeof setTimeout> | null = null
   let unsubscribeWriteEvents: (() => void) | null = null
+  let unsubscribeVisibilityWait: (() => void) | null = null
 
   subscribeToWriteEvents(storesRegistry, context).then((unsubscribe) => {
     unsubscribeWriteEvents = unsubscribe
   })
+
+  const unsubscribeConnectivity = context.connectivity.subscribe((isOnline) => {
+    if (isOnline) drainSnapshotQueue(context)
+  })
+
+  function waitUntilVisible(onVisible: () => void) {
+    unsubscribeVisibilityWait = context.visibility.subscribe((isVisible) => {
+      if (!isVisible) return
+      unsubscribeVisibilityWait?.()
+      unsubscribeVisibilityWait = null
+      onVisible()
+    })
+  }
 
   async function scheduleNextDump() {
     const config = await fetchConfig()
@@ -188,6 +233,11 @@ export default function setup(context: SyncContext, database: Database, storesRe
     const delay = Math.max(0, (lastDumpAt ?? 0) + (minIntervalMinutes * 60 * 1000) - Date.now())
 
     timer = setTimeout(async () => {
+      if (!context.visibility.getValue()) {
+        waitUntilVisible(scheduleNextDump)
+        return
+      }
+
       await performDump(database, dumpableModelNames, context, CompressionWorker)
       scheduleNextDump()
     }, delay)
@@ -197,6 +247,8 @@ export default function setup(context: SyncContext, database: Database, storesRe
 
   return async () => {
     if (timer) clearTimeout(timer)
+    unsubscribeVisibilityWait?.()
+    unsubscribeConnectivity()
     unsubscribeWriteEvents?.()
   }
 }
