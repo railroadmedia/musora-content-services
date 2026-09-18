@@ -18,7 +18,7 @@ import {
   contentStatusReset,
   getAllCompletedByIds,
   getIdsWhereLastAccessedFromMethod,
-  getProgressState,
+  getProgressState, resetStatus,
 } from '../contentProgress.js'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, CollectionParameter, STATE } from '../sync/models/ContentProgress'
 import { db, SyncWriteDTO } from '../sync'
@@ -94,7 +94,7 @@ interface CollectionObject {
  * @param brand
  * @param userDate - local datetime. must have date and time - format 2025-10-31T13:45:00
  */
-export async function getDailySession(brand: string, userDate: Date) {
+export async function getDailySession(brand: string, userDate: Date): Promise<DailySessionResponse | '' | null> {
   const dateWithTimezone = formatLocalDateTime(userDate)
   const key = dailySessionKey(brand, dateWithTimezone)
 
@@ -102,13 +102,13 @@ export async function getDailySession(brand: string, userDate: Date) {
     return await dataPromiseGET(dailySessionPromises, key, async () => {
       const url = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
 
-      const response = await GET(url) as DailySessionResponse | ''
+      const response = await GET(url)
 
       if (!response) {
         return await updateDailySession(brand, userDate, false)
       }
-      return response as DailySessionResponse
-    })
+      return response
+    }) as DailySessionResponse | ''
   } catch (error) {
     console.error('Error fetching daily session:', (error as any).message)
     return null
@@ -125,7 +125,7 @@ export async function updateDailySession(
   brand: string,
   userDate: Date,
   keepFirstLearningPath: boolean = false,
-) {
+): Promise<DailySessionResponse | null> {
   const dateWithTimezone = formatLocalDateTime(userDate)
   const key = dailySessionKey(brand, dateWithTimezone)
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
@@ -155,7 +155,7 @@ function formatLocalDateTime(date: Date): string {
  * Gets user's active learning path.
  * @param brand
  */
-export async function getActivePath(brand: string) {
+export async function getActivePath(brand: string): Promise<ActiveLearningPathResponse | null> {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
 
   return (await dataPromiseGET(activePathPromises, activePathKey(brand), () =>
@@ -168,7 +168,7 @@ export async function getActivePath(brand: string) {
  * @param brand
  * @param learningPathId
  */
-export async function startLearningPath(brand: string, learningPathId: number) {
+export async function startLearningPath(brand: string, learningPathId: number): Promise<ActiveLearningPathResponse | null> {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
   const body = { brand: brand, learning_path_id: learningPathId }
 
@@ -183,6 +183,19 @@ export async function startLearningPath(brand: string, learningPathId: number) {
   }
 
   return response
+}
+
+/*
+  * Resets the user's active learning path and updates the daily session.
+  * @param {string} brand
+  * @param {number} learningPathId - The ID of the active learning path to reset.
+  * @param {Date} userDate - The user's local date.
+  * @returns {Promise<DailySessionResponse | '' | null>} - The updated daily session response or null if an error occurs.
+ */
+export async function resetActiveLearningPath(brand: string, learningPathId: number, userDate: Date): Promise<DailySessionResponse | '' | null> {
+  const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
+  await resetStatus(learningPathId, collection)
+  return await updateDailySession(brand, userDate)
 }
 
 function dataPromiseGET<T>(
