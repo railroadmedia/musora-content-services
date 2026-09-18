@@ -18,7 +18,8 @@ import {
   contentStatusReset,
   getAllCompletedByIds,
   getIdsWhereLastAccessedFromMethod,
-  getProgressState, resetStatus,
+  getProgressState, 
+  resetStatus,
 } from '../contentProgress.js'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, CollectionParameter, STATE } from '../sync/models/ContentProgress'
 import { db, SyncWriteDTO } from '../sync'
