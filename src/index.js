@@ -25,6 +25,7 @@ import {
 	globalConfig,
 	initializeEnvVar,
 	initializeService,
+	setSessionUserData,
 	updateSessionConfig
 } from './services/config.js';
 
@@ -57,23 +58,6 @@ import {
 	guidedCourses,
 	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
-
-import {
-	completeLearningPathIntroVideo,
-	completeMethodIntroVideo,
-	fetchLearningPathLessons,
-	fetchLearningPathProgressCheckLessons,
-	getActivePath,
-	getDailySession,
-	getEnrichedLearningPath,
-	getEnrichedLearningPaths,
-	getLearningPathLessonsByIds,
-	isNextLessonLocked,
-	mapContentToParent,
-	resetAllLearningPaths,
-	startLearningPath,
-	updateDailySession
-} from './services/content-org/learning-paths.ts';
 
 import {
 	addItemToPlaylist,
@@ -247,6 +231,23 @@ import {
 	rescindInvite,
 	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
+	fetchLearningPathLessons,
+	fetchLearningPathProgressCheckLessons,
+	getActivePath,
+	getDailySession,
+	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
+	getLearningPathLessonsByIds,
+	isNextLessonLocked,
+	mapContentToParent,
+	resetAllLearningPaths,
+	startLearningPath,
+	updateDailySession
+} from './services/my-path/learning-paths.ts';
 
 import {
 	deleteAllNotifications,
@@ -877,6 +878,7 @@ export {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	sendRevenueCatPurchaseMetadata,
+	setSessionUserData,
 	setStudentViewForUser,
 	setUserPinnedProgressRow,
 	setUserSignature,

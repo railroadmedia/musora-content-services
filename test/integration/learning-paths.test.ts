@@ -89,7 +89,7 @@ const {
   mapLearningPathParentsTo,
   mapContentsThatWereLastProgressedFromMethod,
   resetLearningPathCachesForTests,
-} = require('../../src/services/content-org/learning-paths.ts')
+} = require('../../src/services/my-path/learning-paths.ts')
 
 const ctx = initializeTestDB()
 
