@@ -81,11 +81,23 @@ type SnapshotEntry = {
 const pendingSnapshots: SnapshotEntry[] = []
 let isDrainingSnapshots = false
 
+class SnapshotUploadError extends Error {
+  constructor(public status: number) {
+    super(`Snapshot upload failed with status ${status}`)
+  }
+}
+
 async function uploadSnapshot(entry: SnapshotEntry): Promise<void> {
-  await diagnosticsFetch('/snapshot', {
+  const response = await diagnosticsFetch('/snapshot', {
     method: 'POST',
     body: JSON.stringify(entry),
   })
+
+  if (!response.ok) throw new SnapshotUploadError(response.status)
+}
+
+function isPermanentlyRejected(error: unknown): boolean {
+  return error instanceof SnapshotUploadError && error.status >= 400 && error.status < 500
 }
 
 async function drainSnapshotQueue(context: SyncContext): Promise<void> {
@@ -96,8 +108,8 @@ async function drainSnapshotQueue(context: SyncContext): Promise<void> {
     while (pendingSnapshots.length && context.connectivity.getValue()) {
       try {
         await uploadSnapshot(pendingSnapshots[0])
-      } catch {
-        break
+      } catch (error) {
+        if (!isPermanentlyRejected(error)) break
       }
       pendingSnapshots.shift()
     }
