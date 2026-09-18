@@ -51,8 +51,9 @@ function tableForModelName(modelName: string): string {
 async function readTablesFromLiveCache(database: Database, modelNames: string[]): Promise<Record<string, unknown[]>> {
   const entries = await Promise.all(
     modelNames.map(async (modelName) => {
-      const records = await database.collections.get(tableForModelName(modelName)).query().fetch()
-      return [modelName, records.map((record) => record._raw)] as const
+      const tableName = tableForModelName(modelName)
+      const records = await database.collections.get(tableName).query().fetch()
+      return [tableName, records.map((record) => record._raw)] as const
     })
   )
   return Object.fromEntries(entries)
@@ -68,7 +69,7 @@ async function readTables(database: Database, modelNames: string[]): Promise<Rec
   }
 
   const byTable = await readPersistedTables(database.adapter.dbName, modelNames.map(tableForModelName))
-  return Object.fromEntries(modelNames.map((modelName) => [modelName, byTable[tableForModelName(modelName)]]))
+  return Object.fromEntries(modelNames.map((modelName) => [tableForModelName(modelName), byTable[tableForModelName(modelName)]]))
 }
 
 type SnapshotEntry = {
