@@ -244,6 +244,7 @@ import {
 	getLearningPathLessonsByIds,
 	isNextLessonLocked,
 	mapContentToParent,
+	resetActiveLearningPath,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -863,6 +864,7 @@ export {
 	requestEmailChange,
 	rescindInvite,
 	reset,
+	resetActiveLearningPath,
 	resetAllAwards,
 	resetAllLearningPaths,
 	resetPassword,
