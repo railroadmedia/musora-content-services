@@ -116,14 +116,19 @@ describe('Progress.save', () => {
     expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
   })
 
-  test('progress lower than existing still updates resumeTime, without regressing percent', async () => {
+  // a regressed watch-session tick (e.g. currentSeconds ticking during a rewind) is dropped
+  // by percent alone, same as any other regression — the per-tick save path deliberately
+  // ignores resumeTime here, since it changes on nearly every tick and would otherwise
+  // force a write on every call. resumeTime freshness for playlists is covered below,
+  // via the a-la-carte duplication path where it doesn't run on every tick.
+  test('regressed resumeTime alone does not force a write on the primary record', async () => {
+    await db.contentProgress.recordProgress(810, null, 70, meta, 30, { skipPush: true })
     const hierarchy = { metadata: { 810: meta }, parents: {}, children: {} }
-    await Progress.save(810, 70, collectionSelf, 30, { hierarchy, isOffline: true })
     await Progress.save(810, 20, collectionSelf, 5, { hierarchy, isOffline: true })
     const record = await db.contentProgress.getOneProgressByContentId(810, null)
     expect(record.data?.progress_percent).toBe(70)
-    expect(record.data?.resume_time_seconds).toBe(5)
-    expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
+    expect(record.data?.resume_time_seconds).toBe(30)
+    expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
   })
 })
 

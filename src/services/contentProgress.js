@@ -616,8 +616,12 @@ export async function saveContentProgress(
   let allProgresses = {}
   allProgresses[contentId] = progress
 
+  // percent-only: this gate runs on every watch-session tick, so checking resumeTime here
+  // would defeat its purpose of skipping a write when progress hasn't actually moved
+  // (currentSeconds changes on nearly every tick). resumeTime freshness for the a-la-carte
+  // duplicate is handled downstream in duplicateProgressToALaCarte instead.
   const existingProgress = await getProgressDataByIds(Object.keys(allProgresses), collection)
-  allProgresses = mergeProgressWithExisting(allProgresses, existingProgress, currentSeconds)
+  allProgresses = mergeProgressWithExisting(allProgresses, existingProgress)
   if (Object.keys(allProgresses).length === 0) {
     return
   }
