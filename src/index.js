@@ -251,6 +251,11 @@ import {
 } from './services/my-path/learning-paths.ts';
 
 import {
+	fetchQuizAnswers,
+	storeQuizAnswers
+} from './services/my-path/placement-quiz.ts';
+
+import {
 	deleteAllNotifications,
 	deleteNotification,
 	fetchLiveEventPollingState,
@@ -689,6 +694,7 @@ export {
 	fetchPosts,
 	fetchPracticeGoals,
 	fetchPublicAnnouncement,
+	fetchQuizAnswers,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
@@ -889,6 +895,7 @@ export {
 	startLiveEventPolling,
 	startOnboarding,
 	status,
+	storeQuizAnswers,
 	toDayjs,
 	toLocalDay,
 	togglePlaylistPrivate,

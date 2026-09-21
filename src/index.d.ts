@@ -247,6 +247,11 @@ import {
 } from './services/my-path/learning-paths.ts';
 
 import {
+	fetchQuizAnswers,
+	storeQuizAnswers
+} from './services/my-path/placement-quiz.ts';
+
+import {
 	deleteAllNotifications,
 	deleteNotification,
 	fetchLiveEventPollingState,
@@ -690,6 +695,7 @@ declare module 'musora-content-services' {
 		fetchPosts,
 		fetchPracticeGoals,
 		fetchPublicAnnouncement,
+		fetchQuizAnswers,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
@@ -890,6 +896,7 @@ declare module 'musora-content-services' {
 		startLiveEventPolling,
 		startOnboarding,
 		status,
+		storeQuizAnswers,
 		toDayjs,
 		toLocalDay,
 		togglePlaylistPrivate,
