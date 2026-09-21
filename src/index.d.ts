@@ -510,7 +510,9 @@ import {
 import {
 	listOAuthProviders,
 	loginAsUser,
+	loginWithMagicLink,
 	redirectToOAuthProvider,
+	requestMagicLoginLink,
 	unlinkOAuthProvider,
 	verifyOAuthToken
 } from './services/user/session.ts';
@@ -518,9 +520,7 @@ import {
 import {
 	generateAuthSessionUrl,
 	login,
-	loginWithMagicLink,
-	logout,
-	requestMagicLoginLink
+	logout
 } from './services/user/sessions.js';
 
 import {

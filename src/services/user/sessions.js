@@ -74,59 +74,6 @@ export async function login(email, password, deviceName, deviceToken, platform) 
 }*/
 
 /**
- * Requests a magic login link to be emailed to the user.
- *
- * Always resolves, whether or not an account exists for the email, so the
- * endpoint cannot be used to discover which addresses are registered.
- *
- * @param {string} email - Email address to send the login link to
- * @param {string|null} redirectTo - Relative path to send the user to after login
- *
- * @returns {Promise<void>}
- *
- * @example
- * requestMagicLoginLink('john@doe.com', '/lessons/123')
- *   .then(() => console.log('check your email'))
- *   .catch(error => console.error(error));
- */
-export async function requestMagicLoginLink(email, redirectTo = null) {
-  const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  await POST(`${baseUrl}/v1/sessions/magic-link`, {
-    email: email,
-    redirect_to: redirectTo,
-  })
-}
-
-/**
- * Exchanges a magic link token for an authenticated session.
- *
- * @param {string} email - Email address the link was sent to
- * @param {string} token - Token from the emailed link
- * @param {string|null} deviceName - Device name for the user
- * @param {string|null} deviceToken - Firebase token for the device
- * @param {string|null} platform - Device platform
- *
- * @returns {Promise<AuthResponse>} - User data, authentication token and redirect target
- *
- * @example
- * loginWithMagicLink('john@doe.com', 'a1b2c3')
- *   .then(content => console.log(content))
- *   .catch(error => console.error(error));
- */
-export async function loginWithMagicLink(email, token, deviceName, deviceToken, platform) {
-  const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  const data = await POST(`${baseUrl}/v1/sessions/magic-link/exchange`, {
-    email: email,
-    token: token,
-    device_name: deviceName,
-    device_token: deviceToken,
-    platform: platform,
-  })
-
-  return data
-}
-
-/**
  * Logs the user out of the current session.
  * Clears all cached data to prevent data leakage between users.
  *
