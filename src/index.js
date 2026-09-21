@@ -522,7 +522,9 @@ import {
 import {
 	generateAuthSessionUrl,
 	login,
-	logout
+	loginWithMagicLink,
+	logout,
+	requestMagicLoginLink
 } from './services/user/sessions.js';
 
 import {
@@ -826,6 +828,7 @@ export {
 	lockThread,
 	login,
 	loginAsUser,
+	loginWithMagicLink,
 	logout,
 	mapContentToParent,
 	markAllNotificationsAsRead,
@@ -862,6 +865,7 @@ export {
 	reportComment,
 	reportPlaylist,
 	requestEmailChange,
+	requestMagicLoginLink,
 	rescindInvite,
 	reset,
 	resetActiveLearningPath,

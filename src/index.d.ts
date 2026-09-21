@@ -518,7 +518,9 @@ import {
 import {
 	generateAuthSessionUrl,
 	login,
-	logout
+	loginWithMagicLink,
+	logout,
+	requestMagicLoginLink
 } from './services/user/sessions.js';
 
 import {
@@ -827,6 +829,7 @@ declare module 'musora-content-services' {
 		lockThread,
 		login,
 		loginAsUser,
+		loginWithMagicLink,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
@@ -863,6 +866,7 @@ declare module 'musora-content-services' {
 		reportComment,
 		reportPlaylist,
 		requestEmailChange,
+		requestMagicLoginLink,
 		rescindInvite,
 		reset,
 		resetActiveLearningPath,
