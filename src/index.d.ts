@@ -56,23 +56,6 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
-	completeLearningPathIntroVideo,
-	completeMethodIntroVideo,
-	fetchLearningPathLessons,
-	fetchLearningPathProgressCheckLessons,
-	getActivePath,
-	getDailySession,
-	getEnrichedLearningPath,
-	getEnrichedLearningPaths,
-	getLearningPathLessonsByIds,
-	isNextLessonLocked,
-	mapContentToParent,
-	resetAllLearningPaths,
-	startLearningPath,
-	updateDailySession
-} from './services/content-org/learning-paths.ts';
-
-import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -244,6 +227,24 @@ import {
 	rescindInvite,
 	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
+	fetchLearningPathLessons,
+	fetchLearningPathProgressCheckLessons,
+	getActivePath,
+	getDailySession,
+	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
+	getLearningPathLessonsByIds,
+	isNextLessonLocked,
+	mapContentToParent,
+	resetActiveLearningPath,
+	resetAllLearningPaths,
+	startLearningPath,
+	updateDailySession
+} from './services/my-path/learning-paths.ts';
 
 import {
 	fetchQuizAnswers,
@@ -870,6 +871,7 @@ declare module 'musora-content-services' {
 		requestEmailChange,
 		rescindInvite,
 		reset,
+		resetActiveLearningPath,
 		resetAllAwards,
 		resetAllLearningPaths,
 		resetPassword,

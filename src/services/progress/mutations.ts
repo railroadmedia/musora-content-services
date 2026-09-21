@@ -5,7 +5,7 @@ import {
   CollectionParameter,
 } from '../sync/models/ContentProgress'
 import { getHierarchies, getHierarchy } from '../sanity.js'
-import { onLearningPathCompletedActions } from '../content-org/learning-paths'
+import { onLearningPathCompletedActions } from '../my-path/learning-paths'
 import { duplicateProgressToALaCarteOffline } from '../offline/progress'
 import {
   bubbleAndTrickleProgressesSafely,
