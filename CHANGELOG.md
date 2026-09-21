@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.182.0](https://github.com/railroadmedia/musora-content-services/compare/v2.181.0...v2.182.0) (2026-09-21)
+
+
+### Features
+
+* **BEHLTP-368:** placement quiz endpoints ([#1051](https://github.com/railroadmedia/musora-content-services/issues/1051)) ([248b4c9](https://github.com/railroadmedia/musora-content-services/commit/248b4c9e48b056a651d44c129d5d0cb3ce80777d))
+* **BEHLTP-395:** add resetActiveLearningPath() ([#1055](https://github.com/railroadmedia/musora-content-services/issues/1055)) ([02df2df](https://github.com/railroadmedia/musora-content-services/commit/02df2dffd59844ff0c11a43f357efa6ed346a07f))
+
+
+### Bug Fixes
+
+* move learning-paths.ts to my-path/ module ([#1054](https://github.com/railroadmedia/musora-content-services/issues/1054)) ([49fb9a9](https://github.com/railroadmedia/musora-content-services/commit/49fb9a983512e1d657285ddd13555d5ae9cb8e7b))
+
 ## [2.181.0](https://github.com/railroadmedia/musora-content-services/compare/v2.180.0...v2.181.0) (2026-09-17)
 
 
