@@ -88,21 +88,21 @@ describe('Coproduct', () => {
     })
   })
 
-  describe('mapLeft and flatMapLeft', () => {
-    test('mapLeft transforms a left value', () => {
-      const result = Coproduct.left<string, number>('boom').mapLeft((e) => e.toUpperCase())
+  describe('lmap and lflatMap', () => {
+    test('lmap transforms a left value', () => {
+      const result = Coproduct.left<string, number>('boom').lmap((e) => e.toUpperCase())
       expect(result.drop()).toBe('BOOM')
     })
 
-    test('mapLeft leaves a right untouched', () => {
+    test('lmap leaves a right untouched', () => {
       const fn = jest.fn()
-      const result = Coproduct.right<string, number>(42).mapLeft(fn)
+      const result = Coproduct.right<string, number>(42).lmap(fn)
       expect(fn).not.toHaveBeenCalled()
       expect(result.drop()).toBe(42)
     })
 
-    test('flatMapLeft can recover a left into a right', () => {
-      const result = Coproduct.left<string, number>('boom').flatMapLeft(() =>
+    test('lflatMap can recover a left into a right', () => {
+      const result = Coproduct.left<string, number>('boom').lflatMap(() =>
         Coproduct.right<string, number>(0)
       )
       expect(result.isRight()).toBe(true)

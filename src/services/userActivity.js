@@ -13,7 +13,7 @@ import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
 import { streakCalculator } from './user/streakCalculator'
-import { mapContentsThatWereLastProgressedFromMethod } from "./content-org/learning-paths.ts";
+import { mapContentsThatWereLastProgressedFromMethod } from "./my-path/learning-paths.ts";
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 

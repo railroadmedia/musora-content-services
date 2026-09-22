@@ -83,12 +83,14 @@ const {
   fetchLearningPathProgressCheckLessons,
   fetchLearningPathLessons,
   resetAllLearningPaths,
+  resetActiveLearningPath,
   completeMethodIntroVideo,
   completeLearningPathIntroVideo,
   onLearningPathCompletedActions,
   mapLearningPathParentsTo,
   mapContentsThatWereLastProgressedFromMethod,
-} = require('../../src/services/content-org/learning-paths.ts')
+  resetLearningPathCachesForTests,
+} = require('../../src/services/my-path/learning-paths.ts')
 
 const ctx = initializeTestDB()
 
@@ -108,6 +110,7 @@ function setApiResponses(r: ApiResponses) {
 }
 
 beforeEach(() => {
+  resetLearningPathCachesForTests()
   HttpClient.GET.mockReset()
   HttpClient.POST.mockReset()
   sanity.fetchByRailContentId.mockReset()
@@ -222,7 +225,7 @@ describe('getDailySession', () => {
   test('returns response when present', async () => {
     const resp = { active_learning_path_id: 5, daily_session: [] }
     setApiResponses({ dailySession: resp })
-    const result = await getDailySession('drumeo', new Date('2026-01-01T10:00:00Z'), true)
+    const result = await getDailySession('drumeo', new Date('2026-01-01T10:00:00Z'))
     expect(result).toEqual(resp)
     expect(HttpClient.GET.mock.calls[0][0]).toContain('/daily-session/get?brand=drumeo')
   })
@@ -231,7 +234,7 @@ describe('getDailySession', () => {
     setApiResponses({ dailySession: '' })
     const created = { active_learning_path_id: 9, daily_session: [] }
     HttpClient.POST.mockResolvedValueOnce(created)
-    const result = await getDailySession('pianote', new Date('2026-01-01T10:00:00Z'), true)
+    const result = await getDailySession('pianote', new Date('2026-01-01T10:00:00Z'))
     expect(result).toEqual(created)
     expect(HttpClient.POST).toHaveBeenCalledTimes(1)
   })
@@ -251,7 +254,7 @@ describe('getDailySession', () => {
   test('returns null and logs when GET throws', async () => {
     const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     HttpClient.GET.mockImplementationOnce(() => Promise.reject(new Error('boom')))
-    const result = await getDailySession('drumeo', new Date('2026-01-01T10:00:00Z'), true)
+    const result = await getDailySession('drumeo', new Date('2026-01-01T10:00:00Z'))
     expect(result).toBeNull()
     expect(errSpy).toHaveBeenCalled()
     errSpy.mockRestore()
@@ -295,7 +298,7 @@ describe('getActivePath', () => {
   test('returns response', async () => {
     const resp = { user_id: 1, brand: 'drumeo', active_learning_path_id: 42 }
     setApiResponses({ activePath: resp })
-    const result = await getActivePath('drumeo', true)
+    const result = await getActivePath('drumeo')
     expect(result).toEqual(resp)
     expect(HttpClient.GET.mock.calls[0][0]).toContain('/active-path/get?brand=drumeo')
   })
@@ -350,6 +353,36 @@ describe('resetAllLearningPaths', () => {
     expect(await getProgressState(100)).toBe('')
     expect(await getProgressState(200, { type: lpType, id: 200 })).toBe('')
     expect(HttpClient.POST.mock.calls.some((c: any[]) => c[0].endsWith('/reset'))).toBe(true)
+  })
+})
+
+describe('resetActiveLearningPath', () => {
+  test('resets progress in db and updates the daily session', async () => {
+    const collection = { type: lpType, id: 5 }
+    sanity.fetchByRailContentId.mockResolvedValue(makeLp(5))
+    setApiResponses({ activePath: { active_learning_path_id: 999 } })
+    await contentStatusCompleted(5, collection)
+    expect(await getProgressState(5, collection)).toBe('completed')
+
+    const resp = { active_learning_path_id: 5, daily_session: [] }
+    HttpClient.POST.mockResolvedValueOnce(resp)
+
+    const result = await resetActiveLearningPath('drumeo', 5, new Date('2026-01-01T10:00:00Z'))
+
+    expect(await getProgressState(5, collection)).toBe('')
+    expect(result).toEqual(resp)
+    const [url, body] = HttpClient.POST.mock.calls[0]
+    expect(url).toContain('/daily-session/create')
+    expect(body.brand).toBe('drumeo')
+  })
+
+  test('returns null when updateDailySession fails', async () => {
+    sanity.fetchByRailContentId.mockResolvedValue(makeLp(6))
+    HttpClient.POST.mockRejectedValueOnce(new Error('boom'))
+
+    const result = await resetActiveLearningPath('drumeo', 6, new Date('2026-01-01T10:00:00Z'))
+
+    expect(result).toBeNull()
   })
 })
 

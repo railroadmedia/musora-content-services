@@ -2,7 +2,7 @@ import { db } from '../../sync'
 import type { ModelSerialized } from '../../sync/serializers'
 import ContentProgress, { CollectionParameter } from '../../sync/models/ContentProgress'
 
-type Selector<V> = (p: ModelSerialized<ContentProgress>) => V
+type Selector<V> = (p: ModelSerialized<ContentProgress>) => V | null | undefined
 
 export const getByIds = async <V>(
   contentIds: number[],
@@ -30,10 +30,14 @@ export const getById = async <V>(
   if (!contentId) return defaultValue
   return db.contentProgress
     .getOneProgressByContentId(contentId, collection)
-    .then((r) => (r.data ? selector(r.data) : defaultValue) ?? defaultValue)
+    .then((r) => (r.data ? selector(r.data) ?? defaultValue : defaultValue))
 }
 
-export const getByRecordIds = async <V>(ids: string[], selector: Selector<V>, defaultValue: V) => {
+export const getByRecordIds = async <V>(
+  ids: string[],
+  selector: Selector<V>,
+  defaultValue: V
+): Promise<Record<string, V>> => {
   const progress = Object.fromEntries(ids.map((id) => [id, defaultValue]))
 
   await db.contentProgress.getSomeProgressByRecordIds(ids).then((r) => {

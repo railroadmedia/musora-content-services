@@ -46,7 +46,10 @@ import { globalConfig } from './config.js'
 
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
-import { lifetimeUpgradeDecorator, NEED_LIFETIME_UPGRADE_FIELD } from '../lib/sanity/decorators/need-lifetime-upgrade.ts'
+import {
+  lifetimeUpgradeDecorator,
+  NEED_LIFETIME_UPGRADE_FIELD,
+} from '../lib/sanity/decorators/need-lifetime-upgrade.ts'
 import {
   getAllCompleted,
   getAllCompletedByIds,
@@ -906,7 +909,8 @@ export async function fetchAllFilterOptions(
       ? filtersToGroq(filters, excludeFilter)
       : includedFieldsFilter
     const statusFilter = ' && status == "published"'
-    const includeStatusFilter = !hasAllContentAccess && !['instructor', 'artist', 'genre'].includes(contentType)
+    const includeStatusFilter =
+      !hasAllContentAccess && !['instructor', 'artist', 'genre'].includes(contentType)
 
     return coachId
       ? `brand == '${brand}' && status == "published" && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''} ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}`
@@ -1197,8 +1201,12 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
 
   const now = new Date()
 
-  const startOfYesterday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1)).toISOString()
-  const endOfTomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 2)).toISOString()
+  const startOfYesterday = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1)
+  ).toISOString()
+  const endOfTomorrow = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 2)
+  ).toISOString()
 
   const liveEventFields = getLiveFields().concat(
     `'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}')`
@@ -1226,10 +1234,12 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   const windowStart = new Date(clientNow.getTime() - LIVE_EXTRA_MINUTES * 60000).toISOString()
   const windowEnd = new Date(clientNow.getTime() + LIVE_EXTRA_MINUTES * 60000).toISOString()
 
-  return events?.find(event =>
-    event.live_event_end_time >= windowStart &&
-    event.live_event_start_time <= windowEnd
-  ) ?? null
+  return (
+    events?.find(
+      (event) =>
+        event.live_event_end_time >= windowStart && event.live_event_start_time <= windowEnd
+    ) ?? null
+  )
 }
 
 /**
@@ -1571,6 +1581,7 @@ export async function fetchCommentModContentData(ids) {
 }
 
 /**
+ * @deprecated Use SanityClient.ts or groq query runner instead. This function is a legacy wrapper for fetching data from the Sanity API using GROQ queries. It handles query construction, execution, and post-processing of results.
  *
  * @param {string} query - The GROQ query to execute against the Sanity API.
  * @param {boolean} isList - Whether to return an array or a single result.
@@ -1586,7 +1597,6 @@ export async function fetchCommentModContentData(ids) {
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
-
 export async function fetchSanity(
   query,
   isList,
@@ -1640,7 +1650,9 @@ export async function fetchSanity(
         return null
       }
       results = processNeedAccess ? await needsAccessDecorator(results, userPermissions) : results
-      results = processNeedAccess ? needsLifetimeUpgradeDecorator(results, userPermissions) : results
+      results = processNeedAccess
+        ? needsLifetimeUpgradeDecorator(results, userPermissions)
+        : results
       results = processPageType ? pageTypeDecorator(results) : results
       return customPostProcess ? customPostProcess(results) : results
     } else {
@@ -2124,7 +2136,7 @@ export async function fetchTabData(
     availableContentStatuses: hasAllContentAccess
       ? CONTENT_STATUSES.ADMIN_ALL
       : CONTENT_STATUSES.PUBLISHED_ONLY,
-    pullFutureContent: hasAllContentAccess
+    pullFutureContent: hasAllContentAccess,
   }).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
@@ -2242,11 +2254,13 @@ export async function fetchScheduledAndNewReleases(
 
   const reordered = reorderScheduledAndNewReleases(r, limit)
   const computedNow = new Date()
-  return reordered.map(item => ({
+  return reordered.map((item) => ({
     ...item,
-    isLive: item.live_event_start_time && item.live_event_end_time
-      ? new Date(item.live_event_start_time) <= computedNow && new Date(item.live_event_end_time) >= computedNow
-      : false,
+    isLive:
+      item.live_event_start_time && item.live_event_end_time
+        ? new Date(item.live_event_start_time) <= computedNow &&
+          new Date(item.live_event_end_time) >= computedNow
+        : false,
   }))
 }
 

@@ -234,6 +234,54 @@ describe('HttpClient', () => {
     })
   })
 
+  describe('GET request de-duplication', () => {
+    test('should return the same promise to concurrent callers for the same URL', async () => {
+      const url = '/test'
+
+      const [firstResult, secondResult] = await Promise.all([httpClient.get(url), httpClient.get(url)])
+
+      expect(mockRequestExecutor.execute).toHaveBeenCalledTimes(1)
+      expect(firstResult).toEqual(responseData)
+      expect(secondResult).toEqual(responseData)
+    })
+
+    test('should not de-dupe concurrent calls to different URLs', async () => {
+      await Promise.all([httpClient.get('/test-a'), httpClient.get('/test-b')])
+
+      expect(mockRequestExecutor.execute).toHaveBeenCalledTimes(2)
+    })
+
+    test('should not de-dupe concurrent calls with different dataVersion options', async () => {
+      const url = '/test'
+
+      await Promise.all([
+        httpClient.get(url, { dataVersion: '1' }),
+        httpClient.get(url, { dataVersion: '2' }),
+      ])
+
+      expect(mockRequestExecutor.execute).toHaveBeenCalledTimes(2)
+    })
+
+    test('should issue a new request once the in-flight request resolves', async () => {
+      const url = '/test'
+
+      await httpClient.get(url)
+      await httpClient.get(url)
+
+      expect(mockRequestExecutor.execute).toHaveBeenCalledTimes(2)
+    })
+
+    test('should clear the in-flight entry even when the request fails', async () => {
+      const url = '/test'
+      mockRequestExecutor.execute.mockRejectedValueOnce(new Error('boom'))
+
+      await expect(httpClient.get(url)).rejects.toMatchObject({ message: 'boom' })
+      await httpClient.get(url)
+
+      expect(mockRequestExecutor.execute).toHaveBeenCalledTimes(2)
+    })
+  })
+
   describe('Error Handling', () => {
     test('should properly handle HTTP errors', async () => {
       const httpError = {

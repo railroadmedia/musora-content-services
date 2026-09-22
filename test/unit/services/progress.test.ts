@@ -310,13 +310,13 @@ describe('Progress.snapshotByIds', () => {
       { content_id: 1, last_interacted_a_la_carte: 111, progress_percent: 50, state: 'started' },
     ]
     const result = await Progress.snapshotByIds([1, 2])
-    expect(result.get(1)).toEqual({ last_update: 111, progress: 50, status: 'started' })
-    expect(result.get(2)).toEqual({ last_update: 0, progress: 0, status: '' })
+    expect(result[1]).toEqual({ last_update: 111, progress: 50, status: 'started' })
+    expect(result[2]).toEqual({ last_update: 0, progress: 0, status: '' })
   })
 
   test('returns empty defaults when no records match', async () => {
     const result = await Progress.snapshotByIds([99])
-    expect(result.get(99)).toEqual({ last_update: 0, progress: 0, status: '' })
+    expect(result[99]).toEqual({ last_update: 0, progress: 0, status: '' })
   })
 })
 
@@ -348,6 +348,26 @@ describe('Progress.methodAccessedIds', () => {
     expect(
       repoMocks.contentProgress.getSomeProgressWhereLastAccessedFromMethod
     ).toHaveBeenCalledWith([5, 6])
+  })
+})
+
+describe('Progress.percentByContentId', () => {
+  test('returns map of content_id to progress_percent', async () => {
+    mockStartedOrCompleted = {
+      data: [
+        { content_id: 1, progress_percent: 50 },
+        { content_id: 2, progress_percent: 100 },
+      ],
+    }
+    const result = await Progress.percentByContentId()
+    expect(result[1]).toBe(50)
+    expect(result[2]).toBe(100)
+  })
+
+  test('forwards brand filter to repository', async () => {
+    await Progress.percentByContentId('drumeo')
+    const args = repoMocks.contentProgress.startedOrCompleted.mock.calls[0][0]
+    expect(args.brand).toBe('drumeo')
   })
 })
 

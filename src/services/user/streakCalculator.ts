@@ -22,11 +22,15 @@ export interface PracticeData {
 class StreakCalculator {
   private cache: StreakData | null = null
   async getStreakData(): Promise<StreakData> {
-    if (this.cache) {
+    if (this.cache && this.isCacheFromToday()) {
       return this.cache
     }
 
     return await this.recalculate()
+  }
+
+  private isCacheFromToday(): boolean {
+    return dayjs(this.cache.calculatedAt).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD')
   }
 
   async recalculate(): Promise<StreakData> {

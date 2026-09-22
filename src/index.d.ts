@@ -47,7 +47,9 @@ import {
 	getMCSVersion,
 	globalConfig,
 	initializeEnvVar,
-	initializeService
+	initializeService,
+	setSessionUserData,
+	updateSessionConfig
 } from './services/config.js';
 
 import {
@@ -79,23 +81,6 @@ import {
 	guidedCourses,
 	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
-
-import {
-	completeLearningPathIntroVideo,
-	completeMethodIntroVideo,
-	fetchLearningPathLessons,
-	fetchLearningPathProgressCheckLessons,
-	getActivePath,
-	getDailySession,
-	getEnrichedLearningPath,
-	getEnrichedLearningPaths,
-	getLearningPathLessonsByIds,
-	isNextLessonLocked,
-	mapContentToParent,
-	resetAllLearningPaths,
-	startLearningPath,
-	updateDailySession
-} from './services/content-org/learning-paths.ts';
 
 import {
 	addItemToPlaylist,
@@ -252,6 +237,14 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	fetchMarketingAll,
+	fetchMarketingFaqs,
+	fetchMarketingPracticeGoals,
+	fetchMarketingStats,
+	fetchMarketingTestimonials
+} from './services/marketing/marketing.ts';
+
+import {
 	acceptInvite,
 	createAccount,
 	createInvites,
@@ -261,6 +254,29 @@ import {
 	rescindInvite,
 	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
+	fetchLearningPathLessons,
+	fetchLearningPathProgressCheckLessons,
+	getActivePath,
+	getDailySession,
+	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
+	getLearningPathLessonsByIds,
+	isNextLessonLocked,
+	mapContentToParent,
+	resetActiveLearningPath,
+	resetAllLearningPaths,
+	startLearningPath,
+	updateDailySession
+} from './services/my-path/learning-paths.ts';
+
+import {
+	fetchQuizAnswers,
+	storeQuizAnswers
+} from './services/my-path/placement-quiz.ts';
 
 import {
 	deleteAllNotifications,
@@ -690,6 +706,11 @@ declare module 'musora-content-services' {
 		fetchLiveEvent,
 		fetchLiveEventPollingState,
 		fetchLiveStreamData,
+		fetchMarketingAll,
+		fetchMarketingFaqs,
+		fetchMarketingPracticeGoals,
+		fetchMarketingStats,
+		fetchMarketingTestimonials,
 		fetchMemberships,
 		fetchMetadata,
 		fetchMethodV2IntroVideo,
@@ -710,6 +731,7 @@ declare module 'musora-content-services' {
 		fetchPosts,
 		fetchPracticeGoals,
 		fetchPublicAnnouncement,
+		fetchQuizAnswers,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
@@ -900,6 +922,7 @@ declare module 'musora-content-services' {
 		requestEmailChange,
 		rescindInvite,
 		reset,
+		resetActiveLearningPath,
 		resetAllAwards,
 		resetAllLearningPaths,
 		resetPassword,
@@ -915,6 +938,7 @@ declare module 'musora-content-services' {
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
 		sendRevenueCatPurchaseMetadata,
+		setSessionUserData,
 		setStudentViewForUser,
 		setUserPinnedProgressRow,
 		setUserSignature,
@@ -927,6 +951,7 @@ declare module 'musora-content-services' {
 		status,
 		stopSession,
 		stopSessionOnPageExit,
+		storeQuizAnswers,
 		toDayjs,
 		toLocalDay,
 		togglePlaylistPrivate,
@@ -962,6 +987,7 @@ declare module 'musora-content-services' {
 		updatePracticeGoals,
 		updatePracticeNotes,
 		updateProfileVisibility,
+		updateSessionConfig,
 		updateThread,
 		updateUserPractice,
 		upgradeSubscription,

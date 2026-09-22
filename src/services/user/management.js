@@ -76,8 +76,14 @@ export async function deletePicture(pictureUrl) {
  * @param {number} [userId=globalConfig.sessionConfig.userId]
  * @returns {Promise<User|null>}
  */
-export async function getUserData(userId = globalConfig.sessionConfig.userId) {
-  const apiUrl = `${baseUrl}/v1/users/${userId}`
+export async function getUserData(userId) {
+  if (!userId && globalConfig.sessionUser) {
+    return globalConfig.sessionUser
+  }
+
+  let userIdToFetch = userId || globalConfig.sessionConfig.userId
+
+  const apiUrl = `${baseUrl}/v1/users/${userIdToFetch}`
   return await GET(apiUrl)
 }
 

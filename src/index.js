@@ -51,7 +51,9 @@ import {
 	getMCSVersion,
 	globalConfig,
 	initializeEnvVar,
-	initializeService
+	initializeService,
+	setSessionUserData,
+	updateSessionConfig
 } from './services/config.js';
 
 import {
@@ -83,23 +85,6 @@ import {
 	guidedCourses,
 	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
-
-import {
-	completeLearningPathIntroVideo,
-	completeMethodIntroVideo,
-	fetchLearningPathLessons,
-	fetchLearningPathProgressCheckLessons,
-	getActivePath,
-	getDailySession,
-	getEnrichedLearningPath,
-	getEnrichedLearningPaths,
-	getLearningPathLessonsByIds,
-	isNextLessonLocked,
-	mapContentToParent,
-	resetAllLearningPaths,
-	startLearningPath,
-	updateDailySession
-} from './services/content-org/learning-paths.ts';
 
 import {
 	addItemToPlaylist,
@@ -256,6 +241,14 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	fetchMarketingAll,
+	fetchMarketingFaqs,
+	fetchMarketingPracticeGoals,
+	fetchMarketingStats,
+	fetchMarketingTestimonials
+} from './services/marketing/marketing.ts';
+
+import {
 	acceptInvite,
 	createAccount,
 	createInvites,
@@ -265,6 +258,29 @@ import {
 	rescindInvite,
 	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
+	fetchLearningPathLessons,
+	fetchLearningPathProgressCheckLessons,
+	getActivePath,
+	getDailySession,
+	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
+	getLearningPathLessonsByIds,
+	isNextLessonLocked,
+	mapContentToParent,
+	resetActiveLearningPath,
+	resetAllLearningPaths,
+	startLearningPath,
+	updateDailySession
+} from './services/my-path/learning-paths.ts';
+
+import {
+	fetchQuizAnswers,
+	storeQuizAnswers
+} from './services/my-path/placement-quiz.ts';
 
 import {
 	deleteAllNotifications,
@@ -689,6 +705,11 @@ export {
 	fetchLiveEvent,
 	fetchLiveEventPollingState,
 	fetchLiveStreamData,
+	fetchMarketingAll,
+	fetchMarketingFaqs,
+	fetchMarketingPracticeGoals,
+	fetchMarketingStats,
+	fetchMarketingTestimonials,
 	fetchMemberships,
 	fetchMetadata,
 	fetchMethodV2IntroVideo,
@@ -709,6 +730,7 @@ export {
 	fetchPosts,
 	fetchPracticeGoals,
 	fetchPublicAnnouncement,
+	fetchQuizAnswers,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
@@ -899,6 +921,7 @@ export {
 	requestEmailChange,
 	rescindInvite,
 	reset,
+	resetActiveLearningPath,
 	resetAllAwards,
 	resetAllLearningPaths,
 	resetPassword,
@@ -914,6 +937,7 @@ export {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	sendRevenueCatPurchaseMetadata,
+	setSessionUserData,
 	setStudentViewForUser,
 	setUserPinnedProgressRow,
 	setUserSignature,
@@ -926,6 +950,7 @@ export {
 	status,
 	stopSession,
 	stopSessionOnPageExit,
+	storeQuizAnswers,
 	toDayjs,
 	toLocalDay,
 	togglePlaylistPrivate,
@@ -961,6 +986,7 @@ export {
 	updatePracticeGoals,
 	updatePracticeNotes,
 	updateProfileVisibility,
+	updateSessionConfig,
 	updateThread,
 	updateUserPractice,
 	upgradeSubscription,

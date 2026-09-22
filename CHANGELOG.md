@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.182.0](https://github.com/railroadmedia/musora-content-services/compare/v2.181.0...v2.182.0) (2026-09-21)
+
+
+### Features
+
+* **BEHLTP-368:** placement quiz endpoints ([#1051](https://github.com/railroadmedia/musora-content-services/issues/1051)) ([248b4c9](https://github.com/railroadmedia/musora-content-services/commit/248b4c9e48b056a651d44c129d5d0cb3ce80777d))
+* **BEHLTP-395:** add resetActiveLearningPath() ([#1055](https://github.com/railroadmedia/musora-content-services/issues/1055)) ([02df2df](https://github.com/railroadmedia/musora-content-services/commit/02df2dffd59844ff0c11a43f357efa6ed346a07f))
+
+
+### Bug Fixes
+
+* move learning-paths.ts to my-path/ module ([#1054](https://github.com/railroadmedia/musora-content-services/issues/1054)) ([49fb9a9](https://github.com/railroadmedia/musora-content-services/commit/49fb9a983512e1d657285ddd13555d5ae9cb8e7b))
+
+## [2.181.0](https://github.com/railroadmedia/musora-content-services/compare/v2.180.0...v2.181.0) (2026-09-17)
+
+
+### Features
+
+* allow merged config ([#1018](https://github.com/railroadmedia/musora-content-services/issues/1018)) ([8d8a9aa](https://github.com/railroadmedia/musora-content-services/commit/8d8a9aaed048e83b7dfeb15a7c12fabd199721f1))
+
+
+### Bug Fixes
+
+* **BR-717:** expire streak cache at calendar day boundary ([1f4481c](https://github.com/railroadmedia/musora-content-services/commit/1f4481cc5a71afa990c39d5927099b093a475c83))
+* **BR-964:** unpin deleted playlists at fetch time ([#1052](https://github.com/railroadmedia/musora-content-services/issues/1052)) ([0367143](https://github.com/railroadmedia/musora-content-services/commit/036714377469beccbceae93d138a9d2280516395))
+
+## [2.180.0](https://github.com/railroadmedia/musora-content-services/compare/v2.179.0...v2.180.0) (2026-09-04)
+
+
+### Features
+
+* **TP-1335:** consolidate duplicated user data fetches ([#1039](https://github.com/railroadmedia/musora-content-services/issues/1039)) ([bb2af2c](https://github.com/railroadmedia/musora-content-services/commit/bb2af2cddce8da519a414b24d7b86cc96639faaf))
+* **TP-1354:** daily session / active path get optimisations ([#1041](https://github.com/railroadmedia/musora-content-services/issues/1041)) ([bca652c](https://github.com/railroadmedia/musora-content-services/commit/bca652ccf181b1ba943fe6e9b14b375bf4bebfc9))
+
+## [2.179.0](https://github.com/railroadmedia/musora-content-services/compare/v2.178.1...v2.179.0) (2026-09-03)
+
+
+### Features
+
+* **MU2-1877:** Add Sanity type generation and marketing query functions ([#1040](https://github.com/railroadmedia/musora-content-services/issues/1040)) ([a232299](https://github.com/railroadmedia/musora-content-services/commit/a232299286ce22fa04591a812c65039544682e37))
+
+
+### Bug Fixes
+
+* **BR-725:** fetch tab data with progress applied ([#1044](https://github.com/railroadmedia/musora-content-services/issues/1044)) ([d19baf1](https://github.com/railroadmedia/musora-content-services/commit/d19baf1565d54a5e6179b6ae21b184ceb64c8aee))
+
 ### [2.178.1](https://github.com/railroadmedia/musora-content-services/compare/v2.178.0...v2.178.1) (2026-08-31)
 
 ## [2.178.0](https://github.com/railroadmedia/musora-content-services/compare/v2.177.1...v2.178.0) (2026-08-28)
