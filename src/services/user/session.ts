@@ -1,5 +1,4 @@
 import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { Brand } from '../../lib/brands'
 import { globalConfig } from '../config.js'
 import { AuthResponse } from './types'
 
@@ -74,17 +73,14 @@ export interface MagicLinkDeviceParams {
 /**
  * Resolves whether or not an account exists for the email, so the endpoint
  * cannot be used to discover which addresses are registered.
- *
- * The brand drives the email subject and call-to-action copy.
  */
 export async function requestMagicLoginLink(
   email: string,
-  brand: Brand,
   redirectTo: string | null = null
 ): Promise<void> {
   const apiUrl = '/api/user-management-system/v1/sessions/magic-link'
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  await httpClient.post(apiUrl, { email, brand, redirect_to: redirectTo })
+  await httpClient.post(apiUrl, { email, redirect_to: redirectTo })
 }
 
 export async function loginWithMagicLink(
