@@ -7,14 +7,16 @@ import type SyncStore from '../store'
 import { readPersistedTables } from './persisted-tables'
 import { createEventBatcher, DiagnosticEvent } from './event-batcher'
 import { diagnosticsFetch } from './diagnostics-fetch'
+import { reportCursors } from './cursors'
 
 export type DumpMode = 'off' | 'interval'
 export type EventMode = 'off' | 'debounced_write' | 'interval'
 
 export type IntrospectionModelConfig = {
-  dumpMode: DumpMode
-  dumpInterval: number
-  eventMode: EventMode
+  dump_mode: DumpMode
+  dump_interval_minutes: number | null
+  event_mode: EventMode
+  cursor_enabled: boolean
 }
 
 export type IntrospectionConfig = Record<string, IntrospectionModelConfig>
@@ -187,7 +189,7 @@ async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<a
   if (!config) return () => {}
 
   const activeModelNames = Object.entries(config)
-    .filter(([, modelConfig]) => modelConfig.eventMode !== 'off')
+    .filter(([, modelConfig]) => modelConfig.event_mode !== 'off')
     .map(([modelName]) => modelName)
 
   const batcher = createEventBatcher(context)
@@ -210,12 +212,36 @@ async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<a
   }
 }
 
+async function startCursorReporting(storesRegistry: Record<string, SyncStore<any>>, context: SyncContext) {
+  const config = await fetchConfig()
+  if (!config) return () => {}
+
+  const enabledStores = Object.fromEntries(
+    Object.entries(config)
+      .filter(([, modelConfig]) => modelConfig.cursor_enabled)
+      .map(([modelName]) => tableForModelName(modelName))
+      .filter((tableName) => storesRegistry[tableName])
+      .map((tableName) => [tableName, storesRegistry[tableName]])
+  )
+  if (!Object.keys(enabledStores).length) return () => {}
+
+  return reportCursors(context, enabledStores)
+}
+
 export default function setup(context: SyncContext, database: Database, storesRegistry: Record<string, SyncStore<any>>, CompressionWorker?: CompressionWorkerConstructor) {
   let timer: ReturnType<typeof setTimeout> | null = null
   let unsubscribeWriteEvents: (() => void) | null = null
   let unsubscribeVisibilityWait: (() => void) | null = null
+  let stopReportingCursors: (() => void) | null = null
+  let isTornDown = false
+
+  startCursorReporting(storesRegistry, context).then((stop) => {
+    if (isTornDown) return stop()
+    stopReportingCursors = stop
+  })
 
   subscribeToWriteEvents(storesRegistry, context).then((unsubscribe) => {
+    if (isTornDown) return unsubscribe()
     unsubscribeWriteEvents = unsubscribe
   })
 
@@ -237,13 +263,14 @@ export default function setup(context: SyncContext, database: Database, storesRe
     if (!config) return
 
     const dumpableModelNames = Object.entries(config)
-      .filter(([, modelConfig]) => modelConfig['dump_mode'] === 'interval')
+      .filter(([, modelConfig]) => modelConfig.dump_mode === 'interval')
       .map(([modelName]) => modelName)
     if (!dumpableModelNames.length) return
 
-    const minIntervalMinutes = Math.max(0, Math.min(...dumpableModelNames.map((modelName) => config[modelName]['dump_interval_minutes'])) || 1440)
+    const minIntervalMinutes = Math.max(0, Math.min(...dumpableModelNames.map((modelName) => config[modelName].dump_interval_minutes ?? 0)) || 1440)
     const lastDumpAt = await getLastDumpAt(database)
     const delay = Math.max(0, (lastDumpAt ?? 0) + (minIntervalMinutes * 60 * 1000) - Date.now())
+    if (isTornDown) return
 
     timer = setTimeout(async () => {
       if (!context.visibility.getValue()) {
@@ -259,7 +286,9 @@ export default function setup(context: SyncContext, database: Database, storesRe
   scheduleNextDump()
 
   return async () => {
+    isTornDown = true
     if (timer) clearTimeout(timer)
+    stopReportingCursors?.()
     unsubscribeVisibilityWait?.()
     unsubscribeConnectivity()
     unsubscribeWriteEvents?.()
