@@ -139,7 +139,7 @@ export async function getUserWeeklyStats() {
       streakMessagePart1: streakData.streakMessagePart1,
       streakMessagePart2: streakData.streakMessagePart2,
       practices: weekPractices,
-      currentWeekPracticeDays: streakData.currentWeekPracticeDays,
+      currentWeekPracticeDays: practiceDaysSet.size,
       todaysPracticeSeconds: streakData.todaysPracticeSeconds,
     },
   }
@@ -653,14 +653,8 @@ export async function updatePracticeNotes(payload) {
 }
 
 export function getStreaksAndMessage(practices) {
-  let {
-    currentDailyStreak,
-    currentWeeklyStreak,
-    streakMessage,
-    streakMessagePart1,
-    streakMessagePart2,
-    currentWeekPracticeDays,
-  } = calculateStreaks(practices, true)
+  let { currentDailyStreak, currentWeeklyStreak, streakMessage, streakMessagePart1, streakMessagePart2 } =
+    calculateStreaks(practices, true)
 
   return {
     currentDailyStreak,
@@ -668,7 +662,6 @@ export function getStreaksAndMessage(practices) {
     streakMessage,
     streakMessagePart1,
     streakMessagePart2,
-    currentWeekPracticeDays,
   }
 }
 
@@ -690,7 +683,6 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     return {
       currentDailyStreak: 0,
       currentWeeklyStreak: 0,
-      currentWeekPracticeDays: 0,
       streakMessage: joinStreakMessageParts(
         streakMessages.startStreak.part1,
         streakMessages.startStreak.part2
@@ -741,11 +733,8 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   }
   currentWeeklyStreak = weeklyStreak
 
-  // Qualifying days (calendar days with at least one recorded practice) within the
-  // current Monday-anchored week — used for the weekly practice-days target progress.
   let today = new Date()
   let currentWeekStart = getMonday(today, timeZone)
-  let currentWeekPracticeDays = sortedPracticeDays.filter((date) => date >= currentWeekStart).length
 
   // Calculate streak message only if includeStreakMessage is true
   if (includeStreakMessage) {
@@ -798,7 +787,6 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     streakMessage: joinStreakMessageParts(streakMessageParts.part1, streakMessageParts.part2),
     streakMessagePart1: streakMessageParts.part1,
     streakMessagePart2: streakMessageParts.part2,
-    currentWeekPracticeDays,
   }
 }
 
