@@ -12,6 +12,11 @@ export function diagnosticsFetch(path: string, init?: RequestInit): Promise<Resp
   })
 }
 
-export function isPermanentRejectionStatus(status: number): boolean {
-  return status >= 400 && status < 500 && status !== 429
+export async function postDiagnostics(path: string, body: unknown): Promise<boolean> {
+  try {
+    const response = await diagnosticsFetch(path, { method: 'POST', body: JSON.stringify(body) })
+    return response.ok
+  } catch {
+    return false
+  }
 }

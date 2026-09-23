@@ -5,10 +5,9 @@ import { compressInWorker } from './compression'
 import SyncContext from '../context'
 import type SyncStore from '../store'
 import { readPersistedTables } from './persisted-tables'
-import { clearEventQueue, createEventBatcher, DiagnosticEvent, drainEventQueue } from './event-batcher'
-import { diagnosticsFetch } from './diagnostics-fetch'
+import { createEventBatcher, DiagnosticEvent } from './event-batcher'
+import { diagnosticsFetch, postDiagnostics } from './diagnostics-fetch'
 import { reportCursors } from './cursors'
-import { createUploadQueue } from './upload-queue'
 import { SyncTelemetry } from '../telemetry/index'
 
 export type DumpMode = 'off' | 'interval'
@@ -99,15 +98,6 @@ async function readTables(database: Database, modelNames: string[]): Promise<Rec
   return Object.fromEntries(modelNames.map((modelName) => [tableForModelName(modelName), byTable[tableForModelName(modelName)]]))
 }
 
-type SnapshotEntry = {
-  client_id: string
-  client_session_id: string
-  client_created_at: number
-  payload: string
-}
-
-const snapshotQueue = createUploadQueue<SnapshotEntry>('/snapshot')
-
 async function performDump(
   database: Database,
   modelNames: string[],
@@ -119,16 +109,13 @@ async function performDump(
   const payload = await compressInWorker(dataset, CompressionWorker)
   if (isCancelled()) return
 
-  snapshotQueue.enqueue(
-    {
-      client_id: context.session.getClientId(),
-      client_session_id: context.session.getSessionId() ?? '',
-      client_created_at: Date.now(),
-      payload,
-    },
-    context
-  )
-  await recordDumpAt(database, modelNames, Date.now())
+  const isUploaded = await postDiagnostics('/snapshot', {
+    client_id: context.session.getClientId(),
+    client_session_id: context.session.getSessionId() ?? '',
+    client_created_at: Date.now(),
+    payload,
+  })
+  if (isUploaded && !isCancelled()) await recordDumpAt(database, modelNames, Date.now())
 
   return payload
 }
@@ -218,7 +205,7 @@ async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<a
   return () => {
     unsubscribes.forEach((unsubscribe) => unsubscribe())
     unsubscribeVisibility()
-    batcher.flush()
+    batcher.discard()
   }
 }
 
@@ -267,10 +254,7 @@ export default function setup(context: SyncContext, database: Database, storesRe
   }
 
   const unsubscribeConnectivity = context.connectivity.subscribe((isOnline) => {
-    if (!isOnline) return
-    start()
-    snapshotQueue.drain(context)
-    drainEventQueue(context)
+    if (isOnline) start()
   })
 
   function waitUntilVisible(onVisible: () => void) {
@@ -331,7 +315,5 @@ export default function setup(context: SyncContext, database: Database, storesRe
     unsubscribeVisibilityWait?.()
     unsubscribeConnectivity()
     unsubscribeWriteEvents?.()
-    snapshotQueue.clear()
-    clearEventQueue()
   }
 }
