@@ -47,14 +47,27 @@ export async function fetchConfig(): Promise<IntrospectionConfig | null> {
   return config
 }
 
-const LAST_DUMP_AT_KEY = 'introspection_last_dump_at'
+const LAST_DUMP_AT_BY_MODEL_KEY = 'introspection_last_dump_at_by_model'
+const DEFAULT_DUMP_INTERVAL_MINUTES = 1440
+const DUMP_COALESCE_WINDOW_MS = 60_000
 
-async function getLastDumpAt(database: Database): Promise<number | null> {
-  return (await database.localStorage.get<number | null>(LAST_DUMP_AT_KEY)) ?? null
+type DumpTimestampsByModel = Record<string, number>
+
+async function getLastDumpAtByModel(database: Database): Promise<DumpTimestampsByModel> {
+  return (await database.localStorage.get<DumpTimestampsByModel | null>(LAST_DUMP_AT_BY_MODEL_KEY)) ?? {}
 }
 
-async function setLastDumpAt(database: Database, timestamp: number): Promise<void> {
-  await database.write(() => database.localStorage.set(LAST_DUMP_AT_KEY, timestamp))
+async function recordDumpAt(database: Database, modelNames: string[], timestamp: number): Promise<void> {
+  await database.write(async () => {
+    const lastDumpAtByModel = await getLastDumpAtByModel(database)
+    modelNames.forEach((modelName) => (lastDumpAtByModel[modelName] = timestamp))
+    await database.localStorage.set(LAST_DUMP_AT_BY_MODEL_KEY, lastDumpAtByModel)
+  })
+}
+
+function dumpIntervalMs(modelConfig: IntrospectionModelConfig): number {
+  const minutes = modelConfig.dump_interval_minutes
+  return (minutes && minutes > 0 ? minutes : DEFAULT_DUMP_INTERVAL_MINUTES) * 60 * 1000
 }
 
 function tableForModelName(modelName: string): string {
@@ -115,7 +128,7 @@ async function performDump(
     },
     context
   )
-  await setLastDumpAt(database, Date.now())
+  await recordDumpAt(database, modelNames, Date.now())
 
   return payload
 }
@@ -232,7 +245,7 @@ export default function setup(context: SyncContext, database: Database, storesRe
   let stopReportingCursors: (() => void) | null = null
   let isTornDown = false
   let hasStarted = false
-  let lastDumpAttemptAt = 0
+  const lastDumpAttemptAtByModel = new Map<string, number>()
 
   async function start() {
     if (hasStarted || isTornDown) return
@@ -278,9 +291,14 @@ export default function setup(context: SyncContext, database: Database, storesRe
       .map(([modelName]) => modelName)
     if (!dumpableModelNames.length) return
 
-    const minIntervalMinutes = Math.max(0, Math.min(...dumpableModelNames.map((modelName) => config[modelName].dump_interval_minutes ?? 0)) || 1440)
-    const lastDumpAt = await getLastDumpAt(database)
-    const delay = Math.max(0, Math.max(lastDumpAt ?? 0, lastDumpAttemptAt) + (minIntervalMinutes * 60 * 1000) - Date.now())
+    const lastDumpAtByModel = await getLastDumpAtByModel(database)
+    const dueAtByModel = new Map(
+      dumpableModelNames.map((modelName) => {
+        const lastAt = Math.max(lastDumpAtByModel[modelName] ?? 0, lastDumpAttemptAtByModel.get(modelName) ?? 0)
+        return [modelName, lastAt + dumpIntervalMs(config[modelName])]
+      })
+    )
+    const delay = Math.max(0, Math.min(...dueAtByModel.values()) - Date.now())
     if (isTornDown) return
 
     timer = setTimeout(async () => {
@@ -289,9 +307,14 @@ export default function setup(context: SyncContext, database: Database, storesRe
         return
       }
 
-      lastDumpAttemptAt = Date.now()
+      const attemptedAt = Date.now()
+      const dueModelNames = dumpableModelNames.filter(
+        (modelName) => dueAtByModel.get(modelName)! <= attemptedAt + DUMP_COALESCE_WINDOW_MS
+      )
+      dueModelNames.forEach((modelName) => lastDumpAttemptAtByModel.set(modelName, attemptedAt))
+
       try {
-        await performDump(database, dumpableModelNames, context, CompressionWorker, () => isTornDown)
+        await performDump(database, dueModelNames, context, CompressionWorker, () => isTornDown)
       } catch (error) {
         SyncTelemetry.getInstance()?.capture(error)
       }
