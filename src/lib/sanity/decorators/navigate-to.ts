@@ -125,14 +125,12 @@ async function computeNavigateTo(
       lastInteractedStatus === STATE.STARTED
         ? lastInteractedId
         : Progress.incompleteLesson(childrenStates, content.type, lastInteractedId)
-    const target = childrenById.get(targetId)
-    return target ? buildNavigateTo(target) : null
+    return buildNavigateTo(childrenById.get(targetId))
   }
 
   if (GUIDED_FLOW_TYPES.includes(content.type)) {
     const targetId = Progress.incompleteLesson(childrenStates, content.type, lastInteractedId)
-    const target = childrenById.get(targetId)
-    return target ? buildNavigateTo(target) : null
+    return buildNavigateTo(childrenById.get(targetId))
   }
 
   if (TWO_DEPTH_TYPES.includes(content.type)) {
