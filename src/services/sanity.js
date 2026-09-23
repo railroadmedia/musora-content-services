@@ -33,7 +33,7 @@ import {
   transcriptionsLessonTypes,
   tutorialsLessonTypes,
 } from '../contentTypeConfig.js'
-import { fetchSimilarItems } from './recommendations.js'
+import { fetchSimilarItems } from './recommender.js'
 import {
   ALWAYS_VISIBLE_TABS,
   CONTENT_STATUSES,

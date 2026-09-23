@@ -14,7 +14,7 @@ import {
   fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows, fetchOwnedContent, fetchCourseCollectionData
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {recommendations, rankCategories, rankItems} from "./recommendations";
+import {recommendations, rankCategories, rankItems} from "./recommender.js";
 import {addContextToContent} from "./contentAggregator.js";
 import {getUserData} from "./user/management";
 import {

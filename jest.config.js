@@ -28,7 +28,7 @@ export default {
     'src/**/*.{js,ts}',
     '!src/services/sanity.js',
     '!src/services/railcontent.js',
-    '!src/services/recommendations.js',
+    '!src/services/recommender.js',
     '!src/index.js',
     '!src/index.d.ts',
     '!src/services/user/account.ts',

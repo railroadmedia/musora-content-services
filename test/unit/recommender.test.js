@@ -1,4 +1,4 @@
-import { fetchSimilarItems } from '../../src/services/recommendations.js'
+import { fetchSimilarItems } from '../../src/services/recommender.js'
 
 jest.mock('../../src/infrastructure/http/HttpClient.ts', () => {
   const mockPost = jest.fn()
