@@ -26,9 +26,9 @@ let configPromise: Promise<IntrospectionConfig | null> | null = null
 
 export async function fetchConfig(): Promise<IntrospectionConfig | null> {
   if (!configPromise) {
-    configPromise = diagnosticsFetch('/settings').then((response) =>
-      response.ok ? (response.json() as Promise<IntrospectionConfig>) : null
-    )
+    configPromise = diagnosticsFetch('/settings')
+      .then((response) => (response.ok ? (response.json() as Promise<IntrospectionConfig>) : null))
+      .catch(() => null)
   }
 
   const config = await configPromise
@@ -203,19 +203,30 @@ export default function setup(context: SyncContext, database: Database, storesRe
   let unsubscribeVisibilityWait: (() => void) | null = null
   let stopReportingCursors: (() => void) | null = null
   let isTornDown = false
+  let hasStarted = false
 
-  startCursorReporting(storesRegistry, context).then((stop) => {
-    if (isTornDown) return stop()
-    stopReportingCursors = stop
-  })
+  async function start() {
+    if (hasStarted || isTornDown) return
+    const config = await fetchConfig()
+    if (!config || hasStarted || isTornDown) return
+    hasStarted = true
 
-  subscribeToWriteEvents(storesRegistry, context).then((unsubscribe) => {
-    if (isTornDown) return unsubscribe()
-    unsubscribeWriteEvents = unsubscribe
-  })
+    startCursorReporting(storesRegistry, context).then((stop) => {
+      if (isTornDown) return stop()
+      stopReportingCursors = stop
+    })
+
+    subscribeToWriteEvents(storesRegistry, context).then((unsubscribe) => {
+      if (isTornDown) return unsubscribe()
+      unsubscribeWriteEvents = unsubscribe
+    })
+
+    scheduleNextDump()
+  }
 
   const unsubscribeConnectivity = context.connectivity.subscribe((isOnline) => {
     if (!isOnline) return
+    start()
     snapshotQueue.drain(context)
     drainEventQueue(context)
   })
@@ -254,7 +265,7 @@ export default function setup(context: SyncContext, database: Database, storesRe
     }, delay)
   }
 
-  scheduleNextDump()
+  start()
 
   return async () => {
     isTornDown = true
