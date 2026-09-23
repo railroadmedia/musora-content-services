@@ -107,11 +107,7 @@ interface Lesson {
 export async function fetchLessonsWithoutPermissions(brand: string) {
   const result = await groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>()
 
-  return result
-    .map((lessons) =>
-      decorateAll<Lesson>(lessons ?? [], [pageTypeDecorator as FieldDecorator<Lesson>])
-    )
-    .recover([])
+  return result.map((lessons) => decorateAll(lessons ?? [], [pageTypeDecorator])).recover([])
 }
 
 export async function fetchDecoratedLessons(brand: string) {
@@ -125,10 +121,10 @@ export async function fetchDecoratedLessons(brand: string) {
 
   return result
     .map((lessons) =>
-      decorateAll<Lesson>(lessons ?? [], [
-        accessDecorator(permissions) as FieldDecorator<Lesson>,
-        lifetimeUpgradeDecorator(permissions) as FieldDecorator<Lesson>,
-        pageTypeDecorator as FieldDecorator<Lesson>,
+      decorateAll(lessons ?? [], [
+        accessDecorator(permissions),
+        lifetimeUpgradeDecorator(permissions),
+        pageTypeDecorator,
       ])
     )
     .recover([])
@@ -139,22 +135,20 @@ export async function fetchLessonsWithNavigation(brand: string) {
   const permissions = await fetchUserPermissions()
 
   return lessons
-    .map((lessons) =>
-      decorateAll<Lesson>(lessons ?? [], [accessDecorator(permissions) as FieldDecorator<Lesson>])
-    )
+    .map((lessons) => decorateAll(lessons ?? [], [accessDecorator(permissions)]))
     .mapAsync((lessons) => decorateNavigateTo(lessons) as Promise<Lesson[]>)
     .recover([])
 }
 
 export async function fetchWithACustomDecorator(brand: string) {
-  const isFree: FieldDecorator<Lesson> = {
+  const isFree: FieldDecorator<Lesson, 'is_free', boolean> = {
     field: 'is_free',
     compute: (lesson) => lesson.permission_id === undefined,
   }
 
   const result = await groq().and(f.brand(brand)).run<Lesson[]>()
 
-  return result.map((lessons) => decorateAll<Lesson>(lessons ?? [], [isFree])).recover([])
+  return result.map((lessons) => decorateAll(lessons ?? [], [isFree])).recover([])
 }
 
 export async function fetchWhenPermissionsMayBeUnavailable(brand: string) {
@@ -173,9 +167,7 @@ export async function fetchWhenPermissionsMayBeUnavailable(brand: string) {
   return result
     .flatMap((lessons) =>
       permissions.map((userPermissions) =>
-        decorateAll<Lesson>(lessons ?? [], [
-          accessDecorator(userPermissions) as FieldDecorator<Lesson>,
-        ])
+        decorateAll(lessons ?? [], [accessDecorator(userPermissions)])
       )
     )
     .fold(
