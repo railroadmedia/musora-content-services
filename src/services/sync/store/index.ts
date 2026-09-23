@@ -17,13 +17,12 @@ import type LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { SyncError } from '../errors'
 import type { SyncPull, SyncPush, BlockingState } from '../fetch'
 
-export type SyncStoreUpsertEvent<TModel extends BaseModel> = [record: TModel, previous: TModel['_raw'] | null]
-export type SyncStoreDeleteEvent<TModel extends BaseModel> = [id: RecordId, previous: TModel['_raw'] | null]
+export type SyncStorePreviousRaws<TModel extends BaseModel> = (TModel['_raw'] | null)[]
 
 type SyncStoreEvents<TModel extends BaseModel> = {
-  upserted: [SyncStoreUpsertEvent<TModel>[]]
-  deleted: [SyncStoreDeleteEvent<TModel>[]]
-  restored: [SyncStoreUpsertEvent<TModel>[]]
+  upserted: [records: TModel[], previous: SyncStorePreviousRaws<TModel>]
+  deleted: [ids: RecordId[], previous: SyncStorePreviousRaws<TModel>]
+  restored: [records: TModel[], previous: SyncStorePreviousRaws<TModel>]
   pullCompleted: []
   pushCompleted: []
   failedPush: []
@@ -238,7 +237,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         span.setAttribute('records.ids', [r.id])
         return r
       })
-      this.emit('upserted', [[record, null]])
+      this.emit('upserted', [record], [null])
 
       this.pushUnsyncedWithRetry(parentSpan, { type: 'insertOne', recordId: record.id })
       await this.ensurePersistence()
@@ -261,7 +260,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         span.setAttribute('records.ids', [id])
         return found.update(builder)
       })
-      this.emit('upserted', [[record, previous]])
+      this.emit('upserted', [record], [previous])
 
       this.pushUnsyncedWithRetry(parentSpan, { type: 'updateOneId', recordIds: record.id })
       await this.ensurePersistence()
@@ -318,7 +317,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         return newBuilds
       })
 
-      this.emit('upserted', records.map(record => [record, previousById.get(record.id) ?? null]))
+      this.emit('upserted', records, records.map(record => previousById.get(record.id) ?? null))
 
       if (!skipPush) {
         this.pushUnsyncedWithRetry(parentSpan, { type: 'upsertSome', recordIds: records.map(r => r.id).join(',') })
@@ -360,7 +359,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         }
       })
 
-      this.emit('deleted', [[id, previous]])
+      this.emit('deleted', [id], [previous])
 
       if (!skipPush) {
         this.pushUnsyncedWithRetry(parentSpan, { type: 'deleteOne', recordId: id })
@@ -383,7 +382,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         await writer.batch(...existing.map(record => record.prepareMarkAsDeleted()))
       })
 
-      this.emit('deleted', ids.map(id => [id, previousById.get(id) ?? null]))
+      this.emit('deleted', ids, ids.map(id => previousById.get(id) ?? null))
 
       if (!skipPush) {
         this.pushUnsyncedWithRetry(parentSpan, { type: 'deleteSome', recordIds: ids.join(',') })
@@ -426,7 +425,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         return createBuilds
       })
 
-      this.emit('restored', records.map(record => [record, previousById.get(record.id) ?? null]))
+      this.emit('restored', records, records.map(record => previousById.get(record.id) ?? null))
 
       this.pushUnsyncedWithRetry(parentSpan, { type: 'restoreSome', recordIds: ids.join(',') })
       await this.ensurePersistence()

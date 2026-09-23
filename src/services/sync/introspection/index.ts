@@ -124,29 +124,33 @@ function diffRaw(current: Record<string, unknown>, previous: Record<string, unkn
   return diff
 }
 
-function buildDiagnosticEvents(
+type RawRecord = Record<string, unknown>
+
+function buildWriteEvents(
   tableName: string,
-  op: 'upserted' | 'deleted' | 'restored',
-  events: [unknown, unknown][],
-  timestamp: number
+  op: 'upserted' | 'restored',
+  records: { id: string; _raw: RawRecord }[],
+  previous: (RawRecord | null)[]
 ): DiagnosticEvent[] {
-  return op === 'deleted'
-    ? (events as [string, Record<string, unknown> | null][]).map(([id, previous]) => ({
-        model_name: tableName,
-        record_id: id,
-        op,
-        changed_fields: diffRaw({}, previous),
-        client_created_at: timestamp,
-      }))
-    : (events as [{ id: string; _raw: Record<string, unknown> }, Record<string, unknown> | null][]).map(
-        ([record, previous]) => ({
-          model_name: tableName,
-          record_id: record.id,
-          op,
-          changed_fields: diffRaw(record._raw, previous),
-          client_created_at: timestamp,
-        })
-      )
+  const timestamp = Date.now()
+  return records.map((record, index) => ({
+    model_name: tableName,
+    record_id: record.id,
+    op,
+    changed_fields: diffRaw(record._raw, previous[index] ?? null),
+    client_created_at: timestamp,
+  }))
+}
+
+function buildDeleteEvents(tableName: string, ids: string[], previous: (RawRecord | null)[]): DiagnosticEvent[] {
+  const timestamp = Date.now()
+  return ids.map((id, index) => ({
+    model_name: tableName,
+    record_id: id,
+    op: 'deleted',
+    changed_fields: diffRaw({}, previous[index] ?? null),
+    client_created_at: timestamp,
+  }))
 }
 
 async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<any>>, context: SyncContext) {
@@ -165,9 +169,9 @@ async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<a
     if (!store) return []
 
     return [
-      store.on('upserted', (records) => batcher.queue(buildDiagnosticEvents(tableName, 'upserted', records, Date.now()))),
-      store.on('deleted', (ids) => batcher.queue(buildDiagnosticEvents(tableName, 'deleted', ids, Date.now()))),
-      store.on('restored', (records) => batcher.queue(buildDiagnosticEvents(tableName, 'restored', records, Date.now()))),
+      store.on('upserted', (records, previous) => batcher.queue(buildWriteEvents(tableName, 'upserted', records, previous))),
+      store.on('deleted', (ids, previous) => batcher.queue(buildDeleteEvents(tableName, ids, previous))),
+      store.on('restored', (records, previous) => batcher.queue(buildWriteEvents(tableName, 'restored', records, previous))),
     ]
   })
 
