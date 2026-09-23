@@ -24,10 +24,19 @@ export type IntrospectionConfig = Record<string, IntrospectionModelConfig>
 
 let configPromise: Promise<IntrospectionConfig | null> | null = null
 
+function isKnownModelName(modelName: string): boolean {
+  return Object.prototype.hasOwnProperty.call(models, modelName)
+}
+
+function withKnownModelsOnly(config: IntrospectionConfig): IntrospectionConfig {
+  return Object.fromEntries(Object.entries(config).filter(([modelName]) => isKnownModelName(modelName)))
+}
+
 export async function fetchConfig(): Promise<IntrospectionConfig | null> {
   if (!configPromise) {
     configPromise = diagnosticsFetch('/settings')
       .then((response) => (response.ok ? (response.json() as Promise<IntrospectionConfig>) : null))
+      .then((config) => (config ? withKnownModelsOnly(config) : null))
       .catch(() => null)
   }
 
@@ -55,7 +64,8 @@ async function readTablesFromLiveCache(database: Database, modelNames: string[])
   const entries = await Promise.all(
     modelNames.map(async (modelName) => {
       const tableName = tableForModelName(modelName)
-      const records = await database.collections.get(tableName).query().fetch()
+      const collection = database.collections.get(tableName)
+      const records = collection ? await collection.query().fetch() : []
       return [tableName, records.map((record) => record._raw)] as const
     })
   )
