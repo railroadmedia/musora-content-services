@@ -5,10 +5,13 @@
 import { TabResponseType } from '../contentMetaData.js'
 import { getFieldsForContentTypeWithFilteredChildren } from '../contentTypeConfig.js'
 import { decorateAll, type FieldDecorator } from '../lib/sanity/decorators/base'
-import { accessDecorator } from '../lib/sanity/decorators/need-access'
-import { lifetimeUpgradeDecorator } from '../lib/sanity/decorators/need-lifetime-upgrade'
-import { decorateNavigateTo } from '../lib/sanity/decorators/navigate-to'
-import { pageTypeDecorator } from '../lib/sanity/decorators/page-type'
+import { accessDecorator, type WithNeedAccess } from '../lib/sanity/decorators/need-access'
+import {
+  lifetimeUpgradeDecorator,
+  type WithNeedLifetimeUpgrade,
+} from '../lib/sanity/decorators/need-lifetime-upgrade'
+import { decorateNavigateTo, type WithNavigateTo } from '../lib/sanity/decorators/navigate-to'
+import { pageTypeDecorator, type WithPageType } from '../lib/sanity/decorators/page-type'
 import { Filters as f } from '../lib/sanity/filter'
 import { groq } from '../lib/sanity/groq'
 import { globalConfig } from './config.js'
@@ -39,15 +42,21 @@ interface RecommendedContent {
   [key: string]: unknown
 }
 
+type DecoratedRecommendedContent = WithNeedLifetimeUpgrade<
+  WithPageType<WithNeedAccess<RecommendedContent>>
+> & { isLive: boolean }
+
+type NavigableRecommendedContent = WithNavigateTo<DecoratedRecommendedContent>
+
 interface RecommendedRow {
   id: string
   title: string
-  items: RecommendedContent[]
+  items: NavigableRecommendedContent[]
 }
 
 interface RecommendedCatalog {
   type: string
-  data: RecommendedContent[]
+  data: NavigableRecommendedContent[]
   meta: Record<string, never>
 }
 
@@ -205,14 +214,14 @@ const uniqueIds = (ids: Array<number | null | undefined>): number[] => [
 ]
 
 const sortByRecommendedOrder = (
-  content: RecommendedContent[],
+  content: NavigableRecommendedContent[],
   ids: number[]
-): RecommendedContent[] => content.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id))
+): NavigableRecommendedContent[] => content.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id))
 
 async function fetchRecommendedContent(
   ids: number[],
   brand: string
-): Promise<RecommendedContent[]> {
+): Promise<NavigableRecommendedContent[]> {
   if (!ids.length) return []
 
   const [restrictions, lessonCountFilter, fields, permissions] = await Promise.all([
@@ -239,15 +248,16 @@ async function fetchRecommendedContent(
       'live_event_end_time'
     )
     .run<RecommendedContent[]>()
-    .map((contents) =>
-      decorateAll<RecommendedContent>(contents ?? [], [
-        accessDecorator(permissions),
-        lifetimeUpgradeDecorator(permissions),
-        pageTypeDecorator,
-        isLiveDecorator,
-      ])
+    .map(
+      (contents) =>
+        decorateAll<RecommendedContent>(contents ?? [], [
+          accessDecorator(permissions),
+          lifetimeUpgradeDecorator(permissions),
+          pageTypeDecorator,
+          isLiveDecorator,
+        ]) as DecoratedRecommendedContent[]
     )
-    .mapAsync((contents) => decorateNavigateTo(contents) as Promise<RecommendedContent[]>)
+    .mapAsync((contents) => decorateNavigateTo(contents))
     .ltap((error) => console.error(error.message))
     .map((contents) => sortByRecommendedOrder(contents, ids))
     .recover([])
