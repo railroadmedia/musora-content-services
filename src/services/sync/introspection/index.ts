@@ -9,6 +9,7 @@ import { clearEventQueue, createEventBatcher, DiagnosticEvent, drainEventQueue }
 import { diagnosticsFetch } from './diagnostics-fetch'
 import { reportCursors } from './cursors'
 import { createUploadQueue } from './upload-queue'
+import { SyncTelemetry } from '../telemetry/index'
 
 export type DumpMode = 'off' | 'interval'
 export type EventMode = 'off' | 'debounced_write' | 'interval'
@@ -94,9 +95,16 @@ type SnapshotEntry = {
 
 const snapshotQueue = createUploadQueue<SnapshotEntry>('/snapshot')
 
-async function performDump(database: Database, modelNames: string[], context: SyncContext, CompressionWorker?: CompressionWorkerConstructor) {
+async function performDump(
+  database: Database,
+  modelNames: string[],
+  context: SyncContext,
+  CompressionWorker?: CompressionWorkerConstructor,
+  isCancelled: () => boolean = () => false
+) {
   const dataset = await readTables(database, modelNames)
   const payload = await compressInWorker(dataset, CompressionWorker)
+  if (isCancelled()) return
 
   snapshotQueue.enqueue(
     {
@@ -112,11 +120,16 @@ async function performDump(database: Database, modelNames: string[], context: Sy
   return payload
 }
 
-export async function triggerManualDump(database: Database, context: SyncContext, CompressionWorker?: CompressionWorkerConstructor) {
+export async function triggerManualDump(
+  database: Database,
+  context: SyncContext,
+  CompressionWorker?: CompressionWorkerConstructor,
+  isCancelled: () => boolean = () => false
+) {
   const config = await fetchConfig()
-  if (!config) return
+  if (!config || isCancelled()) return
 
-  return performDump(database, Object.keys(config), context, CompressionWorker)
+  return performDump(database, Object.keys(config), context, CompressionWorker, isCancelled)
 }
 
 function diffRaw(current: Record<string, unknown>, previous: Record<string, unknown> | null): Record<string, [unknown, unknown]> {
@@ -214,6 +227,7 @@ export default function setup(context: SyncContext, database: Database, storesRe
   let stopReportingCursors: (() => void) | null = null
   let isTornDown = false
   let hasStarted = false
+  let lastDumpAttemptAt = 0
 
   async function start() {
     if (hasStarted || isTornDown) return
@@ -261,7 +275,7 @@ export default function setup(context: SyncContext, database: Database, storesRe
 
     const minIntervalMinutes = Math.max(0, Math.min(...dumpableModelNames.map((modelName) => config[modelName].dump_interval_minutes ?? 0)) || 1440)
     const lastDumpAt = await getLastDumpAt(database)
-    const delay = Math.max(0, (lastDumpAt ?? 0) + (minIntervalMinutes * 60 * 1000) - Date.now())
+    const delay = Math.max(0, Math.max(lastDumpAt ?? 0, lastDumpAttemptAt) + (minIntervalMinutes * 60 * 1000) - Date.now())
     if (isTornDown) return
 
     timer = setTimeout(async () => {
@@ -270,8 +284,13 @@ export default function setup(context: SyncContext, database: Database, storesRe
         return
       }
 
-      await performDump(database, dumpableModelNames, context, CompressionWorker)
-      scheduleNextDump()
+      lastDumpAttemptAt = Date.now()
+      try {
+        await performDump(database, dumpableModelNames, context, CompressionWorker, () => isTornDown)
+      } catch (error) {
+        SyncTelemetry.getInstance()?.capture(error)
+      }
+      if (!isTornDown) scheduleNextDump()
     }, delay)
   }
 

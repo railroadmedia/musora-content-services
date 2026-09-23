@@ -311,6 +311,8 @@ export default class SyncManager {
     if (!this.database) {
       throw new SyncError('Cannot trigger introspection dump - database not available')
     }
-    return triggerManualDump(this.database, this.context, this.IntrospectionCompressionWorker)
+    const database = this.database
+    const isTornDown = () => this.teardownPromise !== null || this.database !== database
+    return triggerManualDump(database, this.context, this.IntrospectionCompressionWorker, isTornDown)
   }
 }
