@@ -13,7 +13,7 @@ import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
 import { streakCalculator } from './user/streakCalculator'
-import { mapContentsThatWereLastProgressedFromMethod } from "./my-path/learning-paths.ts";
+import { mapContentsThatWereLastProgressedFromMethod } from './my-path/learning-paths.ts'
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -512,7 +512,9 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
 
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const startOfWeek = getMonday(new Date(), timeZone)
-  const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
+  const weekDays = Array.from({ length: 7 }, (_, i) =>
+    startOfWeek.add(i, 'day').format('YYYY-MM-DD')
+  )
 
   if (options.pull) {
     await db.practices.pull()
@@ -520,7 +522,10 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
     db.practices.pull()
   }
 
-  const query = await db.practices.queryAll(Q.where('date', Q.oneOf(weekDays)), Q.sortBy('created_at', 'asc'))
+  const query = await db.practices.queryAll(
+    Q.where('date', Q.oneOf(weekDays)),
+    Q.sortBy('created_at', 'asc')
+  )
   const data = query.data
 
   return formatPracticeSessionData(data, page, limit)
@@ -528,7 +533,9 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
 
 async function formatPracticeSessionData(data, page, limit) {
   if (!data.length)
-    return { data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 } }
+    return {
+      data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 },
+    }
 
   const practiceDuration = Math.round(
     data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0)
@@ -657,8 +664,13 @@ export async function updatePracticeNotes(payload) {
 }
 
 export function getStreaksAndMessage(practices) {
-  let { currentDailyStreak, currentWeeklyStreak, streakMessage, streakMessagePart1, streakMessagePart2 } =
-    calculateStreaks(practices, true)
+  let {
+    currentDailyStreak,
+    currentWeeklyStreak,
+    streakMessage,
+    streakMessagePart1,
+    streakMessagePart2,
+  } = calculateStreaks(practices, true)
 
   return {
     currentDailyStreak,
@@ -908,7 +920,7 @@ async function formatPracticeMeta(practices = []) {
       duration: practice.duration_seconds || 0,
       duration_seconds: practice.duration_seconds || 0,
       content_url: content?.url || null,
-      title: practice.content_id ? content?.title : practice?.title  || practice.content_id,
+      title: practice.content_id ? content?.title : practice?.title || practice.content_id,
       category_id: practice.category_id,
       instrument_id: practice.instrument_id,
       content_type: getFormattedType(content?.type || '', content?.brand || null),

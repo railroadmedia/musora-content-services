@@ -40,7 +40,7 @@ class StreakCalculator {
       currentWeeklyStreak,
       streakMessage,
       streakMessagePart1,
-      streakMessagePart2
+      streakMessagePart2,
     } = getStreaksAndMessage(allPractices)
 
     this.cache = {
@@ -79,10 +79,11 @@ class StreakCalculator {
 
   private getTodaysPracticeSeconds(practices: PracticeData): number {
     const today = dayjs().format('YYYY-MM-DD')
-    return (practices[today] || []).reduce((total, practice) => total + practice.duration_seconds, 0)
+    return (practices[today] || []).reduce(
+      (total, practice) => total + practice.duration_seconds,
+      0
+    )
   }
 }
-
-
 
 export const streakCalculator = new StreakCalculator()
