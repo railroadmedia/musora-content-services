@@ -198,8 +198,13 @@ async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<a
     ]
   })
 
+  const unsubscribeVisibility = context.visibility.subscribe((isVisible) => {
+    if (!isVisible) batcher.flush()
+  })
+
   return () => {
     unsubscribes.forEach((unsubscribe) => unsubscribe())
+    unsubscribeVisibility()
     batcher.flush()
   }
 }

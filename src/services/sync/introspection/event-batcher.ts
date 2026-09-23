@@ -16,6 +16,8 @@ type EventBatchEntry = {
 }
 
 const EVENT_DEBOUNCE_MS = 2000
+const EVENT_MAX_WAIT_MS = 10_000
+const MAX_BUFFERED_EVENTS = 200
 const MAX_PENDING_EVENT_BATCHES = 100
 
 const eventQueue = createUploadQueue<EventBatchEntry>('/events', MAX_PENDING_EVENT_BATCHES)
@@ -28,13 +30,15 @@ export function clearEventQueue() {
   eventQueue.clear()
 }
 
-export function createEventBatcher(context: SyncContext, delayMs = EVENT_DEBOUNCE_MS) {
+export function createEventBatcher(context: SyncContext, delayMs = EVENT_DEBOUNCE_MS, maxWaitMs = EVENT_MAX_WAIT_MS) {
   let buffer: DiagnosticEvent[] = []
   let timer: ReturnType<typeof setTimeout> | null = null
+  let firstQueuedAt: number | null = null
 
   function flush() {
     if (timer) clearTimeout(timer)
     timer = null
+    firstQueuedAt = null
     if (!buffer.length) return
 
     const events = buffer
@@ -51,8 +55,12 @@ export function createEventBatcher(context: SyncContext, delayMs = EVENT_DEBOUNC
 
   function queue(events: DiagnosticEvent[]) {
     buffer.push(...events)
+    firstQueuedAt ??= Date.now()
+    if (buffer.length >= MAX_BUFFERED_EVENTS) return flush()
+
     if (timer) clearTimeout(timer)
-    timer = setTimeout(flush, delayMs)
+    const waitMs = Math.min(delayMs, firstQueuedAt + maxWaitMs - Date.now())
+    timer = setTimeout(flush, Math.max(0, waitMs))
   }
 
   return { queue, flush }
