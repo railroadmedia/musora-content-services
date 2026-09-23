@@ -35,8 +35,12 @@ class StreakCalculator {
   async recalculate(): Promise<StreakData> {
     const allPractices = await this.fetchAllPractices()
 
-    const { currentDailyStreak, currentWeeklyStreak, streakMessage, streakMessagePart1, streakMessagePart2 } =
-      getStreaksAndMessage(allPractices)
+    const {
+      currentDailyStreak,
+      currentWeeklyStreak,
+      streakMessage,
+      streakMessagePart1,
+      streakMessagePart2 } = getStreaksAndMessage(allPractices)
 
     this.cache = {
       currentDailyStreak: currentDailyStreak,
