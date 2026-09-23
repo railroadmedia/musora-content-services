@@ -4,7 +4,7 @@ import {
   CollectionParameter,
   STATE,
 } from '../../../services/sync/models/ContentProgress'
-import { Progress } from '@/services/progress'
+import { Progress } from '../../../services/progress'
 
 export const NAVIGATE_TO_FIELD = 'navigateTo' as const
 
