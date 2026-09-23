@@ -215,7 +215,7 @@ async function fetchRecommendedContent(
 ): Promise<RecommendedContent[]> {
   if (!ids.length) return []
 
-  const [restrictions, lessonCountFilter, fields] = await Promise.all([
+  const [restrictions, lessonCountFilter, fields, permissions] = await Promise.all([
     f.combineAsync(
       f.idIn(ids),
       brand ? f.brand(brand) : f.empty,
@@ -227,36 +227,35 @@ async function fetchRecommendedContent(
     getFieldsForContentTypeWithFilteredChildren(RECOMMENDED_CONTENT_TYPE, false) as Promise<
       string[]
     >,
-  ])
-
-  const [result, permissions] = await Promise.all([
-    groq()
-      .and(restrictions)
-      .select(
-        ...fields,
-        `"lesson_count": coalesce(${f.count(lessonCountFilter)}, 0)`,
-        'live_event_start_time',
-        'live_event_end_time'
-      )
-      .run<RecommendedContent[]>(),
     fetchUserPermissions(),
   ])
 
-  return result
-    .map((contents) =>
-      decorateAll<RecommendedContent>(contents ?? [], [
-        accessDecorator(permissions),
-        lifetimeUpgradeDecorator(permissions),
-        pageTypeDecorator,
-        isLiveDecorator,
-      ])
+  return groq()
+    .and(restrictions)
+    .select(
+      ...fields,
+      `"lesson_count": coalesce(${f.count(lessonCountFilter)}, 0)`,
+      'live_event_start_time',
+      'live_event_end_time'
     )
-    .mapAsync((contents) => decorateNavigateTo(contents) as Promise<RecommendedContent[]>)
+    .run<RecommendedContent[]>()
     .then((r) =>
       r
-        .ltap((error) => console.error(error.message))
-        .map((contents) => sortByRecommendedOrder(contents, ids))
-        .recover([])
+        .map((contents) =>
+          decorateAll<RecommendedContent>(contents ?? [], [
+            accessDecorator(permissions),
+            lifetimeUpgradeDecorator(permissions),
+            pageTypeDecorator,
+            isLiveDecorator,
+          ])
+        )
+        .mapAsync((contents) => decorateNavigateTo(contents) as Promise<RecommendedContent[]>)
+        .then((r) =>
+          r
+            .ltap((error) => console.error(error.message))
+            .map((contents) => sortByRecommendedOrder(contents, ids))
+            .recover([])
+        )
     )
 }
 
