@@ -239,24 +239,18 @@ async function fetchRecommendedContent(
       'live_event_end_time'
     )
     .run<RecommendedContent[]>()
-    .then((r) =>
-      r
-        .map((contents) =>
-          decorateAll<RecommendedContent>(contents ?? [], [
-            accessDecorator(permissions),
-            lifetimeUpgradeDecorator(permissions),
-            pageTypeDecorator,
-            isLiveDecorator,
-          ])
-        )
-        .mapAsync((contents) => decorateNavigateTo(contents) as Promise<RecommendedContent[]>)
-        .then((r) =>
-          r
-            .ltap((error) => console.error(error.message))
-            .map((contents) => sortByRecommendedOrder(contents, ids))
-            .recover([])
-        )
+    .map((contents) =>
+      decorateAll<RecommendedContent>(contents ?? [], [
+        accessDecorator(permissions),
+        lifetimeUpgradeDecorator(permissions),
+        pageTypeDecorator,
+        isLiveDecorator,
+      ])
     )
+    .mapAsync((contents) => decorateNavigateTo(contents) as Promise<RecommendedContent[]>)
+    .ltap((error) => console.error(error.message))
+    .map((contents) => sortByRecommendedOrder(contents, ids))
+    .recover([])
 }
 
 /**

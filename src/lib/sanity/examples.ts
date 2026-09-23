@@ -135,18 +135,15 @@ export async function fetchDecoratedLessons(brand: string) {
 }
 
 export async function fetchLessonsWithNavigation(brand: string) {
-  const [result, permissions] = await Promise.all([
-    groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>(),
-    fetchUserPermissions(),
-  ])
+  const lessons = groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>()
+  const permissions = await fetchUserPermissions()
 
-  const decorated = await result
+  return lessons
     .map((lessons) =>
       decorateAll<Lesson>(lessons ?? [], [accessDecorator(permissions) as FieldDecorator<Lesson>])
     )
     .mapAsync((lessons) => decorateNavigateTo(lessons) as Promise<Lesson[]>)
-
-  return decorated.recover([])
+    .recover([])
 }
 
 export async function fetchWithACustomDecorator(brand: string) {
@@ -188,17 +185,14 @@ export async function fetchWhenPermissionsMayBeUnavailable(brand: string) {
 }
 
 export async function decorateManuallyForPreciseTypes(brand: string) {
-  const [result, permissions] = await Promise.all([
-    groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>(),
-    fetchUserPermissions(),
-  ])
+  const lessons = groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>()
+  const permissions = await fetchUserPermissions()
 
-  const decorated = await result
+  return lessons
     .map((lessons) => decorateAccess(lessons ?? [], permissions))
     .mapAsync((lessons) => decorateNavigateTo(lessons))
-
-  return decorated.fold(
-    () => [],
-    (lessons) => lessons.map((lesson) => [lesson.need_access, lesson.navigateTo] as const)
-  )
+    .fold(
+      () => [],
+      (lessons) => lessons.map((lesson) => [lesson.need_access, lesson.navigateTo] as const)
+    )
 }

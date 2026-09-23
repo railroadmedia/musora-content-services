@@ -1,4 +1,4 @@
-import { Either } from '../ads/either'
+import { AsyncEither } from '../ads/async-either'
 import { FieldAccess } from './field-access'
 import { composite, query, QueryBuilder } from './query'
 import { QueryRunner, run, SanityQueryError } from './runner'
@@ -6,7 +6,7 @@ import { QueryRunner, run, SanityQueryError } from './runner'
 export interface RunnableQuery {
   build(): string
   toString(): string
-  run<T>(runner?: QueryRunner<T>): Promise<Either<SanityQueryError, T | null>>
+  run<T>(runner?: QueryRunner<T>): AsyncEither<SanityQueryError, T | null>
 }
 
 export interface GroqBuilder extends QueryBuilder, RunnableQuery {
