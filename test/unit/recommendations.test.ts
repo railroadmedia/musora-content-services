@@ -189,6 +189,24 @@ describe('getRecommendedForYou', () => {
     expect(query).not.toContain('published_on <=')
   })
 
+  test('includes membership restricted content the user cannot access', async () => {
+    mockGet().mockResolvedValue([1])
+
+    await getRecommendedForYou('drumeo')
+
+    const restrictions = (executeQuerySpy.mock.calls[0][0] as string).split(']{')[0]
+    expect(restrictions).toContain("membership_tier in ['plus','basic']")
+  })
+
+  test('marks restricted content as needing access', async () => {
+    mockGet().mockResolvedValue([1])
+    executeQuerySpy.mockResolvedValue([{ ...content(1), permission_id: [999999] }])
+
+    const result = await getRecommendedForYou('drumeo')
+
+    expect((result as any).items[0].need_access).toBe(true)
+  })
+
   test('decorates results', async () => {
     mockGet().mockResolvedValue([1])
     executeQuerySpy.mockResolvedValue([

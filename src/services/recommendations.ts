@@ -221,7 +221,7 @@ async function fetchRecommendedContent(
       brand ? f.brand(brand) : f.empty,
       f.status(),
       f.notDeprecated(),
-      f.permissions()
+      f.permissions({ showMembershipRestrictedContent: true })
     ),
     f.combineAsync('_id in ^.child[]._ref', f.status(), f.notDeprecated(), f.permissions()),
     getFieldsForContentTypeWithFilteredChildren(RECOMMENDED_CONTENT_TYPE, false) as Promise<
@@ -242,18 +242,22 @@ async function fetchRecommendedContent(
     fetchUserPermissions(),
   ])
 
-  const decorated = await result
+  return result
     .map((contents) =>
       decorateAll<RecommendedContent>(contents ?? [], [
-        accessDecorator(permissions) as FieldDecorator<RecommendedContent>,
-        lifetimeUpgradeDecorator(permissions) as FieldDecorator<RecommendedContent>,
-        pageTypeDecorator as FieldDecorator<RecommendedContent>,
-        isLiveDecorator as FieldDecorator<RecommendedContent>,
+        accessDecorator(permissions),
+        lifetimeUpgradeDecorator(permissions),
+        pageTypeDecorator,
+        isLiveDecorator,
       ])
     )
     .mapAsync((contents) => decorateNavigateTo(contents) as Promise<RecommendedContent[]>)
-
-  return sortByRecommendedOrder(decorated.recover([]), ids)
+    .then((r) =>
+      r
+        .ltap((error) => console.error(error.message))
+        .map((contents) => sortByRecommendedOrder(contents, ids))
+        .recover([])
+    )
 }
 
 /**

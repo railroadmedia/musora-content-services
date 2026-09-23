@@ -147,10 +147,10 @@ export function navigateToDecorator(
   }
 }
 
-export function decorateNavigateTo<T extends NavigateToDecoratable>(
+export async function decorateNavigateTo<T extends NavigateToDecoratable>(
   items: T[]
 ): Promise<WithNavigateTo<T>[]>
-export function decorateNavigateTo<T extends NavigateToDecoratable>(
+export async function decorateNavigateTo<T extends NavigateToDecoratable>(
   items: T
 ): Promise<WithNavigateTo<T>>
 export async function decorateNavigateTo<T extends NavigateToDecoratable>(
