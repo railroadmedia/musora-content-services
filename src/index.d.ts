@@ -349,7 +349,7 @@ import {
 	rankCategories,
 	rankItems,
 	recommendations
-} from './services/recommendations.js';
+} from './services/recommender.js';
 
 import {
 	getReportIssueOptions,
