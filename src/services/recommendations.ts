@@ -213,10 +213,8 @@ const uniqueIds = (ids: Array<number | null | undefined>): number[] => [
   ...new Set(ids.filter((id) => id !== null && id !== undefined) as number[]),
 ]
 
-const sortByRecommendedOrder = (
-  content: NavigableRecommendedContent[],
-  ids: number[]
-): NavigableRecommendedContent[] => content.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id))
+const sortByRecommendedOrder = <T extends { id: number }>(content: T[], ids: number[]): T[] =>
+  content.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id))
 
 async function fetchRecommendedContent(
   ids: number[],
@@ -250,7 +248,7 @@ async function fetchRecommendedContent(
     .run<RecommendedContent[]>()
     .map(
       (contents) =>
-        decorateAll<RecommendedContent>(contents ?? [], [
+        decorateAll(contents ?? [], [
           accessDecorator(permissions),
           lifetimeUpgradeDecorator(permissions),
           pageTypeDecorator,
