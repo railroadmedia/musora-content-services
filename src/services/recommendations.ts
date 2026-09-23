@@ -11,19 +11,22 @@ import { decorateNavigateTo } from '../lib/sanity/decorators/navigate-to'
 import { pageTypeDecorator } from '../lib/sanity/decorators/page-type'
 import { Filters as f } from '../lib/sanity/filter'
 import { groq } from '../lib/sanity/groq'
+import { globalConfig } from './config.js'
+import { GET, HttpClient } from '../infrastructure/http/HttpClient'
 import { fetchUserPermissions } from './permissions/index'
-import { recommendations } from './recommender.js'
-import { getSanityDate } from './sanity.js'
 
 /**
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['getRecommendedForYou']
+const excludeFromGeneratedIndex = []
 
 const RECOMMENDED_ROW_ID = 'recommended'
 const RECOMMENDED_CONTENT_TYPE = 'tab-data'
 
-interface RecommendedLesson {
+const RECOMMENDER_URL = 'https://recommender.musora.com'
+const recommenderClient = new HttpClient(RECOMMENDER_URL, null, null, null, 'omit')
+
+interface RecommendedContent {
   id: number
   type: string
   brand: string
@@ -32,19 +35,19 @@ interface RecommendedLesson {
   status: string
   live_event_start_time?: string | null
   live_event_end_time?: string | null
-  children?: RecommendedLesson[]
+  children?: RecommendedContent[]
   [key: string]: unknown
 }
 
 interface RecommendedRow {
   id: string
   title: string
-  items: RecommendedLesson[]
+  items: RecommendedContent[]
 }
 
 interface RecommendedCatalog {
   type: string
-  data: RecommendedLesson[]
+  data: RecommendedContent[]
   meta: Record<string, never>
 }
 
@@ -53,16 +56,146 @@ export interface RecommendedForYouOptions {
   limit?: number
 }
 
-const isLiveDecorator: FieldDecorator<RecommendedLesson, 'isLive', boolean> = {
+export interface RecommendationsOptions {
+  section?: string
+  contentTypes?: string[]
+}
+
+export interface RankedCategory {
+  slug: string
+  items: number[]
+}
+
+export type CategoriesToRank = Record<string, number[]>
+
+/**
+ * @param {number|string} contentId
+ * @param {string} brand
+ * @param {number} [count=10]
+ * @returns {Promise<number[]|null>}
+ * @example
+ * fetchSimilarItems(1113, 'drumeo')
+ *   .then(ids => console.log(ids))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchSimilarItems(
+  contentId: number | string,
+  brand: string,
+  count: number = 10
+): Promise<number[] | null> {
+  if (!contentId) {
+    return []
+  }
+  const id = parseInt(String(contentId))
+  const data = {
+    brand,
+    content_ids: id,
+    num_similar: count + 1,
+    page_size: count + 1,
+    page: 1,
+    exclude_interacted: true,
+  }
+  try {
+    const response = await recommenderClient.post('/similar_items/', data)
+    return response['similar_items'].filter((item: number) => item !== id).slice(0, count)
+  } catch (error) {
+    console.error('Fetch error:', error)
+    return null
+  }
+}
+
+/**
+ * @param {string} brand
+ * @param {CategoriesToRank} categories
+ * @returns {Promise<RankedCategory[]>}
+ * @example
+ * rankCategories('drumeo', { 1: [111222, 23120], 2: [2222, 33333] })
+ *   .then(categories => console.log(categories))
+ *   .catch(error => console.error(error));
+ */
+export async function rankCategories(
+  brand: string,
+  categories: CategoriesToRank
+): Promise<RankedCategory[]> {
+  const data = {
+    brand,
+    user_id: globalConfig.sessionConfig.userId,
+    playlists: categories,
+  }
+  try {
+    const response = await recommenderClient.post('/rank_each_list/', data)
+    return response['ranked_playlists'].map((rankedPlaylist: any) => ({
+      slug: rankedPlaylist.playlist_id,
+      items: rankedPlaylist.ranked_items,
+    }))
+  } catch (error) {
+    console.error('RankCategories fetch error:', error)
+  }
+
+  return Object.entries(categories).map(([slug, items]) => ({ slug, items }))
+}
+
+/**
+ * @param {string} brand
+ * @param {number[]} contentIds
+ * @returns {Promise<number[]>}
+ * @example
+ * rankItems('drumeo', [111222, 23120, 402199])
+ *   .then(ids => console.log(ids))
+ *   .catch(error => console.error(error));
+ */
+export async function rankItems(brand: string, contentIds: number[]): Promise<number[]> {
+  if (contentIds.length === 0) {
+    return []
+  }
+  const data = {
+    brand,
+    user_id: globalConfig.sessionConfig.userId,
+    content_ids: contentIds,
+  }
+  try {
+    const response = await recommenderClient.post('/rank_items/', data)
+    return response['ranked_content_ids']
+  } catch (error) {
+    console.error('rankItems fetch error:', error)
+    return contentIds
+  }
+}
+
+/**
+ * @param {string} brand
+ * @param {RecommendationsOptions} [options={}]
+ * @returns {Promise<number[]>}
+ * @example
+ * recommendations('drumeo', { section: 'lessons', contentTypes: ['course'] })
+ *   .then(ids => console.log(ids))
+ *   .catch(error => console.error(error));
+ */
+export async function recommendations(
+  brand: string,
+  { section = '', contentTypes = [] }: RecommendationsOptions = {}
+): Promise<number[]> {
+  const sectionParam = section.toUpperCase().replace('-', '_')
+  const sectionString = sectionParam ? `&section=${sectionParam}` : ''
+  const contentTypesString = contentTypes
+    .map((type) => `&content_types[]=${encodeURIComponent(type)}`)
+    .join('')
+
+  return await GET(
+    `/api/content/v1/recommendations?brand=${brand}${sectionString}${contentTypesString}`
+  )
+}
+
+const isLiveDecorator: FieldDecorator<RecommendedContent, 'isLive', boolean> = {
   field: 'isLive',
   recurse: false,
-  compute: (lesson) => {
-    const now = getSanityDate(new Date(), false)
+  compute: (content) => {
+    const now = new Date().toISOString()
     return Boolean(
-      lesson.live_event_start_time &&
-        lesson.live_event_end_time &&
-        lesson.live_event_start_time <= now &&
-        lesson.live_event_end_time >= now
+      content.live_event_start_time &&
+        content.live_event_end_time &&
+        content.live_event_start_time <= now &&
+        content.live_event_end_time >= now
     )
   },
 }
@@ -71,10 +204,15 @@ const uniqueIds = (ids: Array<number | null | undefined>): number[] => [
   ...new Set(ids.filter((id) => id !== null && id !== undefined) as number[]),
 ]
 
-const sortByRecommendedOrder = (lessons: RecommendedLesson[], ids: number[]): RecommendedLesson[] =>
-  lessons.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id))
+const sortByRecommendedOrder = (
+  content: RecommendedContent[],
+  ids: number[]
+): RecommendedContent[] => content.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id))
 
-async function fetchRecommendedLessons(ids: number[], brand: string): Promise<RecommendedLesson[]> {
+async function fetchRecommendedContent(
+  ids: number[],
+  brand: string
+): Promise<RecommendedContent[]> {
   if (!ids.length) return []
 
   const [restrictions, lessonCountFilter, fields] = await Promise.all([
@@ -100,20 +238,20 @@ async function fetchRecommendedLessons(ids: number[], brand: string): Promise<Re
         'live_event_start_time',
         'live_event_end_time'
       )
-      .run<RecommendedLesson[]>(),
+      .run<RecommendedContent[]>(),
     fetchUserPermissions(),
   ])
 
   const decorated = await result
-    .map((lessons) =>
-      decorateAll<RecommendedLesson>(lessons ?? [], [
-        accessDecorator(permissions) as FieldDecorator<RecommendedLesson>,
-        lifetimeUpgradeDecorator(permissions) as FieldDecorator<RecommendedLesson>,
-        pageTypeDecorator as FieldDecorator<RecommendedLesson>,
-        isLiveDecorator as FieldDecorator<RecommendedLesson>,
+    .map((contents) =>
+      decorateAll<RecommendedContent>(contents ?? [], [
+        accessDecorator(permissions) as FieldDecorator<RecommendedContent>,
+        lifetimeUpgradeDecorator(permissions) as FieldDecorator<RecommendedContent>,
+        pageTypeDecorator as FieldDecorator<RecommendedContent>,
+        isLiveDecorator as FieldDecorator<RecommendedContent>,
       ])
     )
-    .mapAsync((lessons) => decorateNavigateTo(lessons) as Promise<RecommendedLesson[]>)
+    .mapAsync((contents) => decorateNavigateTo(contents) as Promise<RecommendedContent[]>)
 
   return sortByRecommendedOrder(decorated.recover([]), ids)
 }
@@ -140,14 +278,14 @@ export async function getRecommendedForYou(
   { page = 1, limit = 10 }: RecommendedForYouOptions = {}
 ): Promise<RecommendedRow | RecommendedCatalog> {
   const title = brand === 'playbass' ? 'You Might Like' : 'Recommended For You'
-  const data = await recommendations(brand, { limit: page * limit })
+  const data = await recommendations(brand)
 
   if (!data || !data.length) {
     return { id: RECOMMENDED_ROW_ID, title, items: [] }
   }
 
   const offset = (page - 1) * limit
-  const contents = await fetchRecommendedLessons(
+  const contents = await fetchRecommendedContent(
     uniqueIds(data.slice(offset, offset + limit)),
     brand
   )
