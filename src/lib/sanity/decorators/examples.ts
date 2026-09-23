@@ -58,6 +58,27 @@ export function chainedWrappers() {
   return withBoth
 }
 
+export function accumulatedTypesInOneWalk() {
+  const decorated = decorateAll(rows, [accessDecorator(perms), pageTypeDecorator])
+  decorated[0].need_access satisfies boolean
+  decorated[0].page_type satisfies 'song' | 'lesson'
+  decorated[0].id satisfies number
+  return decorated
+}
+
+export function accumulatedTypesForASingleItem() {
+  const decorated = decorateAll(rows[0], [accessDecorator(perms), pageTypeDecorator])
+  decorated.need_access satisfies boolean
+  decorated.page_type satisfies 'song' | 'lesson'
+  return decorated
+}
+
+export function noDecoratorsLeavesTheTypeAlone() {
+  const decorated = decorateAll(rows, [])
+  decorated[0].id satisfies number
+  return decorated
+}
+
 export function composedSingleWalk() {
   type Composed = AccessDecoratable & PageTypeDecoratable
   const decorators: FieldDecorator<Composed>[] = [

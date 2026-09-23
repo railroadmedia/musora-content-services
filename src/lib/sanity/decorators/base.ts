@@ -25,6 +25,14 @@ export interface FieldDecoratorAsync<
 
 type Decorated<T, K extends string, V> = T & { [P in K]: V }
 
+type DecoratedByAll<T, D extends readonly unknown[]> = D extends readonly [infer H, ...infer R]
+  ? H extends FieldDecorator<never, infer K extends string, infer V>
+    ? DecoratedByAll<Decorated<T, K, V>, R>
+    : DecoratedByAll<T, R>
+  : T
+
+type Decorators<T extends Decoratable> = readonly FieldDecorator<T, string, any>[]
+
 const MAX_CHILD_DEPTH = 3
 
 export function decorate<T extends Decoratable, K extends string, V>(
@@ -47,14 +55,14 @@ export function decorate<T extends Decoratable, K extends string, V>(
   return items as Decorated<T, K, V> | Decorated<T, K, V>[]
 }
 
-export function decorateAll<T extends Decoratable>(
+export function decorateAll<T extends Decoratable, const D extends Decorators<T>>(
   items: T[],
-  decorators: ReadonlyArray<FieldDecorator<T>>
-): T[]
-export function decorateAll<T extends Decoratable>(
+  decorators: D
+): DecoratedByAll<T, D>[]
+export function decorateAll<T extends Decoratable, const D extends Decorators<T>>(
   items: T,
-  decorators: ReadonlyArray<FieldDecorator<T>>
-): T
+  decorators: D
+): DecoratedByAll<T, D>
 export function decorateAll<T extends Decoratable>(
   items: T | T[],
   decorators: ReadonlyArray<FieldDecorator<T>>
