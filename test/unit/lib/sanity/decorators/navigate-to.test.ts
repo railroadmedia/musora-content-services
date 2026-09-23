@@ -354,6 +354,20 @@ describe('navigate-to decorator', () => {
       expect(result.navigateTo).toBeNull()
     })
 
+    test('documentary uses course flow', async () => {
+      const item = parent(1, 'documentary', [child(101), child(102)])
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 40, updated_at: 1000 },
+        { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+        { content_id: 102, state: '', progress_percent: 0, updated_at: 0 },
+      ]
+      mockLastInteracted = 101
+
+      const result = await decorateNavigateTo(item)
+
+      expect(result.navigateTo).toMatchObject({ id: 102 })
+    })
+
     test('skips null children left by a filtered GROQ dereference', async () => {
       const item = parent(1, 'course', [null as any, child(101), null as any])
 
@@ -373,7 +387,9 @@ describe('navigate-to decorator', () => {
     test('skips null grandchildren in a course collection', async () => {
       const course = parent(101, 'course', [null as any, child(1001)])
       const collectionWithHoles = parent(1, 'course-collection', [null as any, course])
-      mockProgressRecords = [{ content_id: 1, status: 'started' }]
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 40, updated_at: 1000 },
+      ]
       mockLastInteracted = 101
 
       const result = await decorateNavigateTo(collectionWithHoles)

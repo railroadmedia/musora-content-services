@@ -15,9 +15,10 @@ const NAVIGABLE_TYPES = [
   'song-tutorial',
   COLLECTION_TYPE.LEARNING_PATH,
   'skill-pack',
+  'documentary',
 ] as const
 
-const COURSE_FLOW_TYPES = ['course', 'skill-pack', 'song-tutorial']
+const COURSE_FLOW_TYPES = ['course', 'skill-pack', 'song-tutorial', 'documentary']
 const GUIDED_FLOW_TYPES = ['guided-course', COLLECTION_TYPE.LEARNING_PATH]
 const TWO_DEPTH_TYPES = ['course-collection']
 
