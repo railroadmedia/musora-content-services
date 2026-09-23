@@ -47,7 +47,6 @@ describe('currentWeekPracticeDays', () => {
     mockPracticeData = [
       { date: '2026-09-21', duration_seconds: 60 }, // Monday, this week
       { date: '2026-09-22', duration_seconds: 60 }, // Tuesday, today
-      { date: '2026-09-25', duration_seconds: 60 }, // still within this week (Friday)
       { date: '2026-09-28', duration_seconds: 60 }, // next week - must not count
       { date: '2032-08-25', duration_seconds: 60 }, // far future garbage row - must not count
     ]
@@ -55,7 +54,20 @@ describe('currentWeekPracticeDays', () => {
 
     const stats = await getUserWeeklyStats()
 
-    expect(stats.data.currentWeekPracticeDays).toBe(3)
+    expect(stats.data.currentWeekPracticeDays).toBe(2)
+  })
+
+  test('ignores practice dates later this same week that have not happened yet', async () => {
+    mockPracticeData = [
+      { date: '2026-09-21', duration_seconds: 60 }, // Monday, this week
+      { date: '2026-09-22', duration_seconds: 60 }, // Tuesday, today
+      { date: '2026-09-25', duration_seconds: 60 }, // Friday, still this week, but in the future
+    ]
+    streakCalculator.invalidate()
+
+    const stats = await getUserWeeklyStats()
+
+    expect(stats.data.currentWeekPracticeDays).toBe(2)
   })
 
   test('counts a single practice made today as one day, not zero', async () => {

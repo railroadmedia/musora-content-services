@@ -113,6 +113,10 @@ export async function getUserWeeklyStats() {
   )
 
   const practiceDaysSet = new Set(Object.keys(weekPractices))
+  const todayStr = today.format('YYYY-MM-DD')
+  // Days practiced so far this week, not the whole Monday-Sunday span - a day
+  // later this week hasn't happened yet, so it can't count as "practiced".
+  const currentWeekPracticeDays = [...practiceDaysSet].filter((d) => d <= todayStr).length
   let dailyStats = []
   for (let i = 0; i < 7; i++) {
     const day = startOfWeek.add(i, 'day')
@@ -139,7 +143,7 @@ export async function getUserWeeklyStats() {
       streakMessagePart1: streakData.streakMessagePart1,
       streakMessagePart2: streakData.streakMessagePart2,
       practices: weekPractices,
-      currentWeekPracticeDays: practiceDaysSet.size,
+      currentWeekPracticeDays,
       todaysPracticeSeconds: streakData.todaysPracticeSeconds,
     },
   }
