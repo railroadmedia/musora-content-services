@@ -40,7 +40,8 @@ class StreakCalculator {
       currentWeeklyStreak,
       streakMessage,
       streakMessagePart1,
-      streakMessagePart2 } = getStreaksAndMessage(allPractices)
+      streakMessagePart2
+    } = getStreaksAndMessage(allPractices)
 
     this.cache = {
       currentDailyStreak: currentDailyStreak,
