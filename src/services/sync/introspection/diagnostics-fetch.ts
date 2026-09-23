@@ -11,3 +11,7 @@ export function diagnosticsFetch(path: string, init?: RequestInit): Promise<Resp
     },
   })
 }
+
+export function isPermanentRejectionStatus(status: number): boolean {
+  return status >= 400 && status < 500 && status !== 429
+}

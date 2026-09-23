@@ -1,6 +1,6 @@
 import SyncContext from '../context'
 import type SyncStore from '../store'
-import { diagnosticsFetch } from './diagnostics-fetch'
+import { diagnosticsFetch, isPermanentRejectionStatus } from './diagnostics-fetch'
 
 const CURSOR_REPORT_DEBOUNCE_MS = 5000
 
@@ -21,7 +21,7 @@ async function uploadCursors(cursors: DiagnosticCursor[], context: SyncContext):
         cursors,
       }),
     })
-    return response.ok || (response.status >= 400 && response.status < 500)
+    return response.ok || isPermanentRejectionStatus(response.status)
   } catch {
     return false
   }

@@ -1,5 +1,5 @@
 import SyncContext from '../context'
-import { diagnosticsFetch } from './diagnostics-fetch'
+import { diagnosticsFetch, isPermanentRejectionStatus } from './diagnostics-fetch'
 
 class DiagnosticUploadError extends Error {
   constructor(public path: string, public status: number) {
@@ -8,7 +8,7 @@ class DiagnosticUploadError extends Error {
 }
 
 function isPermanentlyRejected(error: unknown): boolean {
-  return error instanceof DiagnosticUploadError && error.status >= 400 && error.status < 500
+  return error instanceof DiagnosticUploadError && isPermanentRejectionStatus(error.status)
 }
 
 export function createUploadQueue<TEntry>(path: string, maxPending = Infinity) {
