@@ -354,6 +354,33 @@ describe('navigate-to decorator', () => {
       expect(result.navigateTo).toBeNull()
     })
 
+    test('skips null children left by a filtered GROQ dereference', async () => {
+      const item = parent(1, 'course', [null as any, child(101), null as any])
+
+      const result = await decorateNavigateTo(item)
+
+      expect(result.navigateTo).toMatchObject({ id: 101 })
+    })
+
+    test('returns null when every child was filtered out', async () => {
+      const item = parent(1, 'course', [null as any, undefined as any])
+
+      const result = await decorateNavigateTo(item)
+
+      expect(result.navigateTo).toBeNull()
+    })
+
+    test('skips null grandchildren in a course collection', async () => {
+      const course = parent(101, 'course', [null as any, child(1001)])
+      const collectionWithHoles = parent(1, 'course-collection', [null as any, course])
+      mockProgressRecords = [{ content_id: 1, status: 'started' }]
+      mockLastInteracted = 101
+
+      const result = await decorateNavigateTo(collectionWithHoles)
+
+      expect(result.navigateTo).toMatchObject({ id: 101, child: { id: 1001 } })
+    })
+
     test('output shape matches NavigateTo interface', async () => {
       const item = parent(1, 'course', [child(101)])
       const result = await decorateNavigateTo(item)
