@@ -1,27 +1,31 @@
 import SyncContext from '../context'
-import { diagnosticsFetch } from './diagnostics-fetch'
+import { createUploadQueue } from './upload-queue'
 
 export type DiagnosticEvent = {
   model_name: string
   record_id: string
   op: 'upserted' | 'deleted' | 'restored'
   changed_fields: Record<string, [unknown, unknown]>
-  timestamp: number
+  client_created_at: number
+}
+
+type EventBatchEntry = {
+  client_id: string
+  client_session_id: string
+  events: DiagnosticEvent[]
 }
 
 const EVENT_DEBOUNCE_MS = 2000
+const MAX_PENDING_EVENT_BATCHES = 100
 
-async function uploadEvents(events: DiagnosticEvent[], context: SyncContext): Promise<void> {
-  if (!events.length) return
+const eventQueue = createUploadQueue<EventBatchEntry>('/events', MAX_PENDING_EVENT_BATCHES)
 
-  await diagnosticsFetch('/events', {
-    method: 'POST',
-    body: JSON.stringify({
-      client_id: context.session.getClientId(),
-      client_session_id: context.session.getSessionId() ?? '',
-      events,
-    }),
-  })
+export function drainEventQueue(context: SyncContext) {
+  return eventQueue.drain(context)
+}
+
+export function clearEventQueue() {
+  eventQueue.clear()
 }
 
 export function createEventBatcher(context: SyncContext, delayMs = EVENT_DEBOUNCE_MS) {
@@ -35,7 +39,14 @@ export function createEventBatcher(context: SyncContext, delayMs = EVENT_DEBOUNC
 
     const events = buffer
     buffer = []
-    uploadEvents(events, context)
+    eventQueue.enqueue(
+      {
+        client_id: context.session.getClientId(),
+        client_session_id: context.session.getSessionId() ?? '',
+        events,
+      },
+      context
+    )
   }
 
   function queue(events: DiagnosticEvent[]) {

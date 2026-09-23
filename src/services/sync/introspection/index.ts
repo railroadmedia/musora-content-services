@@ -5,9 +5,10 @@ import { compressInWorker } from './compression'
 import SyncContext from '../context'
 import type SyncStore from '../store'
 import { readPersistedTables } from './persisted-tables'
-import { createEventBatcher, DiagnosticEvent } from './event-batcher'
+import { clearEventQueue, createEventBatcher, DiagnosticEvent, drainEventQueue } from './event-batcher'
 import { diagnosticsFetch } from './diagnostics-fetch'
 import { reportCursors } from './cursors'
+import { createUploadQueue } from './upload-queue'
 
 export type DumpMode = 'off' | 'interval'
 export type EventMode = 'off' | 'debounced_write' | 'interval'
@@ -81,58 +82,22 @@ type SnapshotEntry = {
   payload: string
 }
 
-const pendingSnapshots: SnapshotEntry[] = []
-let isDrainingSnapshots = false
-
-class SnapshotUploadError extends Error {
-  constructor(public status: number) {
-    super(`Snapshot upload failed with status ${status}`)
-  }
-}
-
-async function uploadSnapshot(entry: SnapshotEntry): Promise<void> {
-  const response = await diagnosticsFetch('/snapshot', {
-    method: 'POST',
-    body: JSON.stringify(entry),
-  })
-
-  if (!response.ok) throw new SnapshotUploadError(response.status)
-}
-
-function isPermanentlyRejected(error: unknown): boolean {
-  return error instanceof SnapshotUploadError && error.status >= 400 && error.status < 500
-}
-
-async function drainSnapshotQueue(context: SyncContext): Promise<void> {
-  if (isDrainingSnapshots) return
-  isDrainingSnapshots = true
-
-  try {
-    while (pendingSnapshots.length && context.connectivity.getValue()) {
-      try {
-        await uploadSnapshot(pendingSnapshots[0])
-      } catch (error) {
-        if (!isPermanentlyRejected(error)) break
-      }
-      pendingSnapshots.shift()
-    }
-  } finally {
-    isDrainingSnapshots = false
-  }
-}
+const snapshotQueue = createUploadQueue<SnapshotEntry>('/snapshot')
 
 async function performDump(database: Database, modelNames: string[], context: SyncContext, CompressionWorker?: CompressionWorkerConstructor) {
   const dataset = await readTables(database, modelNames)
   const payload = await compressInWorker(dataset, CompressionWorker)
 
-  pendingSnapshots.push({
-    client_id: context.session.getClientId(),
-    client_session_id: context.session.getSessionId() ?? '',
-    client_created_at: Date.now(),
-    payload,
-  })
+  snapshotQueue.enqueue(
+    {
+      client_id: context.session.getClientId(),
+      client_session_id: context.session.getSessionId() ?? '',
+      client_created_at: Date.now(),
+      payload,
+    },
+    context
+  )
   await setLastDumpAt(database, Date.now())
-  drainSnapshotQueue(context)
 
   return payload
 }
@@ -246,7 +211,9 @@ export default function setup(context: SyncContext, database: Database, storesRe
   })
 
   const unsubscribeConnectivity = context.connectivity.subscribe((isOnline) => {
-    if (isOnline) drainSnapshotQueue(context)
+    if (!isOnline) return
+    snapshotQueue.drain(context)
+    drainEventQueue(context)
   })
 
   function waitUntilVisible(onVisible: () => void) {
@@ -292,5 +259,7 @@ export default function setup(context: SyncContext, database: Database, storesRe
     unsubscribeVisibilityWait?.()
     unsubscribeConnectivity()
     unsubscribeWriteEvents?.()
+    snapshotQueue.clear()
+    clearEventQueue()
   }
 }
