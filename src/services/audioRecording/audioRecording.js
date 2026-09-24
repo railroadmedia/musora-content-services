@@ -455,8 +455,12 @@ export async function createAudioChunkUploader(folder, extension, createFormatFi
     }
   }
 
+  // the fixed chunk 1 replaces the original's sync sidecar too, so it must carry the same anchors
+  let firstChunkSync = null
+
   function upload(index, chunk, videoTimeMs, peaks, timing = null) {
     fixer?.feedChunk(index, chunk)
+    if (index === 1) firstChunkSync = { videoTimeMs, peaks, timing }
     return uploadChunk(folder, index, extension, chunk, videoTimeMs, peaks, timing)
   }
 
@@ -466,7 +470,15 @@ export async function createAudioChunkUploader(folder, extension, createFormatFi
     try {
       const fixedFirstChunk = await fixer.finish()
       if (fixedFirstChunk) {
-        await uploadChunk(folder, 1, extension, fixedFirstChunk)
+        await uploadChunk(
+          folder,
+          1,
+          extension,
+          fixedFirstChunk,
+          firstChunkSync?.videoTimeMs,
+          firstChunkSync?.peaks,
+          firstChunkSync?.timing
+        )
       }
     } catch (error) {
       console.warn('Chunk format fixer failed to finalize; recording stays as uploaded:', error)
