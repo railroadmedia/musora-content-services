@@ -23,6 +23,10 @@ import {
 } from './services/audioRecording/audioRecording.js';
 
 import {
+	getRecordingPlaybackUrl
+} from './services/audioRecording/playbackUrl.ts';
+
+import {
 	downsamplePeaks,
 	getWaveformPeaks
 } from './services/audioRecording/waveformPeaks.js';
@@ -834,6 +838,7 @@ declare module 'musora-content-services' {
 		getRecentActivityOffline,
 		getRecommendedForYou,
 		getRecordedContentIds,
+		getRecordingPlaybackUrl,
 		getReportIssueOptions,
 		getResumeTimeSecondsByIds,
 		getResumeTimeSecondsByRecordIds,
