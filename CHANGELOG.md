@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.183.0](https://github.com/railroadmedia/musora-content-services/compare/v2.182.0...v2.183.0) (2026-09-24)
+
+
+### Features
+
+* **MU2-1970:** Add magic link login services ([#1056](https://github.com/railroadmedia/musora-content-services/issues/1056)) ([964dc8e](https://github.com/railroadmedia/musora-content-services/commit/964dc8ee532b2bd30e36b697527cee8d5a039ae6))
+
 ## [2.182.0](https://github.com/railroadmedia/musora-content-services/compare/v2.181.0...v2.182.0) (2026-09-21)
 
 
