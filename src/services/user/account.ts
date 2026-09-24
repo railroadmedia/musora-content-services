@@ -23,8 +23,8 @@ export interface AccountStatus {
 export async function status(email: string, send_email: boolean = true): Promise<AccountStatus> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return await httpClient.post<AccountStatus>(
-    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status?send_email=${send_email}`,
-    []
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`,
+    { send_email }
   )
 }
 
