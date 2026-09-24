@@ -101,6 +101,7 @@ export async function startSession(userId, contentId = null, videoTimeMs = null,
  *   - videoTimeStartMs: video position when the chunk opened
  *   - chunkDurationMs:  wall-clock length of the chunk excluding any paused time
  *   - firstDataDelayMs: (chunk 1 only) ms from MediaRecorder.start() to first data
+ *   - levelDb:          loudest RMS level in the chunk, dBFS
  */
 export async function uploadChunk(
   folder,
@@ -121,6 +122,7 @@ export async function uploadChunk(
   if (timing?.videoTimeStartMs != null) body.append('video_time_start_ms', timing.videoTimeStartMs)
   if (timing?.chunkDurationMs != null) body.append('chunk_duration_ms', timing.chunkDurationMs)
   if (timing?.firstDataDelayMs != null) body.append('first_data_delay_ms', timing.firstDataDelayMs)
+  if (timing?.levelDb != null) body.append('level_db', timing.levelDb)
 
   // React Native can't reliably build a Blob from an in-memory chunk without a
   // filesystem library, so it passes a base64 string instead; web passes a Blob.

@@ -3,13 +3,13 @@ jest.mock('../../src/lib/sanity/decorators/base.ts', () => ({ decorateAsync: jes
 
 import { getSupportedFormats } from '../../src/services/audioRecording/audioRecording'
 
-const withSupported = (types) => {
-  global.MediaRecorder = { isTypeSupported: (type) => types.includes(type) }
+const withSupported = (types: string[]) => {
+  (global as any).MediaRecorder = { isTypeSupported: (type: string) => types.includes(type) }
 }
 
 describe('getSupportedFormats', () => {
   afterEach(() => {
-    delete global.MediaRecorder
+    delete (global as any).MediaRecorder
   })
 
   test('prefers WebM Opus when the browser can record both WebM and MP4', () => {
