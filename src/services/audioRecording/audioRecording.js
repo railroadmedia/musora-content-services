@@ -312,16 +312,22 @@ export function trackAudioRecordingSession(folder, options = {}) {
 }
 
 /**
- * List recordings for a user
+ * List a user's recordings for one lesson, optionally narrowed to one day. contentId is
+ * required — the backend rejects a request without it (422); pass a date to narrow further,
+ * or omit it for every recording on that lesson regardless of date.
  */
-export async function listRecordings(userId = null, contentId = null, date = null) {
-  let url = `${BASE_PATH}/list`
+export async function listRecordings(userId = null, contentId, date = null) {
+  if (!contentId) {
+    throw new Error('listRecordings requires a contentId.')
+  }
+
+  let url = `${BASE_PATH}/my-sessions`
   const params = new URLSearchParams()
 
   // Omitted (rather than sent as the literal string "null"/"undefined") so the backend
   // falls back to the authenticated user, same as startSession/stopSession do.
   if (userId) params.set('user_id', userId)
-  if (contentId) params.set('content_id', contentId)
+  params.set('content_id', contentId)
   if (date) params.set('date', date)
 
   const query = params.toString()
