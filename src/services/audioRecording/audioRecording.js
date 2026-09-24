@@ -30,11 +30,14 @@ const EXTENSIONS = {
   'audio/aac': 'aac',
 }
 
+// WebM first: Chrome's MP4 recorder emits a header-only first chunk and holds audio back
+// until the next fragment boundary (requestData() on pause returns a few bytes), so a take
+// is undecodable for its first ~10 s and its tail only reaches the server at stop.
 const RECORDING_FORMATS = [
-  'audio/mp4;codecs=mp4a.40.2',
-  'audio/mp4',
   'audio/webm;codecs=opus',
   'audio/webm',
+  'audio/mp4;codecs=mp4a.40.2',
+  'audio/mp4',
   'audio/ogg;codecs=opus',
   'audio/aac',
 ]
