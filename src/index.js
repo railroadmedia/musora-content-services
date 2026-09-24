@@ -546,7 +546,9 @@ import {
 import {
 	listOAuthProviders,
 	loginAsUser,
+	loginWithMagicLink,
 	redirectToOAuthProvider,
+	requestMagicLoginLink,
 	unlinkOAuthProvider,
 	verifyOAuthToken
 } from './services/user/session.ts';
@@ -883,6 +885,7 @@ export {
 	logSeekEvent,
 	login,
 	loginAsUser,
+	loginWithMagicLink,
 	logout,
 	mapContentToParent,
 	markAllNotificationsAsRead,
@@ -919,6 +922,7 @@ export {
 	reportComment,
 	reportPlaylist,
 	requestEmailChange,
+	requestMagicLoginLink,
 	rescindInvite,
 	reset,
 	resetActiveLearningPath,

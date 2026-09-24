@@ -542,7 +542,9 @@ import {
 import {
 	listOAuthProviders,
 	loginAsUser,
+	loginWithMagicLink,
 	redirectToOAuthProvider,
+	requestMagicLoginLink,
 	unlinkOAuthProvider,
 	verifyOAuthToken
 } from './services/user/session.ts';
@@ -884,6 +886,7 @@ declare module 'musora-content-services' {
 		logSeekEvent,
 		login,
 		loginAsUser,
+		loginWithMagicLink,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
@@ -920,6 +923,7 @@ declare module 'musora-content-services' {
 		reportComment,
 		reportPlaylist,
 		requestEmailChange,
+		requestMagicLoginLink,
 		rescindInvite,
 		reset,
 		resetActiveLearningPath,
