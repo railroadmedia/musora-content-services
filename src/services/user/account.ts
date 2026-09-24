@@ -20,10 +20,10 @@ export interface AccountStatus {
  *
  * @throws {HttpError} - Throws HttpError if the request fails.
  */
-export async function status(email: string): Promise<AccountStatus> {
+export async function status(email: string, send_email: boolean = true): Promise<AccountStatus> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return await httpClient.post<AccountStatus>(
-    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`,
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status?send_email=${send_email}`,
     []
   )
 }
@@ -129,7 +129,9 @@ export interface PendingAccountResponse {
  * @returns {Promise<PendingAccountResponse>} - A promise that resolves when the pending account is created or an HttpError if the request fails.
  * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
  */
-export async function createPendingAccount(props: PendingAccountProps): Promise<PendingAccountResponse> {
+export async function createPendingAccount(
+  props: PendingAccountProps
+): Promise<PendingAccountResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return await httpClient.post<PendingAccountResponse>(
     `/api/user-management-system/v1/accounts/pending`,
