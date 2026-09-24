@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.183.1](https://github.com/railroadmedia/musora-content-services/compare/v2.183.0...v2.183.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* send_email param on account status ([ad43c46](https://github.com/railroadmedia/musora-content-services/commit/ad43c46102a14d9a4ce0136dbc682e7f3a6adb08))
+
 ## [2.183.0](https://github.com/railroadmedia/musora-content-services/compare/v2.182.0...v2.183.0) (2026-09-24)
 
 
