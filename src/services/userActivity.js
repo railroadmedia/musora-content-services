@@ -13,7 +13,7 @@ import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
 import { streakCalculator } from './user/streakCalculator'
-import { mapContentsThatWereLastProgressedFromMethod } from "./my-path/learning-paths.ts";
+import { mapContentsThatWereLastProgressedFromMethod } from './my-path/learning-paths.ts'
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -113,6 +113,10 @@ export async function getUserWeeklyStats() {
   )
 
   const practiceDaysSet = new Set(Object.keys(weekPractices))
+  const todayStr = today.format('YYYY-MM-DD')
+  // Days practiced so far this week, not the whole Monday-Sunday span - a day
+  // later this week hasn't happened yet, so it can't count as "practiced".
+  const currentWeekPracticeDays = [...practiceDaysSet].filter((d) => d <= todayStr).length
   let dailyStats = []
   for (let i = 0; i < 7; i++) {
     const day = startOfWeek.add(i, 'day')
@@ -139,7 +143,7 @@ export async function getUserWeeklyStats() {
       streakMessagePart1: streakData.streakMessagePart1,
       streakMessagePart2: streakData.streakMessagePart2,
       practices: weekPractices,
-      currentWeekPracticeDays: streakData.currentWeekPracticeDays,
+      currentWeekPracticeDays,
       todaysPracticeSeconds: streakData.todaysPracticeSeconds,
     },
   }
@@ -508,7 +512,9 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
 
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const startOfWeek = getMonday(new Date(), timeZone)
-  const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
+  const weekDays = Array.from({ length: 7 }, (_, i) =>
+    startOfWeek.add(i, 'day').format('YYYY-MM-DD')
+  )
 
   if (options.pull) {
     await db.practices.pull()
@@ -516,7 +522,10 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
     db.practices.pull()
   }
 
-  const query = await db.practices.queryAll(Q.where('date', Q.oneOf(weekDays)), Q.sortBy('created_at', 'asc'))
+  const query = await db.practices.queryAll(
+    Q.where('date', Q.oneOf(weekDays)),
+    Q.sortBy('created_at', 'asc')
+  )
   const data = query.data
 
   return formatPracticeSessionData(data, page, limit)
@@ -524,7 +533,9 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
 
 async function formatPracticeSessionData(data, page, limit) {
   if (!data.length)
-    return { data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 } }
+    return {
+      data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 },
+    }
 
   const practiceDuration = Math.round(
     data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0)
@@ -659,7 +670,6 @@ export function getStreaksAndMessage(practices) {
     streakMessage,
     streakMessagePart1,
     streakMessagePart2,
-    currentWeekPracticeDays,
   } = calculateStreaks(practices, true)
 
   return {
@@ -668,7 +678,6 @@ export function getStreaksAndMessage(practices) {
     streakMessage,
     streakMessagePart1,
     streakMessagePart2,
-    currentWeekPracticeDays,
   }
 }
 
@@ -690,7 +699,6 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     return {
       currentDailyStreak: 0,
       currentWeeklyStreak: 0,
-      currentWeekPracticeDays: 0,
       streakMessage: joinStreakMessageParts(
         streakMessages.startStreak.part1,
         streakMessages.startStreak.part2
@@ -741,11 +749,8 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   }
   currentWeeklyStreak = weeklyStreak
 
-  // Qualifying days (calendar days with at least one recorded practice) within the
-  // current Monday-anchored week — used for the weekly practice-days target progress.
   let today = new Date()
   let currentWeekStart = getMonday(today, timeZone)
-  let currentWeekPracticeDays = sortedPracticeDays.filter((date) => date >= currentWeekStart).length
 
   // Calculate streak message only if includeStreakMessage is true
   if (includeStreakMessage) {
@@ -798,7 +803,6 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     streakMessage: joinStreakMessageParts(streakMessageParts.part1, streakMessageParts.part2),
     streakMessagePart1: streakMessageParts.part1,
     streakMessagePart2: streakMessageParts.part2,
-    currentWeekPracticeDays,
   }
 }
 
@@ -916,7 +920,7 @@ async function formatPracticeMeta(practices = []) {
       duration: practice.duration_seconds || 0,
       duration_seconds: practice.duration_seconds || 0,
       content_url: content?.url || null,
-      title: practice.content_id ? content?.title : practice?.title  || practice.content_id,
+      title: practice.content_id ? content?.title : practice?.title || practice.content_id,
       category_id: practice.category_id,
       instrument_id: practice.instrument_id,
       content_type: getFormattedType(content?.type || '', content?.brand || null),
