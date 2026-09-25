@@ -1,4 +1,4 @@
-import {fetchSimilarItems} from '../recommendations.js'
+import {fetchSimilarItems} from '../recommendations'
 import {fetchByRailContentIds, fetchCourseCollectionData, fetchRelatedLessons} from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import { playAlongLessonTypes, jamTrackLessonTypes, lessonTypesMapping } from '../../contentTypeConfig.js'
