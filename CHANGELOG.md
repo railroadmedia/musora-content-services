@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.183.2](https://github.com/railroadmedia/musora-content-services/compare/v2.183.1...v2.183.2) (2026-09-24)
+
+
+### Bug Fixes
+
+* pass send_email down as body param on POST request ([afd8ada](https://github.com/railroadmedia/musora-content-services/commit/afd8ada65ab6c702f5b2ec1e63900adf5cd51e40))
+
+### [2.183.1](https://github.com/railroadmedia/musora-content-services/compare/v2.183.0...v2.183.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* send_email param on account status ([ad43c46](https://github.com/railroadmedia/musora-content-services/commit/ad43c46102a14d9a4ce0136dbc682e7f3a6adb08))
+
+## [2.183.0](https://github.com/railroadmedia/musora-content-services/compare/v2.182.0...v2.183.0) (2026-09-24)
+
+
+### Features
+
+* **MU2-1970:** Add magic link login services ([#1056](https://github.com/railroadmedia/musora-content-services/issues/1056)) ([964dc8e](https://github.com/railroadmedia/musora-content-services/commit/964dc8ee532b2bd30e36b697527cee8d5a039ae6))
+
 ## [2.182.0](https://github.com/railroadmedia/musora-content-services/compare/v2.181.0...v2.182.0) (2026-09-21)
 
 
