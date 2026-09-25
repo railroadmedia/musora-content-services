@@ -62,6 +62,7 @@ export interface AccountSetupProps {
   deviceName?: string
   from?: string
   hasSkippedPaywall?: boolean
+  inviteId?: boolean
 }
 
 export interface AccountSetupResponse {
@@ -78,6 +79,7 @@ export interface AccountSetupResponse {
  * @property {string} [token] - The token sent to the user's email for verification. Required for web requests
  * @property {string} [revenuecatAppUserId] - The RevenueCat App User ID for MA environments. Required for MA requests
  * @property {string} [deviceName] - The device name for MA environments. Required for MA requests
+ * @property {number} [inviteId] - Invitation Id for multi-user Sub account
  *
  * @returns {Promise<AccountSetupResponse>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
  * @throws {Error} - Throws an error if required parameters are missing based on the environment.
@@ -86,6 +88,7 @@ export interface AccountSetupResponse {
 export async function setupAccount(props: AccountSetupProps): Promise<AccountSetupResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   if (
+    !props.inviteId &&
     !props.hasSkippedPaywall &&
     (!globalConfig.isMA || props.from === 'mobile-ios-app') &&
     !props.token
@@ -103,6 +106,7 @@ export async function setupAccount(props: AccountSetupProps): Promise<AccountSet
       from: props.from,
       has_skipped_paywall: props.hasSkippedPaywall,
       mobile_app_id: props.revenuecatAppUserId,
+      invite_id: props.inviteId,
     }
   )
 
