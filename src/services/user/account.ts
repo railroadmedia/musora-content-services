@@ -88,7 +88,6 @@ export interface AccountSetupResponse {
 export async function setupAccount(props: AccountSetupProps): Promise<AccountSetupResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   if (
-    !props.inviteId &&
     !props.hasSkippedPaywall &&
     (!globalConfig.isMA || props.from === 'mobile-ios-app') &&
     !props.token
