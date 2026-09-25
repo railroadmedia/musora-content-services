@@ -115,6 +115,21 @@ describe('Progress.save', () => {
     expect(record.data?.progress_percent).toBe(50)
     expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
   })
+
+  // a regressed watch-session tick (e.g. currentSeconds ticking during a rewind) is dropped
+  // by percent alone, same as any other regression — the per-tick save path deliberately
+  // ignores resumeTime here, since it changes on nearly every tick and would otherwise
+  // force a write on every call. resumeTime freshness for playlists is covered below,
+  // via the a-la-carte duplication path where it doesn't run on every tick.
+  test('regressed resumeTime alone does not force a write on the primary record', async () => {
+    await db.contentProgress.recordProgress(810, null, 70, meta, 30, { skipPush: true })
+    const hierarchy = { metadata: { 810: meta }, parents: {}, children: {} }
+    await Progress.save(810, 20, collectionSelf, 5, { hierarchy, isOffline: true })
+    const record = await db.contentProgress.getOneProgressByContentId(810, null)
+    expect(record.data?.progress_percent).toBe(70)
+    expect(record.data?.resume_time_seconds).toBe(30)
+    expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
+  })
 })
 
 describe('Progress.setStatus', () => {
@@ -186,5 +201,28 @@ describe('Scenario: Completing multiple lessons at once', () => {
     expect(await Progress.state(50001)).toBe('completed')
     expect(await Progress.state(50002)).toBe('completed')
     expect(await Progress.state(50003)).toBe('completed')
+  })
+})
+
+describe('Scenario: Playlist progress duplicates resumeTime to a-la-carte', () => {
+  const playlistCollection = { type: COLLECTION_TYPE.PLAYLIST, id: 60001 }
+
+  test('a-la-carte record picks up resumeTime from the playlist save', async () => {
+    const hierarchy = { metadata: { 60002: meta }, parents: {}, children: {} }
+    await Progress.save(60002, 50, playlistCollection, 100, { hierarchy })
+
+    const aLaCarte = await db.contentProgress.getOneProgressByContentId(60002, null)
+    expect(aLaCarte.data?.progress_percent).toBe(50)
+    expect(aLaCarte.data?.resume_time_seconds).toBe(100)
+  })
+
+  test('later playlist session with lower percent still updates a-la-carte resume time, without regressing percent', async () => {
+    const hierarchy = { metadata: { 60003: meta }, parents: {}, children: {} }
+    await Progress.save(60003, 75, playlistCollection, 150, { hierarchy })
+    await Progress.save(60003, 20, playlistCollection, 20, { hierarchy })
+
+    const aLaCarte = await db.contentProgress.getOneProgressByContentId(60003, null)
+    expect(aLaCarte.data?.progress_percent).toBe(75)
+    expect(aLaCarte.data?.resume_time_seconds).toBe(20)
   })
 })

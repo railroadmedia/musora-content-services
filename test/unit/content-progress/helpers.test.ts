@@ -3,7 +3,7 @@ import {
   duplicateProgressForIds,
   extractFromRecordId,
   filterOutLearningPathsForDuplication,
-  filterOutNegativeProgress,
+  mergeProgressWithExisting,
   generateRecordId,
   normalizeCollection,
   normalizeContentId,
@@ -50,34 +50,34 @@ const flushPromises = () => new Promise(resolve => setImmediate(resolve))
 
 const mockRepo = jest.requireMock('../../../src/services/sync/repository-proxy')
 
-describe('filterOutNegativeProgress', () => {
+describe('mergeProgressWithExisting', () => {
   beforeEach(() => {
     initializeTestService()
     mockProgressRecords = []
   })
 
   test('drops entry when new progress is less than existing', () => {
-    const result = filterOutNegativeProgress({ 101: 30 }, { 101: { progress: 70 } })
+    const result = mergeProgressWithExisting({ 101: 30 }, { 101: { progress: 70 } })
     expect(result).not.toHaveProperty('101')
   })
 
   test('keeps entry when new progress equals existing', () => {
-    const result = filterOutNegativeProgress({ 101: 50 }, { 101: { progress: 50 } })
+    const result = mergeProgressWithExisting({ 101: 50 }, { 101: { progress: 50 } })
     expect(result).toHaveProperty('101', 50)
   })
 
   test('keeps entry when new progress is greater than existing', () => {
-    const result = filterOutNegativeProgress({ 101: 80 }, { 101: { progress: 50 } })
+    const result = mergeProgressWithExisting({ 101: 80 }, { 101: { progress: 50 } })
     expect(result).toHaveProperty('101', 80)
   })
 
   test('keeps entry when existing progress is 0 and new is also 0', () => {
-    const result = filterOutNegativeProgress({ 101: 0 }, { 101: { progress: 0 } })
+    const result = mergeProgressWithExisting({ 101: 0 }, { 101: { progress: 0 } })
     expect(result).toHaveProperty('101', 0)
   })
 
   test('drops only entries below existing, keeps others in mixed set', () => {
-    const result = filterOutNegativeProgress(
+    const result = mergeProgressWithExisting(
       { 101: 20, 102: 80, 103: 40 },
       { 101: { progress: 70 }, 102: { progress: 20 }, 103: { progress: 0 } },
     )
@@ -88,10 +88,55 @@ describe('filterOutNegativeProgress', () => {
 
   test('returns a new object and does not mutate input', () => {
     const progresses: Record<string, number> = { 101: 10 }
-    const result = filterOutNegativeProgress(progresses, { 101: { progress: 50 } })
+    const result = mergeProgressWithExisting(progresses, { 101: { progress: 50 } })
     expect(result).not.toBe(progresses)
     expect(progresses).toHaveProperty('101', 10)
     expect(result).not.toHaveProperty('101')
+  })
+
+  test('drops a regressed entry when resumeTime is unchanged', () => {
+    const result = mergeProgressWithExisting(
+      { 101: 30 },
+      { 101: { progress: 70, resume_time: 120 } },
+      120,
+    )
+    expect(result).not.toHaveProperty('101')
+  })
+
+  test('keeps a regressed entry, clamped to existing progress, when resumeTime has moved', () => {
+    const result = mergeProgressWithExisting(
+      { 101: 30 },
+      { 101: { progress: 70, resume_time: 120 } },
+      20,
+    )
+    expect(result).toHaveProperty('101', 70)
+  })
+
+  test('treats a null existing resumeTime as changed once a resumeTime is provided', () => {
+    const result = mergeProgressWithExisting(
+      { 101: 30 },
+      { 101: { progress: 70, resume_time: null } },
+      20,
+    )
+    expect(result).toHaveProperty('101', 70)
+  })
+
+  test('does not resurrect a regressed entry when resumeTime is omitted, even for a mixed set', () => {
+    const result = mergeProgressWithExisting(
+      { 101: 20, 102: 80 },
+      { 101: { progress: 70, resume_time: 120 }, 102: { progress: 20, resume_time: 5 } },
+    )
+    expect(result).not.toHaveProperty('101')
+    expect(result).toHaveProperty('102', 80)
+  })
+
+  test('keeps the higher existing progress even when the new resumeTime is different and lower', () => {
+    const result = mergeProgressWithExisting(
+      { 101: 10 },
+      { 101: { progress: 50, resume_time: 30 } },
+      5,
+    )
+    expect(result).toHaveProperty('101', 50)
   })
 })
 
