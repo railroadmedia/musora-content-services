@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.184.0](https://github.com/railroadmedia/musora-content-services/compare/v2.183.2...v2.184.0) (2026-09-26)
+
+
+### Features
+
+* **BEHLTP-457:** Sub account onboarding flow - Add Token to invite email linke  ([#1061](https://github.com/railroadmedia/musora-content-services/issues/1061)) ([ea3a068](https://github.com/railroadmedia/musora-content-services/commit/ea3a068c07972762b3f3a6ed67e0ff7d7e592588))
+
 ### [2.183.2](https://github.com/railroadmedia/musora-content-services/compare/v2.183.1...v2.183.2) (2026-09-24)
 
 
