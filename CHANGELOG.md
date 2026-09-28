@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.184.1](https://github.com/railroadmedia/musora-content-services/compare/v2.184.0...v2.184.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* update AccountSetupProps interface to return correct type ([7c5aa63](https://github.com/railroadmedia/musora-content-services/commit/7c5aa6304dc2c22f7399ae8f55cf2e930097a8f6))
+
 ## [2.184.0](https://github.com/railroadmedia/musora-content-services/compare/v2.183.2...v2.184.0) (2026-09-26)
 
 
