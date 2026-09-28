@@ -62,7 +62,7 @@ export interface AccountSetupProps {
   deviceName?: string
   from?: string
   hasSkippedPaywall?: boolean
-  inviteId?: boolean
+  inviteId?: number
 }
 
 export interface AccountSetupResponse {
