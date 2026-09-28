@@ -484,6 +484,7 @@ export async function fetchLearningPathLessons(
  *
  * @param {number[]} contentIds The array of content IDs within the learning path
  * @returns {Promise<number[]>} Array with completed content IDs
+ * @deprecated Learning path progress import is removed in My Path. Kept for the pre-My Path feature flag path.
  */
 export async function fetchLearningPathProgressCheckLessons(
   contentIds: number[],
@@ -563,6 +564,7 @@ interface completeLearningPathIntroVideo {
  * @returns {Promise<void>} response.learning_path_reset_response - The reset learning path response.
  * @returns {Promise<Object[]>} response.lesson_import_response - The responses for completing each content_id within the learning path.
  * @returns {Promise<Object|null>} response.update_dailies_response - The updated daily session if it was changed.
+ * @deprecated Use `completePreroll` from `my-path/preroll.ts`. Kept for the pre-My Path feature flag path.
  */
 export async function completeLearningPathIntroVideo(
   introVideoId: number,

@@ -2338,6 +2338,7 @@ export async function fetchMethodV2Structure(brand) {
       status,
       published_on,
       'intro_video_id': intro_video->railcontent_id,
+      'preroll_id': intro_video->railcontent_id,
       'children': child[]->railcontent_id
     }
   }`
@@ -2366,6 +2367,7 @@ export async function fetchMethodV2StructureFromId(contentId) {
     'learning_paths': child[]->{
       'id': railcontent_id,
       'intro_video_id': intro_video->railcontent_id,
+      'preroll_id': intro_video->railcontent_id,
       'children': child[]->railcontent_id
     }
   }`
