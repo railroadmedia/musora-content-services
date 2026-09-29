@@ -16,6 +16,7 @@ import {
 } from '../../../src/services/contentProgress.js'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 import db from '../../../src/services/sync/repository-proxy'
+import { SyncTelemetry } from '../../../src/services/sync/telemetry'
 
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
 jest.mock('../../../src/services/my-path/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
@@ -375,6 +376,69 @@ describe('Scenario: Sanity hierarchy lookup fails (returns null)', () => {
     await contentStatusCompleted(60003)
     expect(await getProgressState(60003)).toBe('completed')
     expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('set-started-or-completed-status')
+  })
+
+  describe('telemetry', () => {
+    const message = 'Progress saved without hierarchy; parent roll-up skipped'
+    let warn: jest.SpyInstance
+
+    beforeEach(() => {
+      warn = jest.spyOn(SyncTelemetry.getInstance(), 'warn')
+    })
+
+    afterEach(() => {
+      warn.mockRestore()
+    })
+
+    test('reports the missing hierarchy once per content id', async () => {
+      await saveContentProgress(60006, null, 40, 120)
+      await saveContentProgress(60006, null, 50, 150)
+      await saveContentProgress(60009, null, 40, 120)
+      expect(warn).toHaveBeenCalledTimes(2)
+      expect(warn).toHaveBeenNthCalledWith(1, message, {
+        extra: { contentId: 60006, collectionType: 'self' },
+      })
+      expect(warn).toHaveBeenNthCalledWith(2, message, {
+        extra: { contentId: 60009, collectionType: 'self' },
+      })
+    })
+
+    test('marking complete and reset each report the missing hierarchy', async () => {
+      await contentStatusCompleted(60007)
+      await contentStatusReset(60008)
+      expect(warn).toHaveBeenNthCalledWith(1, message, {
+        extra: { contentId: 60007, collectionType: 'self' },
+      })
+      expect(warn).toHaveBeenNthCalledWith(2, message, {
+        extra: { contentId: 60008, collectionType: 'self' },
+      })
+    })
+
+    test('does not report when the hierarchy lookup succeeds', async () => {
+      sanityMock.getHierarchy.mockImplementation(defaultGetHierarchy)
+      await saveContentProgress(60010, null, 40, 120)
+      expect(warn).not.toHaveBeenCalled()
+    })
+
+    test('reports the collection type of a playlist save', async () => {
+      await saveContentProgress(60012, { type: COLLECTION_TYPE.PLAYLIST, id: 123 }, 40, 120)
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn).toHaveBeenCalledWith(message, {
+        extra: { contentId: 60012, collectionType: COLLECTION_TYPE.PLAYLIST },
+      })
+    })
+
+    test('reports once telemetry is installed if it was missing on the first save', async () => {
+      const telemetry = SyncTelemetry.getInstance()
+      SyncTelemetry.clearInstance()
+      try {
+        await saveContentProgress(60011, null, 40, 120)
+      } finally {
+        SyncTelemetry.setInstance(telemetry)
+      }
+      await saveContentProgress(60011, null, 50, 150)
+      expect(warn).toHaveBeenCalledTimes(1)
+    })
   })
 
   test('reset still erases progress', async () => {

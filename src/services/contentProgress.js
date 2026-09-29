@@ -5,6 +5,7 @@ import { trackUserPractice } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 import { getDailySession, onLearningPathCompletedActions } from './my-path/learning-paths.ts'
 import { duplicateProgressToALaCarteOffline } from './offline/progress.ts'
+import { SyncTelemetry } from './sync/telemetry/index.ts'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -622,6 +623,7 @@ export async function saveContentProgress(
 
   if (!isOffline) {
     hierarchy = await getHierarchy(contentId, collection)
+    if (!hierarchy) reportMissingHierarchy(contentId, collection)
   }
   const metadata = hierarchy?.metadata || {}
 
@@ -680,6 +682,7 @@ export async function setStartedOrCompletedStatus(
   const isPlaylist = collection?.type === COLLECTION_TYPE.PLAYLIST
 
   const hierarchy = await getHierarchy(contentId, collection)
+  if (!hierarchy) reportMissingHierarchy(contentId, collection)
   const metadata = hierarchy?.metadata || {}
 
   const progress = isCompleted ? 100 : 0
@@ -768,6 +771,7 @@ export async function resetStatus(contentId, collection = null, { skipPush = fal
   allProgresses[contentId] = progress
 
   const hierarchy = await getHierarchy(contentId, collection)
+  if (!hierarchy) reportMissingHierarchy(contentId, collection)
   const metadata = hierarchy?.metadata || {}
 
   let progresses = await computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy)
@@ -780,6 +784,18 @@ export async function resetStatus(contentId, collection = null, { skipPush = fal
   if (!skipPush) db.contentProgress.requestPushUnsynced('reset-status')
 
   return response
+}
+
+const reportedMissingHierarchyIds = new Set()
+
+// once per content id per session: watch sessions save every few seconds
+function reportMissingHierarchy(contentId, collection) {
+  const telemetry = SyncTelemetry.getInstance()
+  if (!telemetry || reportedMissingHierarchyIds.has(contentId)) return
+  reportedMissingHierarchyIds.add(contentId)
+  telemetry.warn('Progress saved without hierarchy; parent roll-up skipped', {
+    extra: { contentId, collectionType: collection?.type ?? null },
+  })
 }
 
 export function filterOutNegativeProgress(progresses, existingProgresses) {
