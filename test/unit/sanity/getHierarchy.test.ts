@@ -1,5 +1,6 @@
 import { initializeTestService } from '../../initializeTests.js'
 import { getHierarchy } from '../../../src/services/sanity.js'
+import { globalConfig } from '../../../src/services/config.js'
 
 jest.mock('../../../src/services/permissions/index.ts', () => ({
   ...jest.requireActual('../../../src/services/permissions/index.ts'),
@@ -44,10 +45,11 @@ describe('getHierarchy', () => {
   test('reuses the hierarchy for repeat lookups of the same content', async () => {
     global.fetch = mockSanity(70000, 70001) as any
     const first = await getHierarchy(70001, null)
+    expect(global.fetch).toHaveBeenCalledTimes(2)
     const second = await getHierarchy(70001, null)
+    expect(global.fetch).toHaveBeenCalledTimes(2)
     expect(first?.parents[70001]).toBe(70000)
     expect(second).toEqual(first)
-    expect(global.fetch).toHaveBeenCalledTimes(2)
   })
 
   test('does not cache a failed lookup', async () => {
@@ -66,5 +68,47 @@ describe('getHierarchy', () => {
     const other = await getHierarchy(70031, null)
     expect(other?.parents[70031]).toBe(70030)
     expect(global.fetch).toHaveBeenCalledTimes(2)
+  })
+
+  test('does not cache a response without a top-level id', async () => {
+    global.fetch = jest.fn(() => sanityResponse([{ children: [] }])) as any
+    expect(await getHierarchy(70041, null)).toBeNull()
+
+    global.fetch = mockSanity(70040, 70041) as any
+    expect((await getHierarchy(70041, null))?.parents[70041]).toBe(70040)
+  })
+
+  test('keeps separate entries per collection', async () => {
+    global.fetch = mockSanity(70050, 70051) as any
+    await getHierarchy(70051, null)
+    await getHierarchy(70051, { type: 'playlist', id: 1 })
+    expect(global.fetch).toHaveBeenCalledTimes(4)
+  })
+
+  test('fetches again for a different user', async () => {
+    global.fetch = mockSanity(70060, 70061) as any
+    await getHierarchy(70061, null)
+    globalConfig.sessionConfig = { ...globalConfig.sessionConfig, userId: 'another-user' }
+    await getHierarchy(70061, null)
+    expect(global.fetch).toHaveBeenCalledTimes(4)
+  })
+
+  test('fetches again in a new hour', async () => {
+    jest.useFakeTimers({
+      now: new Date('2026-09-29T10:30:00Z'),
+      doNotFake: ['setTimeout', 'setInterval', 'nextTick', 'setImmediate', 'queueMicrotask'],
+    })
+    try {
+      global.fetch = mockSanity(70070, 70071) as any
+      await getHierarchy(70071, null)
+      jest.setSystemTime(new Date('2026-09-29T10:59:00Z'))
+      await getHierarchy(70071, null)
+      expect(global.fetch).toHaveBeenCalledTimes(2)
+      jest.setSystemTime(new Date('2026-09-29T11:01:00Z'))
+      await getHierarchy(70071, null)
+      expect(global.fetch).toHaveBeenCalledTimes(4)
+    } finally {
+      jest.useRealTimers()
+    }
   })
 })
