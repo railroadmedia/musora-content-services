@@ -420,11 +420,22 @@ describe('Scenario: Sanity hierarchy lookup fails (returns null)', () => {
       expect(warn).not.toHaveBeenCalled()
     })
 
+    test('reports the collection type of a playlist save', async () => {
+      await saveContentProgress(60012, { type: COLLECTION_TYPE.PLAYLIST, id: 123 }, 40, 120)
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn).toHaveBeenCalledWith(message, {
+        extra: { contentId: 60012, collectionType: COLLECTION_TYPE.PLAYLIST },
+      })
+    })
+
     test('reports once telemetry is installed if it was missing on the first save', async () => {
       const telemetry = SyncTelemetry.getInstance()
       SyncTelemetry.clearInstance()
-      await saveContentProgress(60011, null, 40, 120)
-      SyncTelemetry.setInstance(telemetry)
+      try {
+        await saveContentProgress(60011, null, 40, 120)
+      } finally {
+        SyncTelemetry.setInstance(telemetry)
+      }
       await saveContentProgress(60011, null, 50, 150)
       expect(warn).toHaveBeenCalledTimes(1)
     })
