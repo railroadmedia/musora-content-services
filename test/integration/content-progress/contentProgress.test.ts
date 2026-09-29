@@ -333,3 +333,38 @@ describe('Scenario: Completing multiple lessons at once', () => {
     expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('set-started-or-completed-status-many')
   })
 })
+
+describe('Scenario: Sanity hierarchy lookup fails (returns null)', () => {
+  const sanityMock = jest.requireMock('../../../src/services/sanity.js')
+
+  beforeEach(() => {
+    sanityMock.getHierarchy.mockResolvedValueOnce(null)
+  })
+
+  test('online save still records progress and resume time', async () => {
+    await saveContentProgress(60001, null, 40, 120)
+    const record = await db.contentProgress.getOneProgressByContentId(60001, null)
+    expect(record.data?.progress_percent).toBe(40)
+    expect(record.data?.resume_time_seconds).toBe(120)
+    expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
+  })
+
+  test('online save keeps the brand already stored on the record', async () => {
+    await db.contentProgress.recordProgress(60002, null, 20, meta, undefined, { skipPush: true })
+    await saveContentProgress(60002, null, 50, 120)
+    const record = await db.contentProgress.getOneProgressByContentId(60002, null)
+    expect(record.data?.progress_percent).toBe(50)
+    expect(record.data?.content_brand).toBe('drumeo')
+  })
+
+  test('marking complete still records completion', async () => {
+    await contentStatusCompleted(60003)
+    expect(await getProgressState(60003)).toBe('completed')
+  })
+
+  test('reset still erases progress', async () => {
+    await db.contentProgress.recordProgress(60004, null, 80, meta, undefined, { skipPush: true })
+    await contentStatusReset(60004)
+    expect(await getProgressState(60004)).toBe('')
+  })
+})
