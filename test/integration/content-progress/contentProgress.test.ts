@@ -336,9 +336,14 @@ describe('Scenario: Completing multiple lessons at once', () => {
 
 describe('Scenario: Sanity hierarchy lookup fails (returns null)', () => {
   const sanityMock = jest.requireMock('../../../src/services/sanity.js')
+  const defaultGetHierarchy = sanityMock.getHierarchy.getMockImplementation()
 
   beforeEach(() => {
-    sanityMock.getHierarchy.mockResolvedValueOnce(null)
+    sanityMock.getHierarchy.mockImplementation(() => Promise.resolve(null))
+  })
+
+  afterEach(() => {
+    sanityMock.getHierarchy.mockImplementation(defaultGetHierarchy)
   })
 
   test('online save still records progress and resume time', async () => {
@@ -346,6 +351,9 @@ describe('Scenario: Sanity hierarchy lookup fails (returns null)', () => {
     const record = await db.contentProgress.getOneProgressByContentId(60001, null)
     expect(record.data?.progress_percent).toBe(40)
     expect(record.data?.resume_time_seconds).toBe(120)
+    expect(record.data?.content_brand).toBeFalsy()
+    expect(record.data?.content_type).toBeFalsy()
+    expect(record.data?.content_parent_id).toBeFalsy()
     expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
   })
 
@@ -357,14 +365,22 @@ describe('Scenario: Sanity hierarchy lookup fails (returns null)', () => {
     expect(record.data?.content_brand).toBe('drumeo')
   })
 
+  test('playlist save still duplicates progress to a-la-carte', async () => {
+    await saveContentProgress(60005, { type: COLLECTION_TYPE.PLAYLIST, id: 123 }, 40, 120)
+    const record = await db.contentProgress.getOneProgressByContentId(60005, null)
+    expect(record.data?.progress_percent).toBe(40)
+  })
+
   test('marking complete still records completion', async () => {
     await contentStatusCompleted(60003)
     expect(await getProgressState(60003)).toBe('completed')
+    expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('set-started-or-completed-status')
   })
 
   test('reset still erases progress', async () => {
     await db.contentProgress.recordProgress(60004, null, 80, meta, undefined, { skipPush: true })
     await contentStatusReset(60004)
     expect(await getProgressState(60004)).toBe('')
+    expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('reset-status')
   })
 })
