@@ -23,7 +23,10 @@ function mockSanity(courseId: number, lessonId: number) {
         railcontent_id: courseId,
         metadata: { brand: 'drumeo', type: 'course', parent_id: 0 },
         children: [
-          { railcontent_id: lessonId, metadata: { brand: 'drumeo', type: 'course-lesson', parent_id: courseId } },
+          {
+            railcontent_id: lessonId,
+            metadata: { brand: 'drumeo', type: 'course-lesson', parent_id: courseId },
+          },
         ],
       },
     ])
