@@ -64,7 +64,10 @@ caller drives the actual recorder; this stays in sync with it). Returns
 
 ### `listRecordings(userId?, contentId?, date?)`
 Raw session list for the current lesson/day — `{ recordings: [...] }`, each with
-`folder`, `created_at`, `duration_ms`, `chunk_count`, `missing_chunks`, `format`.
+`folder`, `created_at`, `duration_ms`, `chunk_count`, `missing_chunks`, `format`,
+`take_number`, `name`. Show a take as `name`, or `Take {take_number}` when `name` is null.
+Take numbers belong to the lesson and are never renumbered when a take is deleted, so
+don't derive them from the list position.
 
 ### `getMyRecordings(limit = 20)`
 One row per lesson the user has recorded on, newest first, already decorated with
@@ -85,6 +88,10 @@ Authorization header.
 ### `shareRecording(folder)` / `unshareRecording(folder)`
 Creates (idempotent — re-sharing returns the same token) / revokes a share link for a
 recording. Owner only.
+
+### `renameRecording(folder, name)`
+Sets a take's custom name (max 255 characters). Owner only. `null` or `''` clears it.
+Returns the updated recording in the same shape as `listRecordings` items.
 
 ### `getSharedCombinedAudioUrl(token)`
 Playback URL for a shared recording via its token — works for any signed-in user

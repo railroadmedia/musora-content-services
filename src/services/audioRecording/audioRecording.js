@@ -424,6 +424,14 @@ export async function unshareRecording(folder) {
 }
 
 /**
+ * Give a take a custom name. Owner only. Pass null or an empty string to clear it, so the
+ * take shows as "Take {take_number}" again. Returns the updated recording.
+ */
+export async function renameRecording(folder, name) {
+  return POST(`${BASE_PATH}/rename`, { folder, name })
+}
+
+/**
  * Playback URL for a shared recording — any signed-in user holding the token can reach it,
  * not just the owner. Same <audio src> vs. manual-fetch caveat as getCombinedAudioUrl.
  */
@@ -511,6 +519,7 @@ export default {
   getDownloadUrl,
   shareRecording,
   unshareRecording,
+  renameRecording,
   getSharedCombinedAudioUrl,
   createAudioChunkUploader,
 }
