@@ -1355,9 +1355,10 @@ async function fetchTopLevelParentIds(railcontentIds) {
 const hierarchyCache = new Map()
 
 export async function getHierarchy(contentId, collection) {
-  // children are filtered by the user's permissions and an hourly publish cut-off
+  // children are filtered by the user's permissions and a local-hour publish cut-off (FilterBuilder._getRoundedTime)
   const userId = globalConfig.sessionConfig?.userId || globalConfig.railcontentConfig?.userId
-  const hour = new Date().toISOString().slice(0, 13)
+  const now = new Date()
+  const hour = [now.getFullYear(), now.getMonth(), now.getDate(), now.getHours()].join('-')
   const cacheKey = [contentId, collection?.type, collection?.id, userId, hour].join(':')
   if (hierarchyCache.has(cacheKey)) return hierarchyCache.get(cacheKey)
 

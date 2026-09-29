@@ -111,4 +111,23 @@ describe('getHierarchy', () => {
       jest.useRealTimers()
     }
   })
+
+  test('follows the local hour, not the UTC hour', async () => {
+    jest.useFakeTimers({
+      now: new Date('2026-09-29T08:10:00Z'),
+      doNotFake: ['setTimeout', 'setInterval', 'nextTick', 'setImmediate', 'queueMicrotask'],
+    })
+    const getHours = jest.spyOn(Date.prototype, 'getHours').mockReturnValue(13)
+    try {
+      global.fetch = mockSanity(70080, 70081) as any
+      await getHierarchy(70081, null)
+      jest.setSystemTime(new Date('2026-09-29T08:35:00Z'))
+      getHours.mockReturnValue(14)
+      await getHierarchy(70081, null)
+      expect(global.fetch).toHaveBeenCalledTimes(4)
+    } finally {
+      getHours.mockRestore()
+      jest.useRealTimers()
+    }
+  })
 })
