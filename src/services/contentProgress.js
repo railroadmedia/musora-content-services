@@ -790,9 +790,10 @@ const reportedMissingHierarchyIds = new Set()
 
 // once per content id per session: watch sessions save every few seconds
 function reportMissingHierarchy(contentId, collection) {
-  if (reportedMissingHierarchyIds.has(contentId)) return
+  const telemetry = SyncTelemetry.getInstance()
+  if (!telemetry || reportedMissingHierarchyIds.has(contentId)) return
   reportedMissingHierarchyIds.add(contentId)
-  SyncTelemetry.getInstance()?.warn('Progress saved without hierarchy; parent roll-up skipped', {
+  telemetry.warn('Progress saved without hierarchy; parent roll-up skipped', {
     extra: { contentId, collectionType: collection?.type ?? null },
   })
 }
