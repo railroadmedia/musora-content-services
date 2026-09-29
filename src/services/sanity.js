@@ -1352,7 +1352,12 @@ async function fetchTopLevelParentIds(railcontentIds) {
   return responseMap
 }
 
+const hierarchyCache = new Map()
+
 export async function getHierarchy(contentId, collection) {
+  const cacheKey = `${contentId}:${collection?.type ?? ''}:${collection?.id ?? ''}`
+  if (hierarchyCache.has(cacheKey)) return hierarchyCache.get(cacheKey)
+
   let response
   if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     response = await fetchLearningPathHierarchyData(contentId, collection)
@@ -1361,7 +1366,9 @@ export async function getHierarchy(contentId, collection) {
   }
   if (!response) return null
 
-  return getHierarchyLookupsAndMetadata(response)
+  const hierarchy = getHierarchyLookupsAndMetadata(response)
+  if (hierarchy) hierarchyCache.set(cacheKey, hierarchy)
+  return hierarchy
 }
 
 export async function getHierarchies(contentIds, collection) {
