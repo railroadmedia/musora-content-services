@@ -16,6 +16,7 @@ import {
 } from '../../../src/services/contentProgress.js'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 import db from '../../../src/services/sync/repository-proxy'
+import { SyncTelemetry } from '../../../src/services/sync/telemetry'
 
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
 jest.mock('../../../src/services/my-path/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
@@ -375,6 +376,23 @@ describe('Scenario: Sanity hierarchy lookup fails (returns null)', () => {
     await contentStatusCompleted(60003)
     expect(await getProgressState(60003)).toBe('completed')
     expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('set-started-or-completed-status')
+  })
+
+  test('reports the missing hierarchy to telemetry once per content id', async () => {
+    const warn = jest.spyOn(SyncTelemetry.getInstance(), 'warn')
+    await saveContentProgress(60006, null, 40, 120)
+    await saveContentProgress(60006, null, 50, 150)
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn).toHaveBeenCalledWith('Progress saved without hierarchy; parent roll-up skipped', {
+      extra: { contentId: 60006, collectionType: 'self' },
+    })
+  })
+
+  test('marking complete and reset also report the missing hierarchy', async () => {
+    const warn = jest.spyOn(SyncTelemetry.getInstance(), 'warn')
+    await contentStatusCompleted(60007)
+    await contentStatusReset(60008)
+    expect(warn).toHaveBeenCalledTimes(2)
   })
 
   test('reset still erases progress', async () => {
