@@ -20,20 +20,7 @@ export interface PracticeData {
   }>
 }
 class StreakCalculator {
-  private cache: StreakData | null = null
   async getStreakData(): Promise<StreakData> {
-    if (this.cache && this.isCacheFromToday()) {
-      return this.cache
-    }
-
-    return await this.recalculate()
-  }
-
-  private isCacheFromToday(): boolean {
-    return dayjs(this.cache.calculatedAt).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD')
-  }
-
-  async recalculate(): Promise<StreakData> {
     const allPractices = await this.fetchAllPractices()
 
     const {
@@ -45,7 +32,7 @@ class StreakCalculator {
       currentWeekPracticeDays,
     } = getStreaksAndMessage(allPractices)
 
-    this.cache = {
+    return {
       currentDailyStreak: currentDailyStreak,
       currentWeeklyStreak: currentWeeklyStreak,
       streakMessage: streakMessage,
@@ -56,10 +43,6 @@ class StreakCalculator {
       currentWeekPracticeDays: currentWeekPracticeDays,
       todaysPracticeSeconds: this.getTodaysPracticeSeconds(allPractices),
     }
-    return this.cache
-  }
-  invalidate(): void {
-    this.cache = null
   }
 
   private async fetchAllPractices(): Promise<PracticeData> {

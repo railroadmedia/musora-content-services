@@ -1,4 +1,3 @@
-import { streakCalculator } from './user/streakCalculator'
 import { setSessionUserData } from './config.js'
 
 /**
@@ -7,6 +6,5 @@ import { setSessionUserData } from './config.js'
  * between user sessions.
  */
 export function clearState(): void {
-  streakCalculator.invalidate()
   setSessionUserData(null)
 }
