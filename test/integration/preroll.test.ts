@@ -90,14 +90,14 @@ describe('completePreroll', () => {
     expect(await completePreroll(901)).toBeNull()
   })
 
-  test('leaves learning path progress untouched', async () => {
-    await contentStatusCompleted(10, learningPathCollection)
+  test('leaves learning path lesson progress untouched', async () => {
     await contentStatusCompleted(301, learningPathCollection)
+    await contentStatusCompleted(302, learningPathCollection)
 
     await completePreroll(902)
 
-    expect(await getProgressState(10, learningPathCollection)).toBe('completed')
     expect(await getProgressState(301, learningPathCollection)).toBe('completed')
+    expect(await getProgressState(302, learningPathCollection)).toBe('completed')
   })
 })
 
