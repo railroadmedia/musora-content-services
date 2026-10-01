@@ -316,6 +316,106 @@ describe('pull token', () => {
     const previousFetchToken = firstCallArgs[firstCallArgs.length - 1]
     expect(previousFetchToken).toBeNull()
   })
+
+  test('existing token is ignored once for a full re-pull, then resumed', async () => {
+    const existingToken = 1700000000000
+    const fullPullToken = 1700000009999
+    await db.write(async () => db.localStorage.set('last_fetch_token:test_items', existingToken))
+
+    const pullMock = jest.fn().mockResolvedValue({
+      ok: true,
+      entries: [],
+      token: fullPullToken,
+      previousToken: null,
+      intendedUserId: 1,
+    })
+    const store = makeStore({ pull: pullMock })
+
+    const tokenBeforePull = await store.getLastFetchToken()
+    await store.pull('first')
+    await store.pull('second')
+    store.destroy()
+
+    const sentTokens = pullMock.mock.calls.map((args) => args[args.length - 1])
+    expect(tokenBeforePull).toBe(existingToken)
+    expect(sentTokens).toEqual([null, fullPullToken])
+  })
+
+  test('failed full re-pull is retried on the next pull', async () => {
+    await db.write(async () => db.localStorage.set('last_fetch_token:test_items', 1700000000000))
+
+    const pullMock = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: false, failureType: 'fetch', isRetryable: false })
+      .mockResolvedValue({ ok: true, entries: [], token: 1700000009999, previousToken: null, intendedUserId: 1 })
+    const store = makeStore({ pull: pullMock })
+
+    await store.pull('first')
+    await store.pull('second')
+    store.destroy()
+
+    const sentTokens = pullMock.mock.calls.map((args) => args[args.length - 1])
+    expect(sentTokens).toEqual([null, null])
+  })
+
+  test('full re-pull flag is tracked per table', async () => {
+    await db.write(async () => {
+      await db.localStorage.set('last_fetch_token:test_items', 1700000000000)
+      await db.localStorage.set('full_repull_v1:other_table', true)
+    })
+
+    const pullMock = makePullMock()
+    const store = makeStore({ pull: pullMock })
+
+    await store.pull('first')
+    const ownFlag = await db.localStorage.get('full_repull_v1:test_items')
+    const otherFlagKeys = await db.localStorage.get('full_repull_v1')
+    store.destroy()
+
+    const firstCallArgs = pullMock.mock.calls[0]
+    expect(firstCallArgs[firstCallArgs.length - 1]).toBeNull()
+    expect(ownFlag).toBe(true)
+    expect(otherFlagKeys).toBeUndefined()
+  })
+
+  test('full re-pull that throws after the response is retried on the next pull', async () => {
+    await db.write(async () => db.localStorage.set('last_fetch_token:test_items', 1700000000000))
+
+    const pullMock = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: true, entries: [], token: 1700000009999, previousToken: null, intendedUserId: 999 })
+      .mockResolvedValue({ ok: true, entries: [], token: 1700000009999, previousToken: null, intendedUserId: 1 })
+    const store = makeStore({ pull: pullMock })
+
+    await expect(store.pull('first')).rejects.toThrow('Intended user ID does not match')
+    await store.pull('second')
+    store.destroy()
+
+    const sentTokens = pullMock.mock.calls.map((args) => args[args.length - 1])
+    expect(sentTokens).toEqual([null, null])
+  })
+
+  test('full re-pull adds missing rows and keeps newer unpushed local edits', async () => {
+    const serverTime = 1000
+    const entryFor = (id: string, value: string) => ({
+      record: { id, value, score: 1 },
+      meta: { ids: { id }, lifecycle: { created_at: serverTime, updated_at: serverTime, deleted_at: null } },
+    })
+    const pullMock = makePullMock({ entries: [entryFor('local-edit', 'server'), entryFor('missing', 'server')] as any })
+    const store = makeStore({ pull: pullMock, push: jest.fn(() => new Promise(() => {})) })
+
+    await store.upsertOne('local-edit', r => { r.value = 'local'; r.score = 2 })
+    await db.write(async () => db.localStorage.set('last_fetch_token:test_items', 1700000000000))
+
+    await store.pull('first')
+    const localEdit = await store.readOne('local-edit')
+    const missing = await store.readOne('missing')
+    store.destroy()
+
+    expect(localEdit!.value).toBe('local')
+    expect(localEdit!.score).toBe(2)
+    expect(missing!.value).toBe('server')
+  })
 })
 
 describe('push coalescing', () => {
