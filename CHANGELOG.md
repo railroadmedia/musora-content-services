@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.185.0](https://github.com/railroadmedia/musora-content-services/compare/v2.184.1...v2.185.0) (2026-10-01)
+
+
+### Features
+
+* **BEHLTP-380:** preroll LP intros ([#1066](https://github.com/railroadmedia/musora-content-services/issues/1066)) ([4706a1f](https://github.com/railroadmedia/musora-content-services/commit/4706a1f19d15ddfd409a85d2d8ebb1f70e134a99))
+
 ### [2.184.1](https://github.com/railroadmedia/musora-content-services/compare/v2.184.0...v2.184.1) (2026-09-28)
 
 
