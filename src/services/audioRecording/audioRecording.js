@@ -78,6 +78,8 @@ export function formatDurationMs(ms) {
  *   - capture: { user_agent, sample_rate, channel_count, echo_cancellation,
  *                noise_suppression, auto_gain_control } — the settings the browser
  *                actually applied to the mic track (MediaStreamTrack.getSettings())
+ *   - device:  browser, OS, hardware, screen and audio device report; stored on the
+ *              session row as JSON
  * `started_at` is the device wall clock in ms so the recording's t=0 can be placed on the
  * same timeline as each chunk's recorded_at. `date` defaults to the device's own local
  * calendar day (not UTC) — pass `extras.date` to override, otherwise a recording made
@@ -92,6 +94,7 @@ export async function startSession(userId, contentId = null, videoTimeMs = null,
     started_at: extras.startedAt ?? Date.now(),
     timing: extras.timing ?? null,
     capture: extras.capture ?? null,
+    device: extras.device ?? null,
   })
 }
 
