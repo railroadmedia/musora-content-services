@@ -316,6 +316,30 @@ describe('pull token', () => {
     const previousFetchToken = firstCallArgs[firstCallArgs.length - 1]
     expect(previousFetchToken).toBeNull()
   })
+
+  test('existing token is ignored once for a full re-pull, then resumed', async () => {
+    const existingToken = 1700000000000
+    const fullPullToken = 1700000009999
+    await db.write(async () => db.localStorage.set('last_fetch_token:test_items', existingToken))
+
+    const pullMock = jest.fn().mockResolvedValue({
+      ok: true,
+      entries: [],
+      token: fullPullToken,
+      previousToken: null,
+      intendedUserId: 1,
+    })
+    const store = makeStore({ pull: pullMock })
+
+    const tokenBeforePull = await store.getLastFetchToken()
+    await store.pull('first')
+    await store.pull('second')
+    store.destroy()
+
+    const sentTokens = pullMock.mock.calls.map((args) => args[args.length - 1])
+    expect(tokenBeforePull).toBe(existingToken)
+    expect(sentTokens).toEqual([null, fullPullToken])
+  })
 })
 
 describe('push coalescing', () => {
