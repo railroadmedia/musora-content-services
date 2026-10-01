@@ -156,6 +156,44 @@ describe('Coproduct', () => {
     })
   })
 
+  describe('orFail', () => {
+    test('returns the value for a right', () => {
+      expect(Coproduct.right<string, number>(42).orFail()).toBe(42)
+    })
+
+    test('rethrows an Error left unchanged', () => {
+      const error = new Error('boom')
+      expect(() => Coproduct.left<Error, number>(error).orFail()).toThrow(error)
+    })
+
+    test('wraps a string left in an Error carrying it as the message', () => {
+      expect(() => Coproduct.left<string, number>('boom').orFail()).toThrow('boom')
+    })
+
+    test('throws a given Error instance instead of the left', () => {
+      const replacement = new Error('replacement')
+      expect(() =>
+        Coproduct.left<Error, number>(new Error('original')).orFail(replacement)
+      ).toThrow(replacement)
+    })
+
+    test('uses a given message instead of the left', () => {
+      expect(() =>
+        Coproduct.left<Error, number>(new Error('original')).orFail('error during request')
+      ).toThrow('error during request')
+    })
+
+    test('ignores a given error on a right', () => {
+      expect(Coproduct.right<string, number>(42).orFail('never thrown')).toBe(42)
+    })
+
+    test('wraps a non-string non-Error left in a generic Error', () => {
+      expect(() => Coproduct.left<number, string>(500).orFail()).toThrow(
+        'Coproduct.orFail called on a Left'
+      )
+    })
+  })
+
   describe('tap and ltap', () => {
     test('tap visits a right value and returns the same instance', () => {
       const seen: number[] = []
