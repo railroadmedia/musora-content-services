@@ -93,6 +93,16 @@ recording. Owner only.
 Sets a take's custom name (max 255 characters). Owner only. `null` or `''` clears it.
 Returns the updated recording in the same shape as `listRecordings` items.
 
+### `deleteRecording(folder)` / `deleteLessonRecordings(contentId)`
+Deletes one take, or every take the user has on a lesson. Owner only. The takes disappear
+from all recordings lists right away; the audio is removed for good after a 10-minute undo
+window. `deleteLessonRecordings` resolves to `{ folders }` for undoing it. Take numbers of the
+remaining takes don't change.
+
+### `restoreRecordings(folders)`
+Undo for the two delete methods, within the undo window — e.g. from an "Undo" toast. Rejects
+with a 404 when nothing could be restored.
+
 ### `getSharedCombinedAudioUrl(token)`
 Playback URL for a shared recording via its token — works for any signed-in user
 holding the token, not just the owner.

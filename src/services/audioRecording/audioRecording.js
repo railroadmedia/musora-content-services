@@ -432,6 +432,31 @@ export async function renameRecording(folder, name) {
 }
 
 /**
+ * Delete one take. Owner only. The take disappears from every recordings list right away and
+ * can be brought back with restoreRecordings([folder]) during the undo window (10 minutes);
+ * after that its audio is removed for good. Take numbers of the other takes never change.
+ */
+export async function deleteRecording(folder) {
+  return POST(`${BASE_PATH}/delete`, { folder })
+}
+
+/**
+ * Delete every take the user has on a lesson. Resolves to { folders } — pass that list to
+ * restoreRecordings() to undo the whole delete.
+ */
+export async function deleteLessonRecordings(contentId) {
+  return POST(`${BASE_PATH}/delete-lesson-recordings`, { content_id: contentId })
+}
+
+/**
+ * Undo for deleteRecording / deleteLessonRecordings, within the undo window. Rejects with a 404
+ * when nothing could be restored (the window has passed or the takes aren't the user's).
+ */
+export async function restoreRecordings(folders) {
+  return POST(`${BASE_PATH}/restore`, { folders })
+}
+
+/**
  * Playback URL for a shared recording — any signed-in user holding the token can reach it,
  * not just the owner. Same <audio src> vs. manual-fetch caveat as getCombinedAudioUrl.
  */
@@ -520,6 +545,9 @@ export default {
   shareRecording,
   unshareRecording,
   renameRecording,
+  deleteRecording,
+  deleteLessonRecordings,
+  restoreRecordings,
   getSharedCombinedAudioUrl,
   createAudioChunkUploader,
 }
