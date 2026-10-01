@@ -5,7 +5,7 @@ import { contentStatusCompleted, getProgressState } from '../contentProgress.js'
 import { SyncWriteDTO } from '../sync'
 import { ContentProgress } from '../sync/models'
 import { STATE } from '../sync/models/ContentProgress'
-import { fetchQuizAnswers } from '@/services/my-path/placement-quiz'
+import { fetchQuizAnswers } from './placement-quiz'
 
 export async function completePreroll(
   prerollId: number
