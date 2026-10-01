@@ -2326,7 +2326,7 @@ export async function fetchMethodV2IntroVideo(brand) {
  * Fetch the structure (just ids) of the Method for a given brand.
  * @param brand
  * @returns {Promise<*|null>}
- * @deprecated Use fetchMyPathStructure instead. Kept for backwards compatibility for Method.
+ * @deprecated Kept for backwards compatibility for Method.
  */
 export async function fetchMethodV2Structure(brand) {
   const _type = 'method-v2'
