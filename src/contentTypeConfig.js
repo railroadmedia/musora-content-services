@@ -559,7 +559,6 @@ export let contentTypeConfig = {
         "id": railcontent_id,
         title,
     }`,
-      '"preroll_id": ^.intro_video->railcontent_id',
     ],
   },
   workout: {
@@ -695,7 +694,7 @@ export let contentTypeConfig = {
       "thumbnail": thumbnail.asset->url,
       length_in_seconds,
       intro_video,
-      "preroll_id": intro_video->railcontent_id,
+      "preroll": intro_video,
       child[]->{
         ${DEFAULT_FIELDS.join(',')}
       }

@@ -18,7 +18,7 @@ import {
   contentStatusReset,
   getAllCompletedByIds,
   getIdsWhereLastAccessedFromMethod,
-  getProgressState, 
+  getProgressState,
   resetStatus,
 } from '../contentProgress.js'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, CollectionParameter, STATE } from '../sync/models/ContentProgress'
@@ -254,7 +254,7 @@ export async function getEnrichedLearningPath(learningPathId: number) {
     {
       dataField: 'children',
       dataField_includeParent: true,
-      dataField_includeIntroVideo: true,
+      dataField_includePreroll: true,
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
@@ -286,7 +286,7 @@ export async function getEnrichedLearningPaths(learningPathIds: number[]) {
     {
       dataField: 'children',
       dataField_includeParent: true,
-      dataField_includeIntroVideo: true,
+      dataField_includePreroll: true,
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
@@ -484,7 +484,7 @@ export async function fetchLearningPathLessons(
  *
  * @param {number[]} contentIds The array of content IDs within the learning path
  * @returns {Promise<number[]>} Array with completed content IDs
- * @deprecated Learning path progress import is removed in My Path. Kept for the pre-My Path feature flag path.
+ * @deprecated Only use for Method behaviour. Learning path progress import is removed in My Path. Kept for backwards compatibility for Method.
  */
 export async function fetchLearningPathProgressCheckLessons(
   contentIds: number[],
@@ -506,6 +506,7 @@ interface completeMethodIntroVideo {
  * @returns {Promise<Array>} response - The response object.
  * @returns {Promise<Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
  * @returns {Promise<Object>} response.active_path_response - The set active learning path response.
+ * @deprecated Only use for Method behaviour. For My Path, call `completeMyPathIntroVideo` instead.
  */
 export async function completeMethodIntroVideo(
   introVideoId: number | null,
@@ -564,7 +565,7 @@ interface completeLearningPathIntroVideo {
  * @returns {Promise<void>} response.learning_path_reset_response - The reset learning path response.
  * @returns {Promise<Object[]>} response.lesson_import_response - The responses for completing each content_id within the learning path.
  * @returns {Promise<Object|null>} response.update_dailies_response - The updated daily session if it was changed.
- * @deprecated Use `completePreroll` from `my-path/preroll.ts`. Kept for the pre-My Path feature flag path.
+ * @deprecated Only use for Method behaviour. For My Path, use `completePreroll` from `my-path/preroll.ts`.
  */
 export async function completeLearningPathIntroVideo(
   introVideoId: number,

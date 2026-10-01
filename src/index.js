@@ -256,8 +256,8 @@ import {
 } from './services/my-path/placement-quiz.ts';
 
 import {
-	completePreroll,
-	fetchPreroll
+	completeMyPathIntroVideo,
+	completePreroll
 } from './services/my-path/preroll.ts';
 
 import {
@@ -588,6 +588,7 @@ export {
 	closeComment,
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
+	completeMyPathIntroVideo,
 	completePreroll,
 	confirmEmailChange,
 	contentStatusCompleted,
@@ -701,7 +702,6 @@ export {
 	fetchPost,
 	fetchPosts,
 	fetchPracticeGoals,
-	fetchPreroll,
 	fetchPublicAnnouncement,
 	fetchQuizAnswers,
 	fetchRecent,

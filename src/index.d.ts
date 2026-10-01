@@ -252,8 +252,8 @@ import {
 } from './services/my-path/placement-quiz.ts';
 
 import {
-	completePreroll,
-	fetchPreroll
+	completeMyPathIntroVideo,
+	completePreroll
 } from './services/my-path/preroll.ts';
 
 import {
@@ -589,6 +589,7 @@ declare module 'musora-content-services' {
 		closeComment,
 		completeLearningPathIntroVideo,
 		completeMethodIntroVideo,
+		completeMyPathIntroVideo,
 		completePreroll,
 		confirmEmailChange,
 		contentStatusCompleted,
@@ -702,7 +703,6 @@ declare module 'musora-content-services' {
 		fetchPost,
 		fetchPosts,
 		fetchPracticeGoals,
-		fetchPreroll,
 		fetchPublicAnnouncement,
 		fetchQuizAnswers,
 		fetchRecent,
