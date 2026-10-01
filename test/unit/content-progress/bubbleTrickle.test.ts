@@ -77,6 +77,10 @@ describe('getChildrenToDepth', () => {
     expect(result).toEqual([])
   })
 
+  test('null hierarchy returns empty array', () => {
+    expect(getChildrenToDepth(100, null, 1)).toEqual([])
+  })
+
   test('direct children at depth 1', () => {
     const result = getChildrenToDepth(100, flatHierarchy, 1)
     expect(result).toEqual([200, 201, 202])

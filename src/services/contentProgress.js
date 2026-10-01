@@ -623,7 +623,7 @@ export async function saveContentProgress(
   if (!isOffline) {
     hierarchy = await getHierarchy(contentId, collection)
   }
-  const metadata = hierarchy.metadata || {}
+  const metadata = hierarchy?.metadata || {}
 
   if (isPlaylist) {
     if (isOffline) {
@@ -680,7 +680,7 @@ export async function setStartedOrCompletedStatus(
   const isPlaylist = collection?.type === COLLECTION_TYPE.PLAYLIST
 
   const hierarchy = await getHierarchy(contentId, collection)
-  const metadata = hierarchy.metadata || {}
+  const metadata = hierarchy?.metadata || {}
 
   const progress = isCompleted ? 100 : 0
   let allProgresses = { [contentId]: progress }
@@ -768,7 +768,7 @@ export async function resetStatus(contentId, collection = null, { skipPush = fal
   allProgresses[contentId] = progress
 
   const hierarchy = await getHierarchy(contentId, collection)
-  const metadata = hierarchy.metadata || {}
+  const metadata = hierarchy?.metadata || {}
 
   let progresses = await computeBubbleTrickleProgresses(contentId, progress, collection, hierarchy)
   Object.assign(allProgresses, progresses)
@@ -904,7 +904,7 @@ export function averageProgressesFor(hierarchy, contentId, progressData, depth =
 }
 
 export function getChildrenToDepth(parentId, hierarchy, depth = 1) {
-  let childIds = hierarchy.children[parentId] ?? []
+  let childIds = hierarchy?.children?.[parentId] ?? []
   let allChildrenIds = childIds
   childIds.forEach((id) => {
     allChildrenIds = allChildrenIds.concat(getChildrenToDepth(id, hierarchy, depth - 1))
