@@ -252,6 +252,11 @@ import {
 } from './services/my-path/placement-quiz.ts';
 
 import {
+	completeMyPathIntroVideo,
+	completePreroll
+} from './services/my-path/preroll.ts';
+
+import {
 	deleteAllNotifications,
 	deleteNotification,
 	fetchLiveEventPollingState,
@@ -584,6 +589,8 @@ declare module 'musora-content-services' {
 		closeComment,
 		completeLearningPathIntroVideo,
 		completeMethodIntroVideo,
+		completeMyPathIntroVideo,
+		completePreroll,
 		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusCompletedMany,

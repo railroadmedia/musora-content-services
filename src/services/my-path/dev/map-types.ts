@@ -9,7 +9,7 @@ interface LearningPath {
   title: string
   difficulty?: number
   branch: Branch
-  intro_video_id?: number // only if we have intro videos
+  preroll_id?: number
   published_on?: string
   // ... any other content-related fields we need
 }
