@@ -247,6 +247,8 @@ async function fetchRecommendedContent(
     )
     .run<RecommendedContent[]>()
     .map(
+      // ponytail: decorateAll types the top level only; the With* aliases also type decorated
+      // children, so the assertion is narrower than what decorateAll can express.
       (contents) =>
         decorateAll(contents ?? [], [
           accessDecorator(permissions),
