@@ -1,6 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	buildShareUrl,
 	createAudioChunkUploader,
 	deleteLessonRecordings,
 	deleteRecording,
@@ -12,6 +13,7 @@ import {
 	getMyRecordings,
 	getRecordedContentIds,
 	getSharedCombinedAudioUrl,
+	getSharedRecording,
 	getSupportedFormats,
 	isFormatSupported,
 	listRecordings,
@@ -618,6 +620,7 @@ declare module 'musora-content-services' {
 		blockedUsers,
 		buildEntityAndTotalQuery,
 		buildImageSRC,
+		buildShareUrl,
 		calculateLongestStreaks,
 		clearAllCachedData,
 		clearState,
@@ -851,6 +854,7 @@ declare module 'musora-content-services' {
 		getSanityDate,
 		getScheduleContentRows,
 		getSharedCombinedAudioUrl,
+		getSharedRecording,
 		getSongTypesFor,
 		getSortOrder,
 		getStartedOrCompletedProgressOnly,

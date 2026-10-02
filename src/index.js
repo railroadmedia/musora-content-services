@@ -5,6 +5,7 @@ import {
 } from './services/eventsAPI';
 
 import {
+	buildShareUrl,
 	createAudioChunkUploader,
 	deleteLessonRecordings,
 	deleteRecording,
@@ -16,6 +17,7 @@ import {
 	getMyRecordings,
 	getRecordedContentIds,
 	getSharedCombinedAudioUrl,
+	getSharedRecording,
 	getSupportedFormats,
 	isFormatSupported,
 	listRecordings,
@@ -617,6 +619,7 @@ export {
 	blockedUsers,
 	buildEntityAndTotalQuery,
 	buildImageSRC,
+	buildShareUrl,
 	calculateLongestStreaks,
 	clearAllCachedData,
 	clearState,
@@ -850,6 +853,7 @@ export {
 	getSanityDate,
 	getScheduleContentRows,
 	getSharedCombinedAudioUrl,
+	getSharedRecording,
 	getSongTypesFor,
 	getSortOrder,
 	getStartedOrCompletedProgressOnly,

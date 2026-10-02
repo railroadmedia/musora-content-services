@@ -460,6 +460,48 @@ export async function restoreRecordings(folders) {
 }
 
 /**
+ * Fetch metadata for a shared recording. Public endpoint — anyone with the token can view.
+ * Returns the recording details (shared_by, content_id, take_number, name, duration_ms,
+ * created_at) plus a short-lived playback URL. Returns null for invalid/expired/unshared
+ * tokens (the backend returns 404 with a generic "unavailable" message for all of these).
+ *
+ * @param {string} token - 48-char alphanumeric share token
+ * @returns {Promise<{
+ *   shared_by: string,
+ *   content_id: number,
+ *   take_number: number,
+ *   name: string|null,
+ *   created_at: string,
+ *   duration_ms: number,
+ *   playback: { url: string, expires_at: string, mime_type: string }
+ * }|null>}
+ */
+export async function getSharedRecording(token) {
+  try {
+    return await GET(`${BASE_PATH}/shared/${encodeURIComponent(token)}`)
+  } catch (error) {
+    if (error?.response?.status === 404) {
+      return null
+    }
+    throw error
+  }
+}
+
+/**
+ * Build the user-facing share URL for a recording. This is the link the owner copies and
+ * sends to others — when opened, it should route to the lesson playback page and trigger
+ * the shared recording modal/drawer. The caller supplies the brand's base URL (e.g.
+ * "https://www.drumeo.com") since MCS doesn't know which brand context it's running in.
+ *
+ * @param {string} brandBaseUrl - Brand's web base URL (e.g. "https://www.drumeo.com")
+ * @param {string} token - 48-char alphanumeric share token from shareRecording()
+ * @returns {string} Full shareable URL
+ */
+export function buildShareUrl(brandBaseUrl, token) {
+  return `${brandBaseUrl}/shared-recording/${encodeURIComponent(token)}`
+}
+
+/**
  * Playback URL for a shared recording — any signed-in user holding the token can reach it,
  * not just the owner. Same <audio src> vs. manual-fetch caveat as getCombinedAudioUrl.
  */
@@ -551,6 +593,8 @@ export default {
   deleteRecording,
   deleteLessonRecordings,
   restoreRecordings,
+  getSharedRecording,
+  buildShareUrl,
   getSharedCombinedAudioUrl,
   createAudioChunkUploader,
 }
