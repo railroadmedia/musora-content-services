@@ -293,6 +293,11 @@ import {
 } from './services/my-path/placement-quiz.ts';
 
 import {
+	completeMyPathIntroVideo,
+	completePreroll
+} from './services/my-path/preroll.ts';
+
+import {
 	deleteAllNotifications,
 	deleteNotification,
 	fetchLiveEventPollingState,
@@ -626,6 +631,8 @@ export {
 	closeComment,
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
+	completeMyPathIntroVideo,
+	completePreroll,
 	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusCompletedMany,

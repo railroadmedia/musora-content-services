@@ -14,6 +14,7 @@ interface PlacementQuizAnswers {
   gear: string[]
 }
 
+// todo(BEHLTP-494): return recommended_content too.
 interface PlacementQuizResponse {
   user_id: string
   brand: string
