@@ -49,7 +49,7 @@ export const incompleteLesson = (
   return ids[0]
 }
 
-const emptySnapshot = (): ProgressSnapshot => ({ last_update: 0, progress: 0, status: '' })
+const emptySnapshot = (): ProgressSnapshot => ({ last_update: 0, progress: 0, resume_time: null, status: '' })
 
 const buildSnapshotMap = async <K extends string | number>(
   ids: K[],
@@ -81,6 +81,7 @@ export const snapshotByIds = (
     (p) => ({
       last_update: p.last_interacted_a_la_carte,
       progress: p.progress_percent,
+      resume_time: p.resume_time_seconds,
       status: p.state,
     })
   )
@@ -93,6 +94,7 @@ export const snapshotByRecordIds = (ids: string[]): Promise<Record<string, Progr
     (p) => ({
       last_update: p.updated_at,
       progress: p.progress_percent,
+      resume_time: p.resume_time_seconds,
       status: p.state,
     })
   )

@@ -1,7 +1,7 @@
 import {
   _recordWatchSession,
   filterOutLearningPathsForDuplication,
-  filterOutNegativeProgress,
+  mergeProgressWithExisting,
   getProgressDataByIds,
   normalizeCollection,
   normalizeContentId,
@@ -164,12 +164,12 @@ async function resetStatusOffline(contentId: number, collection: CollectionParam
 }
 
 // todo: move getters and helper functions into separate file to unwind circular dependencies with ofline/progress.ts
-export async function duplicateProgressToALaCarteOffline(progresses: Record<string, number>, metadata: Record<string, MetadataParameter>, collection: CollectionParameter) {
+export async function duplicateProgressToALaCarteOffline(progresses: Record<string, number>, metadata: Record<string, MetadataParameter>, collection: CollectionParameter, currentSeconds: number | undefined = undefined) {
   let filteredProgresses = filterOutLearningPathsForDuplication(progresses, collection)
 
   const externalProgresses = await getProgressDataByIds(Object.keys(filteredProgresses), null)
 
-  filteredProgresses = filterOutNegativeProgress(filteredProgresses, externalProgresses)
+  filteredProgresses = mergeProgressWithExisting(filteredProgresses, externalProgresses, currentSeconds)
 
   await db.contentProgress.recordProgressMany(
     filteredProgresses,
