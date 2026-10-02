@@ -132,6 +132,10 @@ class AwardDefinitionsService {
 
       const awards = await fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 
+      if (!awards) {
+        return
+      }
+
       this.definitions.clear()
       this.contentIndex.clear()
 
