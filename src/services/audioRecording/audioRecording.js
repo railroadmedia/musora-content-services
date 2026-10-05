@@ -230,8 +230,11 @@ export async function logSeekEvent(folder, fromVideoTimeMs, toVideoTimeMs, elaps
  * Tracks the pause/resume/timeout state of an already-started recording session (the
  * caller drives the actual MediaRecorder; this just stays in sync with it), so every
  * platform (web, mobile) applying the "pause >X breaks the session" rule behaves the
- * same way. Owns the grace timer, the pause/resume event logging, and the stop reason
- * ('manual' vs 'timeout').
+ * same way. Owns the grace timer, the max-duration timer, the pause/resume event logging,
+ * and the stop reason ('manual', 'timeout' or 'max_duration').
+ *
+ * `maxActiveMs` caps the recorded (unpaused) time of one session; once reached,
+ * `onMaxDuration` is called so the caller can stop the recorder.
  *
  * Pass `getVideoTimeMs` so pause/resume events carry the real video position; without
  * it they fall back to recording-elapsed time, which is NOT a video time.
@@ -239,6 +242,8 @@ export async function logSeekEvent(folder, fromVideoTimeMs, toVideoTimeMs, elaps
 export function trackAudioRecordingSession(folder, options = {}) {
   const graceMs = options.graceMs ?? 180000
   const onTimeout = options.onTimeout ?? (() => {})
+  const maxActiveMs = options.maxActiveMs ?? 900000
+  const onMaxDuration = options.onMaxDuration ?? (() => {})
   const getVideoTimeMs =
     typeof options.getVideoTimeMs === 'function' ? options.getVideoTimeMs : null
   const startedAt = Date.now()
@@ -247,6 +252,7 @@ export function trackAudioRecordingSession(folder, options = {}) {
   let pausedAt = null
   let totalPausedMs = 0
   let timer = null
+  let maxDurationTimer = null
   let stopReason = 'manual'
 
   function elapsedMs() {
@@ -265,10 +271,28 @@ export function trackAudioRecordingSession(folder, options = {}) {
     return Number.isFinite(t) && t >= 0 ? Math.round(t) : elapsedMs()
   }
 
+  function startMaxDurationTimer() {
+    if (stopReason === 'max_duration') return
+
+    maxDurationTimer = setTimeout(() => {
+      stopReason = 'max_duration'
+      maxDurationTimer = null
+      onMaxDuration()
+    }, Math.max(0, maxActiveMs - activeElapsedMs()))
+  }
+
+  function clearMaxDurationTimer() {
+    if (maxDurationTimer) {
+      clearTimeout(maxDurationTimer)
+      maxDurationTimer = null
+    }
+  }
+
   function pause() {
     if (paused) return
     paused = true
     pausedAt = Date.now()
+    clearMaxDurationTimer()
 
     logEvent(folder, 'pause', videoTimeOrElapsed(), elapsedMs()).catch((error) => {
       console.warn('Failed to log pause event:', error)
@@ -295,6 +319,8 @@ export function trackAudioRecordingSession(folder, options = {}) {
       timer = null
     }
 
+    startMaxDurationTimer()
+
     logEvent(folder, 'resume', videoTimeOrElapsed(), elapsedMs()).catch((error) => {
       console.warn('Failed to log resume event:', error)
     })
@@ -305,9 +331,12 @@ export function trackAudioRecordingSession(folder, options = {}) {
       clearTimeout(timer)
       timer = null
     }
+    clearMaxDurationTimer()
 
     return stopReason
   }
+
+  startMaxDurationTimer()
 
   return {
     pause,
