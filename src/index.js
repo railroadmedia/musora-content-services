@@ -234,7 +234,7 @@ import {
 
 import {
 	advanceActiveLearningPath,
-	myPathGetActivePath,
+	getMyPathActivePath,
 	setActiveLearningPath
 } from './services/my-path/active-path.ts';
 
@@ -786,6 +786,7 @@ export {
 	getLessonContentRows,
 	getMCSVersion,
 	getMonday,
+	getMyPathActivePath,
 	getNavigateTo,
 	getNavigateToForMethod,
 	getNavigateToForPlaylists,
@@ -863,7 +864,6 @@ export {
 	markNotificationAsRead,
 	markNotificationAsUnread,
 	markThreadAsRead,
-	myPathGetActivePath,
 	myPathGetDailySession,
 	numberOfActiveUsers,
 	onProgressSaved,

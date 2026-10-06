@@ -230,7 +230,7 @@ import {
 
 import {
 	advanceActiveLearningPath,
-	myPathGetActivePath,
+	getMyPathActivePath,
 	setActiveLearningPath
 } from './services/my-path/active-path.ts';
 
@@ -787,6 +787,7 @@ declare module 'musora-content-services' {
 		getLessonContentRows,
 		getMCSVersion,
 		getMonday,
+		getMyPathActivePath,
 		getNavigateTo,
 		getNavigateToForMethod,
 		getNavigateToForPlaylists,
@@ -864,7 +865,6 @@ declare module 'musora-content-services' {
 		markNotificationAsRead,
 		markNotificationAsUnread,
 		markThreadAsRead,
-		myPathGetActivePath,
 		myPathGetDailySession,
 		numberOfActiveUsers,
 		onProgressSaved,
