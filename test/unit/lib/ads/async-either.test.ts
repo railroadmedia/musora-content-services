@@ -68,6 +68,20 @@ describe('AsyncEither', () => {
     })
   })
 
+  describe('lflatMap', () => {
+    test('flattens the AsyncEither returned by the function', async () => {
+      const result = await left<string, number>('boom').lflatMap(() => right<Error, number>(2))
+      expect(result.drop()).toBe(2)
+    })
+
+    test('does not call the function on a right', async () => {
+      const fn = jest.fn()
+      const result = await right<string, number>(2).lflatMap(fn)
+      expect(fn).not.toHaveBeenCalled()
+      expect(result.drop()).toBe(2)
+    })
+  })
+
   describe('tap and ltap', () => {
     test('tap visits a right without modifying it', async () => {
       const seen: number[] = []
@@ -121,6 +135,23 @@ describe('AsyncEither', () => {
 
     test('returns the default value for a left', async () => {
       expect(await left<string, number>('boom').recover(0)).toBe(0)
+    })
+  })
+
+  describe('orFail', () => {
+    test('returns the right value', async () => {
+      expect(await right<string, number>(2).orFail()).toBe(2)
+    })
+
+    test('throws the left when it is an Error', async () => {
+      const error = new Error('boom')
+      await expect(left<Error, number>(error).orFail()).rejects.toThrow(error)
+    })
+
+    test('throws the provided error instead of the left', async () => {
+      await expect(left<string, number>('boom').orFail('error during request')).rejects.toThrow(
+        'error during request'
+      )
     })
   })
 

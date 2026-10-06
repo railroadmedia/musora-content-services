@@ -46,6 +46,18 @@ export class AsyncEither<L, R> implements PromiseLike<Either<L, R>> {
     return AsyncEither.of(this.promise.then((either) => either.lmap(fn)))
   }
 
+  /** @param fn - maps the left value to another AsyncEither, flattening the result */
+  lflatMap<T>(fn: (l: L) => AsyncEither<T, R>): AsyncEither<T, R> {
+    return AsyncEither.of(
+      this.promise.then((either) =>
+        either.fold(
+          (l) => fn(l).promise,
+          (r) => Promise.resolve(Either.right<T, R>(r))
+        )
+      )
+    )
+  }
+
   /** @param fn - visits the right value without modifying it */
   tap(fn: (r: R) => void): AsyncEither<L, R> {
     return AsyncEither.of(this.promise.then((either) => either.tap(fn)))
@@ -71,6 +83,14 @@ export class AsyncEither<L, R> implements PromiseLike<Either<L, R>> {
    */
   recover(defaultValue: R): Promise<R> {
     return this.promise.then((either) => either.recover(defaultValue))
+  }
+
+  /**
+   * @param error - thrown instead of the left, or used as the message of the thrown Error
+   * @returns {Promise<R>}
+   */
+  orFail(error?: string | Error): Promise<R> {
+    return this.promise.then((either) => either.orFail(error))
   }
 
   /** @returns {Promise<Either<L, R>>} */
