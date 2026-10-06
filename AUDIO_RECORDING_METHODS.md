@@ -164,6 +164,23 @@ just purged), a read attempted while offline throws rather than returning empty 
 must be at least one successful online pull first. Writes are never affected by this;
 they always succeed locally regardless.
 
+## Settings
+
+Saved on the user's profile, so a toggle changed on one device applies on every device.
+
+### `fetchAudioSettings()`
+Returns `{ recording_enabled, voice_commands_enabled, help_improve_coach,
+help_improve_coach_updated_at, coach_feedback_enabled }`, or the defaults
+(`recording_enabled: true`, everything else `false`) when the user has never saved any.
+`recording_enabled` is the user's preference only: start recording only when it's on
+**and** the device has mic permission. If permission is skipped or denied, keep the toggle
+off on that device without updating the saved preference.
+
+### `updateAudioSettings(changes)`
+Pass only the toggles that changed, e.g. `updateAudioSettings({ recording_enabled: false })`;
+the rest keep their values. Changing `help_improve_coach` (the Musora Coach consent)
+updates `help_improve_coach_updated_at`. Resolves to the full settings after the update.
+
 ## Small utilities (platform-agnostic)
 
 ### `formatDurationMs(ms)`
