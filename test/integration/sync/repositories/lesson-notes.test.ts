@@ -112,4 +112,12 @@ describe('getContentIdsWithNotes', () => {
     const ids = await repo.getContentIdsWithNotes()
     expect(ids).toEqual([])
   })
+
+  test('does not include a lesson whose notes have no visible text', async () => {
+    await repo.createNote(800, '2026-09-08', '<p><br></p>')
+    await repo.createNote(801, '2026-09-08', '<p>Has text</p>')
+
+    const ids = await repo.getContentIdsWithNotes()
+    expect(ids).toEqual([801])
+  })
 })

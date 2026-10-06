@@ -1,6 +1,7 @@
 import SyncRepository, { Q } from './base'
 import LessonNote from '../models/LessonNote'
 import { RecordId } from '@nozbe/watermelondb'
+import { hasVisibleText } from '../../../lib/html'
 
 export default class LessonNotesRepository extends SyncRepository<LessonNote> {
   async getNotesForContent(contentId: number, date: string | null = null) {
@@ -33,12 +34,13 @@ export default class LessonNotesRepository extends SyncRepository<LessonNote> {
   }
 
   /**
-   * Every lesson id the user has at least one note on — for a practice tracker indicator,
+   * Every lesson id the user has at least one note with visible text on — for a practice tracker indicator,
    * mirroring getRecordedContentIds() but resolved from the local, already-synced table
    * rather than a network call.
    */
   async getContentIdsWithNotes(): Promise<number[]> {
     const result = await this.getAll()
-    return Array.from(new Set(result.data.map((note) => note.content_id)))
+    const notesWithText = result.data.filter((note) => hasVisibleText(note.notes))
+    return Array.from(new Set(notesWithText.map((note) => note.content_id)))
   }
 }
