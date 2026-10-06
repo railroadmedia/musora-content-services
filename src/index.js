@@ -233,13 +233,14 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
-	getActivePath,
-	startLearningPath
+	advanceActiveLearningPath,
+	myPathGetActivePath,
+	setActiveLearningPath
 } from './services/my-path/active-path.ts';
 
 import {
-	getDailySession,
-	updateDailySession
+	createDailySession,
+	myPathGetDailySession
 } from './services/my-path/daily-session.ts';
 
 import {
@@ -247,13 +248,17 @@ import {
 	completeMethodIntroVideo,
 	fetchLearningPathLessons,
 	fetchLearningPathProgressCheckLessons,
+	getActivePath,
+	getDailySession,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	isNextLessonLocked,
 	mapContentToParent,
 	resetActiveLearningPath,
-	resetAllLearningPaths
+	resetAllLearningPaths,
+	startLearningPath,
+	updateDailySession
 } from './services/my-path/learning-paths.ts';
 
 import {
@@ -580,6 +585,7 @@ export {
 	addContextToContent,
 	addContextToLearningPaths,
 	addItemToPlaylist,
+	advanceActiveLearningPath,
 	applyCloudflareWrapper,
 	applySanityTransformations,
 	assignModeratorToComment,
@@ -608,6 +614,7 @@ export {
 	convertToTimeZone,
 	createAccount,
 	createComment,
+	createDailySession,
 	createForumCategory,
 	createInvites,
 	createPendingAccount,
@@ -856,6 +863,8 @@ export {
 	markNotificationAsRead,
 	markNotificationAsUnread,
 	markThreadAsRead,
+	myPathGetActivePath,
+	myPathGetDailySession,
 	numberOfActiveUsers,
 	onProgressSaved,
 	openComment,
@@ -903,6 +912,7 @@ export {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	sendRevenueCatPurchaseMetadata,
+	setActiveLearningPath,
 	setSessionUserData,
 	setStudentViewForUser,
 	setUserPinnedProgressRow,

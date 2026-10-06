@@ -1,47 +1,52 @@
 /**
- * @module DailySession
+ * @module MyPathDailySession
  */
 
 import { GET, POST } from '../../infrastructure/http/HttpClient'
-import { fetchDailySessionOnce, formatLocalDateTime, setCachedDailySession } from './cache'
+import {
+  fetchDailySessionOnce,
+  formatLocalDateTime,
+  setCachedActivePath,
+  setCachedDailySession,
+} from './cache'
+import type { ActivePathResponse } from './active-path'
 
-const BASE_PATH: string = `/api/content-org`
-const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
+const excludeFromGeneratedIndex = ['reloadDailySessionHttpCache']
 
-export interface DailySessionResponse {
-  user_id: number
-  brand: string
-  user_date: string
-  daily_session: DailySession[]
-  active_learning_path_id: number
-  active_learning_path_created_at: string
-}
+const DAILY_SESSION_PATH = `/api/my-path/v2/daily-session`
 
-export interface DailySession {
+export interface DailySessionGroup {
   content_ids: number[]
   learning_path_id: number
+  node_id: string
+  is_placeholder: boolean
+}
+
+export interface DailySessionResponse extends ActivePathResponse {
+  daily_session: DailySessionGroup[]
+  user_date: string
+}
+
+function dailySessionUrl(brand: string, userDate: Date): string {
+  return `${DAILY_SESSION_PATH}?brand=${brand}&userDate=${encodeURIComponent(formatLocalDateTime(userDate))}`
+}
+
+export function reloadDailySessionHttpCache(brand: string, userDate: Date): void {
+  GET(dailySessionUrl(brand, userDate), { cache: 'reload' }).catch(() => {})
 }
 
 /**
- * Gets today's daily session for the user.
- * If the daily session doesn't exist, it will be created.
+ * Gets the daily session for the user's active path, creating it if none exists for that day.
  * @param brand
- * @param userDate - local datetime. must have date and time - format 2025-10-31T13:45:00
+ * @param userDate - local date with offset, e.g. 2025-10-31 -05:00
  */
-export async function getDailySession(brand: string, userDate: Date): Promise<DailySessionResponse | '' | null> {
-  const dateWithTimezone = formatLocalDateTime(userDate)
-
+export async function myPathGetDailySession(brand: string, userDate: Date): Promise<DailySessionResponse | null> {
   try {
-    return await fetchDailySessionOnce(brand, userDate, async () => {
-      const url = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
-
-      const response = await GET(url)
-
-      if (!response) {
-        return (await updateDailySession(brand, userDate, false)) as DailySessionResponse | ''
-      }
-      return response
+    const response = await fetchDailySessionOnce<DailySessionResponse>(brand, userDate, async () => {
+      const existing = (await GET(dailySessionUrl(brand, userDate))) as DailySessionResponse | ''
+      return existing || (await createDailySession(brand, userDate)) || ''
     })
+    return response || null
   } catch (error) {
     console.error('Error fetching daily session:', (error as any).message)
     return null
@@ -49,32 +54,28 @@ export async function getDailySession(brand: string, userDate: Date): Promise<Da
 }
 
 /**
- * Updates the daily session for the user. Optionally, keeps the first learning path's dailies from a matching day's session.
  * @param brand
- * @param userDate - format 2025-10-31
- * @param keepFirstLearningPath
+ * @param userDate - local date with offset, e.g. 2025-10-31 -05:00
+ * @param replacePlaceholdersOnly - keep the existing non-placeholder groups and only refill placeholder ones
+ * @returns null when the user has no active path
  */
-export async function updateDailySession(
+export async function createDailySession(
   brand: string,
   userDate: Date,
-  keepFirstLearningPath: boolean = false,
+  replacePlaceholdersOnly: boolean = false,
 ): Promise<DailySessionResponse | null> {
-  const dateWithTimezone = formatLocalDateTime(userDate)
-  const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
   const body = {
-    brand: brand,
-    userDate: dateWithTimezone,
-    keepFirstLearningPath: keepFirstLearningPath,
+    brand,
+    userDate: formatLocalDateTime(userDate),
+    replacePlaceholdersOnly,
   }
-  try {
-    const response = (await POST(url, body)) as DailySessionResponse | ''
-    setCachedDailySession(brand, userDate, response !== '' ? response : null)
 
-    const urlGet: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
-    GET(urlGet, { cache: 'reload' }).catch(() => {})
+  const response = (await POST(DAILY_SESSION_PATH, body)) as DailySessionResponse | ''
+  if (!response) return null
 
-    return response !== '' ? response : null
-  } catch (error: any) {
-    return null
-  }
+  setCachedActivePath(brand, response)
+  setCachedDailySession(brand, userDate, response)
+  reloadDailySessionHttpCache(brand, userDate)
+
+  return response
 }

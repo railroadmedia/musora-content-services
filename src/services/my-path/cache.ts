@@ -1,6 +1,4 @@
 import dayjs from 'dayjs'
-import type { ActiveLearningPathResponse } from './active-path'
-import type { DailySessionResponse } from './daily-session'
 
 const excludeFromGeneratedIndex = [
   'formatLocalDateTime',
@@ -14,8 +12,8 @@ const excludeFromGeneratedIndex = [
   'resetLearningPathCachesForTests',
 ]
 
-const dailySessionPromises = new Map<string, Promise<DailySessionResponse | ''>>()
-const activePathPromises = new Map<string, Promise<ActiveLearningPathResponse | ''>>()
+const dailySessionPromises = new Map<string, Promise<any>>()
+const activePathPromises = new Map<string, Promise<any>>()
 
 export function formatLocalDateTime(date: Date): string {
   return dayjs(date).format('YYYY-MM-DD Z')
@@ -58,19 +56,15 @@ function remember<T>(cache: Map<string, Promise<T>>, key: string, value: T | nul
   }
 }
 
-export function fetchDailySessionOnce(
+export function fetchDailySessionOnce<T>(
   brand: string,
   userDate: Date,
-  fetcher: () => Promise<DailySessionResponse | ''>,
-): Promise<DailySessionResponse | ''> {
+  fetcher: () => Promise<T | ''>,
+): Promise<T | ''> {
   return fetchOnce(dailySessionPromises, dailySessionKey(brand, userDate), fetcher)
 }
 
-export function setCachedDailySession(
-  brand: string,
-  userDate: Date,
-  value: DailySessionResponse | null,
-): void {
+export function setCachedDailySession<T>(brand: string, userDate: Date, value: T | null): void {
   remember(dailySessionPromises, dailySessionKey(brand, userDate), value)
 }
 
@@ -78,14 +72,14 @@ export function invalidateDailySession(brand: string, userDate: Date = new Date(
   dailySessionPromises.delete(dailySessionKey(brand, userDate))
 }
 
-export function fetchActivePathOnce(
+export function fetchActivePathOnce<T>(
   brand: string,
-  fetcher: () => Promise<ActiveLearningPathResponse | ''>,
-): Promise<ActiveLearningPathResponse | ''> {
+  fetcher: () => Promise<T | ''>,
+): Promise<T | ''> {
   return fetchOnce(activePathPromises, activePathKey(brand), fetcher)
 }
 
-export function setCachedActivePath(brand: string, value: ActiveLearningPathResponse | null): void {
+export function setCachedActivePath<T>(brand: string, value: T | null): void {
   remember(activePathPromises, activePathKey(brand), value)
 }
 

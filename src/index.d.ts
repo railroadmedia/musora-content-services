@@ -229,13 +229,14 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
-	getActivePath,
-	startLearningPath
+	advanceActiveLearningPath,
+	myPathGetActivePath,
+	setActiveLearningPath
 } from './services/my-path/active-path.ts';
 
 import {
-	getDailySession,
-	updateDailySession
+	createDailySession,
+	myPathGetDailySession
 } from './services/my-path/daily-session.ts';
 
 import {
@@ -243,13 +244,17 @@ import {
 	completeMethodIntroVideo,
 	fetchLearningPathLessons,
 	fetchLearningPathProgressCheckLessons,
+	getActivePath,
+	getDailySession,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	isNextLessonLocked,
 	mapContentToParent,
 	resetActiveLearningPath,
-	resetAllLearningPaths
+	resetAllLearningPaths,
+	startLearningPath,
+	updateDailySession
 } from './services/my-path/learning-paths.ts';
 
 import {
@@ -581,6 +586,7 @@ declare module 'musora-content-services' {
 		addContextToContent,
 		addContextToLearningPaths,
 		addItemToPlaylist,
+		advanceActiveLearningPath,
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
@@ -609,6 +615,7 @@ declare module 'musora-content-services' {
 		convertToTimeZone,
 		createAccount,
 		createComment,
+		createDailySession,
 		createForumCategory,
 		createInvites,
 		createPendingAccount,
@@ -857,6 +864,8 @@ declare module 'musora-content-services' {
 		markNotificationAsRead,
 		markNotificationAsUnread,
 		markThreadAsRead,
+		myPathGetActivePath,
+		myPathGetDailySession,
 		numberOfActiveUsers,
 		onProgressSaved,
 		openComment,
@@ -904,6 +913,7 @@ declare module 'musora-content-services' {
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
 		sendRevenueCatPurchaseMetadata,
+		setActiveLearningPath,
 		setSessionUserData,
 		setStudentViewForUser,
 		setUserPinnedProgressRow,

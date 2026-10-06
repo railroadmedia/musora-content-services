@@ -89,8 +89,8 @@ const {
   onLearningPathCompletedActions,
   mapLearningPathParentsTo,
   mapContentsThatWereLastProgressedFromMethod,
-  resetLearningPathCachesForTests,
 } = require('../../src/services/my-path/learning-paths.ts')
+const { resetLearningPathCachesForTests } = require('../../src/services/my-path/cache.ts')
 
 const ctx = initializeTestDB()
 
