@@ -9,6 +9,8 @@ import { Onboarding } from './onboarding'
 import { OAuthProvider } from './session'
 import { AuthResponse } from './types'
 
+const LOCAL_PART_MASK = '***'
+
 export interface AccountStatus {
   requires_setup: boolean
   last_login_provider?: OAuthProvider
@@ -255,4 +257,25 @@ export async function toggleStudentView(useStudentView: boolean): Promise<UserRe
   const apiUrl = `/api/user-management-system/v1/user/student-view`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.patch<UserResource>(apiUrl, { use_student_view: useStudentView })
+}
+
+/**
+ * Masks the local part of an email, keeping the domain intact.
+ * Shows the first character of the local part unless it's 3 characters or shorter,
+ * in which case the whole local part is masked.
+ * @example
+ * maskEmail('abcd@gmail.com') // 'a***@gmail.com'
+ * maskEmail('ab@abc.com') // '***@abc.com'
+ */
+export function maskEmail(email: string): string {
+  const atIndex = email.indexOf('@')
+  if (atIndex === -1) {
+    return email
+  }
+  const localPart = email.slice(0, atIndex)
+  const domain = email.slice(atIndex)
+
+  return localPart.length <= 3
+    ? `${LOCAL_PART_MASK}${domain}`
+    : `${localPart[0]}${LOCAL_PART_MASK}${domain}`
 }
