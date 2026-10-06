@@ -90,7 +90,7 @@ const {
   mapLearningPathParentsTo,
   mapContentsThatWereLastProgressedFromMethod,
 } = require('../../src/services/my-path/learning-paths.ts')
-const { resetLearningPathCachesForTests } = require('../../src/services/my-path/cache.ts')
+const { clearLearningPathCaches } = require('../../src/services/my-path/cache.ts')
 
 const ctx = initializeTestDB()
 
@@ -110,7 +110,7 @@ function setApiResponses(r: ApiResponses) {
 }
 
 beforeEach(() => {
-  resetLearningPathCachesForTests()
+  clearLearningPathCaches()
   HttpClient.GET.mockReset()
   HttpClient.POST.mockReset()
   sanity.fetchByRailContentId.mockReset()

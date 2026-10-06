@@ -7,7 +7,7 @@ jest.mock('../../../src/infrastructure/http/HttpClient.ts', () => ({
 }))
 
 const HttpClient = require('../../../src/infrastructure/http/HttpClient.ts')
-const { resetLearningPathCachesForTests } = require('../../../src/services/my-path/cache.ts')
+const { clearLearningPathCaches } = require('../../../src/services/my-path/cache.ts')
 const {
   myPathGetDailySession,
   createDailySession,
@@ -37,7 +37,7 @@ const dailySession = {
 const getCallsTo = (path: string) => HttpClient.GET.mock.calls.filter((call: any[]) => call[0].includes(path))
 
 beforeEach(() => {
-  resetLearningPathCachesForTests()
+  clearLearningPathCaches()
   HttpClient.GET.mockReset().mockResolvedValue(null)
   HttpClient.POST.mockReset()
   HttpClient.PUT.mockReset()
@@ -51,7 +51,7 @@ describe('myPathGetDailySession', () => {
 
     expect(result).toEqual(dailySession)
     const url = HttpClient.GET.mock.calls[0][0]
-    expect(url).toContain('/api/my-path/v2/daily-session?brand=drumeo&userDate=')
+    expect(url).toContain('/api/my-path/v2/daily-session?brand=drumeo&user_date=')
   })
 
   test('creates the daily session when none exists', async () => {

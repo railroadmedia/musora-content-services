@@ -28,7 +28,7 @@ import {
   clearLearningPathCaches,
   fetchActivePathOnce,
   fetchDailySessionOnce,
-  formatLocalDateTime,
+  formatLocalDate,
   invalidateActivePath,
   invalidateDailySession,
   setCachedActivePath,
@@ -40,7 +40,6 @@ const excludeFromGeneratedIndex = [
   'onLearningPathCompletedActions',
   'mapContentsThatWereLastProgressedFromMethod',
   'mapLearningPathParentsTo',
-  'resetLearningPathCachesForTests',
 ]
 
 const BASE_PATH: string = `/api/content-org`
@@ -78,7 +77,7 @@ interface CollectionObject {
  * @param userDate - local datetime. must have date and time - format 2025-10-31T13:45:00
  */
 export async function getDailySession(brand: string, userDate: Date): Promise<DailySessionResponse | '' | null> {
-  const dateWithTimezone = formatLocalDateTime(userDate)
+  const dateWithTimezone = formatLocalDate(userDate)
 
   try {
     return await fetchDailySessionOnce<DailySessionResponse>(brand, userDate, async () => {
@@ -108,7 +107,7 @@ export async function updateDailySession(
   userDate: Date,
   keepFirstLearningPath: boolean = false,
 ): Promise<DailySessionResponse | null> {
-  const dateWithTimezone = formatLocalDateTime(userDate)
+  const dateWithTimezone = formatLocalDate(userDate)
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
   const body = {
     brand: brand,
@@ -487,7 +486,7 @@ export async function completeMethodIntroVideo(
 }
 
 async function methodIntroVideoCompleteActions(brand: string, learningPathId: number, userDate: Date) {
-  const dateWithTimezone = formatLocalDateTime(userDate)
+  const dateWithTimezone = formatLocalDate(userDate)
   const url: string = `${LEARNING_PATHS_PATH}/method-intro-video-complete-actions`
   const body = { brand: brand, learningPathId: learningPathId, userDate: dateWithTimezone }
   const response = (await POST(url, body)) as DailySessionResponse
