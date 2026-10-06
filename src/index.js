@@ -233,21 +233,27 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	getActivePath,
+	startLearningPath
+} from './services/my-path/active-path.ts';
+
+import {
+	getDailySession,
+	updateDailySession
+} from './services/my-path/daily-session.ts';
+
+import {
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
 	fetchLearningPathLessons,
 	fetchLearningPathProgressCheckLessons,
-	getActivePath,
-	getDailySession,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	isNextLessonLocked,
 	mapContentToParent,
 	resetActiveLearningPath,
-	resetAllLearningPaths,
-	startLearningPath,
-	updateDailySession
+	resetAllLearningPaths
 } from './services/my-path/learning-paths.ts';
 
 import {
