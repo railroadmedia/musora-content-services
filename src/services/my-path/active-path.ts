@@ -29,12 +29,9 @@ export interface ActivePathResponse {
   active_learning_path_created_at: number
 }
 
-
-
 function cacheActivePathAndDailySession(brand: string, userDate: Date, response: DailySessionResponse): void {
   setCachedActivePath(brand, response)
   setCachedDailySession(brand, userDate, response)
-  GET(activePathUrl(brand), { cache: 'reload' }).catch(() => {})
 }
 
 export async function getMyPathActivePath(brand: string): Promise<ActivePathResponse | null> {

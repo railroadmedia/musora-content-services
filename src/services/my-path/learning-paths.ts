@@ -118,9 +118,6 @@ export async function updateDailySession(
     const response = (await POST(url, body)) as DailySessionResponse | ''
     setCachedDailySession(brand, userDate, response !== '' ? response : null)
 
-    const urlGet: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
-    GET(urlGet, { cache: 'reload' }).catch(() => {})
-
     return (response !== '' ? response : null)
   } catch (error: any) {
     return null
@@ -153,9 +150,6 @@ export async function startLearningPath(brand: string, learningPathId: number): 
   if (response) {
     setCachedActivePath(brand, response)
     invalidateDailySession(brand)
-
-    const urlGet: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
-    GET(urlGet, { cache: 'reload' }).catch(() => {})
   }
 
   return response
