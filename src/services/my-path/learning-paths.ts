@@ -75,7 +75,7 @@ interface CollectionObject {
  * If the daily session doesn't exist, it will be created.
  * @param brand
  * @param userDate - local datetime. must have date and time - format 2025-10-31T13:45:00
- * @deprecated use myPathGetDailySession
+ * @deprecated use fetchDailySession
  */
 export async function getDailySession(brand: string, userDate: Date): Promise<DailySessionResponse | '' | null> {
   const dateWithTimezone = formatLocalDate(userDate)
@@ -129,7 +129,7 @@ export async function updateDailySession(
 /**
  * Gets user's active learning path.
  * @param brand
- * @deprecated use getMyPathActivePath
+ * @deprecated use fetchActiveLearningPath
  */
 export async function getActivePath(brand: string): Promise<ActiveLearningPathResponse | null> {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
