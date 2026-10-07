@@ -75,6 +75,7 @@ interface CollectionObject {
  * If the daily session doesn't exist, it will be created.
  * @param brand
  * @param userDate - local datetime. must have date and time - format 2025-10-31T13:45:00
+ * @deprecated use myPathGetDailySession
  */
 export async function getDailySession(brand: string, userDate: Date): Promise<DailySessionResponse | '' | null> {
   const dateWithTimezone = formatLocalDate(userDate)
@@ -101,6 +102,7 @@ export async function getDailySession(brand: string, userDate: Date): Promise<Da
  * @param brand
  * @param userDate - format 2025-10-31
  * @param keepFirstLearningPath
+ * @deprecated use createDailySession
  */
 export async function updateDailySession(
   brand: string,
@@ -127,6 +129,7 @@ export async function updateDailySession(
 /**
  * Gets user's active learning path.
  * @param brand
+ * @deprecated use getMyPathActivePath
  */
 export async function getActivePath(brand: string): Promise<ActiveLearningPathResponse | null> {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
@@ -140,6 +143,7 @@ export async function getActivePath(brand: string): Promise<ActiveLearningPathRe
  * Sets a new learning path as the user's active learning path.
  * @param brand
  * @param learningPathId
+ * @deprecated use setActiveLearningPath
  */
 export async function startLearningPath(brand: string, learningPathId: number): Promise<ActiveLearningPathResponse | null> {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
@@ -170,6 +174,7 @@ export async function resetActiveLearningPath(brand: string, learningPathId: num
 
 /**
  * Resets the user's learning path.
+ * @deprecated v1 endpoint, also dev endpoint so dont use this.
  */
 export async function resetAllLearningPaths() {
   const url: string = `${LEARNING_PATHS_PATH}/reset`
@@ -194,7 +199,7 @@ export async function resetAllLearningPaths() {
  * @param {number} learningPathId - The learning path ID
  * @returns {Promise<Object>} Learning path with enriched lesson data
  */
-export async function getEnrichedLearningPath(learningPathId: number) {
+export async function getEnrichedLearningPath(learningPathId: number): Promise<object> {
   let response = (await addContextToLearningPaths(
     fetchByRailContentId,
     learningPathId,
@@ -224,9 +229,9 @@ export async function getEnrichedLearningPath(learningPathId: number) {
 /**
  * Returns learning paths with lessons and progress data
  * @param {number[]} learningPathIds - The learning path IDs
- * @returns {Promise<Object>} Learning paths with enriched lesson data
+ * @returns {Promise<Object[]>} Learning paths with enriched lesson data
  */
-export async function getEnrichedLearningPaths(learningPathIds: number[]) {
+export async function getEnrichedLearningPaths(learningPathIds: number[]): Promise<object[]> {
   let response = (await addContextToLearningPaths(
     fetchByRailContentIds,
     learningPathIds,
