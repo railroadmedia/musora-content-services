@@ -16,7 +16,7 @@ import { Filters as f } from '../lib/sanity/filter'
 import { groq } from '../lib/sanity/groq'
 import { globalConfig } from './config.js'
 import { GET, HttpClient } from '../infrastructure/http/HttpClient'
-import { fetchUserPermissions } from './permissions/index'
+import { fetchUserPermissions, UserPermissions } from './permissions/index'
 
 /**
  * @type {string[]}
@@ -213,8 +213,20 @@ const uniqueIds = (ids: Array<number | null | undefined>): number[] => [
   ...new Set(ids.filter((id) => id !== null && id !== undefined) as number[]),
 ]
 
-const sortByRecommendedOrder = <T extends { id: number }>(content: T[], ids: number[]): T[] =>
-  content.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id))
+const sortByRecommendedOrder =
+  (ids: number[]) =>
+  <T extends { id: number }>(content: T[]): T[] =>
+    content.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id))
+
+const decorateRecommendations =
+  (permissions: UserPermissions) =>
+  (contents: RecommendedContent[]): DecoratedRecommendedContent[] =>
+    decorateAll(contents ?? [], [
+      accessDecorator(permissions),
+      lifetimeUpgradeDecorator(permissions),
+      pageTypeDecorator,
+      isLiveDecorator,
+    ]) as DecoratedRecommendedContent[]
 
 async function fetchRecommendedContent(
   ids: number[],
@@ -246,18 +258,10 @@ async function fetchRecommendedContent(
       'live_event_end_time'
     )
     .run<RecommendedContent[]>()
-    .map(
-      (contents) =>
-        decorateAll(contents ?? [], [
-          accessDecorator(permissions),
-          lifetimeUpgradeDecorator(permissions),
-          pageTypeDecorator,
-          isLiveDecorator,
-        ]) as DecoratedRecommendedContent[]
-    )
+    .map(decorateRecommendations(permissions))
     .mapAsync((contents) => decorateNavigateTo(contents))
     .ltap((error) => console.error(error.message))
-    .map((contents) => sortByRecommendedOrder(contents, ids))
+    .map(sortByRecommendedOrder(ids))
     .recover([])
 }
 
