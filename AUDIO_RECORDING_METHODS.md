@@ -32,7 +32,7 @@ Called twice per session:
 - **Pause checkpoint**: `reason: null` — keeps duration/chunk_count/format current
   without closing the session (a paused-but-not-finished recording is already
   visible/playable).
-- **Real finish**: `reason` set to `'manual'` / `'timeout'` / `'navigated_away'` — closes
+- **Real finish**: `reason` set to `'manual'` / `'timeout'` / `'max_duration'` / `'navigated_away'` — closes
   the session and triggers missing-chunk detection.
 - `videoTimeMs` is the video position at that moment — the 'end' event uses it.
 
@@ -47,7 +47,7 @@ Call when the user seeks the video while recording is active. Also closes the cu
 chunk at that moment so chunk anchors stay exact across the jump.
 
 ### `trackAudioRecordingSession(folder, options?)`
-Manages the pause/resume/timeout state machine for an already-started session (the
+Manages the pause/resume/timeout/max-duration state machine for an already-started session (the
 caller drives the actual recorder; this stays in sync with it). Returns
 `{ pause, resume, finish, activeElapsedMs, isPaused, elapsedMs }`.
 - `options.graceMs` (default `180000`): how long an unattended pause is tolerated before
@@ -55,6 +55,13 @@ caller drives the actual recorder; this stays in sync with it). Returns
 - `options.onTimeout`: callback fired when the grace period elapses. **Does not close
   the session itself** — the caller must call `stopSession(..., reason: 'timeout')` from
   inside this callback, or the session just sits open indefinitely.
+- `options.maxActiveMs` (default `900000`, 15 minutes): the most recorded time one
+  session may hold. Paused time doesn't count toward it.
+- `options.onMaxDuration`: callback fired when `maxActiveMs` of recorded time is reached.
+  Like `onTimeout`, it **does not close the session itself** — the caller must stop the
+  recorder and call `stopSession(..., reason: 'max_duration')` from inside it.
+- `finish()` returns the stop reason to send: `'timeout'` or `'max_duration'` when the
+  tracker ended the session, otherwise `'manual'`.
 - `options.getVideoTimeMs`: function returning the current video position. Without it,
   pause/resume events fall back to elapsed recording time instead of the real video
   position — always pass it if you can.
