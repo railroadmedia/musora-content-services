@@ -160,7 +160,7 @@ same as `createLessonNote`.
 Deletes a note (soft delete + sync). `id` is the local record id. Works offline.
 
 ### `getContentIdsWithLessonNotes()`
-Lesson ids with at least one note — for a practice-tracker "has notes" indicator,
+Lesson ids with at least one note that has visible text (notes left empty don't count) — for a practice-tracker "has notes" indicator,
 mirroring `getRecordedContentIds()` above. Purely a local read, **no network call at
 all** (unlike `getRecordedContentIds`, which always requires connectivity, since
 recordings aren't synced locally).
