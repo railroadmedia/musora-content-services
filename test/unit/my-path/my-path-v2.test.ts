@@ -227,13 +227,36 @@ describe('cache behaviour', () => {
     expect(getCallsTo('/daily-session')).toHaveLength(3)
   })
 
-  test('empty responses are not cached', async () => {
+  test('empty active path responses are cached', async () => {
     HttpClient.GET.mockResolvedValue('')
 
-    await getMyPathActivePath('drumeo')
-    await getMyPathActivePath('drumeo')
+    expect(await getMyPathActivePath('drumeo')).toBeNull()
+    expect(await getMyPathActivePath('drumeo')).toBeNull()
 
-    expect(getCallsTo('/active-path')).toHaveLength(2)
+    expect(getCallsTo('/active-path')).toHaveLength(1)
+  })
+
+  test('empty daily session results are cached', async () => {
+    HttpClient.GET.mockResolvedValue('')
+    HttpClient.POST.mockResolvedValue('')
+
+    expect(await myPathGetDailySession('drumeo', userDate)).toBeNull()
+    expect(await myPathGetDailySession('drumeo', userDate)).toBeNull()
+
+    expect(getCallsTo('/daily-session')).toHaveLength(1)
+    expect(HttpClient.POST).toHaveBeenCalledTimes(1)
+  })
+
+  test('a cached empty active path is replaced once one is set', async () => {
+    HttpClient.GET.mockResolvedValue('')
+    await getMyPathActivePath('drumeo')
+    HttpClient.PUT.mockResolvedValueOnce(dailySession)
+
+    await setActiveLearningPath('drumeo', 11, 'node-a', userDate)
+    HttpClient.GET.mockClear()
+
+    expect(await getMyPathActivePath('drumeo')).toEqual(dailySession)
+    expect(HttpClient.GET).not.toHaveBeenCalled()
   })
 
   test('failed requests are not cached', async () => {

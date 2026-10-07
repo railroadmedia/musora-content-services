@@ -67,13 +67,9 @@ function fetchOnce<T>(
   const promise = fetcher()
   const entry = { promise, expiresAt }
   cache.set(key, entry)
-  promise
-    .then((value) => {
-      if (!value && cache.get(key) === entry) cache.delete(key)
-    })
-    .catch(() => {
-      if (cache.get(key) === entry) cache.delete(key)
-    })
+  promise.catch(() => {
+    if (cache.get(key) === entry) cache.delete(key)
+  })
   return promise
 }
 
