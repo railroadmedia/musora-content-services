@@ -48,7 +48,7 @@ export async function setActiveLearningPath(
   userDate: Date,
 ): Promise<DailySessionResponse> {
   const body = activePathBody(brand, userDate, learningPathId, nodeId)
-  const response = (await PUT(ACTIVE_PATH_PATH, body)) as DailySessionResponse
+  const response = (await POST(ACTIVE_PATH_PATH, body)) as DailySessionResponse
   cacheActivePathAndDailySession(brand, userDate, response)
 
   return response
