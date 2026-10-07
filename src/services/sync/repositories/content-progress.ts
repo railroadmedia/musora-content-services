@@ -203,7 +203,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       import('../../config'),
     ]).then(([progressEventsModule, { globalConfig }]) => {
       progressEventsModule.emitProgressSaved({
-        userId: Number(globalConfig.railcontentConfig?.userId) || 0,
+        userId: Number(globalConfig.sessionConfig?.userId) || 0,
         contentId,
         progressPercent: progressPct,
         progressStatus: progressPct === 100 ? STATE.COMPLETED : STATE.STARTED,
