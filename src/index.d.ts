@@ -29,6 +29,11 @@ import {
 } from './services/audioRecording/audioRecording.js';
 
 import {
+	fetchAudioSettings,
+	updateAudioSettings
+} from './services/audioRecording/audioSettings.ts';
+
+import {
 	getRecordingPlaybackUrl
 } from './services/audioRecording/playbackUrl.ts';
 
@@ -686,6 +691,7 @@ declare module 'musora-content-services' {
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
+		fetchAudioSettings,
 		fetchBrandsByContentIds,
 		fetchByRailContentId,
 		fetchByRailContentIds,
@@ -1001,6 +1007,7 @@ declare module 'musora-content-services' {
 		unpinProgressRow,
 		unpinThread,
 		unshareRecording,
+		updateAudioSettings,
 		updateBrand,
 		updateDailySession,
 		updateDisplayName,

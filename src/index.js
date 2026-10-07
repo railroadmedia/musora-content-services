@@ -33,6 +33,11 @@ import {
 } from './services/audioRecording/audioRecording.js';
 
 import {
+	fetchAudioSettings,
+	updateAudioSettings
+} from './services/audioRecording/audioSettings.ts';
+
+import {
 	getRecordingPlaybackUrl
 } from './services/audioRecording/playbackUrl.ts';
 
@@ -685,6 +690,7 @@ export {
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
+	fetchAudioSettings,
 	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
@@ -1000,6 +1006,7 @@ export {
 	unpinProgressRow,
 	unpinThread,
 	unshareRecording,
+	updateAudioSettings,
 	updateBrand,
 	updateDailySession,
 	updateDisplayName,
