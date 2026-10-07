@@ -44,6 +44,15 @@ import {
 } from './services/audioRecording/playbackUrl.ts';
 
 import {
+	estimateClockOffset,
+	monotonicNow
+} from './services/audioRecording/recordingClock.ts';
+
+import {
+	logRateChangeEvent
+} from './services/audioRecording/recordingEvents.ts';
+
+import {
 	downsamplePeaks,
 	getWaveformPeaks
 } from './services/audioRecording/waveformPeaks.js';
@@ -686,6 +695,7 @@ export {
 	editComment,
 	emitProgressSaved,
 	enrollUserInGuidedCourse,
+	estimateClockOffset,
 	extractFromRecordId,
 	extractSanityUrl,
 	fetchAll,
@@ -917,6 +927,7 @@ export {
 	listOAuthProviders,
 	listRecordings,
 	lockThread,
+	logRateChangeEvent,
 	logSeekEvent,
 	login,
 	loginAsUser,
@@ -930,6 +941,7 @@ export {
 	markNotificationAsUnread,
 	markThreadAsRead,
 	maskEmail,
+	monotonicNow,
 	numberOfActiveUsers,
 	onProgressSaved,
 	openComment,
