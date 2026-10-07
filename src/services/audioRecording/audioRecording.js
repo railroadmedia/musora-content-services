@@ -7,6 +7,7 @@ import { GET, POST } from '../../infrastructure/http/HttpClient.ts'
 import { globalConfig } from '../config.js'
 import { fetchByRailContentIds } from '../sanity.js'
 import { decorateAsync } from '../../lib/sanity/decorators/base.ts'
+import { mapLearningPathParentsTo } from '../my-path/learning-paths.ts'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -374,29 +375,36 @@ export async function listRecordings(userId = null, contentId, date = null) {
 }
 
 /**
- * Recordings grouped by lesson, for the "My Recordings" library — one row per lesson the
+ * Paginated recordings grouped by lesson, for the "My Recordings" library — one row per lesson the
  * user has recorded on, newest first. The backend only returns raw session aggregates
  * (content_id, recording_count, latest folder/date/duration); the lesson's title/thumbnail
  * are fetched here (batched into one Sanity query) and attached under `content`, so this is
  * shared between FE and MA instead of each re-implementing the Sanity lookup.
+ * @returns {Promise<{recordings: Array<Object>, meta: {current_page: number, last_page: number, per_page: number, total: number}}>}
  */
-export async function getMyRecordings(limit = 20) {
-  const { recordings } = await GET(`${BASE_PATH}/my-recordings?limit=${limit}`)
+export async function getMyRecordings({ page = 1, limit = 20 } = {}) {
+  const { data: recordings, meta } = await GET(
+    `${BASE_PATH}/my-recordings?page=${page}&limit=${limit}`
+  )
 
   if (!recordings.length) {
-    return []
+    return { recordings: [], meta }
   }
 
   const contentIds = recordings.map((recording) => recording.content_id)
-  const contentById = new Map(
-    (await fetchByRailContentIds(contentIds)).map((content) => [content.id, content])
-  )
+  const methodLessons = await mapLearningPathParentsTo(await fetchByRailContentIds(contentIds), {
+    type: true,
+    parent_id: true,
+  })
+  const contentById = new Map(methodLessons.map((content) => [content.id, content]))
 
-  return decorateAsync(
+  const decoratedRecordings = await decorateAsync(
     recordings,
     'content',
     async (recording) => contentById.get(recording.content_id) ?? null
   )
+
+  return { recordings: decoratedRecordings, meta }
 }
 
 /**
