@@ -37,7 +37,7 @@ export interface DailySessionResponse extends ActivePathResponse {
   user_date: string
 }
 
-export async function myPathGetDailySession(brand: string, userDate: Date): Promise<DailySessionResponse | null> {
+export async function fetchDailySession(brand: string, userDate: Date): Promise<DailySessionResponse | null> {
   try {
     const response = await fetchDailySessionOnce<DailySessionResponse>(brand, userDate, async () => {
       const existing = (await GET(dailySessionUrl(brand, userDate))) as DailySessionResponse | ''

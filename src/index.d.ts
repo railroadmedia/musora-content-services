@@ -230,13 +230,13 @@ import {
 
 import {
 	advanceActiveLearningPath,
-	getMyPathActivePath,
+	fetchActiveLearningPath,
 	setActiveLearningPath
 } from './services/my-path/active-path.ts';
 
 import {
 	createDailySession,
-	myPathGetDailySession
+	fetchDailySession
 } from './services/my-path/daily-session.ts';
 
 import {
@@ -644,6 +644,7 @@ declare module 'musora-content-services' {
 		enrollUserInGuidedCourse,
 		extractFromRecordId,
 		extractSanityUrl,
+		fetchActiveLearningPath,
 		fetchAll,
 		fetchAllFilterOptions,
 		fetchAllPublicAnnouncements,
@@ -668,6 +669,7 @@ declare module 'musora-content-services' {
 		fetchContentTypeCounts,
 		fetchCourseCollectionData,
 		fetchCustomerPayments,
+		fetchDailySession,
 		fetchEnrollmentPageMetadata,
 		fetchFollowedThreads,
 		fetchForumCategories,
@@ -787,7 +789,6 @@ declare module 'musora-content-services' {
 		getLessonContentRows,
 		getMCSVersion,
 		getMonday,
-		getMyPathActivePath,
 		getNavigateTo,
 		getNavigateToForMethod,
 		getNavigateToForPlaylists,
@@ -865,7 +866,6 @@ declare module 'musora-content-services' {
 		markNotificationAsRead,
 		markNotificationAsUnread,
 		markThreadAsRead,
-		myPathGetDailySession,
 		numberOfActiveUsers,
 		onProgressSaved,
 		openComment,

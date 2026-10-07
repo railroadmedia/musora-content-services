@@ -34,7 +34,7 @@ function cacheActivePathAndDailySession(brand: string, userDate: Date, response:
   setCachedDailySession(brand, userDate, response)
 }
 
-export async function getMyPathActivePath(brand: string): Promise<ActivePathResponse | null> {
+export async function fetchActiveLearningPath(brand: string): Promise<ActivePathResponse | null> {
   const response = await fetchActivePathOnce<ActivePathResponse>(brand, () =>
     GET(activePathUrl(brand)) as Promise<ActivePathResponse | ''>,
   )

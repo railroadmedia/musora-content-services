@@ -9,11 +9,11 @@ jest.mock('../../../src/infrastructure/http/HttpClient.ts', () => ({
 const HttpClient = require('../../../src/infrastructure/http/HttpClient.ts')
 const { clearLearningPathCaches } = require('../../../src/services/my-path/cache.ts')
 const {
-  myPathGetDailySession,
+  fetchDailySession,
   createDailySession,
 } = require('../../../src/services/my-path/daily-session.ts')
 const {
-  getMyPathActivePath,
+  fetchActiveLearningPath,
   setActiveLearningPath,
   advanceActiveLearningPath,
 } = require('../../../src/services/my-path/active-path.ts')
@@ -43,11 +43,11 @@ beforeEach(() => {
   HttpClient.PUT.mockReset()
 })
 
-describe('myPathGetDailySession', () => {
+describe('fetchDailySession', () => {
   test('gets from the v2 daily-session endpoint', async () => {
     HttpClient.GET.mockResolvedValueOnce(dailySession)
 
-    const result = await myPathGetDailySession('drumeo', userDate)
+    const result = await fetchDailySession('drumeo', userDate)
 
     expect(result).toEqual(dailySession)
     const url = HttpClient.GET.mock.calls[0][0]
@@ -58,7 +58,7 @@ describe('myPathGetDailySession', () => {
     HttpClient.GET.mockResolvedValueOnce('')
     HttpClient.POST.mockResolvedValueOnce(dailySession)
 
-    const result = await myPathGetDailySession('drumeo', userDate)
+    const result = await fetchDailySession('drumeo', userDate)
 
     expect(result).toEqual(dailySession)
     expect(HttpClient.POST).toHaveBeenCalledTimes(1)
@@ -68,13 +68,13 @@ describe('myPathGetDailySession', () => {
     HttpClient.GET.mockResolvedValueOnce('')
     HttpClient.POST.mockResolvedValueOnce('')
 
-    expect(await myPathGetDailySession('drumeo', userDate)).toBeNull()
+    expect(await fetchDailySession('drumeo', userDate)).toBeNull()
   })
 
   test('concurrent calls share a single GET', async () => {
     HttpClient.GET.mockResolvedValue(dailySession)
 
-    await Promise.all([myPathGetDailySession('drumeo', userDate), myPathGetDailySession('drumeo', userDate)])
+    await Promise.all([fetchDailySession('drumeo', userDate), fetchDailySession('drumeo', userDate)])
 
     expect(getCallsTo('/daily-session')).toHaveLength(1)
   })
@@ -83,7 +83,7 @@ describe('myPathGetDailySession', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     HttpClient.GET.mockRejectedValueOnce(new Error('boom'))
 
-    expect(await myPathGetDailySession('drumeo', userDate)).toBeNull()
+    expect(await fetchDailySession('drumeo', userDate)).toBeNull()
     expect(errorSpy).toHaveBeenCalled()
     errorSpy.mockRestore()
   })
@@ -121,30 +121,30 @@ describe('createDailySession', () => {
     await createDailySession('drumeo', userDate)
     HttpClient.GET.mockClear()
 
-    expect(await myPathGetDailySession('drumeo', userDate)).toEqual(dailySession)
-    expect(await getMyPathActivePath('drumeo')).toEqual(dailySession)
+    expect(await fetchDailySession('drumeo', userDate)).toEqual(dailySession)
+    expect(await fetchActiveLearningPath('drumeo')).toEqual(dailySession)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
 })
 
-describe('getMyPathActivePath', () => {
+describe('fetchActiveLearningPath', () => {
   test('gets from the v2 active-path endpoint', async () => {
     HttpClient.GET.mockResolvedValueOnce(activePath)
 
-    expect(await getMyPathActivePath('drumeo')).toEqual(activePath)
+    expect(await fetchActiveLearningPath('drumeo')).toEqual(activePath)
     expect(HttpClient.GET.mock.calls[0][0]).toBe('/api/my-path/v2/active-path?brand=drumeo')
   })
 
   test('returns null when the user has no active path', async () => {
     HttpClient.GET.mockResolvedValueOnce('')
 
-    expect(await getMyPathActivePath('drumeo')).toBeNull()
+    expect(await fetchActiveLearningPath('drumeo')).toBeNull()
   })
 
   test('concurrent calls share a single GET', async () => {
     HttpClient.GET.mockResolvedValue(activePath)
 
-    await Promise.all([getMyPathActivePath('drumeo'), getMyPathActivePath('drumeo')])
+    await Promise.all([fetchActiveLearningPath('drumeo'), fetchActiveLearningPath('drumeo')])
 
     expect(getCallsTo('/active-path')).toHaveLength(1)
   })
@@ -169,27 +169,27 @@ describe('setActiveLearningPath', () => {
 
   test('replaces cached active path and daily session', async () => {
     HttpClient.GET.mockResolvedValue({ ...activePath, active_learning_path_id: 1 })
-    await getMyPathActivePath('drumeo')
+    await fetchActiveLearningPath('drumeo')
     const next = { ...dailySession, active_learning_path_id: 22, active_node_id: 'node-b' }
     HttpClient.PUT.mockResolvedValueOnce(next)
 
     await setActiveLearningPath('drumeo', 22, 'node-b', userDate)
     HttpClient.GET.mockClear()
 
-    expect(await getMyPathActivePath('drumeo')).toEqual(next)
-    expect(await myPathGetDailySession('drumeo', userDate)).toEqual(next)
+    expect(await fetchActiveLearningPath('drumeo')).toEqual(next)
+    expect(await fetchDailySession('drumeo', userDate)).toEqual(next)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
 
   test('propagates request errors and leaves the cache alone', async () => {
     HttpClient.GET.mockResolvedValue(activePath)
-    await getMyPathActivePath('drumeo')
+    await fetchActiveLearningPath('drumeo')
     HttpClient.PUT.mockRejectedValueOnce({ status: 422 })
 
     await expect(setActiveLearningPath('drumeo', 22, 'bad-node', userDate)).rejects.toEqual({ status: 422 })
     HttpClient.GET.mockClear()
 
-    expect(await getMyPathActivePath('drumeo')).toEqual(activePath)
+    expect(await fetchActiveLearningPath('drumeo')).toEqual(activePath)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
 })
@@ -207,7 +207,7 @@ describe('advanceActiveLearningPath', () => {
     expect(body).toEqual({ brand: 'drumeo', user_date: expect.stringMatching(/^2026-01-01 [+-]\d{2}:\d{2}$/) })
 
     HttpClient.GET.mockClear()
-    expect(await getMyPathActivePath('drumeo')).toEqual(next)
+    expect(await fetchActiveLearningPath('drumeo')).toEqual(next)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
 })
@@ -219,10 +219,10 @@ describe('cache behaviour', () => {
     HttpClient.GET.mockResolvedValue(dailySession)
     const nextDay = new Date('2026-01-03T10:00:00Z')
 
-    await myPathGetDailySession('drumeo', userDate)
-    await myPathGetDailySession('drumeo', userDate)
-    await myPathGetDailySession('pianote', userDate)
-    await myPathGetDailySession('drumeo', nextDay)
+    await fetchDailySession('drumeo', userDate)
+    await fetchDailySession('drumeo', userDate)
+    await fetchDailySession('pianote', userDate)
+    await fetchDailySession('drumeo', nextDay)
 
     expect(getCallsTo('/daily-session')).toHaveLength(3)
   })
@@ -230,8 +230,8 @@ describe('cache behaviour', () => {
   test('empty active path responses are cached', async () => {
     HttpClient.GET.mockResolvedValue('')
 
-    expect(await getMyPathActivePath('drumeo')).toBeNull()
-    expect(await getMyPathActivePath('drumeo')).toBeNull()
+    expect(await fetchActiveLearningPath('drumeo')).toBeNull()
+    expect(await fetchActiveLearningPath('drumeo')).toBeNull()
 
     expect(getCallsTo('/active-path')).toHaveLength(1)
   })
@@ -240,8 +240,8 @@ describe('cache behaviour', () => {
     HttpClient.GET.mockResolvedValue('')
     HttpClient.POST.mockResolvedValue('')
 
-    expect(await myPathGetDailySession('drumeo', userDate)).toBeNull()
-    expect(await myPathGetDailySession('drumeo', userDate)).toBeNull()
+    expect(await fetchDailySession('drumeo', userDate)).toBeNull()
+    expect(await fetchDailySession('drumeo', userDate)).toBeNull()
 
     expect(getCallsTo('/daily-session')).toHaveLength(1)
     expect(HttpClient.POST).toHaveBeenCalledTimes(1)
@@ -249,34 +249,34 @@ describe('cache behaviour', () => {
 
   test('a cached empty active path is replaced once one is set', async () => {
     HttpClient.GET.mockResolvedValue('')
-    await getMyPathActivePath('drumeo')
+    await fetchActiveLearningPath('drumeo')
     HttpClient.PUT.mockResolvedValueOnce(dailySession)
 
     await setActiveLearningPath('drumeo', 11, 'node-a', userDate)
     HttpClient.GET.mockClear()
 
-    expect(await getMyPathActivePath('drumeo')).toEqual(dailySession)
+    expect(await fetchActiveLearningPath('drumeo')).toEqual(dailySession)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
 
   test('failed requests are not cached', async () => {
     HttpClient.GET.mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce(activePath)
 
-    await expect(getMyPathActivePath('drumeo')).rejects.toThrow('boom')
-    expect(await getMyPathActivePath('drumeo')).toEqual(activePath)
+    await expect(fetchActiveLearningPath('drumeo')).rejects.toThrow('boom')
+    expect(await fetchActiveLearningPath('drumeo')).toEqual(activePath)
   })
 
   test('active path cache expires after one hour', async () => {
     jest.useFakeTimers().setSystemTime(new Date('2026-01-01T10:00:00Z'))
     HttpClient.GET.mockResolvedValue(activePath)
 
-    await getMyPathActivePath('drumeo')
+    await fetchActiveLearningPath('drumeo')
     jest.setSystemTime(new Date('2026-01-01T10:59:00Z'))
-    await getMyPathActivePath('drumeo')
+    await fetchActiveLearningPath('drumeo')
     expect(getCallsTo('/active-path')).toHaveLength(1)
 
     jest.setSystemTime(new Date('2026-01-01T11:01:00Z'))
-    await getMyPathActivePath('drumeo')
+    await fetchActiveLearningPath('drumeo')
     expect(getCallsTo('/active-path')).toHaveLength(2)
   })
 
@@ -285,9 +285,9 @@ describe('cache behaviour', () => {
     const today = new Date()
     HttpClient.GET.mockResolvedValue(dailySession)
 
-    await myPathGetDailySession('drumeo', today)
+    await fetchDailySession('drumeo', today)
     jest.setSystemTime(new Date(2026, 0, 2, 0, 5))
-    await myPathGetDailySession('drumeo', today)
+    await fetchDailySession('drumeo', today)
 
     expect(getCallsTo('/daily-session')).toHaveLength(2)
   })

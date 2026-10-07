@@ -234,13 +234,13 @@ import {
 
 import {
 	advanceActiveLearningPath,
-	getMyPathActivePath,
+	fetchActiveLearningPath,
 	setActiveLearningPath
 } from './services/my-path/active-path.ts';
 
 import {
 	createDailySession,
-	myPathGetDailySession
+	fetchDailySession
 } from './services/my-path/daily-session.ts';
 
 import {
@@ -643,6 +643,7 @@ export {
 	enrollUserInGuidedCourse,
 	extractFromRecordId,
 	extractSanityUrl,
+	fetchActiveLearningPath,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPublicAnnouncements,
@@ -667,6 +668,7 @@ export {
 	fetchContentTypeCounts,
 	fetchCourseCollectionData,
 	fetchCustomerPayments,
+	fetchDailySession,
 	fetchEnrollmentPageMetadata,
 	fetchFollowedThreads,
 	fetchForumCategories,
@@ -786,7 +788,6 @@ export {
 	getLessonContentRows,
 	getMCSVersion,
 	getMonday,
-	getMyPathActivePath,
 	getNavigateTo,
 	getNavigateToForMethod,
 	getNavigateToForPlaylists,
@@ -864,7 +865,6 @@ export {
 	markNotificationAsRead,
 	markNotificationAsUnread,
 	markThreadAsRead,
-	myPathGetDailySession,
 	numberOfActiveUsers,
 	onProgressSaved,
 	openComment,
