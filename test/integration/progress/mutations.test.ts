@@ -9,7 +9,7 @@ import db from '../../../src/services/sync/repository-proxy'
 jest.mock('../../../src/services/sanity.js', () =>
   require('../content-progress/__mocks__/mocks').mockSanity()
 )
-jest.mock('../../../src/services/content-org/learning-paths.ts', () =>
+jest.mock('../../../src/services/my-path/learning-paths.ts', () =>
   require('../content-progress/__mocks__/mocks').mockLearningPaths()
 )
 jest.mock('../../../src/services/awards/internal/content-progress-observer', () =>

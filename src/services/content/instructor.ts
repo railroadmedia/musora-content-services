@@ -38,12 +38,11 @@ export async function fetchInstructors(
 ): Promise<Instructors> {
   const type = f.type('instructor')
   const postFilter = `lesson_count > 0`
-  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
+  const { sort = 'lower(name)', offset = 0, limit } = options
 
   const data = query()
     .and(type)
     .order(getSortOrder(sort, brand))
-    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
@@ -51,6 +50,8 @@ export async function fetchInstructors(
       `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .postFilter(postFilter)
+
+  if (limit) data.slice(offset, limit)
 
   const q = `{
     "data": ${data},
@@ -129,7 +130,7 @@ export async function fetchInstructorLessons(
     offset = 0,
     limit = 20,
     includedFields = [],
-    contentType = null
+    contentType = null,
   }: InstructorLessonsOptions = {}
 ): Promise<InstructorLessons> {
   sort = getSortOrder(sort, brand)
@@ -140,7 +141,7 @@ export async function fetchInstructorLessons(
     f.notDeprecated(),
     f.referencesIDWithFilter(f.combine(f.type('instructor'), f.slug(slug))),
     f.brand(brand),
-    f.permissions({showMembershipRestrictedContent: true}),
+    f.permissions({ showMembershipRestrictedContent: true }),
     f.searchMatch('title', searchTerm),
     f.includedFields(includedFields)
   )

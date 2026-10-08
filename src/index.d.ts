@@ -21,6 +21,7 @@ import {
 	globalConfig,
 	initializeEnvVar,
 	initializeService,
+	setSessionUserData,
 	updateSessionConfig
 } from './services/config.js';
 
@@ -53,23 +54,6 @@ import {
 	guidedCourses,
 	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
-
-import {
-	completeLearningPathIntroVideo,
-	completeMethodIntroVideo,
-	fetchLearningPathLessons,
-	fetchLearningPathProgressCheckLessons,
-	getActivePath,
-	getDailySession,
-	getEnrichedLearningPath,
-	getEnrichedLearningPaths,
-	getLearningPathLessonsByIds,
-	isNextLessonLocked,
-	mapContentToParent,
-	resetAllLearningPaths,
-	startLearningPath,
-	updateDailySession
-} from './services/content-org/learning-paths.ts';
 
 import {
 	addItemToPlaylist,
@@ -243,6 +227,34 @@ import {
 	rescindInvite,
 	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
+	fetchLearningPathLessons,
+	fetchLearningPathProgressCheckLessons,
+	getActivePath,
+	getDailySession,
+	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
+	getLearningPathLessonsByIds,
+	isNextLessonLocked,
+	mapContentToParent,
+	resetActiveLearningPath,
+	resetAllLearningPaths,
+	startLearningPath,
+	updateDailySession
+} from './services/my-path/learning-paths.ts';
+
+import {
+	fetchQuizAnswers,
+	storeQuizAnswers
+} from './services/my-path/placement-quiz.ts';
+
+import {
+	completeMyPathIntroVideo,
+	completePreroll
+} from './services/my-path/preroll.ts';
 
 import {
 	deleteAllNotifications,
@@ -422,6 +434,7 @@ import {
 	confirmEmailChange,
 	createPendingAccount,
 	deleteAccount,
+	maskEmail,
 	numberOfActiveUsers,
 	requestEmailChange,
 	resetPassword,
@@ -508,7 +521,9 @@ import {
 import {
 	listOAuthProviders,
 	loginAsUser,
+	loginWithMagicLink,
 	redirectToOAuthProvider,
+	requestMagicLoginLink,
 	unlinkOAuthProvider,
 	verifyOAuthToken
 } from './services/user/session.ts';
@@ -575,6 +590,8 @@ declare module 'musora-content-services' {
 		closeComment,
 		completeLearningPathIntroVideo,
 		completeMethodIntroVideo,
+		completeMyPathIntroVideo,
+		completePreroll,
 		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusCompletedMany,
@@ -688,6 +705,7 @@ declare module 'musora-content-services' {
 		fetchPosts,
 		fetchPracticeGoals,
 		fetchPublicAnnouncement,
+		fetchQuizAnswers,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
@@ -825,6 +843,7 @@ declare module 'musora-content-services' {
 		lockThread,
 		login,
 		loginAsUser,
+		loginWithMagicLink,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
@@ -833,6 +852,7 @@ declare module 'musora-content-services' {
 		markNotificationAsRead,
 		markNotificationAsUnread,
 		markThreadAsRead,
+		maskEmail,
 		numberOfActiveUsers,
 		onProgressSaved,
 		openComment,
@@ -861,8 +881,10 @@ declare module 'musora-content-services' {
 		reportComment,
 		reportPlaylist,
 		requestEmailChange,
+		requestMagicLoginLink,
 		rescindInvite,
 		reset,
+		resetActiveLearningPath,
 		resetAllAwards,
 		resetAllLearningPaths,
 		resetPassword,
@@ -878,6 +900,7 @@ declare module 'musora-content-services' {
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
 		sendRevenueCatPurchaseMetadata,
+		setSessionUserData,
 		setStudentViewForUser,
 		setUserPinnedProgressRow,
 		setUserSignature,
@@ -886,6 +909,7 @@ declare module 'musora-content-services' {
 		startLiveEventPolling,
 		startOnboarding,
 		status,
+		storeQuizAnswers,
 		toDayjs,
 		toLocalDay,
 		togglePlaylistPrivate,

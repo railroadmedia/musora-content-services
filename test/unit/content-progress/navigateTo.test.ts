@@ -33,7 +33,7 @@ jest.mock('../../../src/services/sync/repository-proxy', () => {
   return { default: mockFns, ...mockFns }
 })
 
-jest.mock('../../../src/services/content-org/learning-paths', () => ({
+jest.mock('../../../src/services/my-path/learning-paths', () => ({
   getDailySession: jest.fn().mockResolvedValue(null),
   onLearningPathCompletedActions: jest.fn().mockResolvedValue(undefined),
 }))
@@ -44,7 +44,7 @@ jest.mock('../../../src/services/sanity.js', () => ({
   getSanityDate: jest.fn((date: Date) => date.toISOString()),
 }))
 
-const { getDailySession } = jest.requireMock('../../../src/services/content-org/learning-paths')
+const { getDailySession } = jest.requireMock('../../../src/services/my-path/learning-paths')
 
 const child = (id: number, type = 'lesson') => ({
   id,

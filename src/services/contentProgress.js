@@ -3,7 +3,7 @@ import { db } from './sync'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
-import { getDailySession, onLearningPathCompletedActions } from './content-org/learning-paths.ts'
+import { getDailySession, onLearningPathCompletedActions } from './my-path/learning-paths.ts'
 import { duplicateProgressToALaCarteOffline } from './offline/progress.ts'
 
 /**

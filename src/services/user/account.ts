@@ -9,6 +9,8 @@ import { Onboarding } from './onboarding'
 import { OAuthProvider } from './session'
 import { AuthResponse } from './types'
 
+const LOCAL_PART_MASK = '***'
+
 export interface AccountStatus {
   requires_setup: boolean
   last_login_provider?: OAuthProvider
@@ -20,11 +22,11 @@ export interface AccountStatus {
  *
  * @throws {HttpError} - Throws HttpError if the request fails.
  */
-export async function status(email: string): Promise<AccountStatus> {
+export async function status(email: string, send_email: boolean = true): Promise<AccountStatus> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return await httpClient.post<AccountStatus>(
     `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`,
-    []
+    { send_email }
   )
 }
 
@@ -62,6 +64,7 @@ export interface AccountSetupProps {
   deviceName?: string
   from?: string
   hasSkippedPaywall?: boolean
+  inviteId?: number
 }
 
 export interface AccountSetupResponse {
@@ -78,6 +81,7 @@ export interface AccountSetupResponse {
  * @property {string} [token] - The token sent to the user's email for verification. Required for web requests
  * @property {string} [revenuecatAppUserId] - The RevenueCat App User ID for MA environments. Required for MA requests
  * @property {string} [deviceName] - The device name for MA environments. Required for MA requests
+ * @property {number} [inviteId] - Invitation Id for multi-user Sub account
  *
  * @returns {Promise<AccountSetupResponse>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
  * @throws {Error} - Throws an error if required parameters are missing based on the environment.
@@ -103,6 +107,7 @@ export async function setupAccount(props: AccountSetupProps): Promise<AccountSet
       from: props.from,
       has_skipped_paywall: props.hasSkippedPaywall,
       mobile_app_id: props.revenuecatAppUserId,
+      invite_id: props.inviteId,
     }
   )
 
@@ -129,7 +134,9 @@ export interface PendingAccountResponse {
  * @returns {Promise<PendingAccountResponse>} - A promise that resolves when the pending account is created or an HttpError if the request fails.
  * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
  */
-export async function createPendingAccount(props: PendingAccountProps): Promise<PendingAccountResponse> {
+export async function createPendingAccount(
+  props: PendingAccountProps
+): Promise<PendingAccountResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return await httpClient.post<PendingAccountResponse>(
     `/api/user-management-system/v1/accounts/pending`,
@@ -250,4 +257,25 @@ export async function toggleStudentView(useStudentView: boolean): Promise<UserRe
   const apiUrl = `/api/user-management-system/v1/user/student-view`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.patch<UserResource>(apiUrl, { use_student_view: useStudentView })
+}
+
+/**
+ * Masks the local part of an email, keeping the domain intact.
+ * Shows the first character of the local part unless it's 3 characters or shorter,
+ * in which case the whole local part is masked.
+ * @example
+ * maskEmail('abcd@gmail.com') // 'a***@gmail.com'
+ * maskEmail('ab@abc.com') // '***@abc.com'
+ */
+export function maskEmail(email: string): string {
+  const atIndex = email.indexOf('@')
+  if (atIndex === -1) {
+    return email
+  }
+  const localPart = email.slice(0, atIndex)
+  const domain = email.slice(atIndex)
+
+  return localPart.length <= 3
+    ? `${LOCAL_PART_MASK}${domain}`
+    : `${localPart[0]}${LOCAL_PART_MASK}${domain}`
 }

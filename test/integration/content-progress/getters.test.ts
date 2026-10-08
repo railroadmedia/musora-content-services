@@ -21,7 +21,7 @@ import {
 import db from '../../../src/services/sync/repository-proxy'
 
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
-jest.mock('../../../src/services/content-org/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
+jest.mock('../../../src/services/my-path/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
 jest.mock('../../../src/services/awards/internal/content-progress-observer', () => require('./__mocks__/mocks').mockContentProgressObserver())
 jest.mock('../../../src/services/progress-events', () => require('./__mocks__/mocks').mockProgressEvents())
 

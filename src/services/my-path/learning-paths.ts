@@ -19,6 +19,7 @@ import {
   getAllCompletedByIds,
   getIdsWhereLastAccessedFromMethod,
   getProgressState,
+  resetStatus,
 } from '../contentProgress.js'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, CollectionParameter, STATE } from '../sync/models/ContentProgress'
 import { db, SyncWriteDTO } from '../sync'
@@ -94,7 +95,7 @@ interface CollectionObject {
  * @param brand
  * @param userDate - local datetime. must have date and time - format 2025-10-31T13:45:00
  */
-export async function getDailySession(brand: string, userDate: Date) {
+export async function getDailySession(brand: string, userDate: Date): Promise<DailySessionResponse | '' | null> {
   const dateWithTimezone = formatLocalDateTime(userDate)
   const key = dailySessionKey(brand, dateWithTimezone)
 
@@ -102,13 +103,13 @@ export async function getDailySession(brand: string, userDate: Date) {
     return await dataPromiseGET(dailySessionPromises, key, async () => {
       const url = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
 
-      const response = await GET(url) as DailySessionResponse | ''
+      const response = await GET(url)
 
       if (!response) {
         return await updateDailySession(brand, userDate, false)
       }
-      return response as DailySessionResponse
-    })
+      return response
+    }) as DailySessionResponse | ''
   } catch (error) {
     console.error('Error fetching daily session:', (error as any).message)
     return null
@@ -125,7 +126,7 @@ export async function updateDailySession(
   brand: string,
   userDate: Date,
   keepFirstLearningPath: boolean = false,
-) {
+): Promise<DailySessionResponse | null> {
   const dateWithTimezone = formatLocalDateTime(userDate)
   const key = dailySessionKey(brand, dateWithTimezone)
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
@@ -155,7 +156,7 @@ function formatLocalDateTime(date: Date): string {
  * Gets user's active learning path.
  * @param brand
  */
-export async function getActivePath(brand: string) {
+export async function getActivePath(brand: string): Promise<ActiveLearningPathResponse | null> {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
 
   return (await dataPromiseGET(activePathPromises, activePathKey(brand), () =>
@@ -168,7 +169,7 @@ export async function getActivePath(brand: string) {
  * @param brand
  * @param learningPathId
  */
-export async function startLearningPath(brand: string, learningPathId: number) {
+export async function startLearningPath(brand: string, learningPathId: number): Promise<ActiveLearningPathResponse | null> {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
   const body = { brand: brand, learning_path_id: learningPathId }
 
@@ -183,6 +184,19 @@ export async function startLearningPath(brand: string, learningPathId: number) {
   }
 
   return response
+}
+
+/*
+  * Resets the user's active learning path and updates the daily session.
+  * @param {string} brand
+  * @param {number} learningPathId - The ID of the active learning path to reset.
+  * @param {Date} userDate - The user's local date.
+  * @returns {Promise<DailySessionResponse | '' | null>} - The updated daily session response or null if an error occurs.
+ */
+export async function resetActiveLearningPath(brand: string, learningPathId: number, userDate: Date): Promise<DailySessionResponse | '' | null> {
+  const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
+  await resetStatus(learningPathId, collection)
+  return await updateDailySession(brand, userDate)
 }
 
 function dataPromiseGET<T>(
@@ -240,7 +254,7 @@ export async function getEnrichedLearningPath(learningPathId: number) {
     {
       dataField: 'children',
       dataField_includeParent: true,
-      dataField_includeIntroVideo: true,
+      dataField_includePreroll: true,
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
@@ -272,7 +286,7 @@ export async function getEnrichedLearningPaths(learningPathIds: number[]) {
     {
       dataField: 'children',
       dataField_includeParent: true,
-      dataField_includeIntroVideo: true,
+      dataField_includePreroll: true,
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
@@ -470,6 +484,7 @@ export async function fetchLearningPathLessons(
  *
  * @param {number[]} contentIds The array of content IDs within the learning path
  * @returns {Promise<number[]>} Array with completed content IDs
+ * @deprecated Only use for Method behaviour. Learning path progress import is removed in My Path. Kept for backwards compatibility for Method.
  */
 export async function fetchLearningPathProgressCheckLessons(
   contentIds: number[],
@@ -491,6 +506,7 @@ interface completeMethodIntroVideo {
  * @returns {Promise<Array>} response - The response object.
  * @returns {Promise<Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
  * @returns {Promise<Object>} response.active_path_response - The set active learning path response.
+ * @deprecated Only use for Method behaviour. For My Path, call `completeMyPathIntroVideo` instead.
  */
 export async function completeMethodIntroVideo(
   introVideoId: number | null,
@@ -549,6 +565,7 @@ interface completeLearningPathIntroVideo {
  * @returns {Promise<void>} response.learning_path_reset_response - The reset learning path response.
  * @returns {Promise<Object[]>} response.lesson_import_response - The responses for completing each content_id within the learning path.
  * @returns {Promise<Object|null>} response.update_dailies_response - The updated daily session if it was changed.
+ * @deprecated Only use for Method behaviour. For My Path, use `completePreroll` from `my-path/preroll.ts`.
  */
 export async function completeLearningPathIntroVideo(
   introVideoId: number,

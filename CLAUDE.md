@@ -11,6 +11,24 @@ Do not run tests or try to run tests with npm test unless explicitly asked.
 
 ## Code Style Standards
 
+### TypeScript Is Required for New Code
+
+This repository is migrating from JavaScript to TypeScript. **All new code must be written in TypeScript.**
+
+- New files are `.ts`, never `.js`.
+- New functionality added to an existing `.js` service belongs in a `.ts` file, not appended to the `.js` one. Add it to the existing `.ts` module for that domain (e.g. `session.ts` rather than the legacy `sessions.js`), or create a new `.ts` file if none fits.
+- Do not convert an existing `.js` file to `.ts` as a side effect of an unrelated change - migrations are their own commit.
+- Type every exported function's parameters and return value. Use `Promise<void>` rather than leaving a return untyped.
+- Declare request/response shapes as exported `interface`s. Extend the shared types in `src/services/user/types.d.ts` where one already fits, rather than redeclaring it.
+- JSDoc is for explaining behavior the types cannot express (for example, that an endpoint deliberately resolves on both success and failure). Do not restate parameter and return types in JSDoc - the signature is the documentation.
+- Typecheck before considering a change done:
+
+```bash
+npx tsc --noEmit -p tsconfig.json
+```
+
+The index generator handles `.js` and `.ts` alike, so a new `.ts` service is picked up by `npm run build-index` with no extra step.
+
 ### Self-Documenting Code
 - Write clear, descriptive function and variable names that eliminate the need for comments
 - Never add comments explaining what code does - the code itself should be clear
@@ -125,6 +143,8 @@ All services are located in `src/services/` and organized by domain:
 
 **User Services** (`src/services/user/`)
 - `account.ts` - Account management, email changes, password resets
+- `session.ts` - OAuth providers, admin impersonation, magic link login
+- `sessions.js` - Legacy password login, logout, auth-key URLs
 - `profile.js` - User profiles, pictures, signatures
 - `permissions.js` - User permission checking
 - `notifications.js` - Notification management

@@ -2,6 +2,76 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.185.1](https://github.com/railroadmedia/musora-content-services/compare/v2.185.0...v2.185.1) (2026-10-06)
+
+## [2.185.0](https://github.com/railroadmedia/musora-content-services/compare/v2.184.1...v2.185.0) (2026-10-01)
+
+
+### Features
+
+* **BEHLTP-380:** preroll LP intros ([#1066](https://github.com/railroadmedia/musora-content-services/issues/1066)) ([4706a1f](https://github.com/railroadmedia/musora-content-services/commit/4706a1f19d15ddfd409a85d2d8ebb1f70e134a99))
+
+### [2.184.1](https://github.com/railroadmedia/musora-content-services/compare/v2.184.0...v2.184.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* update AccountSetupProps interface to return correct type ([7c5aa63](https://github.com/railroadmedia/musora-content-services/commit/7c5aa6304dc2c22f7399ae8f55cf2e930097a8f6))
+
+## [2.184.0](https://github.com/railroadmedia/musora-content-services/compare/v2.183.2...v2.184.0) (2026-09-26)
+
+
+### Features
+
+* **BEHLTP-457:** Sub account onboarding flow - Add Token to invite email linke  ([#1061](https://github.com/railroadmedia/musora-content-services/issues/1061)) ([ea3a068](https://github.com/railroadmedia/musora-content-services/commit/ea3a068c07972762b3f3a6ed67e0ff7d7e592588))
+
+### [2.183.2](https://github.com/railroadmedia/musora-content-services/compare/v2.183.1...v2.183.2) (2026-09-24)
+
+
+### Bug Fixes
+
+* pass send_email down as body param on POST request ([afd8ada](https://github.com/railroadmedia/musora-content-services/commit/afd8ada65ab6c702f5b2ec1e63900adf5cd51e40))
+
+### [2.183.1](https://github.com/railroadmedia/musora-content-services/compare/v2.183.0...v2.183.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* send_email param on account status ([ad43c46](https://github.com/railroadmedia/musora-content-services/commit/ad43c46102a14d9a4ce0136dbc682e7f3a6adb08))
+
+## [2.183.0](https://github.com/railroadmedia/musora-content-services/compare/v2.182.0...v2.183.0) (2026-09-24)
+
+
+### Features
+
+* **MU2-1970:** Add magic link login services ([#1056](https://github.com/railroadmedia/musora-content-services/issues/1056)) ([964dc8e](https://github.com/railroadmedia/musora-content-services/commit/964dc8ee532b2bd30e36b697527cee8d5a039ae6))
+
+## [2.182.0](https://github.com/railroadmedia/musora-content-services/compare/v2.181.0...v2.182.0) (2026-09-21)
+
+
+### Features
+
+* **BEHLTP-368:** placement quiz endpoints ([#1051](https://github.com/railroadmedia/musora-content-services/issues/1051)) ([248b4c9](https://github.com/railroadmedia/musora-content-services/commit/248b4c9e48b056a651d44c129d5d0cb3ce80777d))
+* **BEHLTP-395:** add resetActiveLearningPath() ([#1055](https://github.com/railroadmedia/musora-content-services/issues/1055)) ([02df2df](https://github.com/railroadmedia/musora-content-services/commit/02df2dffd59844ff0c11a43f357efa6ed346a07f))
+
+
+### Bug Fixes
+
+* move learning-paths.ts to my-path/ module ([#1054](https://github.com/railroadmedia/musora-content-services/issues/1054)) ([49fb9a9](https://github.com/railroadmedia/musora-content-services/commit/49fb9a983512e1d657285ddd13555d5ae9cb8e7b))
+
+## [2.181.0](https://github.com/railroadmedia/musora-content-services/compare/v2.180.0...v2.181.0) (2026-09-17)
+
+
+### Features
+
+* allow merged config ([#1018](https://github.com/railroadmedia/musora-content-services/issues/1018)) ([8d8a9aa](https://github.com/railroadmedia/musora-content-services/commit/8d8a9aaed048e83b7dfeb15a7c12fabd199721f1))
+
+
+### Bug Fixes
+
+* **BR-717:** expire streak cache at calendar day boundary ([1f4481c](https://github.com/railroadmedia/musora-content-services/commit/1f4481cc5a71afa990c39d5927099b093a475c83))
+* **BR-964:** unpin deleted playlists at fetch time ([#1052](https://github.com/railroadmedia/musora-content-services/issues/1052)) ([0367143](https://github.com/railroadmedia/musora-content-services/commit/036714377469beccbceae93d138a9d2280516395))
+
 ## [2.180.0](https://github.com/railroadmedia/musora-content-services/compare/v2.179.0...v2.180.0) (2026-09-04)
 
 

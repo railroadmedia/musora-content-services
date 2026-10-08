@@ -549,6 +549,7 @@ export let contentTypeConfig = {
   'learning-path-v2': {
     fields: [
       `"intro_video": intro_video->{ ${getIntroVideoFields('learning-path-v2').join(', ')} }`,
+      `"preroll": intro_video->{ ${getPrerollFields().join(', ')} }`,
       'total_skills',
       `"resource": ${resourcesField}`,
     ],
@@ -693,6 +694,7 @@ export let contentTypeConfig = {
       "thumbnail": thumbnail.asset->url,
       length_in_seconds,
       intro_video,
+      "preroll": intro_video,
       child[]->{
         ${DEFAULT_FIELDS.join(',')}
       }
@@ -726,6 +728,20 @@ export function getIntroVideoFields(type) {
   }
 
   return fields
+}
+
+export function getPrerollFields() {
+  return [
+    `"id": railcontent_id`,
+    'title',
+    'brand',
+    `"instructor": ${instructorField}`,
+    `"type": _type`,
+    `"description": ${descriptionField}`,
+    `"thumbnail": thumbnail.asset->url`,
+    'length_in_seconds',
+    'video',
+  ]
 }
 
 export const plusMembershipPermissions = 92

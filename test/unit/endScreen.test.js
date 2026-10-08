@@ -19,7 +19,7 @@ jest.mock('../../src/services/contentLikes.js', () => ({
 jest.mock('../../src/services/userActivity.js', () => ({
   ...jest.requireActual('../../src/services/userActivity'),
 }))
-jest.mock('../../src/services/content-org/learning-paths.ts', () => ({
+jest.mock('../../src/services/my-path/learning-paths.ts', () => ({
   enrollInLearningPath: jest.fn(),
   getLearningPathProgress: jest.fn()
 }))
