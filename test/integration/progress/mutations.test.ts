@@ -225,4 +225,14 @@ describe('Scenario: Playlist progress duplicates resumeTime to a-la-carte', () =
     expect(aLaCarte.data?.progress_percent).toBe(75)
     expect(aLaCarte.data?.resume_time_seconds).toBe(20)
   })
+
+  test('offline: later playlist session with lower percent still updates a-la-carte resume time, without regressing percent', async () => {
+    const hierarchy = { metadata: { 60004: meta }, parents: {}, children: {} }
+    await Progress.save(60004, 75, playlistCollection, 150, { hierarchy, isOffline: true })
+    await Progress.save(60004, 20, playlistCollection, 20, { hierarchy, isOffline: true })
+
+    const aLaCarte = await db.contentProgress.getOneProgressByContentId(60004, null)
+    expect(aLaCarte.data?.progress_percent).toBe(75)
+    expect(aLaCarte.data?.resume_time_seconds).toBe(20)
+  })
 })
