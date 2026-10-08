@@ -185,11 +185,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       r.content_type = metadata.type
       r.content_parent_id = metadata.parent_id
 
-      if (typeof resumeTime != 'undefined') {
-        if (resumeTime >= 10 || r.resume_time_seconds !== null) {
-          r.resume_time_seconds = Math.floor(resumeTime)
-        }
-      }
+      ProgressRepository.applyResumeTime(r, resumeTime)
 
       if (accessedDirectly && r.collection_type === COLLECTION_TYPE.SELF) {
         r.last_interacted_a_la_carte = r.updated_at
@@ -224,10 +220,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
     metadata: Record<string, MetadataParameter>,
-    { skipPush = false, accessedDirectly = true, allowRegression = false }: {
+    { skipPush = false, accessedDirectly = true, allowRegression = false, resumeTime }: {
       skipPush?: boolean;
       accessedDirectly?: boolean,
-      allowRegression?: boolean
+      allowRegression?: boolean,
+      resumeTime?: number
     } = {},
   ) {
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
@@ -252,6 +249,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           r.content_type = metadata[contentId].type
           r.content_parent_id = metadata[contentId].parent_id
 
+          ProgressRepository.applyResumeTime(r, resumeTime)
+
           if (accessedDirectly && r.collection_type === COLLECTION_TYPE.SELF) {
             r.last_interacted_a_la_carte = r.updated_at
           }
@@ -261,6 +260,13 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.upsertSome(data, { skipPush })
 
     //todo add event emitting for bulk updates?
+  }
+
+  private static applyResumeTime(r: ContentProgress, resumeTime: number | undefined) {
+    if (typeof resumeTime == 'undefined') return
+    if (resumeTime >= 10 || r.resume_time_seconds !== null) {
+      r.resume_time_seconds = Math.floor(resumeTime)
+    }
   }
 
   eraseProgress(contentId: number, collection: CollectionParameter | null, { skipPush = false } = {}) {

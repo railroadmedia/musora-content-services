@@ -172,7 +172,7 @@ describe('getProgressDataByIds', () => {
 
   test('returns defaults for unknown id', async () => {
     const result = await getProgressDataByIds([999], null)
-    expect(result[999]).toEqual({ last_update: 0, progress: 0, status: '' })
+    expect(result[999]).toEqual({ last_update: 0, progress: 0, resume_time: null, status: '' })
   })
 
   test('normalizes string content ids', async () => {

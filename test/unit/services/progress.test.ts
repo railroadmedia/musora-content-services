@@ -307,27 +307,27 @@ describe('Progress.allStartedOrCompleted', () => {
 describe('Progress.snapshotByIds', () => {
   test('returns snapshot keyed by content_id with defaults for missing', async () => {
     mockProgressRecords = [
-      { content_id: 1, last_interacted_a_la_carte: 111, progress_percent: 50, state: 'started' },
+      { content_id: 1, last_interacted_a_la_carte: 111, progress_percent: 50, resume_time_seconds: 42, state: 'started' },
     ]
     const result = await Progress.snapshotByIds([1, 2])
-    expect(result[1]).toEqual({ last_update: 111, progress: 50, status: 'started' })
-    expect(result[2]).toEqual({ last_update: 0, progress: 0, status: '' })
+    expect(result[1]).toEqual({ last_update: 111, progress: 50, resume_time: 42, status: 'started' })
+    expect(result[2]).toEqual({ last_update: 0, progress: 0, resume_time: null, status: '' })
   })
 
   test('returns empty defaults when no records match', async () => {
     const result = await Progress.snapshotByIds([99])
-    expect(result[99]).toEqual({ last_update: 0, progress: 0, status: '' })
+    expect(result[99]).toEqual({ last_update: 0, progress: 0, resume_time: null, status: '' })
   })
 })
 
 describe('Progress.snapshotByRecordIds', () => {
   test('returns snapshot keyed by record id with defaults for missing', async () => {
     mockRecordsById = {
-      '1:self:0': { id: '1:self:0', updated_at: 222, progress_percent: 75, state: 'completed' },
+      '1:self:0': { id: '1:self:0', updated_at: 222, progress_percent: 75, resume_time_seconds: 84, state: 'completed' },
     }
     const result = await Progress.snapshotByRecordIds(['1:self:0', '2:self:0'])
-    expect(result['1:self:0']).toEqual({ last_update: 222, progress: 75, status: 'completed' })
-    expect(result['2:self:0']).toEqual({ last_update: 0, progress: 0, status: '' })
+    expect(result['1:self:0']).toEqual({ last_update: 222, progress: 75, resume_time: 84, status: 'completed' })
+    expect(result['2:self:0']).toEqual({ last_update: 0, progress: 0, resume_time: null, status: '' })
   })
 })
 
