@@ -199,7 +199,7 @@ export async function resetAllLearningPaths() {
  * @param {number} learningPathId - The learning path ID
  * @returns {Promise<Object>} Learning path with enriched lesson data
  */
-export async function getEnrichedLearningPath(learningPathId: number): Promise<object> {
+export async function getEnrichedLearningPath(learningPathId: number) {
   let response = (await addContextToLearningPaths(
     fetchByRailContentId,
     learningPathId,
@@ -231,7 +231,7 @@ export async function getEnrichedLearningPath(learningPathId: number): Promise<o
  * @param {number[]} learningPathIds - The learning path IDs
  * @returns {Promise<Object[]>} Learning paths with enriched lesson data
  */
-export async function getEnrichedLearningPaths(learningPathIds: number[]): Promise<object[]> {
+export async function getEnrichedLearningPaths(learningPathIds: number[]) {
   let response = (await addContextToLearningPaths(
     fetchByRailContentIds,
     learningPathIds,
