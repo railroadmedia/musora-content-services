@@ -4,13 +4,13 @@
 
 import { TabResponseType } from '../contentMetaData.js'
 import { getFieldsForContentTypeWithFilteredChildren } from '../contentTypeConfig.js'
-import { decorateAllAsync, type FieldDecorator } from '../lib/sanity/decorators/base'
+import { decorateAll, type FieldDecorator } from '../lib/sanity/decorators/base'
 import { accessDecorator, type WithNeedAccess } from '../lib/sanity/decorators/need-access'
 import {
   lifetimeUpgradeDecorator,
   type WithNeedLifetimeUpgrade,
 } from '../lib/sanity/decorators/need-lifetime-upgrade'
-import { navigateToDecoratorFor, type WithNavigateTo } from '../lib/sanity/decorators/navigate-to'
+import { decorateNavigateTo, type WithNavigateTo } from '../lib/sanity/decorators/navigate-to'
 import { pageTypeDecorator, type WithPageType } from '../lib/sanity/decorators/page-type'
 import { Filters as f } from '../lib/sanity/filter'
 import { groq } from '../lib/sanity/groq'
@@ -220,15 +220,13 @@ const sortByRecommendedOrder =
 
 const decorateRecommendations =
   (permissions: UserPermissions) =>
-  async (contents: RecommendedContent[] | null = []): Promise<NavigableRecommendedContent[]> => {
-    return decorateAllAsync(contents, [
+  (contents: RecommendedContent[]): DecoratedRecommendedContent[] =>
+    decorateAll(contents ?? [], [
       accessDecorator(permissions),
       lifetimeUpgradeDecorator(permissions),
       pageTypeDecorator,
       isLiveDecorator,
-      await navigateToDecoratorFor(contents),
-    ]) as Promise<NavigableRecommendedContent[]>
-  }
+    ]) as DecoratedRecommendedContent[]
 
 async function fetchRecommendedContent(
   ids: number[],
@@ -260,7 +258,8 @@ async function fetchRecommendedContent(
       'live_event_end_time'
     )
     .run<RecommendedContent[]>()
-    .mapAsync(decorateRecommendations(permissions))
+    .map(decorateRecommendations(permissions))
+    .mapAsync((contents) => decorateNavigateTo(contents))
     .ltap((error) => console.error(error.message))
     .map(sortByRecommendedOrder(ids))
     .recover([])
