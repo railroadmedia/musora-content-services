@@ -76,9 +76,13 @@ Raw session list for the current lesson/day — `{ recordings: [...] }`, each wi
 Take numbers belong to the lesson and are never renumbered when a take is deleted, so
 don't derive them from the list position.
 
-### `getMyRecordings(limit = 20)`
+### `getMyRecordings({ page = 1, limit = 20 })`
 One row per lesson the user has recorded on, newest first, already decorated with
-`content` (title/thumbnail from Sanity) — for a "My Recordings" library screen.
+`content` (title/thumbnail from Sanity) — for a "My Recordings" library screen. `content` is
+mapped to its learning path (type `learning-path-lesson-v2`, `parent_id` = learning path id),
+so the card can link to the lesson's Method playback.
+Returns `{ recordings, meta: { current_page, last_page, per_page, total } }`; for infinite
+scroll, keep loading the next page while `meta.current_page < meta.last_page`.
 
 ### `getRecordedContentIds(startDate?, endDate?)`
 Lesson ids with at least one recording — for a practice-tracker "has recording"
