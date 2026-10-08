@@ -260,8 +260,8 @@ async function fetchRecommendedContent(
     .run<RecommendedContent[]>()
     .map(decorateRecommendations(permissions))
     .mapAsync((contents) => decorateNavigateTo(contents))
-    .ltap((error) => console.error(error.message))
     .map(sortByRecommendedOrder(ids))
+    .ltap((error) => console.error(error.message))
     .recover([])
 }
 
