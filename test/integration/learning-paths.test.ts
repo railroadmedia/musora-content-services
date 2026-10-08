@@ -89,8 +89,8 @@ const {
   onLearningPathCompletedActions,
   mapLearningPathParentsTo,
   mapContentsThatWereLastProgressedFromMethod,
-  resetLearningPathCachesForTests,
 } = require('../../src/services/my-path/learning-paths.ts')
+const { clearLearningPathCaches } = require('../../src/services/my-path/cache.ts')
 
 const ctx = initializeTestDB()
 
@@ -110,7 +110,7 @@ function setApiResponses(r: ApiResponses) {
 }
 
 beforeEach(() => {
-  resetLearningPathCachesForTests()
+  clearLearningPathCaches()
   HttpClient.GET.mockReset()
   HttpClient.POST.mockReset()
   sanity.fetchByRailContentId.mockReset()
@@ -330,6 +330,35 @@ describe('startLearningPath', () => {
     await startLearningPath('drumeo', 11)
     const getCalls = HttpClient.GET.mock.calls.filter((c: any[]) => c[0].includes('/active-path/get'))
     expect(getCalls).toHaveLength(0)
+  })
+
+  test('invalidates the cached daily session for today', async () => {
+    const resp = { user_id: 1, brand: 'drumeo', active_learning_path_id: 11 }
+    const dailySession = { active_learning_path_id: 5, daily_session: [] }
+    setApiResponses({ activePath: resp, dailySession })
+    const dailyGetCalls = () =>
+      HttpClient.GET.mock.calls.filter((c: any[]) => c[0].includes('/daily-session/get'))
+
+    await getDailySession('drumeo', new Date())
+    await getDailySession('drumeo', new Date())
+    expect(dailyGetCalls()).toHaveLength(1)
+
+    HttpClient.POST.mockResolvedValueOnce(resp)
+    await startLearningPath('drumeo', 11)
+    await getDailySession('drumeo', new Date())
+    expect(dailyGetCalls()).toHaveLength(2)
+  })
+
+  test('does not invalidate the daily session when POST returns falsy', async () => {
+    setApiResponses({ dailySession: { active_learning_path_id: 5, daily_session: [] } })
+    await getDailySession('drumeo', new Date())
+
+    HttpClient.POST.mockResolvedValueOnce(null)
+    await startLearningPath('drumeo', 11)
+    await getDailySession('drumeo', new Date())
+
+    const dailyGetCalls = HttpClient.GET.mock.calls.filter((c: any[]) => c[0].includes('/daily-session/get'))
+    expect(dailyGetCalls).toHaveLength(1)
   })
 })
 
