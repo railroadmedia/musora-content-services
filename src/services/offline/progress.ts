@@ -175,6 +175,6 @@ export async function duplicateProgressToALaCarteOffline(progresses: Record<stri
     filteredProgresses,
     null,
     metadata,
-    { skipPush: true },
+    { skipPush: true, resumeTime: currentSeconds },
   )
 }
