@@ -2,7 +2,6 @@ jest.mock('../../../src/infrastructure/http/HttpClient.ts', () => ({
   __esModule: true,
   GET: jest.fn(),
   POST: jest.fn(),
-  PUT: jest.fn(),
   HttpClient: jest.fn(),
 }))
 
@@ -40,7 +39,6 @@ beforeEach(() => {
   clearLearningPathCaches()
   HttpClient.GET.mockReset().mockResolvedValue(null)
   HttpClient.POST.mockReset()
-  HttpClient.PUT.mockReset()
 })
 
 describe('fetchDailySession', () => {
@@ -152,12 +150,12 @@ describe('fetchActiveLearningPath', () => {
 
 describe('setActiveLearningPath', () => {
   test('puts the active path and returns the new daily session', async () => {
-    HttpClient.PUT.mockResolvedValueOnce(dailySession)
+    HttpClient.POST.mockResolvedValueOnce(dailySession)
 
     const result = await setActiveLearningPath('drumeo', 11, 'node-a', userDate)
 
     expect(result).toEqual(dailySession)
-    const [url, body] = HttpClient.PUT.mock.calls[0]
+    const [url, body] = HttpClient.POST.mock.calls[0]
     expect(url).toBe('/api/my-path/v2/active-path')
     expect(body).toEqual({
       brand: 'drumeo',
@@ -171,7 +169,7 @@ describe('setActiveLearningPath', () => {
     HttpClient.GET.mockResolvedValue({ ...activePath, active_learning_path_id: 1 })
     await fetchActiveLearningPath('drumeo')
     const next = { ...dailySession, active_learning_path_id: 22, active_node_id: 'node-b' }
-    HttpClient.PUT.mockResolvedValueOnce(next)
+    HttpClient.POST.mockResolvedValueOnce(next)
 
     await setActiveLearningPath('drumeo', 22, 'node-b', userDate)
     HttpClient.GET.mockClear()
@@ -184,7 +182,7 @@ describe('setActiveLearningPath', () => {
   test('propagates request errors and leaves the cache alone', async () => {
     HttpClient.GET.mockResolvedValue(activePath)
     await fetchActiveLearningPath('drumeo')
-    HttpClient.PUT.mockRejectedValueOnce({ status: 422 })
+    HttpClient.POST.mockRejectedValueOnce({ status: 422 })
 
     await expect(setActiveLearningPath('drumeo', 22, 'bad-node', userDate)).rejects.toEqual({ status: 422 })
     HttpClient.GET.mockClear()
@@ -250,7 +248,7 @@ describe('cache behaviour', () => {
   test('a cached empty active path is replaced once one is set', async () => {
     HttpClient.GET.mockResolvedValue('')
     await fetchActiveLearningPath('drumeo')
-    HttpClient.PUT.mockResolvedValueOnce(dailySession)
+    HttpClient.POST.mockResolvedValueOnce(dailySession)
 
     await setActiveLearningPath('drumeo', 11, 'node-a', userDate)
     HttpClient.GET.mockClear()

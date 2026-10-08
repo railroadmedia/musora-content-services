@@ -2,7 +2,7 @@
  * @module MyPathActivePath
  */
 
-import { GET, POST, PUT } from '../../infrastructure/http/HttpClient'
+import { GET, POST } from '../../infrastructure/http/HttpClient'
 import { fetchActivePathOnce, formatLocalDate, setCachedActivePath, setCachedDailySession } from './cache'
 import type { DailySessionResponse } from './daily-session'
 
