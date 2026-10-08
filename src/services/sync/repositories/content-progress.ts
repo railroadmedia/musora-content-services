@@ -181,9 +181,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
       r.progress_percent = progressPct
 
-      r.content_brand = metadata.brand
-      r.content_type = metadata.type
-      r.content_parent_id = metadata.parent_id
+      if (metadata) {
+        r.content_brand = metadata.brand
+        r.content_type = metadata.type
+        r.content_parent_id = metadata.parent_id
+      }
 
       if (typeof resumeTime != 'undefined') {
         if (resumeTime >= 10 || r.resume_time_seconds !== null) {
