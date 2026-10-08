@@ -28,7 +28,11 @@ describe('getReportIssueOptions', () => {
       getReportIssueOptions('content', false, true).find(
         (option) => option.value === 'recording_issue'
       )
-    ).toEqual({ value: 'recording_issue', label: 'Recording playback or sharing issue' })
+    ).toEqual({
+      value: 'recording_issue',
+      label: 'Recording playback or sharing issue',
+      helpText: 'We may review your recordings to help fix the issue.',
+    })
   })
 
   test('offers the recording issue on mobile too', () => {
