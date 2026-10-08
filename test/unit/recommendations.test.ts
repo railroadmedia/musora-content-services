@@ -149,7 +149,11 @@ describe('getRecommendedForYou', () => {
     mockGet().mockReset()
     mockGet().mockResolvedValue([])
     executeQuerySpy = jest.spyOn(SanityClient.prototype, 'executeQuery').mockResolvedValue([])
-    jest.spyOn(navigateTo, 'decorateNavigateTo').mockImplementation(async (items: any) => items)
+    jest.spyOn(navigateTo, 'navigateToDecoratorFor').mockResolvedValue({
+      field: navigateTo.NAVIGATE_TO_FIELD,
+      compute: () => null,
+      recurse: false,
+    })
   })
 
   afterEach(() => {

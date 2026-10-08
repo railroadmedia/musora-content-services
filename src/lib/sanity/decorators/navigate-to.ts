@@ -153,6 +153,12 @@ export function navigateToDecorator(
   }
 }
 
+export async function navigateToDecoratorFor<T extends NavigateToDecoratable>(
+  items: T | T[]
+): Promise<FieldDecoratorAsync<NavigateToDecoratable, typeof NAVIGATE_TO_FIELD, NavigateTo | null>> {
+  return navigateToDecorator(await prefetchStates(Array.isArray(items) ? items : [items]))
+}
+
 export async function decorateNavigateTo<T extends NavigateToDecoratable>(
   items: T[]
 ): Promise<WithNavigateTo<T>[]>
@@ -162,9 +168,7 @@ export async function decorateNavigateTo<T extends NavigateToDecoratable>(
 export async function decorateNavigateTo<T extends NavigateToDecoratable>(
   items: T | T[]
 ): Promise<WithNavigateTo<T> | WithNavigateTo<T>[]> {
-  const list = Array.isArray(items) ? items : [items]
-  const ctx = await prefetchStates(list)
-  return decorateAllAsync(items as NavigateToDecoratable, [navigateToDecorator(ctx)]) as Promise<
-    WithNavigateTo<T> | WithNavigateTo<T>[]
-  >
+  return decorateAllAsync(items as NavigateToDecoratable, [
+    await navigateToDecoratorFor(items),
+  ]) as Promise<WithNavigateTo<T> | WithNavigateTo<T>[]>
 }

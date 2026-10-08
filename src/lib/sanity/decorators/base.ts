@@ -5,7 +5,7 @@ export interface Decoratable {
 
 export type DecorateFn<T, V> = (item: T) => V
 
-export type DecorateFnAsync<T, V> = (item: T) => Promise<V>
+export type DecorateFnAsync<T, V> = (item: T) => V | PromiseLike<V>
 
 export interface FieldDecorator<T extends Decoratable, K extends string = string, V = unknown> {
   field: K
