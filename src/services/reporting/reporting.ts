@@ -31,6 +31,8 @@ export type ReportParams<T extends ReportableType = ReportableType> = {
   brand: Brands | string
   /** Full URL to the reported content (generated via urlBuilder) */
   contentUrl?: string
+  /** For 'recording_issue' reported from a take's own menu: that take's folder, so support gets only its link */
+  recordingFolder?: string
   /** Content data for URL generation (only needed if contentUrl not provided) */
   content?: {
     id: number
@@ -95,6 +97,10 @@ export async function report<T extends ReportableType>(
   // Add details only when provided (required for 'other' issue)
   if (params.details) {
     requestBody.details = params.details
+  }
+
+  if (params.recordingFolder) {
+    requestBody.recording_folder = params.recordingFolder
   }
 
   // Generate content_url for reports (relative URL - backend adds domain)
@@ -162,6 +168,7 @@ export async function report<T extends ReportableType>(
  *
  * @param {ReportableType} type - The type of content being reported
  * @param {boolean} isMobileApp - Whether this is for mobile app (includes download option)
+ * @param {boolean} hasRecordings - Whether the user has recordings on this lesson; adds 'recording_issue' (content only)
  * @returns {ReportIssueOption[]} Array of valid issue options with their labels
  *
  * @example
@@ -187,7 +194,8 @@ export async function report<T extends ReportableType>(
  */
 export function getReportIssueOptions(
   type: ReportableType,
-  isMobileApp: boolean = false
+  isMobileApp: boolean = false,
+  hasRecordings: boolean = false
 ): ReportIssueOption[] {
   switch (type) {
     case 'forum_post':
@@ -222,10 +230,14 @@ export function getReportIssueOptions(
         contentOptions.push({ value: 'download_unavailable', label: 'Download is not available' })
       }
 
-      contentOptions.push(
-        { value: 'assignment_issue', label: 'An issue with lesson assignment' },
-        { value: 'other', label: 'Other reasons' }
-      )
+      contentOptions.push({ value: 'assignment_issue', label: 'An issue with lesson assignment' })
+
+      // Only exist on lessons the user has recorded on
+      if (hasRecordings) {
+        contentOptions.push({ value: 'recording_issue', label: 'Recording playback or sharing issue' })
+      }
+
+      contentOptions.push({ value: 'other', label: 'Other reasons' })
 
       return contentOptions
 
