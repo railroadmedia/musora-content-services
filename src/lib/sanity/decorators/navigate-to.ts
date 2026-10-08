@@ -47,7 +47,7 @@ export type WithNavigateTo<T extends NavigateToDecoratable> = T & {
   navigateTo: NavigateTo | null
 }
 
-const validChildrenOf = (content: NavigateToDecoratable): NavigateToDecoratable[] =>
+const definedChildrenOf = (content: NavigateToDecoratable): NavigateToDecoratable[] =>
   (content.children ?? []).filter(Boolean)
 
 function buildNavigateTo(
@@ -80,10 +80,10 @@ async function prefetchStates(items: NavigateToDecoratable[]): Promise<NavigateC
   for (const item of items) {
     if (!item || !NAVIGABLE_TYPES.includes(item.type as (typeof NAVIGABLE_TYPES)[number])) continue
     ids.add(item.id)
-    for (const child of validChildrenOf(item)) {
+    for (const child of definedChildrenOf(item)) {
       ids.add(child.id)
       if (TWO_DEPTH_TYPES.includes(item.type)) {
-        for (const grandchild of validChildrenOf(child)) {
+        for (const grandchild of definedChildrenOf(child)) {
           ids.add(grandchild.id)
         }
       }
@@ -100,7 +100,7 @@ async function computeNavigateTo(
 ): Promise<NavigateTo | null> {
   if (!NAVIGABLE_TYPES.includes(content.type as (typeof NAVIGABLE_TYPES)[number])) return null
 
-  const children = validChildrenOf(content)
+  const children = definedChildrenOf(content)
   if (children.length === 0) return null
 
   const contentState = ctx?.states.get(content.id) ?? (await Progress.state(content.id))
