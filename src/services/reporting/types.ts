@@ -53,4 +53,5 @@ export interface ReportResponse {
 export interface ReportIssueOption {
   value: string
   label: string
+  helpText?: string
 }

@@ -217,7 +217,7 @@ export function getReportIssueOptions(
       ]
 
     case 'content':
-      const contentOptions = [
+      const contentOptions: ReportIssueOption[] = [
         {
           value: 'incorrect_metadata',
           label: 'The lesson image, title or description is incorrect',
@@ -234,7 +234,7 @@ export function getReportIssueOptions(
 
       // Only exist on lessons the user has recorded on
       if (hasRecordings) {
-        contentOptions.push({ value: 'recording_issue', label: 'Recording playback or sharing issue' })
+        contentOptions.push({ value: 'recording_issue', label: 'Recording playback or sharing issue', helpText: 'We may review your recordings to help fix the issue.' })
       }
 
       contentOptions.push({ value: 'other', label: 'Other reasons' })
