@@ -14,6 +14,7 @@ import { Brands } from '../../lib/brands'
 import { generateContentUrl, generatePlaylistUrl, generateForumPostUrl, generateCommentUrl } from '../urlBuilder'
 import {fetchByRailContentId, fetchByRailContentIds} from "../sanity";
 import {addContextToContent} from "../contentAggregator";
+import { mapLearningPathParentsTo } from '../my-path/learning-paths'
 
 /**
  * Parameters for submitting a report with type-safe issue values
@@ -112,8 +113,17 @@ export async function report<T extends ReportableType>(
       { addNavigateTo: true }
     )
     const content = contents?.[0]
+    const methodLesson =
+      content && params.issue === 'recording_issue' ? await findMethodLesson(content) : null
 
-    if (content) {
+    if (methodLesson) {
+      requestBody.content_url = await generateContentUrl({
+        id: methodLesson.id,
+        type: methodLesson.type,
+        parentId: methodLesson.parent_id,
+        brand: methodLesson.brand,
+      })
+    } else if (content) {
       requestBody.content_url = await generateContentUrl({
         id: content.id,
         type: content.type,
@@ -161,6 +171,20 @@ export async function report<T extends ReportableType>(
     '/api/user-reports/v1/reports',
     requestBody
   )
+}
+
+/**
+ * Recordings are only made from Method, so a recording issue links the lesson inside its learning
+ * path rather than its skill pack. Null when the lesson isn't in a learning path.
+ */
+async function findMethodLesson(content: any): Promise<any | null> {
+  const [methodLesson] = (await mapLearningPathParentsTo([content], { type: true, parent_id: true })) as any[]
+
+  if (!methodLesson?.parent_id || methodLesson.parent_id === content.parent_id) {
+    return null
+  }
+
+  return methodLesson
 }
 
 /**
