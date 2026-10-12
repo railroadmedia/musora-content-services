@@ -157,6 +157,21 @@ describe('collectionTypeFilter', () => {
   })
 })
 
+describe('learningPathLessonIds', () => {
+  test('returns the lessons of any learning path, without the learning paths', async () => {
+    const firstPath = { type: COLLECTION_TYPE.LEARNING_PATH, id: 900 }
+    const secondPath = { type: COLLECTION_TYPE.LEARNING_PATH, id: 901 }
+    await upsertProgress(900, 40, { collection: firstPath })
+    await upsertProgress(10, 100, { collection: firstPath })
+    await upsertProgress(11, 30, { collection: firstPath })
+    await upsertProgress(20, 100, { collection: secondPath })
+    await upsertProgress(30, 100)
+
+    const result = await repo.learningPathLessonIds()
+    expect(result.sort()).toEqual([10, 11, 20])
+  })
+})
+
 describe('getOneProgressByContentId', () => {
   test('returns record for matching contentId', async () => {
     await upsertProgress(1000, 75)
