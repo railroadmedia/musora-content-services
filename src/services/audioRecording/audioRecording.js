@@ -417,13 +417,20 @@ export async function getMyRecordings({ page = 1, limit = 20 } = {}) {
  * @returns {Promise<Array<number>>}
  */
 export async function getRecordedContentIds(startDate = null, endDate = null) {
+  const { content_ids } = await getRecordingIndicators(startDate, endDate)
+  return content_ids
+}
+
+/**
+ * @returns {Promise<{content_ids: Array<number>, processing_content_ids: Array<number>}>}
+ */
+export async function getRecordingIndicators(startDate = null, endDate = null) {
   const params = new URLSearchParams()
   if (startDate) params.set('start_date', startDate)
   if (endDate) params.set('end_date', endDate)
 
   const query = params.toString()
-  const { content_ids } = await GET(`${BASE_PATH}/recorded-content-ids${query ? `?${query}` : ''}`)
-  return content_ids
+  return GET(`${BASE_PATH}/recorded-content-ids${query ? `?${query}` : ''}`)
 }
 
 /**
@@ -433,6 +440,8 @@ export async function getRecordedContentIds(startDate = null, endDate = null) {
  * attach an Authorization header, so the /combined route can only be reached this way
  * if it accepts session cookies (HttpClient's credentials: 'include') or the caller
  * re-attaches a token itself.
+ *
+ * Users get 409 here until the playback copy is ready; only staff get the raw chunks.
  */
 export function getCombinedAudioUrl(folder) {
   return `${globalConfig.baseUrl ?? ''}${BASE_PATH}/combined?folder=${encodeURIComponent(folder)}`
