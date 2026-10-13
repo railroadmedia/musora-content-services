@@ -12,7 +12,22 @@ function linearizedPathUrl(brand: string): string {
 }
 
 export interface LinearizedPathResponse {
-  linearized_learning_paths: Record<string, any>
+  linearized_learning_paths: Node[]
+}
+
+interface Content {
+  id: string
+  content_id: number
+  title: string
+  status: string
+  published_on: string
+}
+
+
+interface Node extends Content {
+  node_id: string
+  node_branch: string
+  child: Content[]
 }
 
 export async function fetchLinearizedLearningPaths(brand: string): Promise<LinearizedPathResponse | null> {

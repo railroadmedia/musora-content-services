@@ -13,13 +13,26 @@ const excludeFromGeneratedIndex = [
   'clearLearningPathCaches',
 ]
 
-const ACTIVE_PATH_FIELDS: (keyof ActivePathResponse)[] = [
+const ACTIVE_PATH_FIELDS = [
   'user_id',
   'brand',
   'active_learning_path_id',
   'active_node_id',
   'active_learning_path_created_at',
-]
+] as const
+
+const DAILY_SESSION_FIELDS = [...ACTIVE_PATH_FIELDS, 'daily_session', 'user_date'] as const
+
+const LINEARIZED_PATH_FIELDS = ['linearized_learning_paths'] as const
+
+type ActivePathSource = Partial<Omit<ActivePathResponse, 'active_learning_path_created_at'>> & {
+  active_learning_path_created_at?: number | string
+}
+
+type DailySessionSource = ActivePathSource & {
+  daily_session?: unknown[]
+  user_date?: string
+}
 
 const MAX_TTL = 3600 * 1000 // 1 hour
 
@@ -56,7 +69,7 @@ export function fetchDailySessionOnce<T>(
 ): Promise<T | ''> {
   const key = dailySessionKey(brand, userDate)
   const expiresAt = determineCacheExpiry(userDate)
-  return fetchOnce(dailySessionPromises, key, expiresAt, fetcher)
+  return fetchOnce(dailySessionPromises, key, expiresAt, fetcher, DAILY_SESSION_FIELDS)
 }
 
 export function fetchActivePathOnce<T>(
@@ -65,7 +78,7 @@ export function fetchActivePathOnce<T>(
 ): Promise<T | ''> {
   const key = activePathKey(brand)
   const expiresAt = determineCacheExpiry()
-  return fetchOnce(activePathPromises, key, expiresAt, fetcher)
+  return fetchOnce(activePathPromises, key, expiresAt, fetcher, ACTIVE_PATH_FIELDS)
 }
 
 export function fetchLinearizedPathOnce<T>(
@@ -74,7 +87,27 @@ export function fetchLinearizedPathOnce<T>(
 ): Promise<T> {
   const key = linearizedPathKey(brand)
   const expiresAt = determineCacheExpiry()
-  return fetchOnce(linearizedPathPromises, key, expiresAt, fetcher)
+  return fetchOnce(linearizedPathPromises, key, expiresAt, fetcher, LINEARIZED_PATH_FIELDS)
+}
+
+function deepFreeze<T>(value: T): T {
+  if (value !== null && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.values(value).forEach(deepFreeze)
+    Object.freeze(value)
+  }
+  return value
+}
+
+function snapshot<T>(value: T, fields: readonly string[]): T {
+  if (value === null || typeof value !== 'object') return value
+
+  const picked: Record<string, unknown> = {}
+  for (const field of fields) {
+    if ((value as Record<string, unknown>)[field] !== undefined) {
+      picked[field] = (value as Record<string, unknown>)[field]
+    }
+  }
+  return deepFreeze(JSON.parse(JSON.stringify(picked)) as T)
 }
 
 function fetchOnce<T>(
@@ -82,13 +115,14 @@ function fetchOnce<T>(
   key: string,
   expiresAt: number,
   fetcher: () => Promise<T>,
+  fields: readonly string[],
 ): Promise<T> {
   const existing = cache.get(key)
   if (existing && existing.expiresAt > Date.now()) {
     return existing.promise
   }
 
-  const promise = fetcher()
+  const promise = fetcher().then((value) => snapshot(value, fields))
   const entry = { promise, expiresAt }
   cache.set(key, entry)
   promise.catch(() => {
@@ -97,36 +131,30 @@ function fetchOnce<T>(
   return promise
 }
 
-function remember<T>(cache: Map<string, CacheEntry<T>>, key: string, expiresAt: number, value: T | null): void {
+function remember<T>(
+  cache: Map<string, CacheEntry<T>>,
+  key: string,
+  expiresAt: number,
+  value: T | null,
+  fields: readonly string[],
+): void {
   if (value === null) {
     cache.delete(key)
   } else {
-    cache.set(key, { promise: Promise.resolve(value), expiresAt })
+    cache.set(key, { promise: Promise.resolve(snapshot(value, fields)), expiresAt })
   }
 }
 
-export function setCachedDailySession<T>(brand: string, userDate: Date, value: T | null): void {
+export function setCachedDailySession(brand: string, userDate: Date, value: DailySessionSource | null): void {
   const key = dailySessionKey(brand, userDate)
   const expiresAt = determineCacheExpiry(userDate)
-  remember(dailySessionPromises, key, expiresAt, value)
-}
-
-type ActivePathSource = Partial<Omit<ActivePathResponse, 'active_learning_path_created_at'>> & {
-  active_learning_path_created_at?: number | string
-}
-
-function pickActivePathFields(value: ActivePathSource): ActivePathSource {
-  const picked: Record<string, unknown> = {}
-  for (const field of ACTIVE_PATH_FIELDS) {
-    if (value[field] !== undefined) picked[field] = value[field]
-  }
-  return picked
+  remember(dailySessionPromises, key, expiresAt, value, DAILY_SESSION_FIELDS)
 }
 
 export function setCachedActivePath(brand: string, value: ActivePathSource | null): void {
   const key = activePathKey(brand)
   const expiresAt = determineCacheExpiry()
-  remember(activePathPromises, key, expiresAt, value && pickActivePathFields(value))
+  remember(activePathPromises, key, expiresAt, value, ACTIVE_PATH_FIELDS)
 }
 
 export function invalidateDailySession(brand: string, userDate: Date = new Date()): void {
