@@ -10,7 +10,7 @@ import { duplicateProgressToALaCarteOffline } from '../offline/progress'
 import {
   bubbleAndTrickleProgressesSafely,
   computeBubbleTrickleProgresses,
-  mergeProgressWithExisting,
+  filterOutNegativeProgress,
 } from './internal/bubble'
 import { filterOutLearningPathsForDuplication } from './internal/learning-path'
 import { snapshotByIds } from './state'
@@ -67,24 +67,46 @@ export const save = async (
   progress: number,
   collection?: CollectionParameter,
   currentSeconds?: number,
+  options: SaveOptions = {}
+) => {
+  const activeCollection = withDefaultCollection(collection)
+  const response = await saveProgressPercent(contentId, progress, activeCollection, currentSeconds, options)
+  await saveResumeTime(contentId, activeCollection, currentSeconds)
+  return response
+}
+
+// resume time is last-write-wins, so it bypasses the percent gate that drops regressed progress
+const saveResumeTime = async (
+  contentId: number,
+  collection: CollectionParameter,
+  currentSeconds: number | undefined
+): Promise<void> => {
+  if (currentSeconds === undefined || currentSeconds === null) return
+
+  await db.contentProgress.updateResumeTime(contentId, collection, currentSeconds, { skipPush: true })
+  if (isPlaylistCollection(collection)) {
+    await db.contentProgress.updateResumeTime(contentId, null, currentSeconds, { skipPush: true })
+  }
+}
+
+const saveProgressPercent = async (
+  contentId: number,
+  progress: number,
+  activeCollection: CollectionParameter,
+  currentSeconds: number | undefined,
   {
     isOffline = false,
     hierarchy = null,
     skipPush = false,
     accessedDirectly = true,
-  }: SaveOptions = {}
+  }: SaveOptions
 ) => {
-  const activeCollection = withDefaultCollection(collection)
   const isPlaylist = isPlaylistCollection(activeCollection)
 
   let progresses: Record<number, number> = { [contentId]: progress }
 
-  // percent-only: this gate runs on every watch-session tick, so checking resumeTime here
-  // would defeat its purpose of skipping a write when progress hasn't actually moved
-  // (currentSeconds changes on nearly every tick). resumeTime freshness for the a-la-carte
-  // duplicate is handled downstream in duplicateProgressToALaCarte instead.
   const existingProgress = await snapshotByIds([contentId], activeCollection)
-  progresses = mergeProgressWithExisting(progresses, existingProgress)
+  progresses = filterOutNegativeProgress(progresses, existingProgress)
   if (Object.keys(progresses).length === 0) return
 
   if (!isOffline) {
@@ -97,11 +119,10 @@ export const save = async (
       await duplicateProgressToALaCarteOffline(
         progresses as Record<string, number>,
         metadata as Record<string, ProgressMetadata>,
-        activeCollection,
-        currentSeconds
+        activeCollection
       )
     } else {
-      await duplicateProgressToALaCarte(progresses, activeCollection, currentSeconds)
+      await duplicateProgressToALaCarte(progresses, activeCollection)
     }
     requestPush(skipPush, 'save-content-progress')
     return
@@ -120,8 +141,7 @@ export const save = async (
     await duplicateProgressToALaCarteOffline(
       progresses as Record<string, number>,
       metadata as Record<string, ProgressMetadata>,
-      activeCollection,
-      currentSeconds
+      activeCollection
     )
     requestPush(skipPush, 'save-content-progress')
     return response
@@ -137,7 +157,7 @@ export const save = async (
   Object.assign(progresses, bubbled)
 
   const existing = await snapshotByIds(Object.keys(bubbled).map(Number), activeCollection)
-  bubbled = mergeProgressWithExisting(bubbled, existing)
+  bubbled = filterOutNegativeProgress(bubbled, existing)
 
   await bubbleAndTrickleProgressesSafely(bubbled, metadata, { accessedDirectly }, activeCollection)
 
@@ -303,22 +323,18 @@ const handleLearningPathProgressActions = async (
 
 const duplicateProgressToALaCarte = async (
   progresses: Record<number, number>,
-  collection: CollectionParameter,
-  currentSeconds: number | undefined = undefined
+  collection: CollectionParameter
 ): Promise<void> => {
   let filtered = filterOutLearningPathsForDuplication(progresses, collection)
   const externalProgresses = await snapshotByIds(Object.keys(filtered).map(Number))
-  filtered = mergeProgressWithExisting(filtered, externalProgresses, currentSeconds)
-  await duplicateProgressForIds(filtered, currentSeconds)
+  filtered = filterOutNegativeProgress(filtered, externalProgresses)
+  await duplicateProgressForIds(filtered)
 }
 
-const duplicateProgressForIds = async (
-  entries: Record<number, number>,
-  currentSeconds: number | undefined = undefined
-): Promise<unknown[]> =>
+const duplicateProgressForIds = async (entries: Record<number, number>): Promise<unknown[]> =>
   Promise.all(
     Object.entries(entries).map(([id, pct]) =>
-      save(parseInt(id, 10), pct, undefined, currentSeconds, {
+      save(parseInt(id, 10), pct, undefined, undefined, {
         skipPush: true,
         accessedDirectly: false,
       })
