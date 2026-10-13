@@ -386,7 +386,7 @@ export async function getAllCompletedByIds(contentIds) {
 }
 
 export async function getWatchedMethodLessonCount() {
-  return new Set(await db.contentProgress.learningPathLessonIds()).size
+  return new Set(await db.contentProgress.completedLearningPathLessonIds()).size
 }
 
 /**

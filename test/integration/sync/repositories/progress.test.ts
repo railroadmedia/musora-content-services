@@ -157,8 +157,8 @@ describe('collectionTypeFilter', () => {
   })
 })
 
-describe('learningPathLessonIds', () => {
-  test('returns the lessons of any learning path, without the learning paths', async () => {
+describe('completedLearningPathLessonIds', () => {
+  test('returns the completed lessons of any learning path, without the learning paths', async () => {
     const firstPath = { type: COLLECTION_TYPE.LEARNING_PATH, id: 900 }
     const secondPath = { type: COLLECTION_TYPE.LEARNING_PATH, id: 901 }
     await upsertProgress(900, 40, { collection: firstPath })
@@ -167,8 +167,8 @@ describe('learningPathLessonIds', () => {
     await upsertProgress(20, 100, { collection: secondPath })
     await upsertProgress(30, 100)
 
-    const result = await repo.learningPathLessonIds()
-    expect(result.sort()).toEqual([10, 11, 20])
+    const result = await repo.completedLearningPathLessonIds()
+    expect(result.sort()).toEqual([10, 20])
   })
 })
 
