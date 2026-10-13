@@ -118,7 +118,9 @@ export async function updateDailySession(
   }
   try {
     const response = (await POST(url, body)) as DailySessionResponse | ''
-    setCachedDailySession(brand, userDate, response !== '' ? response : null)
+    const cachedResponse = response !== '' ? response : null
+    setCachedActivePath(brand, cachedResponse)
+    setCachedDailySession(brand, userDate, cachedResponse)
 
     return (response !== '' ? response : null)
   } catch (error: any) {
