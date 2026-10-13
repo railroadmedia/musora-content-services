@@ -287,6 +287,32 @@ describe('updateDailySession', () => {
     expect(result).toBeNull()
   })
 
+  test('caches both the daily session and the active path', async () => {
+    const userDate = new Date('2026-01-01T10:00:00Z')
+    const resp = { user_id: 1, brand: 'drumeo', active_learning_path_id: 7, daily_session: [] }
+    HttpClient.POST.mockResolvedValueOnce(resp)
+    await updateDailySession('drumeo', userDate)
+    HttpClient.GET.mockClear()
+
+    expect(await getDailySession('drumeo', userDate)).toEqual(resp)
+    expect(await getActivePath('drumeo')).toEqual({ user_id: 1, brand: 'drumeo', active_learning_path_id: 7 })
+    expect(HttpClient.GET).not.toHaveBeenCalled()
+  })
+
+  test('an empty response clears both caches', async () => {
+    const userDate = new Date('2026-01-01T10:00:00Z')
+    await getActivePath('drumeo')
+    await getDailySession('drumeo', userDate)
+    HttpClient.POST.mockResolvedValueOnce('')
+    await updateDailySession('drumeo', userDate)
+    HttpClient.GET.mockClear()
+
+    await getActivePath('drumeo')
+    await getDailySession('drumeo', userDate)
+
+    expect(HttpClient.GET.mock.calls.length).toBeGreaterThanOrEqual(2)
+  })
+
   test('defaults keepFirstLearningPath to false', async () => {
     HttpClient.POST.mockResolvedValueOnce({ active_learning_path_id: 1, daily_session: [] })
     await updateDailySession('drumeo', new Date('2026-01-01T10:00:00Z'))
@@ -773,7 +799,9 @@ describe('onLearningPathCompletedActions', () => {
         { id: 7, published_on: null },
       ],
     })
-    HttpClient.POST.mockResolvedValueOnce({ active_learning_path_id: 6 })
+    HttpClient.POST.mockImplementation((url: string) =>
+      Promise.resolve(url.includes('/active-path/set') ? { active_learning_path_id: 6 } : null),
+    )
     await contentStatusCompleted(600)
 
     await onLearningPathCompletedActions(5)

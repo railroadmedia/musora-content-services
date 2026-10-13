@@ -7,6 +7,7 @@ jest.mock('../../../src/infrastructure/http/HttpClient.ts', () => ({
 
 const HttpClient = require('../../../src/infrastructure/http/HttpClient.ts')
 const { clearLearningPathCaches } = require('../../../src/services/my-path/cache.ts')
+const { fetchLinearizedLearningPaths } = require('../../../src/services/my-path/linearized-path.ts')
 const {
   fetchDailySession,
   createDailySession,
@@ -31,6 +32,10 @@ const dailySession = {
   ...activePath,
   user_date: '2026-01-01',
   daily_session: [{ content_ids: [1, 2], learning_path_id: 11, node_id: 'node-a', is_placeholder: false }],
+}
+
+const linearizedPath = {
+  linearized_learning_paths: [{ id: 11, children: [{ id: 1 }] }],
 }
 
 const getCallsTo = (path: string) => HttpClient.GET.mock.calls.filter((call: any[]) => call[0].includes(path))
@@ -120,7 +125,7 @@ describe('createDailySession', () => {
     HttpClient.GET.mockClear()
 
     expect(await fetchDailySession('drumeo', userDate)).toEqual(dailySession)
-    expect(await fetchActiveLearningPath('drumeo')).toEqual(dailySession)
+    expect(await fetchActiveLearningPath('drumeo')).toEqual(activePath)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
 })
@@ -174,7 +179,11 @@ describe('setActiveLearningPath', () => {
     await setActiveLearningPath('drumeo', 22, 'node-b', userDate)
     HttpClient.GET.mockClear()
 
-    expect(await fetchActiveLearningPath('drumeo')).toEqual(next)
+    expect(await fetchActiveLearningPath('drumeo')).toEqual({
+      ...activePath,
+      active_learning_path_id: 22,
+      active_node_id: 'node-b',
+    })
     expect(await fetchDailySession('drumeo', userDate)).toEqual(next)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
@@ -205,7 +214,8 @@ describe('advanceActiveLearningPath', () => {
     expect(body).toEqual({ brand: 'drumeo', user_date: expect.stringMatching(/^2026-01-01 [+-]\d{2}:\d{2}$/) })
 
     HttpClient.GET.mockClear()
-    expect(await fetchActiveLearningPath('drumeo')).toEqual(next)
+    expect(await fetchActiveLearningPath('drumeo')).toEqual({ ...activePath, active_learning_path_id: 12 })
+    expect(await fetchDailySession('drumeo', userDate)).toEqual(next)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
 })
@@ -253,7 +263,7 @@ describe('cache behaviour', () => {
     await setActiveLearningPath('drumeo', 11, 'node-a', userDate)
     HttpClient.GET.mockClear()
 
-    expect(await fetchActiveLearningPath('drumeo')).toEqual(dailySession)
+    expect(await fetchActiveLearningPath('drumeo')).toEqual(activePath)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
 
@@ -288,5 +298,123 @@ describe('cache behaviour', () => {
     await fetchDailySession('drumeo', today)
 
     expect(getCallsTo('/daily-session')).toHaveLength(2)
+  })
+})
+
+describe('fetchLinearizedLearningPaths', () => {
+  test('gets from the v2 linearized-path endpoint', async () => {
+    HttpClient.GET.mockResolvedValueOnce(linearizedPath)
+
+    expect(await fetchLinearizedLearningPaths('drumeo')).toEqual(linearizedPath)
+    expect(HttpClient.GET.mock.calls[0][0]).toBe('/api/my-path/v2/linearized-path?brand=drumeo')
+  })
+
+  test('returns null on an empty response', async () => {
+    HttpClient.GET.mockResolvedValueOnce('')
+
+    expect(await fetchLinearizedLearningPaths('drumeo')).toBeNull()
+  })
+
+  test('concurrent calls share a single GET', async () => {
+    HttpClient.GET.mockResolvedValue(linearizedPath)
+
+    await Promise.all([fetchLinearizedLearningPaths('drumeo'), fetchLinearizedLearningPaths('drumeo')])
+
+    expect(getCallsTo('/linearized-path')).toHaveLength(1)
+  })
+
+  test('is cached per brand', async () => {
+    HttpClient.GET.mockResolvedValue(linearizedPath)
+
+    await fetchLinearizedLearningPaths('drumeo')
+    await fetchLinearizedLearningPaths('drumeo')
+    await fetchLinearizedLearningPaths('pianote')
+
+    expect(getCallsTo('/linearized-path')).toHaveLength(2)
+  })
+
+  test('failed requests are not cached', async () => {
+    HttpClient.GET.mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce(linearizedPath)
+
+    await expect(fetchLinearizedLearningPaths('drumeo')).rejects.toThrow('boom')
+    expect(await fetchLinearizedLearningPaths('drumeo')).toEqual(linearizedPath)
+  })
+
+  test('is not invalidated by setting or advancing the active path', async () => {
+    HttpClient.GET.mockResolvedValue(linearizedPath)
+    await fetchLinearizedLearningPaths('drumeo')
+    HttpClient.POST.mockResolvedValue(dailySession)
+
+    await setActiveLearningPath('drumeo', 11, 'node-a', userDate)
+    await advanceActiveLearningPath('drumeo', userDate)
+    await fetchLinearizedLearningPaths('drumeo')
+
+    expect(getCallsTo('/linearized-path')).toHaveLength(1)
+  })
+
+  test('is cleared by clearLearningPathCaches', async () => {
+    HttpClient.GET.mockResolvedValue(linearizedPath)
+    await fetchLinearizedLearningPaths('drumeo')
+
+    clearLearningPathCaches()
+    await fetchLinearizedLearningPaths('drumeo')
+
+    expect(getCallsTo('/linearized-path')).toHaveLength(2)
+  })
+})
+
+describe('cached data isolation', () => {
+  test('the active path cache holds only active path fields', async () => {
+    HttpClient.POST.mockResolvedValueOnce(dailySession)
+    await createDailySession('drumeo', userDate)
+
+    const cached = await fetchActiveLearningPath('drumeo')
+
+    expect(cached).toEqual(activePath)
+    expect(cached).not.toHaveProperty('daily_session')
+    expect(cached).not.toHaveProperty('user_date')
+  })
+
+  test('the daily session cache keeps the active path fields alongside the daily session', async () => {
+    HttpClient.POST.mockResolvedValueOnce(dailySession)
+    await createDailySession('drumeo', userDate)
+
+    expect(await fetchDailySession('drumeo', userDate)).toEqual(dailySession)
+  })
+
+  test('fields outside the allowlist are dropped from cached POST responses', async () => {
+    HttpClient.POST.mockResolvedValueOnce({ ...dailySession, unexpected: 'x' })
+    await createDailySession('drumeo', userDate)
+
+    expect(await fetchDailySession('drumeo', userDate)).not.toHaveProperty('unexpected')
+    expect(await fetchActiveLearningPath('drumeo')).not.toHaveProperty('unexpected')
+  })
+
+  test('fields outside the allowlist are dropped from cached GET responses', async () => {
+    HttpClient.GET.mockResolvedValue({ ...dailySession, unexpected: 'x' })
+
+    expect(await fetchDailySession('drumeo', userDate)).not.toHaveProperty('unexpected')
+  })
+
+  test('mutating the response returned from a POST does not change the caches', async () => {
+    const response = JSON.parse(JSON.stringify(dailySession))
+    HttpClient.POST.mockResolvedValueOnce(response)
+    const returned = await createDailySession('drumeo', userDate)
+
+    returned.daily_session.push({ content_ids: [99], learning_path_id: 11, node_id: 'x', is_placeholder: false })
+    returned.active_learning_path_id = 999
+
+    expect(await fetchDailySession('drumeo', userDate)).toEqual(dailySession)
+    expect(await fetchActiveLearningPath('drumeo')).toEqual(activePath)
+  })
+
+  test('mutating the raw GET response after it is cached does not change the cache', async () => {
+    const response = JSON.parse(JSON.stringify(activePath))
+    HttpClient.GET.mockResolvedValue(response)
+    await fetchActiveLearningPath('drumeo')
+
+    response.active_learning_path_id = 999
+
+    expect(await fetchActiveLearningPath('drumeo')).toEqual(activePath)
   })
 })

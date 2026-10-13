@@ -90,14 +90,6 @@ export function fetchLinearizedPathOnce<T>(
   return fetchOnce(linearizedPathPromises, key, expiresAt, fetcher, LINEARIZED_PATH_FIELDS)
 }
 
-function deepFreeze<T>(value: T): T {
-  if (value !== null && typeof value === 'object' && !Object.isFrozen(value)) {
-    Object.values(value).forEach(deepFreeze)
-    Object.freeze(value)
-  }
-  return value
-}
-
 function snapshot<T>(value: T, fields: readonly string[]): T {
   if (value === null || typeof value !== 'object') return value
 
@@ -107,7 +99,7 @@ function snapshot<T>(value: T, fields: readonly string[]): T {
       picked[field] = (value as Record<string, unknown>)[field]
     }
   }
-  return deepFreeze(JSON.parse(JSON.stringify(picked)) as T)
+  return JSON.parse(JSON.stringify(picked)) as T
 }
 
 function fetchOnce<T>(
