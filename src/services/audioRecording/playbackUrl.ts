@@ -4,6 +4,7 @@ export interface RecordingPlaybackUrl {
   url: string | null
   expires_at: string | null
   mime_type: string | null
+  playback_status: 'pending' | 'ready' | 'failed' | null
 }
 
 export interface RecordingPlaybackUrlOptions {
@@ -12,8 +13,8 @@ export interface RecordingPlaybackUrlOptions {
 }
 
 /**
- * Resolves to `url: null` while the take is still being recorded; fall back to
- * getCombinedAudioUrl() then. A presigned link must be fetched without credentials.
+ * Resolves to `url: null` until the take's playback copy is ready (see `playback_status`).
+ * A presigned link must be fetched without credentials.
  */
 export async function getRecordingPlaybackUrl(
   folder: string,
