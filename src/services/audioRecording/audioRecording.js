@@ -433,6 +433,10 @@ export async function getRecordingIndicators(startDate = null, endDate = null) {
   return GET(`${BASE_PATH}/recorded-content-ids${query ? `?${query}` : ''}`)
 }
 
+export async function getRecordingTimeline(folder) {
+  return GET(`${BASE_PATH}/timeline?folder=${encodeURIComponent(folder)}`)
+}
+
 /**
  * Get combined audio URL for a recording. This is consumed directly by an <audio src>
  * or a manual fetch (see fetchAndDecodeAudio in musora-platform-frontend's
