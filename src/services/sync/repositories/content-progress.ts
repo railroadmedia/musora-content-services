@@ -94,6 +94,16 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     )
   }
 
+  async completedLearningPathLessonIds() {
+    const results = await this.queryAll(
+      Q.where('collection_type', COLLECTION_TYPE.LEARNING_PATH),
+      Q.where('content_id', Q.notEq(Q.column('collection_id'))),
+      Q.where('state', STATE.COMPLETED),
+    )
+
+    return results.data.map((r) => r.content_id)
+  }
+
   async startedOrCompleted(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
     return this.queryAll(...this.startedOrCompletedClauses(opts))
   }

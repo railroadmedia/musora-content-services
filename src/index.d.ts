@@ -166,6 +166,7 @@ import {
 	getResumeTimeSecondsByIds,
 	getResumeTimeSecondsByRecordIds,
 	getStartedOrCompletedProgressOnly,
+	getWatchedMethodLessonCount,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -884,6 +885,7 @@ declare module 'musora-content-services' {
 		getUserPinProgressKey,
 		getUserSignature,
 		getUserWeeklyStats,
+		getWatchedMethodLessonCount,
 		getWaveformPeaks,
 		getWeekNumber,
 		getWeeklyPracticeSessions,

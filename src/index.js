@@ -170,6 +170,7 @@ import {
 	getResumeTimeSecondsByIds,
 	getResumeTimeSecondsByRecordIds,
 	getStartedOrCompletedProgressOnly,
+	getWatchedMethodLessonCount,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -883,6 +884,7 @@ export {
 	getUserPinProgressKey,
 	getUserSignature,
 	getUserWeeklyStats,
+	getWatchedMethodLessonCount,
 	getWaveformPeaks,
 	getWeekNumber,
 	getWeeklyPracticeSessions,
