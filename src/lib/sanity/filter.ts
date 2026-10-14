@@ -124,6 +124,15 @@ export class Filters {
   }
 
   /**
+   * @param {string[]} slugs - Array of slugs to filter by
+   * @returns {string} Filter expression
+   * @example Filters.slugIn(['a', 'b']) // "slug.current in ['a','b']"
+   */
+  static slugIn(slugs: string[]): string {
+    return `slug.current in ${arrayToStringRepresentation(slugs)}`
+  }
+
+  /**
    * @param {number} id - The railcontent_id to filter by
    * @returns {string} Filter expression
    * @example Filters.railcontentId(12345) // "railcontent_id == 12345"
@@ -216,6 +225,59 @@ export class Filters {
    */
   static publishedAfter(date: string): string {
     return `published_on >= "${escapeDoubleQuoted(date)}"`
+  }
+
+  /**
+   * @param {string} field - The date field to compare
+   * @param {string} date - ISO date string
+   * @returns {string} Filter expression
+   * @example Filters.dateBefore('ends_at', '2026-01-01') // 'ends_at <= "2026-01-01"'
+   */
+  static dateBefore(field: string, date: string): string {
+    return `${field} <= "${escapeDoubleQuoted(date)}"`
+  }
+
+  /**
+   * @param {string} field - The date field to compare
+   * @param {string} date - ISO date string
+   * @returns {string} Filter expression
+   * @example Filters.dateAfter('starts_at', '2026-01-01') // 'starts_at >= "2026-01-01"'
+   */
+  static dateAfter(field: string, date: string): string {
+    return `${field} >= "${escapeDoubleQuoted(date)}"`
+  }
+
+  /**
+   * Matches documents whose window covers the given date.
+   *
+   * @param {string} startField - The field holding the start of the window
+   * @param {string} endField - The field holding the end of the window
+   * @param {string} date - ISO date string
+   * @returns {string} Filter expression
+   * @example Filters.dateWithin('starts_at', 'ends_at', '2026-11-25')
+   */
+  static dateWithin(startField: string, endField: string, date: string): string {
+    return Filters.combine(Filters.dateBefore(startField, date), Filters.dateAfter(endField, date))
+  }
+
+  /**
+   * @param {string} field - The boolean field to check
+   * @param {boolean} [value=true] - The value to match
+   * @returns {string} Filter expression
+   * @example Filters.flag('active') // "active == true"
+   */
+  static flag(field: string, value: boolean = true): string {
+    return `${field} == ${value}`
+  }
+
+  /**
+   * @param {string} field - The field to compare
+   * @param {string} value - The value to match
+   * @returns {string} Filter expression
+   * @example Filters.fieldEquals('key', 'upgrade-banner') // 'key == "upgrade-banner"'
+   */
+  static fieldEquals(field: string, value: string): string {
+    return `${field} == "${escapeDoubleQuoted(value)}"`
   }
 
   /**
