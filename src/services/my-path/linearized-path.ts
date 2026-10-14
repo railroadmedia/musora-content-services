@@ -23,10 +23,8 @@ interface Content {
   published_on: string
 }
 
-
 interface Node extends Content {
-  node_id: string
-  node_branch: string
+  node: { id: string, branch: string }
   child: Content[]
 }
 
