@@ -8,6 +8,9 @@ jest.mock('../../src/services/sanity', () => ({
   fetchByRailContentId: jest.fn(),
   fetchByRailContentIds: jest.fn(),
 }))
+jest.mock('../../src/services/my-path/learning-paths', () => ({
+  mapLearningPathParentsTo: jest.fn(),
+}))
 jest.mock('../../src/services/urlBuilder', () => ({
   generateContentUrl: jest.fn(),
   generatePlaylistUrl: jest.fn(),
@@ -17,6 +20,10 @@ jest.mock('../../src/services/urlBuilder', () => ({
 
 import { getReportIssueOptions, report } from '../../src/services/reporting/reporting'
 import { addContextToContent } from '../../src/services/contentAggregator'
+import { mapLearningPathParentsTo } from '../../src/services/my-path/learning-paths'
+import { generateContentUrl } from '../../src/services/urlBuilder'
+
+const skillPackLesson = { id: 42, type: 'skill-pack-lesson', parent_id: 41, brand: 'drumeo' }
 
 const optionValues = (...args: Parameters<typeof getReportIssueOptions>) =>
   getReportIssueOptions(...args).map((option) => option.value)
@@ -52,7 +59,46 @@ describe('getReportIssueOptions', () => {
 describe('report', () => {
   beforeEach(() => {
     mockPost.mockReset().mockResolvedValue({ report_id: 1 })
-    ;(addContextToContent as jest.Mock).mockResolvedValue([])
+    ;(addContextToContent as jest.Mock).mockReset().mockResolvedValue([])
+    ;(mapLearningPathParentsTo as jest.Mock).mockReset()
+    ;(generateContentUrl as jest.Mock)
+      .mockReset()
+      .mockImplementation(async ({ id, type, parentId }) => `/${type}/${parentId}/${id}`)
+  })
+
+  test('links a recording issue to the lesson inside its learning path', async () => {
+    ;(addContextToContent as jest.Mock).mockResolvedValue([skillPackLesson])
+    ;(mapLearningPathParentsTo as jest.Mock).mockResolvedValue([
+      { ...skillPackLesson, type: 'learning-path-lesson-v2', parent_id: 900 },
+    ])
+
+    await report({ type: 'content', id: 42, issue: 'recording_issue', brand: 'drumeo' })
+
+    expect(mapLearningPathParentsTo).toHaveBeenCalledWith([skillPackLesson], {
+      type: true,
+      parent_id: true,
+    })
+    expect(mockPost.mock.calls[0][1].content_url).toBe('/learning-path-lesson-v2/900/42')
+  })
+
+  test('keeps the lesson link when a recording issue lesson is not in a learning path', async () => {
+    ;(addContextToContent as jest.Mock).mockResolvedValue([skillPackLesson])
+    ;(mapLearningPathParentsTo as jest.Mock).mockResolvedValue([
+      { ...skillPackLesson, type: 'learning-path-lesson-v2' },
+    ])
+
+    await report({ type: 'content', id: 42, issue: 'recording_issue', brand: 'drumeo' })
+
+    expect(mockPost.mock.calls[0][1].content_url).toBe('/skill-pack-lesson/41/42')
+  })
+
+  test('keeps the lesson link for other content issues', async () => {
+    ;(addContextToContent as jest.Mock).mockResolvedValue([skillPackLesson])
+
+    await report({ type: 'content', id: 42, issue: 'video_issue', brand: 'drumeo' })
+
+    expect(mapLearningPathParentsTo).not.toHaveBeenCalled()
+    expect(mockPost.mock.calls[0][1].content_url).toBe('/skill-pack-lesson/41/42')
   })
 
   test("sends the take's folder when reporting a recording from its own menu", async () => {
