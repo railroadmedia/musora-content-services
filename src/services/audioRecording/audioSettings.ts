@@ -6,12 +6,21 @@ export interface AudioSettings {
   help_improve_coach: boolean
   help_improve_coach_updated_at: string | null
   coach_feedback_enabled: boolean
+  lesson_audio_enabled: boolean
+  take_volume: number
+  lesson_volume: number
 }
 
 export type AudioSettingsChanges = Partial<
   Pick<
     AudioSettings,
-    'recording_enabled' | 'voice_commands_enabled' | 'help_improve_coach' | 'coach_feedback_enabled'
+    | 'recording_enabled'
+    | 'voice_commands_enabled'
+    | 'help_improve_coach'
+    | 'coach_feedback_enabled'
+    | 'lesson_audio_enabled'
+    | 'take_volume'
+    | 'lesson_volume'
   >
 >
 
