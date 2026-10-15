@@ -6,7 +6,6 @@ import { Filters as f } from '../../lib/sanity/filter'
 import { groq } from '../../lib/sanity/groq'
 import type { GroqBuilder } from '../../lib/sanity/groq'
 import type { PromotionalCampaignDocument } from '../../lib/sanity/types/marketing'
-import { SanityQueryError } from '@/lib/sanity/runner'
 
 const excludeFromGeneratedIndex = [
   'campaignQuery',
@@ -47,6 +46,13 @@ export interface CampaignQueryOptions {
 const UNTOUCHED: UserCampaignState = { claimed: false, dismissed: false }
 
 // ============================================
+// UTILITIES
+// ============================================
+
+const filterCampaignsForUser = (campaigns: WithUserCampaignState<PromotionalCampaignDocument>[]) =>
+  campaigns.filter((campaign) => !campaign.user_state.claimed && !campaign.user_state.dismissed)
+
+// ============================================
 // QUERY BUILDING
 // ============================================
 
@@ -85,7 +91,7 @@ export function campaignQuery(options: CampaignQueryOptions = {}): GroqBuilder {
 
 export async function fetchPromotionalCampaigns(
   options: CampaignQueryOptions = {}
-): Promise<Either<SanityQueryError, PromotionalCampaignDocument[]>> {
+): Promise<Either<Error, PromotionalCampaignDocument[]>> {
   return campaignQuery(options)
     .run<PromotionalCampaignDocument[]>()
     .then((r) => r.ltap((error) => console.log({ error })))
@@ -96,16 +102,10 @@ export async function fetchPromotionalCampaigns(
  */
 export async function fetchAvailablePromotionalCampaigns(
   options: CampaignQueryOptions = {}
-): Promise<Either<SanityQueryError, WithUserCampaignState<PromotionalCampaignDocument>[]>> {
+): Promise<Either<Error, WithUserCampaignState<PromotionalCampaignDocument>[]>> {
   return fetchPromotionalCampaigns(options)
     .then((r) => r.mapAsync(decorateUserCampaignState))
-    .then((r) =>
-      r
-        .map((c) =>
-          c.filter((campaign) => !campaign.user_state.claimed && !campaign.user_state.dismissed)
-        )
-        .ltap((error) => console.log({ error }))
-    )
+    .then((r) => r.map(filterCampaignsForUser).ltap((error) => console.log({ error })))
 }
 
 /**
