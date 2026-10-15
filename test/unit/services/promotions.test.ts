@@ -31,8 +31,11 @@ describe('date and flag filters', () => {
 })
 
 describe('campaignProjection', () => {
-  test('resolves the placement image reference to a url', () => {
-    expect(campaignProjection()).toEqual(['...', 'placements[]{ ..., "image": image.asset->url }'])
+  test('resolves both placement image references to urls', () => {
+    expect(campaignProjection).toEqual([
+      '...',
+      'placements[]{ ..., "dark_mode_image": dark_mode_image.asset->url, "light_mode_image": light_mode_image.asset->url }',
+    ])
   })
 })
 

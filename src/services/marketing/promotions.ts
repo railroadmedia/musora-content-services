@@ -50,9 +50,10 @@ const UNTOUCHED: UserCampaignState = { claimed: false, dismissed: false }
 // QUERY BUILDING
 // ============================================
 
-export function campaignProjection(): string[] {
-  return ['...', 'placements[]{ ..., "image": image.asset->url }']
-}
+export const campaignProjection: string[] = [
+  '...',
+  'placements[]{ ..., "dark_mode_image": dark_mode_image.asset->url, "light_mode_image": light_mode_image.asset->url }',
+]
 
 function slugFilter(slug: CampaignQueryOptions['slug']): string {
   const slugs = (Array.isArray(slug) ? slug : [slug]).filter(Boolean) as string[]
@@ -75,7 +76,7 @@ export function campaignQuery(options: CampaignQueryOptions = {}): GroqBuilder {
       )
     )
     .order('starts_at desc')
-    .select(...campaignProjection())
+    .select(...campaignProjection)
 }
 
 // ============================================

@@ -116,7 +116,9 @@ export type PromotionalCampaignDocument = {
     title?: string
     body?: string
     /** Resolved to a CDN url by the promotions query projection. */
-    image?: string
+    dark_mode_image?: string
+    /** Resolved to a CDN url by the promotions query projection. */
+    light_mode_image?: string
     /** CTA Label */
     cta_label?: string
     /** Dismissible? */
