@@ -21,7 +21,6 @@ export interface RecordIdParts {
 export interface ProgressSnapshot {
   last_update: number
   progress: number
-  resume_time: number | null
   status: string
 }
 

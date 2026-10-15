@@ -22,7 +22,7 @@ const excludeFromGeneratedIndex = [
   'duplicateProgressForIds',
   'duplicateProgressToALaCarte',
   'filterOutLearningPathsForDuplication',
-  'mergeProgressWithExisting',
+  'filterOutNegativeProgress',
   'findIncompleteLesson',
   'getAncestorAndSiblingIds',
   'getById',
@@ -281,7 +281,6 @@ export async function getProgressDataByIds(contentIds, collection) {
       {
         last_update: 0,
         progress: 0,
-        resume_time: null,
         status: '',
       },
     ]),
@@ -292,7 +291,6 @@ export async function getProgressDataByIds(contentIds, collection) {
       progress[p.content_id] = {
         last_update: p.last_interacted_a_la_carte,
         progress: p.progress_percent,
-        resume_time: p.resume_time_seconds,
         status: p.state,
       }
     })
@@ -598,7 +596,25 @@ export async function contentStatusReset(contentId, collection = null, { skipPus
 }
 
 // does not have an offline variant because it's too deeply nested within the watch session flow.
-export async function saveContentProgress(
+export async function saveContentProgress(contentId, collection, progress, currentSeconds, options = {}) {
+  collection = collection ?? { id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF }
+  const response = await saveProgressPercent(contentId, collection, progress, currentSeconds, options)
+  await saveResumeTime(contentId, collection, currentSeconds)
+  return response
+}
+
+// resume time is last-write-wins, so it bypasses the percent gate that drops regressed progress
+async function saveResumeTime(contentId, collection, currentSeconds) {
+  if (currentSeconds === undefined || currentSeconds === null) return
+
+  const normalizedContentId = normalizeContentId(contentId)
+  await db.contentProgress.updateResumeTime(normalizedContentId, normalizeCollection(collection), currentSeconds, { skipPush: true })
+  if (collection.type === COLLECTION_TYPE.PLAYLIST) {
+    await db.contentProgress.updateResumeTime(normalizedContentId, null, currentSeconds, { skipPush: true })
+  }
+}
+
+async function saveProgressPercent(
   contentId,
   collection,
   progress,
@@ -610,18 +626,13 @@ export async function saveContentProgress(
     accessedDirectly = true,
   } = {},
 ) {
-  collection = collection ?? { id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF }
   const isPlaylist = collection?.type === COLLECTION_TYPE.PLAYLIST
 
   let allProgresses = {}
   allProgresses[contentId] = progress
 
-  // percent-only: this gate runs on every watch-session tick, so checking resumeTime here
-  // would defeat its purpose of skipping a write when progress hasn't actually moved
-  // (currentSeconds changes on nearly every tick). resumeTime freshness for the a-la-carte
-  // duplicate is handled downstream in duplicateProgressToALaCarte instead.
   const existingProgress = await getProgressDataByIds(Object.keys(allProgresses), collection)
-  allProgresses = mergeProgressWithExisting(allProgresses, existingProgress)
+  allProgresses = filterOutNegativeProgress(allProgresses, existingProgress)
   if (Object.keys(allProgresses).length === 0) {
     return
   }
@@ -633,9 +644,9 @@ export async function saveContentProgress(
 
   if (isPlaylist) {
     if (isOffline) {
-      await duplicateProgressToALaCarteOffline(allProgresses, metadata, collection, currentSeconds)
+      await duplicateProgressToALaCarteOffline(allProgresses, metadata, collection)
     } else {
-      await duplicateProgressToALaCarte(allProgresses, collection, currentSeconds)
+      await duplicateProgressToALaCarte(allProgresses, collection)
     }
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return
@@ -651,7 +662,7 @@ export async function saveContentProgress(
   )
 
   if (isOffline) {
-    await duplicateProgressToALaCarteOffline(allProgresses, metadata, collection, currentSeconds)
+    await duplicateProgressToALaCarteOffline(allProgresses, metadata, collection)
 
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return response
@@ -661,7 +672,7 @@ export async function saveContentProgress(
   Object.assign(allProgresses, bubbledProgresses)
 
   const existingProgresses = await getProgressDataByIds(Object.keys(bubbledProgresses), collection)
-  bubbledProgresses = mergeProgressWithExisting(bubbledProgresses, existingProgresses)
+  bubbledProgresses = filterOutNegativeProgress(bubbledProgresses, existingProgresses)
 
   await bubbleAndTrickleProgressesSafely(bubbledProgresses, collection, metadata, { accessedDirectly })
 
@@ -788,17 +799,11 @@ export async function resetStatus(contentId, collection = null, { skipPush = fal
   return response
 }
 
-// keep higher progress and newer resume_time
-export function mergeProgressWithExisting(progresses, existingProgresses, resumeTime = undefined) {
+export function filterOutNegativeProgress(progresses, existingProgresses) {
   return Object.fromEntries(
-    Object.entries(progresses)
-      .filter(([id, progress]) => {
-        const existing = existingProgresses[id]
-        const progressIncreased = progress >= (existing?.progress ?? 0)
-        const resumeTimeChanged = resumeTime !== undefined && resumeTime !== (existing?.resume_time ?? null)
-        return progressIncreased || resumeTimeChanged
-      })
-      .map(([id, progress]) => [id, Math.max(progress, existingProgresses[id]?.progress ?? 0)]),
+    Object.entries(progresses).filter(
+      ([id, progress]) => progress >= (existingProgresses[id]?.progress ?? 0),
+    ),
   )
 }
 
@@ -826,16 +831,16 @@ export async function handleLearningPathProgressActions(progresses, collection) 
   }
 }
 
-export async function duplicateProgressToALaCarte(progresses, collection, currentSeconds = undefined) {
+export async function duplicateProgressToALaCarte(progresses, collection) {
 
   // a-la-cart LPs not set up.
-  const filteredProgresses = filterOutLearningPathsForDuplication(progresses, collection)
+  let filteredProgresses = filterOutLearningPathsForDuplication(progresses, collection)
 
   const externalProgresses = await getProgressDataByIds(Object.keys(filteredProgresses), null)
 
-  const clampedProgresses = mergeProgressWithExisting(filteredProgresses, externalProgresses, currentSeconds)
+  filteredProgresses = filterOutNegativeProgress(filteredProgresses, externalProgresses)
 
-  await duplicateProgressForIds(clampedProgresses, currentSeconds)
+  await duplicateProgressForIds(filteredProgresses)
 }
 
 export function filterOutLearningPathsForDuplication(progresses, collection) {
@@ -851,9 +856,9 @@ export function filterOutLearningPathsForDuplication(progresses, collection) {
   )
 }
 
-export async function duplicateProgressForIds(entries, currentSeconds = undefined) {
+export async function duplicateProgressForIds(entries) {
   return Promise.all(Object.entries(entries).map(([id, pct]) => {
-    return saveContentProgress(parseInt(id), null, pct, currentSeconds, { skipPush: true, accessedDirectly: false })
+    return saveContentProgress(parseInt(id), null, pct, undefined, { skipPush: true, accessedDirectly: false })
   }))
 }
 

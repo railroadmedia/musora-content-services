@@ -12,6 +12,8 @@ interface MetadataParameter {
   parent_id: number
 }
 
+const MIN_INITIAL_RESUME_TIME_SECONDS = 10
+
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
 
   static collectionTypeFilter(
@@ -220,11 +222,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
     metadata: Record<string, MetadataParameter>,
-    { skipPush = false, accessedDirectly = true, allowRegression = false, resumeTime }: {
+    { skipPush = false, accessedDirectly = true, allowRegression = false }: {
       skipPush?: boolean;
       accessedDirectly?: boolean,
-      allowRegression?: boolean,
-      resumeTime?: number
+      allowRegression?: boolean
     } = {},
   ) {
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
@@ -249,8 +250,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           r.content_type = metadata[contentId].type
           r.content_parent_id = metadata[contentId].parent_id
 
-          ProgressRepository.applyResumeTime(r, resumeTime)
-
           if (accessedDirectly && r.collection_type === COLLECTION_TYPE.SELF) {
             r.last_interacted_a_la_carte = r.updated_at
           }
@@ -262,9 +261,25 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     //todo add event emitting for bulk updates?
   }
 
+  async updateResumeTime(contentId: number, collection: CollectionParameter | null, resumeTime: number, { skipPush = false } = {}) {
+    const id = ContentProgress.generateId(contentId, collection)
+    const existing = await this.readOne(id)
+    if (!existing.data) return
+
+    const currentResumeTime = existing.data.resume_time_seconds
+    const isUnchanged = currentResumeTime === Math.floor(resumeTime)
+    if (isUnchanged || !ProgressRepository.shouldWriteResumeTime(currentResumeTime, resumeTime)) return
+
+    return this.upsertOne(id, (r) => ProgressRepository.applyResumeTime(r, resumeTime), { skipPush })
+  }
+
+  private static shouldWriteResumeTime(currentResumeTime: number | null, resumeTime: number) {
+    return resumeTime >= MIN_INITIAL_RESUME_TIME_SECONDS || currentResumeTime !== null
+  }
+
   private static applyResumeTime(r: ContentProgress, resumeTime: number | undefined) {
     if (typeof resumeTime == 'undefined') return
-    if (resumeTime >= 10 || r.resume_time_seconds !== null) {
+    if (ProgressRepository.shouldWriteResumeTime(r.resume_time_seconds, resumeTime)) {
       r.resume_time_seconds = Math.floor(resumeTime)
     }
   }
