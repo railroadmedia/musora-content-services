@@ -8,6 +8,7 @@ import { globalConfig } from '../config.js'
 import { fetchByRailContentIds } from '../sanity.js'
 import { decorateAsync } from '../../lib/sanity/decorators/base.ts'
 import { mapLearningPathParentsTo } from '../my-path/learning-paths.ts'
+import { estimateClockOffset, monotonicNow } from './recordingClock.ts'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -87,7 +88,9 @@ export function formatDurationMs(ms) {
  * right around midnight always lands on the day the user actually experienced.
  */
 export async function startSession(userId, contentId = null, videoTimeMs = null, extras = {}) {
-  return POST(`${BASE_PATH}/start`, {
+  const sentAt = Date.now()
+  const sentPerf = monotonicNow()
+  const response = await POST(`${BASE_PATH}/start`, {
     user_id: userId,
     content_id: contentId,
     video_time_ms: videoTimeMs,
@@ -97,6 +100,15 @@ export async function startSession(userId, contentId = null, videoTimeMs = null,
     capture: extras.capture ?? null,
     device: extras.device ?? null,
   })
+  return {
+    ...response,
+    clock: estimateClockOffset(
+      response?.server_now,
+      sentAt,
+      sentPerf,
+      response?.server_received_at
+    ),
+  }
 }
 
 /**
@@ -106,6 +118,8 @@ export async function startSession(userId, contentId = null, videoTimeMs = null,
  *   - chunkDurationMs:  wall-clock length of the chunk excluding any paused time
  *   - firstDataDelayMs: (chunk 1 only) ms from MediaRecorder.start() to first data
  *   - levelDb:          loudest RMS level in the chunk, dBFS
+ *   - playbackRate:     lesson playback speed while the chunk recorded (the recorder closes
+ *                       a chunk on every speed change, so one chunk has one speed)
  */
 export async function uploadChunk(
   folder,
@@ -127,6 +141,7 @@ export async function uploadChunk(
   if (timing?.chunkDurationMs != null) body.append('chunk_duration_ms', timing.chunkDurationMs)
   if (timing?.firstDataDelayMs != null) body.append('first_data_delay_ms', timing.firstDataDelayMs)
   if (timing?.levelDb != null) body.append('level_db', timing.levelDb)
+  if (timing?.playbackRate != null) body.append('playback_rate', timing.playbackRate)
 
   // React Native can't reliably build a Blob from an in-memory chunk without a
   // filesystem library, so it passes a base64 string instead; web passes a Blob.
@@ -146,6 +161,7 @@ export async function uploadChunk(
 /**
  * `reason` null is a pause checkpoint; a reason marks the session finished. `videoTimeMs`
  * is the video position at stop and is what the 'end' event records as its video time.
+ * `clock` is the `{ offset_ms, rtt_ms }` that startSession() measured, stored in metadata.
  */
 export async function stopSession(
   userId,
@@ -154,7 +170,8 @@ export async function stopSession(
   chunkCount,
   format,
   reason = null,
-  videoTimeMs = null
+  videoTimeMs = null,
+  clock = null
 ) {
   return POST(`${BASE_PATH}/stop`, {
     user_id: userId,
@@ -165,7 +182,13 @@ export async function stopSession(
     reason,
     stopped_at: Date.now(),
     video_time_ms: videoTimeMs,
+    ...clockFields(clock),
   })
+}
+
+function clockFields(clock) {
+  if (!clock || !Number.isFinite(clock.offset_ms)) return {}
+  return { clock_offset_ms: clock.offset_ms, clock_rtt_ms: clock.rtt_ms ?? null }
 }
 
 /**
@@ -175,7 +198,14 @@ export async function stopSession(
  * payload as stopSession(); the last partial chunk may not make it, which the backend
  * records under missing_chunks.
  */
-export function stopSessionOnPageExit(folder, durationMs, chunkCount, format, videoTimeMs = null) {
+export function stopSessionOnPageExit(
+  folder,
+  durationMs,
+  chunkCount,
+  format,
+  videoTimeMs = null,
+  clock = null
+) {
   const headers = { 'Content-Type': 'application/json', Accept: 'application/json' }
   const token = globalConfig.sessionConfig?.token
   if (token) headers['Authorization'] = `Bearer ${token}`
@@ -194,6 +224,7 @@ export function stopSessionOnPageExit(folder, durationMs, chunkCount, format, vi
         reason: 'page_exit',
         stopped_at: Date.now(),
         video_time_ms: videoTimeMs,
+        ...clockFields(clock),
       }),
     })
   } catch (error) {
@@ -202,10 +233,14 @@ export function stopSessionOnPageExit(folder, durationMs, chunkCount, format, vi
 }
 
 /**
- * Log a pause/resume event against a session, for session-boundary reconstitution.
- * `videoTimeMs` is the VIDEO position at the event; `elapsedMs` is how far into the
- * recording (wall clock since start) it happened. They are different numbers and the ML
- * side needs both to map recording time onto the lesson timeline.
+ * Log an event against a session. Positions, all optional except `videoTimeMs`:
+ *   - videoTimeMs:   lesson VIDEO position at the event
+ *   - elapsedMs:     wall-clock ms since the session tracker started (kept for older readers;
+ *                    it starts ~5 s after audio t=0 and counts paused time, so it is NOT a
+ *                    position in the recording)
+ *   - extra.audio_ms:    position in the recording at the event (active time, pauses
+ *                        excluded); the clock to use for placing an event on the audio
+ *   - extra.chunk_index: the chunk the event closed (pause, seek and speed change flush one)
  */
 export async function logEvent(folder, type, videoTimeMs, elapsedMs = null, extra = {}) {
   return POST(`${BASE_PATH}/event`, {
@@ -213,18 +248,28 @@ export async function logEvent(folder, type, videoTimeMs, elapsedMs = null, extr
     type,
     video_time_ms: videoTimeMs,
     elapsed_ms: elapsedMs,
-    at: Date.now(),
+    at: extra.at ?? Date.now(),
     ...extra,
   })
 }
 
 /**
  * Log a seek made while recording. `fromVideoTimeMs` is where the video was, `toVideoTimeMs`
- * where it landed, `elapsedMs` how far into the recording it happened. The recorder also
- * closes the current chunk at this moment so the chunk anchors stay exact across the jump.
+ * where it landed. `position` carries `audio_ms` and `chunk_index` (see logEvent). The
+ * recorder also closes the current chunk at this moment so the chunk anchors stay exact
+ * across the jump.
  */
-export async function logSeekEvent(folder, fromVideoTimeMs, toVideoTimeMs, elapsedMs = null) {
-  return logEvent(folder, 'seek', toVideoTimeMs, elapsedMs, { from_video_time_ms: fromVideoTimeMs })
+export async function logSeekEvent(
+  folder,
+  fromVideoTimeMs,
+  toVideoTimeMs,
+  elapsedMs = null,
+  position = {}
+) {
+  return logEvent(folder, 'seek', toVideoTimeMs, elapsedMs, {
+    from_video_time_ms: fromVideoTimeMs,
+    ...position,
+  })
 }
 
 /**
@@ -239,6 +284,14 @@ export async function logSeekEvent(folder, fromVideoTimeMs, toVideoTimeMs, elaps
  *
  * Pass `getVideoTimeMs` so pause/resume events carry the real video position; without
  * it they fall back to recording-elapsed time, which is NOT a video time.
+ *
+ * Pass `getAudioMs` so pause/resume events carry `audio_ms`, the position in the recording.
+ * The tracker starts when the session exists, which on web is after the first few seconds
+ * of audio, so its own active time is only a fallback. `getChunkIndex` adds the index of
+ * the last chunk delivered, which for a pause is the chunk its flush closed.
+ *
+ * pause() and resume() accept overrides (`audioMs`, `videoTimeMs`, `chunkIndex`, `at`) for
+ * an event that happened before the session existed, and `log: false` to only sync state.
  */
 export function trackAudioRecordingSession(folder, options = {}) {
   const graceMs = options.graceMs ?? 180000
@@ -247,7 +300,9 @@ export function trackAudioRecordingSession(folder, options = {}) {
   const onMaxDuration = options.onMaxDuration ?? (() => {})
   const getVideoTimeMs =
     typeof options.getVideoTimeMs === 'function' ? options.getVideoTimeMs : null
-  const startedAt = Date.now()
+  const getAudioMs = typeof options.getAudioMs === 'function' ? options.getAudioMs : null
+  const getChunkIndex = typeof options.getChunkIndex === 'function' ? options.getChunkIndex : null
+  const startedAt = monotonicNow()
 
   let paused = false
   let pausedAt = null
@@ -257,19 +312,47 @@ export function trackAudioRecordingSession(folder, options = {}) {
   let stopReason = 'manual'
 
   function elapsedMs() {
-    return Date.now() - startedAt
+    return Math.round(monotonicNow() - startedAt)
   }
 
   // MediaRecorder.pause() genuinely stops capturing audio, so the wall-clock elapsed
   // time overcounts whenever a pause happened — this is what actually ended up recorded.
   function activeElapsedMs() {
-    const openPauseMs = paused && pausedAt !== null ? Date.now() - pausedAt : 0
-    return elapsedMs() - totalPausedMs - openPauseMs
+    const openPauseMs = paused && pausedAt !== null ? monotonicNow() - pausedAt : 0
+    return Math.round(monotonicNow() - startedAt - totalPausedMs - openPauseMs)
   }
 
   function videoTimeOrElapsed() {
     const t = getVideoTimeMs ? getVideoTimeMs() : null
     return Number.isFinite(t) && t >= 0 ? Math.round(t) : elapsedMs()
+  }
+
+  function audioMs(overrides) {
+    const t = overrides.audioMs ?? (getAudioMs ? getAudioMs() : null)
+    return Number.isFinite(t) ? Math.max(0, Math.round(t)) : null
+  }
+
+  function position(overrides) {
+    const chunkIndex = overrides.chunkIndex ?? (getChunkIndex ? getChunkIndex() : null)
+    const extra = {}
+    const measuredAudioMs = audioMs(overrides)
+    if (measuredAudioMs !== null) extra.audio_ms = measuredAudioMs
+    if (Number.isFinite(chunkIndex) && chunkIndex > 0) extra.chunk_index = chunkIndex
+    if (Number.isFinite(overrides.at)) extra.at = overrides.at
+    return extra
+  }
+
+  function log(type, overrides) {
+    if (overrides.log === false) return
+    logEvent(
+      folder,
+      type,
+      overrides.videoTimeMs ?? videoTimeOrElapsed(),
+      elapsedMs(),
+      position(overrides)
+    ).catch((error) => {
+      console.warn(`Failed to log ${type} event:`, error)
+    })
   }
 
   function startMaxDurationTimer() {
@@ -289,15 +372,13 @@ export function trackAudioRecordingSession(folder, options = {}) {
     }
   }
 
-  function pause() {
+  function pause(overrides = {}) {
     if (paused) return
     paused = true
-    pausedAt = Date.now()
+    pausedAt = monotonicNow()
     clearMaxDurationTimer()
 
-    logEvent(folder, 'pause', videoTimeOrElapsed(), elapsedMs()).catch((error) => {
-      console.warn('Failed to log pause event:', error)
-    })
+    log('pause', overrides)
 
     timer = setTimeout(() => {
       stopReason = 'timeout'
@@ -306,12 +387,12 @@ export function trackAudioRecordingSession(folder, options = {}) {
     }, graceMs)
   }
 
-  function resume() {
+  function resume(overrides = {}) {
     if (!paused) return
     paused = false
 
     if (pausedAt !== null) {
-      totalPausedMs += Date.now() - pausedAt
+      totalPausedMs += monotonicNow() - pausedAt
       pausedAt = null
     }
 
@@ -322,9 +403,7 @@ export function trackAudioRecordingSession(folder, options = {}) {
 
     startMaxDurationTimer()
 
-    logEvent(folder, 'resume', videoTimeOrElapsed(), elapsedMs()).catch((error) => {
-      console.warn('Failed to log resume event:', error)
-    })
+    log('resume', overrides)
   }
 
   function finish() {

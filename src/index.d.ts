@@ -40,6 +40,15 @@ import {
 } from './services/audioRecording/playbackUrl.ts';
 
 import {
+	estimateClockOffset,
+	monotonicNow
+} from './services/audioRecording/recordingClock.ts';
+
+import {
+	logRateChangeEvent
+} from './services/audioRecording/recordingEvents.ts';
+
+import {
 	downsamplePeaks,
 	getWaveformPeaks
 } from './services/audioRecording/waveformPeaks.js';
@@ -687,6 +696,7 @@ declare module 'musora-content-services' {
 		editComment,
 		emitProgressSaved,
 		enrollUserInGuidedCourse,
+		estimateClockOffset,
 		extractFromRecordId,
 		extractSanityUrl,
 		fetchAll,
@@ -918,6 +928,7 @@ declare module 'musora-content-services' {
 		listOAuthProviders,
 		listRecordings,
 		lockThread,
+		logRateChangeEvent,
 		logSeekEvent,
 		login,
 		loginAsUser,
@@ -931,6 +942,7 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		markThreadAsRead,
 		maskEmail,
+		monotonicNow,
 		numberOfActiveUsers,
 		onProgressSaved,
 		openComment,
