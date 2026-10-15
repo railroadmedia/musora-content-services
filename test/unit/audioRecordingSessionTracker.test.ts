@@ -120,7 +120,7 @@ describe('trackAudioRecordingSession event positions', () => {
     expect(lastEventBody()).toMatchObject({ type: 'resume', audio_ms: 7_000, elapsed_ms: 32_000 })
   })
 
-  test('falls back to active time when no audio clock is given', () => {
+  test('leaves out audio_ms when no audio clock is given', () => {
     const tracker = trackAudioRecordingSession(FOLDER)
 
     jest.advanceTimersByTime(4_000)
@@ -128,7 +128,8 @@ describe('trackAudioRecordingSession event positions', () => {
     jest.advanceTimersByTime(10_000)
     tracker.resume()
 
-    expect(lastEventBody()).toMatchObject({ type: 'resume', audio_ms: 4_000 })
+    expect(lastEventBody()).toMatchObject({ type: 'resume' })
+    expect(lastEventBody()).not.toHaveProperty('audio_ms')
   })
 
   test('replays an earlier pause with its own position, or syncs state without logging', () => {

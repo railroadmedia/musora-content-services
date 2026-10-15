@@ -100,7 +100,15 @@ export async function startSession(userId, contentId = null, videoTimeMs = null,
     capture: extras.capture ?? null,
     device: extras.device ?? null,
   })
-  return { ...response, clock: estimateClockOffset(response?.server_now, sentAt, sentPerf) }
+  return {
+    ...response,
+    clock: estimateClockOffset(
+      response?.server_now,
+      sentAt,
+      sentPerf,
+      response?.server_received_at
+    ),
+  }
 }
 
 /**
@@ -319,14 +327,16 @@ export function trackAudioRecordingSession(folder, options = {}) {
     return Number.isFinite(t) && t >= 0 ? Math.round(t) : elapsedMs()
   }
 
-  function audioMs() {
-    const t = getAudioMs ? getAudioMs() : null
-    return Math.max(0, Math.round(Number.isFinite(t) ? t : activeElapsedMs()))
+  function audioMs(overrides) {
+    const t = overrides.audioMs ?? (getAudioMs ? getAudioMs() : null)
+    return Number.isFinite(t) ? Math.max(0, Math.round(t)) : null
   }
 
   function position(overrides) {
     const chunkIndex = overrides.chunkIndex ?? (getChunkIndex ? getChunkIndex() : null)
-    const extra = { audio_ms: overrides.audioMs ?? audioMs() }
+    const extra = {}
+    const measuredAudioMs = audioMs(overrides)
+    if (measuredAudioMs !== null) extra.audio_ms = measuredAudioMs
     if (Number.isFinite(chunkIndex) && chunkIndex > 0) extra.chunk_index = chunkIndex
     if (Number.isFinite(overrides.at)) extra.at = overrides.at
     return extra
