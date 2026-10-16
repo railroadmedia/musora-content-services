@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.186.0](https://github.com/railroadmedia/musora-content-services/compare/v2.185.1...v2.186.0) (2026-10-16)
+
+
+### Features
+
+* **MU2-1384:** Port recommendations to the new sanity builders ([#1058](https://github.com/railroadmedia/musora-content-services/issues/1058)) ([0e2e41f](https://github.com/railroadmedia/musora-content-services/commit/0e2e41f86e26e16af18b894ab2472d54e3008022))
+* **MU2-2025:** Add promotional campaign queries and claim state ([#1081](https://github.com/railroadmedia/musora-content-services/issues/1081)) ([921ab1e](https://github.com/railroadmedia/musora-content-services/commit/921ab1effee488253413fd42146377e986571e45))
+
 ### [2.185.1](https://github.com/railroadmedia/musora-content-services/compare/v2.185.0...v2.185.1) (2026-10-06)
 
 ## [2.185.0](https://github.com/railroadmedia/musora-content-services/compare/v2.184.1...v2.185.0) (2026-10-01)
