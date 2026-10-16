@@ -62,16 +62,6 @@ export class AsyncEither<L, R> implements PromiseLike<Either<L, R>> {
     return AsyncEither.of(this.promise.then((either) => either.map(fn)))
   }
 
-  /**
-   * @param value - replaces a right that resolved to null or undefined
-   * @example
-   * // a query that matches nothing is a Right holding null, which recover() does not replace
-   * run<Song[]>(groq).defaultTo([])
-   */
-  defaultTo<T>(this: AsyncEither<L, T | null | undefined>, value: T): AsyncEither<L, T> {
-    return this.map((r) => r ?? value)
-  }
-
   /** @param fn - maps the right value with an asynchronous function; a rejection propagates */
   mapAsync<T>(fn: (r: R) => Promise<T>): AsyncEither<L, T> {
     return AsyncEither.of(this.promise.then((either) => either.mapAsync(fn)))

@@ -35,23 +35,6 @@ describe('AsyncEither', () => {
     })
   })
 
-  describe('defaultTo', () => {
-    test('replaces a null right', async () => {
-      const result = await right<string, number | null>(null).defaultTo(0)
-      expect(result.drop()).toBe(0)
-    })
-
-    test('keeps a right that is present', async () => {
-      const result = await right<string, number | null>(2).defaultTo(0)
-      expect(result.drop()).toBe(2)
-    })
-
-    test('does not replace a left', async () => {
-      const result = await left<string, number | null>('boom').defaultTo(0)
-      expect(result.drop()).toBe('boom')
-    })
-  })
-
   describe('flatMap', () => {
     test('flattens the AsyncEither returned by the function', async () => {
       const result = await right<string, number>(2).flatMap((n) => right<string, number>(n * 3))

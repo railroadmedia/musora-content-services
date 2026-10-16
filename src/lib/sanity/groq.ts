@@ -72,7 +72,7 @@ const groqBuilder = <T = unknown>(selector?: string): GroqBuilder<T, null> => {
     run: <U = T>(runner?: QueryRunner<U>) => {
       const result = run<U>(builder.build(), runner)
 
-      return fallback ? result.defaultTo(fallback.value as U) : result
+      return fallback ? result.map((value) => value ?? (fallback.value as U)) : result
     },
   })
 
