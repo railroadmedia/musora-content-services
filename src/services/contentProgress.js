@@ -596,7 +596,25 @@ export async function contentStatusReset(contentId, collection = null, { skipPus
 }
 
 // does not have an offline variant because it's too deeply nested within the watch session flow.
-export async function saveContentProgress(
+export async function saveContentProgress(contentId, collection, progress, currentSeconds, options = {}) {
+  collection = collection ?? { id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF }
+  const response = await saveProgressPercent(contentId, collection, progress, currentSeconds, options)
+  await saveResumeTime(contentId, collection, currentSeconds)
+  return response
+}
+
+// resume time is last-write-wins, so it bypasses the percent gate that drops regressed progress
+async function saveResumeTime(contentId, collection, currentSeconds) {
+  if (currentSeconds === undefined || currentSeconds === null) return
+
+  const normalizedContentId = normalizeContentId(contentId)
+  await db.contentProgress.updateResumeTime(normalizedContentId, normalizeCollection(collection), currentSeconds, { skipPush: true })
+  if (collection.type === COLLECTION_TYPE.PLAYLIST) {
+    await db.contentProgress.updateResumeTime(normalizedContentId, null, currentSeconds, { skipPush: true })
+  }
+}
+
+async function saveProgressPercent(
   contentId,
   collection,
   progress,
@@ -608,7 +626,6 @@ export async function saveContentProgress(
     accessedDirectly = true,
   } = {},
 ) {
-  collection = collection ?? { id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF }
   const isPlaylist = collection?.type === COLLECTION_TYPE.PLAYLIST
 
   let allProgresses = {}
