@@ -28,7 +28,6 @@ export const USER_CAMPAIGN_STATE_FIELD = 'user_state' as const
 export interface UserCampaignState {
   claimed: boolean
   dismissed: boolean
-  /** False when the campaign is not offered to this user, e.g. they already hold a better plan. */
   eligible: boolean
 }
 
@@ -99,21 +98,23 @@ export function campaignQuery(
 // FETCHING
 // ============================================
 
-export function fetchPromotionalCampaigns(
+export async function fetchPromotionalCampaigns(
   options: CampaignQueryOptions = {}
-): AsyncEither<Error, PromotionalCampaignDocument[]> {
-  return campaignQuery(options).run()
+): Promise<PromotionalCampaignDocument[]> {
+  return campaignQuery(options).run().recover([])
 }
 
 /**
- * Every running campaign the user has not already claimed or dismissed.
+ * Every running campaign the user has not already claimed or dismissed, and is eligible.
  */
-export function fetchAvailablePromotionalCampaigns(
+export async function fetchAvailablePromotionalCampaigns(
   options: CampaignQueryOptions = {}
-): AsyncEither<Error, WithUserCampaignState<PromotionalCampaignDocument>[]> {
-  return fetchPromotionalCampaigns(options)
+): Promise<WithUserCampaignState<PromotionalCampaignDocument>[]> {
+  return campaignQuery(options)
+    .run()
     .flatMap(decorateUserCampaignState)
     .map(filterCampaignsForUser)
+    .recover([])
 }
 
 /**

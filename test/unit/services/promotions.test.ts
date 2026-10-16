@@ -8,6 +8,7 @@ import {
   campaignQuery,
   decorateUserCampaignState,
   fetchAvailablePromotionalCampaigns,
+  fetchPromotionalCampaigns,
   fetchUserCampaignStates,
   userCampaignStateDecorator,
 } from '../../../src/services/marketing/promotions'
@@ -222,6 +223,22 @@ describe('decorateUserCampaignState', () => {
   })
 })
 
+describe('fetchPromotionalCampaigns', () => {
+  afterEach(() => jest.restoreAllMocks())
+
+  test('resolves to no campaigns when the query fails', async () => {
+    jest
+      .mocked(runner.run)
+      .mockReturnValue(
+        AsyncEither.of(
+          Promise.resolve(Either.left(new runner.SanityQueryError('boom', '*')))
+        ) as ReturnType<typeof runner.run>
+      )
+
+    await expect(fetchPromotionalCampaigns()).resolves.toEqual([])
+  })
+})
+
 describe('fetchAvailablePromotionalCampaigns', () => {
   afterEach(() => jest.restoreAllMocks())
 
@@ -238,7 +255,7 @@ describe('fetchAvailablePromotionalCampaigns', () => {
 
     const result = await fetchAvailablePromotionalCampaigns()
 
-    expect(result.drop()).toEqual([
+    expect(result).toEqual([
       expect.objectContaining({ slug: { _type: 'slug', current: 'untouched' } }),
     ])
   })
@@ -252,23 +269,29 @@ describe('fetchAvailablePromotionalCampaigns', () => {
 
     const result = await fetchAvailablePromotionalCampaigns()
 
-    expect(result.drop()).toEqual([
+    expect(result).toEqual([
       expect.objectContaining({ slug: { _type: 'slug', current: 'offered' } }),
     ])
   })
 
-  test('keeps a failed query as a left without asking for state', async () => {
-    const error = new runner.SanityQueryError('boom', '*')
+  test('resolves to no campaigns when the query fails, without asking for state', async () => {
     jest
       .mocked(runner.run)
       .mockReturnValue(
-        AsyncEither.of(Promise.resolve(Either.left(error))) as ReturnType<typeof runner.run>
+        AsyncEither.of(
+          Promise.resolve(Either.left(new runner.SanityQueryError('boom', '*')))
+        ) as ReturnType<typeof runner.run>
       )
     const get = jest.spyOn(HttpClient, 'GET')
 
-    const result = await fetchAvailablePromotionalCampaigns()
-
-    expect(result.drop()).toBe(error)
+    await expect(fetchAvailablePromotionalCampaigns()).resolves.toEqual([])
     expect(get).not.toHaveBeenCalled()
+  })
+
+  test('resolves to no campaigns when the state request fails', async () => {
+    queryResolving([campaignDocument('black-friday-2026')])
+    jest.spyOn(HttpClient, 'GET').mockRejectedValue(new Error('network'))
+
+    await expect(fetchAvailablePromotionalCampaigns()).resolves.toEqual([])
   })
 })
