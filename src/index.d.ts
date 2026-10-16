@@ -217,6 +217,14 @@ import {
 } from './services/marketing/marketing.ts';
 
 import {
+	claimPromotionalCampaign,
+	dismissPromotionalCampaign,
+	fetchAvailablePromotionalCampaigns,
+	fetchPromotionalCampaigns,
+	fetchUserCampaignStates
+} from './services/marketing/promotions.ts';
+
+import {
 	acceptInvite,
 	createAccount,
 	createInvites,
@@ -585,6 +593,7 @@ declare module 'musora-content-services' {
 		buildEntityAndTotalQuery,
 		buildImageSRC,
 		calculateLongestStreaks,
+		claimPromotionalCampaign,
 		clearAllCachedData,
 		clearState,
 		closeComment,
@@ -625,6 +634,7 @@ declare module 'musora-content-services' {
 		deleteProfilePicture,
 		deleteThread,
 		deleteUserActivity,
+		dismissPromotionalCampaign,
 		doesUserHaveMembership,
 		duplicatePlaylist,
 		editComment,
@@ -638,6 +648,7 @@ declare module 'musora-content-services' {
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
+		fetchAvailablePromotionalCampaigns,
 		fetchBrandsByContentIds,
 		fetchByRailContentId,
 		fetchByRailContentIds,
@@ -704,6 +715,7 @@ declare module 'musora-content-services' {
 		fetchPost,
 		fetchPosts,
 		fetchPracticeGoals,
+		fetchPromotionalCampaigns,
 		fetchPublicAnnouncement,
 		fetchQuizAnswers,
 		fetchRecent,
@@ -732,6 +744,7 @@ declare module 'musora-content-services' {
 		fetchUninterests,
 		fetchUnreadCount,
 		fetchUpcomingEvents,
+		fetchUserCampaignStates,
 		fetchUserPermissions,
 		fetchUserPlaylists,
 		fetchUserPracticeMeta,

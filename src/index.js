@@ -221,6 +221,14 @@ import {
 } from './services/marketing/marketing.ts';
 
 import {
+	claimPromotionalCampaign,
+	dismissPromotionalCampaign,
+	fetchAvailablePromotionalCampaigns,
+	fetchPromotionalCampaigns,
+	fetchUserCampaignStates
+} from './services/marketing/promotions.ts';
+
+import {
 	acceptInvite,
 	createAccount,
 	createInvites,
@@ -584,6 +592,7 @@ export {
 	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
+	claimPromotionalCampaign,
 	clearAllCachedData,
 	clearState,
 	closeComment,
@@ -624,6 +633,7 @@ export {
 	deleteProfilePicture,
 	deleteThread,
 	deleteUserActivity,
+	dismissPromotionalCampaign,
 	doesUserHaveMembership,
 	duplicatePlaylist,
 	editComment,
@@ -637,6 +647,7 @@ export {
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
+	fetchAvailablePromotionalCampaigns,
 	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
@@ -703,6 +714,7 @@ export {
 	fetchPost,
 	fetchPosts,
 	fetchPracticeGoals,
+	fetchPromotionalCampaigns,
 	fetchPublicAnnouncement,
 	fetchQuizAnswers,
 	fetchRecent,
@@ -731,6 +743,7 @@ export {
 	fetchUninterests,
 	fetchUnreadCount,
 	fetchUpcomingEvents,
+	fetchUserCampaignStates,
 	fetchUserPermissions,
 	fetchUserPlaylists,
 	fetchUserPracticeMeta,

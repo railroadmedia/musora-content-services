@@ -25,19 +25,20 @@ const publishedSongs = (brand: string) =>
   f.combine(f.type('song'), f.statusIn(['published']), f.defined('railcontent_id'), f.brand(brand))
 
 export async function fetchSongTitles(brand: string) {
-  const result = await groq()
+  const result = await groq<Song[]>()
     .and(publishedSongs(brand))
     .order('published_on desc')
     .slice(0, 10)
     .select('_id', 'title', 'railcontent_id')
-    .run<Song[]>()
+    .default([])
+    .run()
 
   return result.fold(
     (error) => {
       console.error(`${error.name}: ${error.message}`, error.groq)
       return []
     },
-    (songs) => songs ?? []
+    (songs) => songs
   )
 }
 
@@ -105,27 +106,28 @@ interface Lesson {
 }
 
 export async function fetchLessonsWithoutPermissions(brand: string) {
-  const result = await groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>()
+  const result = await groq<Lesson[]>().and(f.brand(brand)).slice(0, 10).default([]).run()
 
   return result
     .map((lessons) =>
-      decorateAll<Lesson>(lessons ?? [], [pageTypeDecorator as FieldDecorator<Lesson>])
+      decorateAll<Lesson>(lessons, [pageTypeDecorator as FieldDecorator<Lesson>])
     )
     .recover([])
 }
 
 export async function fetchDecoratedLessons(brand: string) {
   const [result, permissions] = await Promise.all([
-    groq()
+    groq<Lesson[]>()
       .and(f.combine(f.typeIn(['course']), f.brand(brand)))
       .slice(0, 10)
-      .run<Lesson[]>(),
+      .default([])
+      .run(),
     fetchUserPermissions(),
   ])
 
   return result
     .map((lessons) =>
-      decorateAll<Lesson>(lessons ?? [], [
+      decorateAll<Lesson>(lessons, [
         accessDecorator(permissions) as FieldDecorator<Lesson>,
         lifetimeUpgradeDecorator(permissions) as FieldDecorator<Lesson>,
         pageTypeDecorator as FieldDecorator<Lesson>,
@@ -135,12 +137,12 @@ export async function fetchDecoratedLessons(brand: string) {
 }
 
 export async function fetchLessonsWithNavigation(brand: string) {
-  const lessons = groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>()
+  const lessons = groq<Lesson[]>().and(f.brand(brand)).slice(0, 10).default([]).run()
   const permissions = await fetchUserPermissions()
 
   return lessons
     .map((lessons) =>
-      decorateAll<Lesson>(lessons ?? [], [accessDecorator(permissions) as FieldDecorator<Lesson>])
+      decorateAll<Lesson>(lessons, [accessDecorator(permissions) as FieldDecorator<Lesson>])
     )
     .mapAsync((lessons) => decorateNavigateTo(lessons) as Promise<Lesson[]>)
     .recover([])
@@ -152,9 +154,9 @@ export async function fetchWithACustomDecorator(brand: string) {
     compute: (lesson) => lesson.permission_id === undefined,
   }
 
-  const result = await groq().and(f.brand(brand)).run<Lesson[]>()
+  const result = await groq<Lesson[]>().and(f.brand(brand)).default([]).run()
 
-  return result.map((lessons) => decorateAll<Lesson>(lessons ?? [], [isFree])).recover([])
+  return result.map((lessons) => decorateAll<Lesson>(lessons, [isFree])).recover([])
 }
 
 export async function fetchWhenPermissionsMayBeUnavailable(brand: string) {
@@ -164,7 +166,7 @@ export async function fetchWhenPermissionsMayBeUnavailable(brand: string) {
     )
 
   const [result, permissions] = await Promise.all([
-    groq().and(f.brand(brand)).run<Lesson[]>(),
+    groq<Lesson[]>().and(f.brand(brand)).default([]).run(),
     fetchUserPermissions()
       .then(Either.right<SanityQueryError, UserPermissions>)
       .catch(queryError),
@@ -173,7 +175,7 @@ export async function fetchWhenPermissionsMayBeUnavailable(brand: string) {
   return result
     .flatMap((lessons) =>
       permissions.map((userPermissions) =>
-        decorateAll<Lesson>(lessons ?? [], [
+        decorateAll<Lesson>(lessons, [
           accessDecorator(userPermissions) as FieldDecorator<Lesson>,
         ])
       )
@@ -185,11 +187,11 @@ export async function fetchWhenPermissionsMayBeUnavailable(brand: string) {
 }
 
 export async function decorateManuallyForPreciseTypes(brand: string) {
-  const lessons = groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>()
+  const lessons = groq<Lesson[]>().and(f.brand(brand)).slice(0, 10).default([]).run()
   const permissions = await fetchUserPermissions()
 
   return lessons
-    .map((lessons) => decorateAccess(lessons ?? [], permissions))
+    .map((lessons) => decorateAccess(lessons, permissions))
     .mapAsync((lessons) => decorateNavigateTo(lessons))
     .fold(
       () => [],

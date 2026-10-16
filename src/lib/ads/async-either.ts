@@ -1,5 +1,10 @@
 import { Either } from './either'
 
+const toError = (error: unknown, message?: string): Error =>
+  error instanceof Error
+    ? error
+    : new Error(message ?? String(error ?? 'AsyncEither.attempt failed'))
+
 /**
  * An {@link Either} that has not resolved yet, so a chain can keep going across asynchronous
  * steps instead of dropping back into `.then()` at every one. Not a `TaskEither`: the work is
@@ -19,6 +24,39 @@ export class AsyncEither<L, R> implements PromiseLike<Either<L, R>> {
     return new AsyncEither(promise)
   }
 
+  static attempt<R>(fn: () => Promise<R>, message?: string): AsyncEither<Error, R>
+  static attempt<R, L>(
+    fn: () => Promise<R>,
+    onError: (error: unknown) => L
+  ): AsyncEither<L, R>
+  /**
+   * @param fn - the work to run; a rejection becomes a Left instead of propagating
+   * @param onError - a message used when `fn` rejects with a non-Error, or a function receiving
+   * the rejection untouched when the left has to carry more than a message
+   * @example
+   * AsyncEither.attempt(() => fetchStates(slugs), 'failed to fetch campaign state')
+   * @example
+   * AsyncEither.attempt(
+   *   () => client.query(groq),
+   *   (error) => new SanityQueryError('Sanity query failed', groq, error)
+   * )
+   */
+  static attempt<R, L>(
+    fn: () => Promise<R>,
+    onError?: string | ((error: unknown) => L)
+  ): AsyncEither<L | Error, R> {
+    const message = typeof onError === 'string' ? onError : undefined
+    const toLeft =
+      typeof onError === 'function' ? onError : (error: unknown) => toError(error, message)
+
+    return AsyncEither.of(
+      fn().then(
+        (value) => Either.right<L | Error, R>(value),
+        (error) => Either.left<L | Error, R>(toLeft(error))
+      )
+    )
+  }
+
   /** @param fn - maps the right value once it resolves */
   map<T>(fn: (r: R) => T): AsyncEither<L, T> {
     return AsyncEither.of(this.promise.then((either) => either.map(fn)))
@@ -29,13 +67,16 @@ export class AsyncEither<L, R> implements PromiseLike<Either<L, R>> {
     return AsyncEither.of(this.promise.then((either) => either.mapAsync(fn)))
   }
 
-  /** @param fn - maps the right value to another AsyncEither, flattening the result */
-  flatMap<T>(fn: (r: R) => AsyncEither<L, T>): AsyncEither<L, T> {
+  /**
+   * @param fn - maps the right value to another AsyncEither, flattening the result; its left type
+   * may differ, in which case the result carries the union of both
+   */
+  flatMap<T, E = L>(fn: (r: R) => AsyncEither<E, T>): AsyncEither<L | E, T> {
     return AsyncEither.of(
       this.promise.then((either) =>
         either.fold(
-          (l) => Promise.resolve(Either.left<L, T>(l)),
-          (r) => fn(r).promise
+          (l) => Promise.resolve(Either.left<L | E, T>(l)),
+          (r) => fn(r).promise as Promise<Either<L | E, T>>
         )
       )
     )

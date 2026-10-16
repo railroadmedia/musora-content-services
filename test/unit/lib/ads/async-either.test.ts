@@ -54,6 +54,32 @@ describe('AsyncEither', () => {
     })
   })
 
+  describe('attempt', () => {
+    test('wraps a resolved value in a right', async () => {
+      const result = await AsyncEither.attempt(async () => 2)
+      expect(result.drop()).toBe(2)
+    })
+
+    test('keeps the thrown Error as the left', async () => {
+      const error = new Error('network')
+      const result = await AsyncEither.attempt(() => Promise.reject(error))
+      expect(result.drop()).toBe(error)
+    })
+
+    test('builds the left with the given function, keeping the raw rejection', async () => {
+      const result = await AsyncEither.attempt(
+        () => Promise.reject({ status: 429 }),
+        (error) => (error as { status: number }).status
+      )
+      expect(result.drop()).toBe(429)
+    })
+
+    test('wraps a non-Error rejection in the given message', async () => {
+      const result = await AsyncEither.attempt(() => Promise.reject('nope'), 'request failed')
+      expect((result.drop() as Error).message).toBe('request failed')
+    })
+  })
+
   describe('lmap', () => {
     test('maps the left value', async () => {
       const result = await left<string, number>('boom').lmap((error) => error.toUpperCase())
@@ -65,6 +91,15 @@ describe('AsyncEither', () => {
       const result = await right<string, number>(2).lmap(fn)
       expect(fn).not.toHaveBeenCalled()
       expect(result.drop()).toBe(2)
+    })
+  })
+
+  describe('flatMap left widening', () => {
+    test('carries the union of both left types', async () => {
+      const result = await right<string, number>(2).flatMap<number, Error>(() =>
+        AsyncEither.of(Promise.resolve(Either.left<Error, number>(new Error('boom'))))
+      )
+      expect((result.drop() as Error).message).toBe('boom')
     })
   })
 

@@ -9,6 +9,37 @@ const recordingRunner =
     return Either.right(['ok'])
   }
 
+describe('groq<T>().default', () => {
+  test('replaces a null result with the fallback', async () => {
+    const emptyRunner: QueryRunner<string[]> = async () => Either.right(null)
+    const result = await groq<string[]>().and('_type == "song"').default([]).run(emptyRunner)
+
+    expect(result.drop()).toEqual([])
+  })
+
+  test('keeps a result the query did return', async () => {
+    const runner: QueryRunner<string[]> = async () => Either.right(['song'])
+    const result = await groq<string[]>().default([]).run(runner)
+
+    expect(result.drop()).toEqual(['song'])
+  })
+
+  test('leaves a left alone', async () => {
+    const error = new SanityQueryError('boom', '*')
+    const failingRunner: QueryRunner<string[]> = async () => Either.left(error)
+    const result = await groq<string[]>().default([]).run(failingRunner)
+
+    expect(result.drop()).toBe(error)
+  })
+
+  test('still applies when more chaining follows the default', async () => {
+    const emptyRunner: QueryRunner<string[]> = async () => Either.right(null)
+    const result = await groq<string[]>().default([]).and('_type == "song"').run(emptyRunner)
+
+    expect(result.drop()).toEqual([])
+  })
+})
+
 describe('groq', () => {
   test('builds the same string as the plain query builder', () => {
     const result = groq().and('_type == "song"').build()
