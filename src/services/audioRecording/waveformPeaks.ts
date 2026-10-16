@@ -6,16 +6,16 @@
  * platform instead (see waveform.utils.ts in musora-platform-frontend for the web one).
  */
 
-import { GET } from '../../infrastructure/http/HttpClient.ts'
+import { GET } from '../../infrastructure/http/HttpClient'
 import { BASE_PATH } from './audioRecording.js'
 
 /**
  * Downsample peaks array to target count (uses max in each bucket)
  */
-export function downsamplePeaks(peaks, targetCount) {
+export function downsamplePeaks(peaks: number[], targetCount: number): number[] {
   if (peaks.length <= targetCount) return peaks
 
-  const result = []
+  const result: number[] = []
   const step = peaks.length / targetCount
 
   for (let i = 0; i < targetCount; i++) {
@@ -34,9 +34,11 @@ export function downsamplePeaks(peaks, targetCount) {
 /**
  * Fetch stored waveform peaks for a recording
  */
-export async function getWaveformPeaks(folder) {
+export async function getWaveformPeaks(folder: string): Promise<number[] | null> {
   try {
-    const data = await GET(`${BASE_PATH}/waveform?folder=${encodeURIComponent(folder)}`)
+    const data: { peaks?: number[] } = await GET(
+      `${BASE_PATH}/waveform?folder=${encodeURIComponent(folder)}`
+    )
     return data.peaks && data.peaks.length > 0 ? data.peaks : null
   } catch {
     return null

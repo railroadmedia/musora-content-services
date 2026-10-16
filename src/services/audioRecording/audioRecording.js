@@ -44,7 +44,7 @@ const RECORDING_FORMATS = [
   'audio/aac',
 ]
 
-// Exported for waveformPeaks.js, which hits the same API prefix.
+// Exported for waveformPeaks.ts, which hits the same API prefix.
 export const BASE_PATH = '/api/audio-recording/v1'
 
 export function isFormatSupported(mimeType) {
