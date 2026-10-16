@@ -14,6 +14,9 @@ const SETTINGS = {
   help_improve_coach: false,
   help_improve_coach_updated_at: null,
   coach_feedback_enabled: false,
+  lesson_audio_enabled: false,
+  take_volume: 100,
+  lesson_volume: 50,
 }
 
 describe('audio settings', () => {
@@ -38,5 +41,15 @@ describe('audio settings', () => {
 
     expect(mockPatch).toHaveBeenCalledWith('/api/audio-recording/v1/settings', { recording_enabled: false })
     expect(result.recording_enabled).toBe(false)
+  })
+
+  test('sends the lesson audio settings', async () => {
+    const changes = { lesson_audio_enabled: true, take_volume: 80, lesson_volume: 30 }
+    mockPatch.mockResolvedValue({ ...SETTINGS, ...changes })
+
+    const result = await updateAudioSettings(changes)
+
+    expect(mockPatch).toHaveBeenCalledWith('/api/audio-recording/v1/settings', changes)
+    expect(result.lesson_volume).toBe(30)
   })
 })
