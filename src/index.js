@@ -85,7 +85,6 @@ import {
 	getNewAndUpcoming,
 	getOwnedContent,
 	getRecent,
-	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
@@ -364,10 +363,11 @@ import {
 
 import {
 	fetchSimilarItems,
+	getRecommendedForYou,
 	rankCategories,
 	rankItems,
 	recommendations
-} from './services/recommendations.js';
+} from './services/recommendations.ts';
 
 import {
 	getReportIssueOptions,

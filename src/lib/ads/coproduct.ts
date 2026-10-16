@@ -84,6 +84,42 @@ export abstract class Coproduct<L, R>
    */
   abstract fold<T, U>(onLeft: (l: L) => T, onRight: (r: R) => U): T | U
 
+  /**
+   * Unwraps the right value, throwing the left instead of returning it. Use at the edge of a
+   * chain where a failure has to become an exception.
+   * @param error - thrown instead of the left, or used as the message of the thrown Error
+   * @throws the left value when it is an `Error`, otherwise an `Error` wrapping it
+   * @example
+   * Coproduct.right(5).orFail()                          // 5
+   * Coproduct.left(new Error('bad')).orFail()            // throws Error('bad')
+   * Coproduct.left('bad').orFail('error during request') // throws Error('error during request')
+   * Coproduct.left('bad').orFail(new HttpError(502))     // throws HttpError(502)
+   */
+  orFail(error?: string | Error): R {
+    return this.fold(
+      (l) => {
+        throw Coproduct.toError(l, error)
+      },
+      (r) => r
+    )
+  }
+
+  private static toError<L>(value: L, error?: string | Error): Error {
+    if (error instanceof Error) {
+      return error
+    }
+
+    if (typeof error === 'string') {
+      return new Error(error)
+    }
+
+    if (value instanceof Error) {
+      return value
+    }
+
+    return new Error(typeof value === 'string' ? value : 'Coproduct.orFail called on a Left')
+  }
+
   /** Convenience {@link fold} that applies the same `fn` regardless of side. */
   foldMap<T>(initial: T, fn: (acc: T, value: L | R) => T): T {
     return this.fold(
