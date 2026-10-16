@@ -97,9 +97,7 @@ export function campaignQuery(
 export function fetchPromotionalCampaigns(
   options: CampaignQueryOptions = {}
 ): AsyncEither<Error, PromotionalCampaignDocument[]> {
-  return campaignQuery(options)
-    .run()
-    .ltap((error) => console.log({ error }))
+  return campaignQuery(options).run()
 }
 
 /**
