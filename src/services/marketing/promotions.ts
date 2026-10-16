@@ -1,11 +1,10 @@
 import { GET, POST } from '../../infrastructure/http/HttpClient'
 import { decorateAsync } from '../../lib/sanity/decorators/base'
-import type { Decoratable, FieldDecoratorAsync } from '../../lib/sanity/decorators/base'
+import type { FieldDecoratorAsync } from '../../lib/sanity/decorators/base'
 import { Filters as f } from '../../lib/sanity/filter'
 import { groq } from '../../lib/sanity/groq'
 import type { GroqBuilder } from '../../lib/sanity/groq'
 import type { PromotionalCampaignDocument } from '../../lib/sanity/types/marketing'
-import { SanityQueryError } from '@/lib/sanity/runner'
 import { AsyncEither } from '@/lib/ads/async-either'
 
 const excludeFromGeneratedIndex = [
@@ -135,16 +134,12 @@ export async function fetchUserCampaignStates(
 // DECORATION
 // ============================================
 
-export function userCampaignStateDecorator(
+export function userCampaignStateDecorator<T extends PromotionalCampaignDocument>(
   states: Record<string, UserCampaignState>
-): FieldDecoratorAsync<Decoratable, typeof USER_CAMPAIGN_STATE_FIELD, UserCampaignState> {
+): FieldDecoratorAsync<T, typeof USER_CAMPAIGN_STATE_FIELD, UserCampaignState> {
   return {
     field: USER_CAMPAIGN_STATE_FIELD,
-    compute: async (item) => {
-      const campaign = item as unknown as PromotionalCampaignDocument
-
-      return states[campaign.slug?.current] ?? UNTOUCHED
-    },
+    compute: async (campaign) => states[campaign.slug?.current] ?? UNTOUCHED,
   }
 }
 
@@ -158,10 +153,9 @@ export function decorateUserCampaignState<T extends PromotionalCampaignDocument>
     if (!campaigns.length) return []
 
     const states = await fetchUserCampaignStates(campaigns.map((campaign) => campaign.slug.current))
-    const { field, compute } = userCampaignStateDecorator(states)
-    const decorated = await decorateAsync(campaigns as unknown as Decoratable[], field, compute)
+    const { field, compute } = userCampaignStateDecorator<T>(states)
 
-    return decorated as unknown as WithUserCampaignState<T>[]
+    return decorateAsync(campaigns, field, compute)
   })
 }
 
