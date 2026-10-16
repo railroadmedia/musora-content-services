@@ -29,9 +29,21 @@ interface Chainable<T, Self> {
   _state(): QueryBuilderState
 }
 
-export interface GroqBuilder<T = unknown> extends Chainable<T, GroqBuilder<T>> {
-  first(): GroqBuilder<ElementOf<T>>
-  run<U = T>(runner?: QueryRunner<U>): AsyncEither<SanityQueryError, U | null>
+/**
+ * `Empty` is what `run` resolves to when the query matched nothing. {@link GroqBuilder.default}
+ * supplies a fallback and narrows it to `never`, which is the state a builder is assumed to be in
+ * unless it says otherwise: a builder that has not been given one is a `GroqBuilder<T, null>`.
+ */
+export interface GroqBuilder<T = unknown, Empty = never> extends Chainable<T, GroqBuilder<T, Empty>> {
+  /**
+   * Never read. Methods are checked bivariantly, so without a property here a builder with no
+   * fallback would silently satisfy a signature promising one.
+   */
+  readonly __empty?: Empty
+
+  first(): GroqBuilder<ElementOf<T>, Empty>
+  default(value: T): GroqBuilder<T, never>
+  run<U = T>(runner?: QueryRunner<U>): AsyncEither<SanityQueryError, U | Empty>
 }
 
 /**
@@ -46,14 +58,25 @@ export interface GroqBuilder<T = unknown> extends Chainable<T, GroqBuilder<T>> {
  *   .run<Song[]>()
  * @example
  * // naming the type up front keeps it off every call in the chain
- * const songs = await groq<Song[]>().and(f.type('song')).run().defaultTo([])
+ * const songs = await groq<Song[]>().and(f.type('song')).default([]).run()
  */
-const groqBuilder = <T = unknown>(selector?: string): GroqBuilder<T> => {
+const groqBuilder = <T = unknown>(selector?: string): GroqBuilder<T, null> => {
   const builder = query(selector)
+  let fallback: { value: unknown } | undefined
 
-  return Object.assign(builder, {
-    run: <U = T>(runner?: QueryRunner<U>) => run<U>(builder.build(), runner),
-  }) as unknown as GroqBuilder<T>
+  const runnable = Object.assign(builder, {
+    default: (value: unknown) => {
+      fallback = { value }
+      return runnable
+    },
+    run: <U = T>(runner?: QueryRunner<U>) => {
+      const result = run<U>(builder.build(), runner)
+
+      return fallback ? result.defaultTo(fallback.value as U) : result
+    },
+  })
+
+  return runnable as unknown as GroqBuilder<T, null>
 }
 
 /**

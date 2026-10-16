@@ -87,6 +87,7 @@ export function campaignQuery(
     )
     .order('starts_at desc')
     .select(...campaignProjection)
+    .default([])
 }
 
 // ============================================
