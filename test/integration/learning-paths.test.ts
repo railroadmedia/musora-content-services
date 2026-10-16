@@ -89,8 +89,8 @@ const {
   onLearningPathCompletedActions,
   mapLearningPathParentsTo,
   mapContentsThatWereLastProgressedFromMethod,
-  resetLearningPathCachesForTests,
 } = require('../../src/services/my-path/learning-paths.ts')
+const { clearLearningPathCaches } = require('../../src/services/my-path/cache.ts')
 
 const ctx = initializeTestDB()
 
@@ -110,7 +110,7 @@ function setApiResponses(r: ApiResponses) {
 }
 
 beforeEach(() => {
-  resetLearningPathCachesForTests()
+  clearLearningPathCaches()
   HttpClient.GET.mockReset()
   HttpClient.POST.mockReset()
   sanity.fetchByRailContentId.mockReset()
@@ -287,6 +287,32 @@ describe('updateDailySession', () => {
     expect(result).toBeNull()
   })
 
+  test('caches both the daily session and the active path', async () => {
+    const userDate = new Date('2026-01-01T10:00:00Z')
+    const resp = { user_id: 1, brand: 'drumeo', active_learning_path_id: 7, daily_session: [] }
+    HttpClient.POST.mockResolvedValueOnce(resp)
+    await updateDailySession('drumeo', userDate)
+    HttpClient.GET.mockClear()
+
+    expect(await getDailySession('drumeo', userDate)).toEqual(resp)
+    expect(await getActivePath('drumeo')).toEqual({ user_id: 1, brand: 'drumeo', active_learning_path_id: 7 })
+    expect(HttpClient.GET).not.toHaveBeenCalled()
+  })
+
+  test('an empty response clears both caches', async () => {
+    const userDate = new Date('2026-01-01T10:00:00Z')
+    await getActivePath('drumeo')
+    await getDailySession('drumeo', userDate)
+    HttpClient.POST.mockResolvedValueOnce('')
+    await updateDailySession('drumeo', userDate)
+    HttpClient.GET.mockClear()
+
+    await getActivePath('drumeo')
+    await getDailySession('drumeo', userDate)
+
+    expect(HttpClient.GET.mock.calls.length).toBeGreaterThanOrEqual(2)
+  })
+
   test('defaults keepFirstLearningPath to false', async () => {
     HttpClient.POST.mockResolvedValueOnce({ active_learning_path_id: 1, daily_session: [] })
     await updateDailySession('drumeo', new Date('2026-01-01T10:00:00Z'))
@@ -330,6 +356,35 @@ describe('startLearningPath', () => {
     await startLearningPath('drumeo', 11)
     const getCalls = HttpClient.GET.mock.calls.filter((c: any[]) => c[0].includes('/active-path/get'))
     expect(getCalls).toHaveLength(0)
+  })
+
+  test('invalidates the cached daily session for today', async () => {
+    const resp = { user_id: 1, brand: 'drumeo', active_learning_path_id: 11 }
+    const dailySession = { active_learning_path_id: 5, daily_session: [] }
+    setApiResponses({ activePath: resp, dailySession })
+    const dailyGetCalls = () =>
+      HttpClient.GET.mock.calls.filter((c: any[]) => c[0].includes('/daily-session/get'))
+
+    await getDailySession('drumeo', new Date())
+    await getDailySession('drumeo', new Date())
+    expect(dailyGetCalls()).toHaveLength(1)
+
+    HttpClient.POST.mockResolvedValueOnce(resp)
+    await startLearningPath('drumeo', 11)
+    await getDailySession('drumeo', new Date())
+    expect(dailyGetCalls()).toHaveLength(2)
+  })
+
+  test('does not invalidate the daily session when POST returns falsy', async () => {
+    setApiResponses({ dailySession: { active_learning_path_id: 5, daily_session: [] } })
+    await getDailySession('drumeo', new Date())
+
+    HttpClient.POST.mockResolvedValueOnce(null)
+    await startLearningPath('drumeo', 11)
+    await getDailySession('drumeo', new Date())
+
+    const dailyGetCalls = HttpClient.GET.mock.calls.filter((c: any[]) => c[0].includes('/daily-session/get'))
+    expect(dailyGetCalls).toHaveLength(1)
   })
 })
 
@@ -744,7 +799,9 @@ describe('onLearningPathCompletedActions', () => {
         { id: 7, published_on: null },
       ],
     })
-    HttpClient.POST.mockResolvedValueOnce({ active_learning_path_id: 6 })
+    HttpClient.POST.mockImplementation((url: string) =>
+      Promise.resolve(url.includes('/active-path/set') ? { active_learning_path_id: 6 } : null),
+    )
     await contentStatusCompleted(600)
 
     await onLearningPathCompletedActions(5)
