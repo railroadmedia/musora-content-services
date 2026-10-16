@@ -1,8 +1,8 @@
 # Plan: make built queries runnable, with a typed result (mcs)
 
-Status: implemented.
+Status: implemented, amended 2026-09-23 (see §8 — `run()` now returns `AsyncEither`).
 Scope: `src/lib/sanity/runner.ts`, `src/lib/sanity/groq.ts`, `src/lib/sanity/examples.ts`,
-`src/lib/ads/either.ts`.
+`src/lib/ads/either.ts`, `src/lib/ads/async-either.ts`.
 Depends on: `Coproduct` in `src/lib/ads/` — ported from `chore/ads-structures`, already on this branch.
 Related: `.claude/docs/architecture/groq-composite-projections.md` — `composite()` shipped first; this plan builds on it.
 
@@ -211,6 +211,9 @@ const defaultRunner = (): QueryRunner => (cachedRunner ??= sanityRunner())
 export const run = <T>(groq: string, runner: QueryRunner = defaultRunner()) => runner<T>(groq)
 ```
 
+> Amended in §8: `run()` now wraps the runner's promise — `AsyncEither.of(runner(groq))`. The
+> runner contract itself is unchanged.
+
 `run()` deliberately does **not** go on `QueryBuilder`. `query.ts` today imports exactly two
 things, `Monoid` and `FieldAccess`, and stays pure string construction. A `run()` method with a
 default runner would make `query.ts` statically import the runner → `SanityClient` →
@@ -249,7 +252,7 @@ very same object rather than wrapping it.
 export interface RunnableQuery {
   build(): string
   toString(): string
-  run<T>(runner?: QueryRunner<T>): Promise<Either<SanityQueryError, T | null>>
+  run<T>(runner?: QueryRunner<T>): AsyncEither<SanityQueryError, T | null> // amended, §8
 }
 
 export interface GroqBuilder extends QueryBuilder, RunnableQuery { /* chainables */ }
@@ -332,6 +335,74 @@ reaches `src/index.js` automatically. Consumers reach it through the subpath exp
 `musora-content-services/src/lib/sanity/runner`, which is how MusoraApp already imports the sync
 system. Subpath only, at least until something in `src/services/` uses it.
 
+### 8. `AsyncEither` — amendment of 2026-09-23
+
+`run()` returns `AsyncEither<SanityQueryError, T | null>` instead of
+`Promise<Either<SanityQueryError, T | null>>`.
+
+**Why.** `Coproduct.mapAsync` returns `Promise<Coproduct<L, T>>`, so every asynchronous step in a
+chain dropped the caller back out of the ADT and back into `.then()`. `fetchRecommendedContent`
+(`src/services/recommendations.ts`) had two nested `.then((r) => r...)` wrappers for one
+decoration pass. `AsyncEither` is an `Either` that has not resolved yet: its `map`, `mapAsync`,
+`flatMap`, `lmap`, `tap` and `ltap` each return another `AsyncEither`, so the chain survives the
+async step. `fold`, `recover` and `unlift` leave it and return a `Promise`.
+
+**Not a `TaskEither`.** There is no laziness. `AsyncEither.of(promise)` takes work that is already
+running, so it buys no retry, no cancellation and no deferred execution. The GROQ builder is
+already the thunk — nothing is deferred by wrapping the result. `fp-ts` was rejected for the same
+reason it was rejected in §1: a new dependency, RN bundle weight, and a `pipe()` idiom that
+collides with the method-chaining ADTs already here.
+
+**The lift happens once, at the edge.** `Coproduct.mapAsync` was deliberately *not* changed to
+return `AsyncEither`. Doing so would make `coproduct.ts` import `async-either.ts` → `either.ts` →
+`coproduct.ts`, a require cycle that Metro warns on, and would invert the dependency: the async
+layer may know about `Either`, but the pure type should not know about the async layer.
+After this change `Coproduct.mapAsync` has exactly one caller, `async-either.ts`, and is
+effectively a private helper. Collapsing it is a separate cleanup.
+
+**`PromiseLike`, not `Promise`.** `AsyncEither` implements `then()`, which is enough for `await`,
+for `Promise.all`, and for the return position of an `async` function — so no existing call site
+needed editing. It is *not* a `Promise`: no `catch`, no `finally`, no `Symbol.toStringTag`. Two
+consequences worth knowing:
+
+```ts
+// compiles — an async function returns a real Promise, adopting the thenable
+async function fetchMarketingStats(): Promise<Either<SanityQueryError, StatsDocument | null>> {
+  return brandDocumentQuery('stats', brand).run<StatsDocument>()
+}
+
+// TS2739 — drop the `async` and AsyncEither is missing catch/finally/[Symbol.toStringTag]
+function fetchMarketingStats(): Promise<Either<SanityQueryError, StatsDocument | null>> {
+  return brandDocumentQuery('stats', brand).run<StatsDocument>()
+}
+```
+
+The five `marketing.ts` functions are all `async`, so the package's public signatures are
+unchanged and no consumer — MusoraApp, mpf — sees a difference. `unlift()` exists for the
+non-`async` case.
+
+`Promise.all` is the trap in the other direction: it adopts the thenable and lowers it to an
+`Either`, which defeats the chaining. Two `examples.ts` functions were restructured to start the
+query and await only the permissions fetch. Concurrency is unchanged — the query is in flight from
+`run()`.
+
+```ts
+const lessons = groq().and(f.brand(brand)).slice(0, 10).run<Lesson[]>()
+const permissions = await fetchUserPermissions()
+```
+
+**Rejection timing.** A rejection inside `mapAsync` now rides the chain to whoever awaits the tail
+rather than throwing at an intermediate `await`. Building a chain and never awaiting it produces
+an unhandled rejection. Every call site today awaits its tail.
+
+**Amended files.** New: `src/lib/ads/async-either.ts`, `test/unit/lib/ads/async-either.test.ts`
+(22 tests). Modified: `src/lib/sanity/runner.ts` and `src/lib/sanity/groq.ts` (return types),
+`src/services/recommendations.ts` and `src/lib/sanity/examples.ts` (chains flattened; no behaviour
+change). `src/index.js` / `src/index.d.ts` regenerate with zero diff — §7 still holds, nothing
+under `src/lib/` reaches the generated index. Verified with `tsc --noEmit -p tsconfig.json` clean
+and `npm test` at 1312 passed across 81 suites.
+
+
 ## Files
 
 | Action | Path |
@@ -343,6 +414,8 @@ system. Subpath only, at least until something in `src/services/` uses it.
 | new | `test/unit/lib/ads/either.test.ts` |
 | new | `test/unit/lib/sanity/runner.test.ts` |
 | new | `test/unit/lib/sanity/groq.test.ts` |
+| new (§8) | `src/lib/ads/async-either.ts` — `AsyncEither`, the pending `Either` returned by `run()` |
+| new (§8) | `test/unit/lib/ads/async-either.test.ts` |
 
 `query.ts`, `filter.ts`, `SanityClient.ts`, `FetchQueryExecutor.ts`, `services/sanity.js` and every
 existing service function are **not** modified.
