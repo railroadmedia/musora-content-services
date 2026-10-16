@@ -221,7 +221,7 @@ const sortByRecommendedOrder =
 const decorateRecommendations =
   (permissions: UserPermissions) =>
   (contents: RecommendedContent[]): DecoratedRecommendedContent[] =>
-    decorateAll(contents ?? [], [
+    decorateAll(contents, [
       accessDecorator(permissions),
       lifetimeUpgradeDecorator(permissions),
       pageTypeDecorator,
@@ -249,7 +249,7 @@ async function fetchRecommendedContent(
     fetchUserPermissions(),
   ])
 
-  return groq()
+  return groq<RecommendedContent[]>()
     .and(restrictions)
     .select(
       ...fields,
@@ -257,7 +257,8 @@ async function fetchRecommendedContent(
       'live_event_start_time',
       'live_event_end_time'
     )
-    .run<RecommendedContent[]>()
+    .default([])
+    .run()
     .map(decorateRecommendations(permissions))
     .mapAsync((contents) => decorateNavigateTo(contents))
     .map(sortByRecommendedOrder(ids))
