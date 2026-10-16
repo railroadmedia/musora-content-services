@@ -1,9 +1,35 @@
+import { AsyncEither } from '../../../src/lib/ads/async-either'
+import { Either } from '../../../src/lib/ads/either'
 import { Filters as f } from '../../../src/lib/sanity/filter'
+import * as HttpClient from '../../../src/infrastructure/http/HttpClient'
+import * as runner from '../../../src/lib/sanity/runner'
 import {
   campaignProjection,
   campaignQuery,
+  decorateUserCampaignState,
+  fetchAvailablePromotionalCampaigns,
+  fetchUserCampaignStates,
   userCampaignStateDecorator,
 } from '../../../src/services/marketing/promotions'
+import type { PromotionalCampaignDocument } from '../../../src/lib/sanity/types/marketing'
+
+jest.mock('../../../src/lib/sanity/runner', () => ({
+  ...jest.requireActual('../../../src/lib/sanity/runner'),
+  run: jest.fn(),
+}))
+
+const campaignDocument = (slug: string) =>
+  ({
+    _type: 'promotional-campaign',
+    slug: { _type: 'slug', current: slug },
+  }) as unknown as PromotionalCampaignDocument
+
+const queryResolving = (campaigns: PromotionalCampaignDocument[]) =>
+  jest
+    .mocked(runner.run)
+    .mockReturnValue(
+      AsyncEither.of(Promise.resolve(Either.right(campaigns))) as ReturnType<typeof runner.run>
+    )
 
 const on = new Date('2026-11-25T12:00:00.000Z')
 
@@ -119,5 +145,114 @@ describe('userCampaignStateDecorator', () => {
       claimed: false,
       dismissed: false,
     })
+  })
+})
+
+describe('fetchUserCampaignStates', () => {
+  afterEach(() => jest.restoreAllMocks())
+
+  test('does not reach the backend when there are no slugs', async () => {
+    const get = jest.spyOn(HttpClient, 'GET')
+
+    await expect(fetchUserCampaignStates([])).resolves.toEqual({})
+    expect(get).not.toHaveBeenCalled()
+  })
+
+  test('asks for every slug in one request', async () => {
+    const get = jest.spyOn(HttpClient, 'GET').mockResolvedValue({})
+
+    await fetchUserCampaignStates(['black-friday-2026', 'cyber monday'])
+
+    expect(get).toHaveBeenCalledTimes(1)
+    expect(get).toHaveBeenCalledWith(
+      '/api/promotions/v1/campaigns/state?slugs[]=black-friday-2026&slugs[]=cyber%20monday'
+    )
+  })
+
+  test('reads an empty body as no states', async () => {
+    jest.spyOn(HttpClient, 'GET').mockResolvedValue(null)
+
+    await expect(fetchUserCampaignStates(['black-friday-2026'])).resolves.toEqual({})
+  })
+})
+
+describe('decorateUserCampaignState', () => {
+  afterEach(() => jest.restoreAllMocks())
+
+  test('attaches the state the backend reported', async () => {
+    jest
+      .spyOn(HttpClient, 'GET')
+      .mockResolvedValue({ 'black-friday-2026': { claimed: true, dismissed: false } })
+
+    const result = await decorateUserCampaignState([campaignDocument('black-friday-2026')])
+
+    expect(result.drop()).toEqual([
+      expect.objectContaining({ user_state: { claimed: true, dismissed: false } }),
+    ])
+  })
+
+  test('treats a campaign the backend did not report as untouched', async () => {
+    jest.spyOn(HttpClient, 'GET').mockResolvedValue({})
+
+    const result = await decorateUserCampaignState([campaignDocument('unknown')])
+
+    expect(result.drop()).toEqual([
+      expect.objectContaining({ user_state: { claimed: false, dismissed: false } }),
+    ])
+  })
+
+  test('does not reach the backend when there are no campaigns', async () => {
+    const get = jest.spyOn(HttpClient, 'GET')
+    const result = await decorateUserCampaignState([])
+
+    expect(result.drop()).toEqual([])
+    expect(get).not.toHaveBeenCalled()
+  })
+
+  test('turns a failed state request into a left', async () => {
+    const error = new Error('network')
+    jest.spyOn(HttpClient, 'GET').mockRejectedValue(error)
+
+    const result = await decorateUserCampaignState([campaignDocument('black-friday-2026')])
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.drop()).toBe(error)
+  })
+})
+
+describe('fetchAvailablePromotionalCampaigns', () => {
+  afterEach(() => jest.restoreAllMocks())
+
+  test('drops campaigns the user already claimed or dismissed', async () => {
+    queryResolving([
+      campaignDocument('claimed'),
+      campaignDocument('dismissed'),
+      campaignDocument('untouched'),
+    ])
+    jest.spyOn(HttpClient, 'GET').mockResolvedValue({
+      claimed: { claimed: true, dismissed: false },
+      dismissed: { claimed: false, dismissed: true },
+    })
+
+    const result = await fetchAvailablePromotionalCampaigns()
+
+    expect(result.drop()).toEqual([
+      expect.objectContaining({ slug: { _type: 'slug', current: 'untouched' } }),
+    ])
+  })
+
+  test('keeps a failed query as a left without asking for state', async () => {
+    const error = new runner.SanityQueryError('boom', '*')
+    jest
+      .mocked(runner.run)
+      .mockReturnValue(
+        AsyncEither.of(Promise.resolve(Either.left(error))) as ReturnType<typeof runner.run>
+      )
+    const get = jest.spyOn(HttpClient, 'GET')
+
+    const result = await fetchAvailablePromotionalCampaigns()
+
+    expect(result.drop()).toBe(error)
+    expect(get).not.toHaveBeenCalled()
   })
 })
