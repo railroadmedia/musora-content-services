@@ -218,7 +218,6 @@ import {
 
 import {
 	claimPromotionalCampaign,
-	decorateUserCampaignState,
 	dismissPromotionalCampaign,
 	fetchAvailablePromotionalCampaigns,
 	fetchPromotionalCampaigns,
@@ -622,7 +621,6 @@ declare module 'musora-content-services' {
 		createPracticeNotes,
 		createTestUser,
 		createThread,
-		decorateUserCampaignState,
 		deleteAccount,
 		deleteAllNotifications,
 		deleteComment,

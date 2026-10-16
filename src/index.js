@@ -222,7 +222,6 @@ import {
 
 import {
 	claimPromotionalCampaign,
-	decorateUserCampaignState,
 	dismissPromotionalCampaign,
 	fetchAvailablePromotionalCampaigns,
 	fetchPromotionalCampaigns,
@@ -621,7 +620,6 @@ export {
 	createPracticeNotes,
 	createTestUser,
 	createThread,
-	decorateUserCampaignState,
 	deleteAccount,
 	deleteAllNotifications,
 	deleteComment,

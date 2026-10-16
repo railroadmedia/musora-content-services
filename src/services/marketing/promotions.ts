@@ -1,4 +1,3 @@
-import { Either } from '@/lib/ads/either'
 import { GET, POST } from '../../infrastructure/http/HttpClient'
 import { decorateAsync } from '../../lib/sanity/decorators/base'
 import type { Decoratable, FieldDecoratorAsync } from '../../lib/sanity/decorators/base'
@@ -6,11 +5,14 @@ import { Filters as f } from '../../lib/sanity/filter'
 import { groq } from '../../lib/sanity/groq'
 import type { GroqBuilder } from '../../lib/sanity/groq'
 import type { PromotionalCampaignDocument } from '../../lib/sanity/types/marketing'
+import { SanityQueryError } from '@/lib/sanity/runner'
+import { AsyncEither } from '@/lib/ads/async-either'
 
 const excludeFromGeneratedIndex = [
   'campaignQuery',
   'campaignProjection',
   'userCampaignStateDecorator',
+  'decorateUserCampaignState',
 ]
 
 // ============================================
@@ -69,10 +71,12 @@ function slugFilter(slug: CampaignQueryOptions['slug']): string {
   return slugs.length === 1 ? f.slug(slugs[0]) : f.slugIn(slugs)
 }
 
-export function campaignQuery(options: CampaignQueryOptions = {}): GroqBuilder {
+export function campaignQuery(
+  options: CampaignQueryOptions = {}
+): GroqBuilder<PromotionalCampaignDocument[]> {
   const { slug, on = new Date(), running = true, active = true } = options
 
-  return groq()
+  return groq<PromotionalCampaignDocument[]>()
     .and(
       f.combine(
         f.type('promotional-campaign'),
@@ -89,23 +93,23 @@ export function campaignQuery(options: CampaignQueryOptions = {}): GroqBuilder {
 // FETCHING
 // ============================================
 
-export async function fetchPromotionalCampaigns(
+export function fetchPromotionalCampaigns(
   options: CampaignQueryOptions = {}
-): Promise<Either<Error, PromotionalCampaignDocument[]>> {
+): AsyncEither<Error, PromotionalCampaignDocument[]> {
   return campaignQuery(options)
-    .run<PromotionalCampaignDocument[]>()
-    .then((r) => r.ltap((error) => console.log({ error })))
+    .run()
+    .ltap((error) => console.log({ error }))
 }
 
 /**
  * Every running campaign the user has not already claimed or dismissed.
  */
-export async function fetchAvailablePromotionalCampaigns(
+export function fetchAvailablePromotionalCampaigns(
   options: CampaignQueryOptions = {}
-): Promise<Either<Error, WithUserCampaignState<PromotionalCampaignDocument>[]>> {
+): AsyncEither<Error, WithUserCampaignState<PromotionalCampaignDocument>[]> {
   return fetchPromotionalCampaigns(options)
-    .then((r) => r.mapAsync(decorateUserCampaignState))
-    .then((r) => r.map(filterCampaignsForUser).ltap((error) => console.log({ error })))
+    .flatMap(decorateUserCampaignState)
+    .map(filterCampaignsForUser)
 }
 
 /**
@@ -142,17 +146,18 @@ export function userCampaignStateDecorator(
 /**
  * Attaches each campaign's claim and dismiss state in a single backend request.
  */
-export async function decorateUserCampaignState<T extends PromotionalCampaignDocument>(
+export function decorateUserCampaignState<T extends PromotionalCampaignDocument>(
   campaigns: T[]
-): Promise<WithUserCampaignState<T>[]> {
-  if (!campaigns.length) return []
+): AsyncEither<Error, WithUserCampaignState<T>[]> {
+  return AsyncEither.attempt(async () => {
+    if (!campaigns.length) return []
 
-  const states = await fetchUserCampaignStates(campaigns.map((campaign) => campaign.slug.current))
-  const { field, compute } = userCampaignStateDecorator(states)
+    const states = await fetchUserCampaignStates(campaigns.map((campaign) => campaign.slug.current))
+    const { field, compute } = userCampaignStateDecorator(states)
+    const decorated = await decorateAsync(campaigns as unknown as Decoratable[], field, compute)
 
-  return decorateAsync(campaigns as unknown as Decoratable[], field, compute) as Promise<
-    WithUserCampaignState<T>[]
-  >
+    return decorated as unknown as WithUserCampaignState<T>[]
+  })
 }
 
 // ============================================
