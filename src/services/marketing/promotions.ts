@@ -28,6 +28,8 @@ export const USER_CAMPAIGN_STATE_FIELD = 'user_state' as const
 export interface UserCampaignState {
   claimed: boolean
   dismissed: boolean
+  /** False when the campaign is not offered to this user, e.g. they already hold a better plan. */
+  eligible: boolean
 }
 
 export type WithUserCampaignState<T extends PromotionalCampaignDocument> = T & {
@@ -45,14 +47,17 @@ export interface CampaignQueryOptions {
   active?: boolean
 }
 
-const UNTOUCHED: UserCampaignState = { claimed: false, dismissed: false }
+const UNTOUCHED: UserCampaignState = { claimed: false, dismissed: false, eligible: true }
 
 // ============================================
 // UTILITIES
 // ============================================
 
 const filterCampaignsForUser = (campaigns: WithUserCampaignState<PromotionalCampaignDocument>[]) =>
-  campaigns.filter((campaign) => !campaign.user_state.claimed && !campaign.user_state.dismissed)
+  campaigns.filter(
+    (campaign) =>
+      campaign.user_state.eligible && !campaign.user_state.claimed && !campaign.user_state.dismissed
+  )
 
 // ============================================
 // QUERY BUILDING

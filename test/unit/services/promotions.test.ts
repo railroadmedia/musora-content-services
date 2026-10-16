@@ -128,13 +128,14 @@ describe('userCampaignStateDecorator', () => {
 
   test('matches a campaign to its state by slug', async () => {
     const { field, compute } = userCampaignStateDecorator({
-      'black-friday-2026': { claimed: true, dismissed: false },
+      'black-friday-2026': { claimed: true, dismissed: false, eligible: true },
     })
 
     expect(field).toBe('user_state')
     await expect(compute(campaign('black-friday-2026') as never)).resolves.toEqual({
       claimed: true,
       dismissed: false,
+      eligible: true,
     })
   })
 
@@ -144,6 +145,7 @@ describe('userCampaignStateDecorator', () => {
     await expect(compute(campaign('unknown') as never)).resolves.toEqual({
       claimed: false,
       dismissed: false,
+      eligible: true,
     })
   })
 })
@@ -197,7 +199,7 @@ describe('decorateUserCampaignState', () => {
     const result = await decorateUserCampaignState([campaignDocument('unknown')])
 
     expect(result.drop()).toEqual([
-      expect.objectContaining({ user_state: { claimed: false, dismissed: false } }),
+      expect.objectContaining({ user_state: { claimed: false, dismissed: false, eligible: true } }),
     ])
   })
 
@@ -238,6 +240,20 @@ describe('fetchAvailablePromotionalCampaigns', () => {
 
     expect(result.drop()).toEqual([
       expect.objectContaining({ slug: { _type: 'slug', current: 'untouched' } }),
+    ])
+  })
+
+  test('drops campaigns the user is not eligible for', async () => {
+    queryResolving([campaignDocument('excluded'), campaignDocument('offered')])
+    jest.spyOn(HttpClient, 'GET').mockResolvedValue({
+      excluded: { claimed: false, dismissed: false, eligible: false },
+      offered: { claimed: false, dismissed: false, eligible: true },
+    })
+
+    const result = await fetchAvailablePromotionalCampaigns()
+
+    expect(result.drop()).toEqual([
+      expect.objectContaining({ slug: { _type: 'slug', current: 'offered' } }),
     ])
   })
 
