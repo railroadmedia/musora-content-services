@@ -1,7 +1,11 @@
 import { AsyncEither } from '../ads/async-either'
 import { FieldAccess } from './field-access'
-import { composite, query, QueryBuilder } from './query'
+import { composite, query, QueryBuilder, QueryBuilderState } from './query'
 import { QueryRunner, run, SanityQueryError } from './runner'
+
+type ElementOf<T> = T extends (infer U)[] ? U : T
+
+type Field<T> = (keyof ElementOf<T> & string) | (string & {})
 
 export interface RunnableQuery {
   build(): string
@@ -9,22 +13,30 @@ export interface RunnableQuery {
   run<T>(runner?: QueryRunner<T>): AsyncEither<SanityQueryError, T | null>
 }
 
-export interface GroqBuilder extends QueryBuilder, RunnableQuery {
-  selector(selector: string): GroqBuilder
-  and(expr: string): GroqBuilder
-  or(...exprs: string[]): GroqBuilder
-  order(expr: string): GroqBuilder
-  slice(offset: number, limit?: number): GroqBuilder
-  first(): GroqBuilder
-  select(...fields: string[]): GroqBuilder
-  access(field: string, fieldAccess?: FieldAccess): GroqBuilder
-  dereference(): GroqBuilder
-  postFilter(expr: string): GroqBuilder
+interface Chainable<T, Self> {
+  selector(selector: string): Self
+  and(expr: string): Self
+  or(...exprs: string[]): Self
+  order(expr: string): Self
+  slice(offset: number, limit?: number): Self
+  select(...fields: Field<T>[]): Self
+  access(field: Field<T>, fieldAccess?: FieldAccess): Self
+  dereference(): Self
+  postFilter(expr: string): Self
+  build(): string
+  toString(): string
+
+  _state(): QueryBuilderState
+}
+
+export interface GroqBuilder<T = unknown> extends Chainable<T, GroqBuilder<T>> {
+  first(): GroqBuilder<ElementOf<T>>
+  run<U = T>(runner?: QueryRunner<U>): AsyncEither<SanityQueryError, U | null>
 }
 
 /**
  * @param {string} selector
- * @returns {GroqBuilder}
+ * @returns {GroqBuilder<T>}
  * @example
  * const result = await groq()
  *   .and(f.type('song'))
@@ -32,13 +44,16 @@ export interface GroqBuilder extends QueryBuilder, RunnableQuery {
  *   .slice(0, 10)
  *   .select('_id', 'title')
  *   .run<Song[]>()
+ * @example
+ * // naming the type up front keeps it off every call in the chain
+ * const songs = await groq<Song[]>().and(f.type('song')).run().defaultTo([])
  */
-const groqBuilder = (selector?: string): GroqBuilder => {
+const groqBuilder = <T = unknown>(selector?: string): GroqBuilder<T> => {
   const builder = query(selector)
 
   return Object.assign(builder, {
-    run: <T>(runner?: QueryRunner<T>) => run<T>(builder.build(), runner),
-  }) as GroqBuilder
+    run: <U = T>(runner?: QueryRunner<U>) => run<U>(builder.build(), runner),
+  }) as unknown as GroqBuilder<T>
 }
 
 /**
