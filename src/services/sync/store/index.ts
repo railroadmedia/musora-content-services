@@ -65,6 +65,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private cleanupTimer: NodeJS.Timeout | null = null
 
   private lastFetchTokenKey: string
+  private fullRepullKey: string
 
   constructor(
     { model, comparator, pull, push, purgeGracePeriod }: SyncStoreConfig<TModel>,
@@ -96,6 +97,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.puller = pull
     this.pusher = push
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
+    this.fullRepullKey = `full_repull_v1:${this.model.table}`
 
     this.telemetry = telemetry
 
@@ -570,7 +572,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       return { ok: false, failureType: 'fetch', isRetryable: false } as SyncPullFetchFailureResponse
     }
 
-    const lastFetchToken = await this.getLastFetchToken()
+    // one-time full pull recovers rows the old client_updated_at pull cursor skipped
+    const fullRepullDone = await this.runScope.abortable(() =>
+      this.db.localStorage.get<boolean>(this.fullRepullKey)
+    )
+    const lastFetchToken = fullRepullDone ? await this.getLastFetchToken() : null
 
     const response = await this.telemetry.trace(
       {
@@ -609,6 +615,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
       await this.writeEntries(response.entries, !response.previousToken, parentSpan)
       await this.setLastFetchToken(response.token)
+      if (!fullRepullDone) {
+        await this.runScope.abortable(() =>
+          this.db.write(() => this.db.localStorage.set(this.fullRepullKey, true))
+        )
+      }
 
       this.emit('pullCompleted')
     }
