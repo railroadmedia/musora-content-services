@@ -176,6 +176,55 @@ describe('getHierarchy session cache', () => {
     expect(await getHierarchies([71121, 71999], null)).toBeNull()
   })
 
+  test('each cache hit restarts the 30 minute idle window', async () => {
+    global.fetch = mockSanity(71150, [71151]) as any
+    await getHierarchy(71151, null)
+    jest.setSystemTime(Date.now() + 20 * 60 * 1000)
+    await getHierarchy(71151, null)
+    const requestsBeforeLastLookup = (global.fetch as jest.Mock).mock.calls.length
+
+    jest.setSystemTime(Date.now() + 20 * 60 * 1000)
+    await getHierarchy(71151, null)
+
+    expect(global.fetch).toHaveBeenCalledTimes(requestsBeforeLastLookup)
+  })
+
+  test('a string content id shares the cached hierarchy of its numeric id', async () => {
+    global.fetch = mockSanity(71160, [71161]) as any
+    const cached = await getHierarchy(71161, null)
+    global.fetch = jest.fn(networkFailure) as any
+
+    expect(await getHierarchy('71161', null)).toEqual(cached)
+  })
+
+  test('a bulk lookup with nothing cached returns a hierarchy per content id', async () => {
+    global.fetch = mockSanity(71170, [71171, 71172]) as any
+
+    const hierarchies = await getHierarchies([71171, 71172], null)
+
+    expect(hierarchies?.[71171]?.parents[71171]).toBe(71170)
+    expect(hierarchies?.[71172]?.parents[71172]).toBe(71170)
+  })
+
+  test('a failed bulk lookup after a 30 minute gap returns the cached hierarchy', async () => {
+    global.fetch = mockSanity(71180, [71181, 71182]) as any
+    const cached = await getHierarchy(71181, null)
+
+    jest.setSystemTime(Date.now() + THIRTY_ONE_MINUTES)
+    global.fetch = jest.fn(networkFailure) as any
+
+    expect(await getHierarchies([71181, 71182], null)).toEqual({ 71181: cached, 71182: cached })
+    expect(global.fetch).toHaveBeenCalled()
+  })
+
+  test('a bulk lookup in another collection does not reuse the cached hierarchy', async () => {
+    global.fetch = mockSanity(71190, [71191]) as any
+    await getHierarchy(71191, null)
+    global.fetch = jest.fn(networkFailure) as any
+
+    expect(await getHierarchies([71191], { type: COLLECTION_TYPE.PLAYLIST, id: 5 })).toBeNull()
+  })
+
   test('a lookup that fails while building the hierarchy logs the error', async () => {
     global.fetch = jest.fn((url: string) =>
       decodeURIComponent(url).includes("'top_parent'")
