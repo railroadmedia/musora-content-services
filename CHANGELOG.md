@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.186.1](https://github.com/railroadmedia/musora-content-services/compare/v2.186.0...v2.186.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* guard against null awards list when Sanity fetch fails ([#1053](https://github.com/railroadmedia/musora-content-services/issues/1053)) ([77f0bf7](https://github.com/railroadmedia/musora-content-services/commit/77f0bf711c2fcc5a5e47cb1a8d0328f670f5107d))
+* preserve resume time when duplicating playlist progress  ([#1045](https://github.com/railroadmedia/musora-content-services/issues/1045)) ([d62d394](https://github.com/railroadmedia/musora-content-services/commit/d62d394542b170741c818182405ca53efde046d1)), closes [#1079](https://github.com/railroadmedia/musora-content-services/issues/1079)
+* replace @/ alias imports with relative paths in src ([bc22248](https://github.com/railroadmedia/musora-content-services/commit/bc22248264a029904c7f8bae403c257268da47c6))
+
 ## [2.186.0](https://github.com/railroadmedia/musora-content-services/compare/v2.185.1...v2.186.0) (2026-10-16)
 
 
