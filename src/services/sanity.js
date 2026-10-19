@@ -1589,6 +1589,7 @@ export async function fetchCommentModContentData(ids) {
  * @param {Function} [options.customPostProcess=null] - custom post process callback
  * @param {boolean} [options.processNeedAccess=true] - execute the needs_access callback
  * @param {boolean} [options.processPageType=true] - execute the page_type callback
+ * @param {boolean} [options.throwOnError=false] - reject on a failed request instead of resolving null; an empty result still resolves null
  * @returns {Promise<*|null>} - A promise that resolves to the fetched data or null if an error occurs or no results are found.
  *
  * @example
@@ -1600,7 +1601,12 @@ export async function fetchCommentModContentData(ids) {
 export async function fetchSanity(
   query,
   isList,
-  { customPostProcess = null, processNeedAccess = true, processPageType = true } = {}
+  {
+    customPostProcess = null,
+    processNeedAccess = true,
+    processPageType = true,
+    throwOnError = false,
+  } = {}
 ) {
   // Check the config object before proceeding
   if (!checkSanityConfig(globalConfig)) {
@@ -1655,11 +1661,14 @@ export async function fetchSanity(
         : results
       results = processPageType ? pageTypeDecorator(results) : results
       return customPostProcess ? customPostProcess(results) : results
+    } else if (throwOnError) {
+      throw new Error('Sanity API error: response has no result')
     } else {
       return null
     }
   } catch (error) {
     console.error('fetchSanity: Fetch error:', { error, query })
+    if (throwOnError) throw error
     return null
   }
 }
