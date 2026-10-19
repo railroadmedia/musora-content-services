@@ -1,15 +1,9 @@
+import type { Hierarchy } from './progress/types'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE } from './sync/models/ContentProgress'
 
 const excludeFromGeneratedIndex = ['getHierarchyWithSessionCache', 'getHierarchiesWithSessionCache']
 
 const IDLE_REFETCH_MS = 30 * 60 * 1000
-
-interface Hierarchy {
-  topLevelId: number
-  parents: Record<number, number | null>
-  children: Record<number, number[]>
-  metadata: Record<number, object>
-}
 
 interface CollectionKeyParameter {
   type?: string
