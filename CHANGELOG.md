@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.187.0](https://github.com/railroadmedia/musora-content-services/compare/v2.186.1...v2.187.0) (2026-10-19)
+
+
+### Features
+
+* **MU2-2024:** add disclaimer to the promotional campaign placement type ([9905117](https://github.com/railroadmedia/musora-content-services/commit/990511777622eca93758b5252c908900e484b6f5))
+
 ### [2.186.1](https://github.com/railroadmedia/musora-content-services/compare/v2.186.0...v2.186.1) (2026-10-19)
 
 
