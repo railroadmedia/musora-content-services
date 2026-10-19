@@ -637,7 +637,7 @@ async function saveProgressPercent(
     return
   }
 
-  if (!isOffline) {
+  if (!isOffline && !hierarchy) {
     hierarchy = await getHierarchy(contentId, collection)
   }
   const metadata = hierarchy.metadata || {}
