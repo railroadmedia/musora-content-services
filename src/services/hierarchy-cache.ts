@@ -44,6 +44,7 @@ export async function getHierarchyWithSessionCache(
   collection: CollectionKeyParameter | null | undefined,
   fetchHierarchy: () => Promise<Hierarchy | null>
 ): Promise<Hierarchy | null> {
+  const userId = globalConfig.sessionConfig?.userId
   const normalizedContentId = Number(contentId)
   const collectionKey = toCollectionKey(collection)
   const entry =
@@ -67,7 +68,7 @@ export async function getHierarchyWithSessionCache(
 
   sessionEntry = hierarchy
     ? {
-        userId: globalConfig.sessionConfig?.userId,
+        userId,
         contentId: normalizedContentId,
         collectionKey,
         hierarchy,

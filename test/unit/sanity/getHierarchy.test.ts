@@ -225,6 +225,18 @@ describe('getHierarchy session cache', () => {
     expect(await getHierarchies([71191], { type: COLLECTION_TYPE.PLAYLIST, id: 5 })).toBeNull()
   })
 
+  test('a user switch during a lookup does not cache the tree for the new user', async () => {
+    const fetchForFirstUser = mockSanity(71200, [71201])
+    global.fetch = jest.fn((url: string) => {
+      globalConfig.sessionConfig = { ...globalConfig.sessionConfig, userId: 'another-user' }
+      return fetchForFirstUser(url)
+    }) as any
+    await getHierarchy(71201, null)
+    global.fetch = jest.fn(networkFailure) as any
+
+    expect(await getHierarchy(71201, null)).toBeNull()
+  })
+
   test('a lookup that fails while building the hierarchy logs the error', async () => {
     global.fetch = jest.fn((url: string) =>
       decodeURIComponent(url).includes("'top_parent'")
