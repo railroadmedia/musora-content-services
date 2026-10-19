@@ -115,6 +115,7 @@ export type PromotionalCampaignDocument = {
     key: string
     title?: string
     body?: string
+    disclaimer?: string
     /** Resolved to a CDN url by the promotions query projection. */
     dark_mode_image?: string
     /** Resolved to a CDN url by the promotions query projection. */
