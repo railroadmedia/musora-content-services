@@ -60,6 +60,7 @@ import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 import { query } from '../lib/sanity/query'
 import { Filters as f } from '../lib/sanity/filter'
 import { COLLECTION_TYPE } from './sync/models/ContentProgress'
+import { getHierarchiesWithSessionCache, getHierarchyWithSessionCache } from './hierarchy-cache'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -518,7 +519,8 @@ export async function fetchByRailContentIds(
   contentType = undefined,
   brand = undefined,
   includePermissionsAndStatusFilter = false,
-  filterOptions = {}
+  filterOptions = {},
+  { throwOnError = false } = {}
 ) {
   if (!ids?.length) {
     return []
@@ -571,7 +573,11 @@ export async function fetchByRailContentIds(
     return results.map(liveProcess)
   }
   let [results, hierarchies] = await Promise.all([
-    fetchSanity(query, true, { customPostProcess: customPostProcess, processNeedAccess: true }),
+    fetchSanity(query, true, {
+      customPostProcess: customPostProcess,
+      processNeedAccess: true,
+      throwOnError,
+    }),
     contentType === 'download' ? getHierarchies(ids) : Promise.resolve(null),
   ])
 
@@ -1312,13 +1318,14 @@ export async function fetchByReference(
  * ex: if railcontentId is of type 'skill-pack-lesson', return the corresponding 'skill-pack' railcontent_id
  *
  * @param {int} railcontentId
+ * @param {boolean} [options.throwOnError=false] - reject on a failed request instead of resolving null
  * @returns {Promise<int|null>}
  */
-export async function fetchTopLevelParentId(railcontentId) {
+export async function fetchTopLevelParentId(railcontentId, { throwOnError = false } = {}) {
   const query = `*[railcontent_id == ${railcontentId}]{
       'top_parent': coalesce(${grandParentReferenceField}->railcontent_id, ${parentReferenceField}->railcontent_id, railcontent_id),
     }`
-  let response = await fetchSanity(query, false, { processNeedAccess: false })
+  let response = await fetchSanity(query, false, { processNeedAccess: false, throwOnError })
   if (!response) return null
   return response['top_parent'] ?? railcontentId
 }
@@ -1341,7 +1348,7 @@ async function fetchTopLevelParentIds(railcontentIds) {
       railcontent_id
       ),
   }`
-  let response = await fetchSanity(query, true, { processNeedAccess: false })
+  let response = await fetchSanity(query, true, { processNeedAccess: false, throwOnError: true })
   if (!response) return null
 
   let responseMap = {}
@@ -1353,6 +1360,12 @@ async function fetchTopLevelParentIds(railcontentIds) {
 }
 
 export async function getHierarchy(contentId, collection) {
+  return getHierarchyWithSessionCache(contentId, collection, () =>
+    fetchHierarchy(contentId, collection)
+  )
+}
+
+async function fetchHierarchy(contentId, collection) {
   let response
   if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     response = await fetchLearningPathHierarchyData(contentId, collection)
@@ -1365,6 +1378,12 @@ export async function getHierarchy(contentId, collection) {
 }
 
 export async function getHierarchies(contentIds, collection) {
+  return getHierarchiesWithSessionCache(contentIds, collection, () =>
+    fetchHierarchies(contentIds, collection)
+  )
+}
+
+async function fetchHierarchies(contentIds, collection) {
   let response
   if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     response = await fetchLearningPathHierarchyDataForIds(contentIds, collection)
@@ -1462,7 +1481,18 @@ async function fetchLearningPathHierarchyData(railcontentId, collection) {
 
   const topLevelId = collection.id
 
-  return (await fetchByRailContentIds([topLevelId], 'hierarchy-data'))[0]
+  return (
+    await fetchByRailContentIds(
+      [topLevelId],
+      'hierarchy-data',
+      undefined,
+      false,
+      {},
+      {
+        throwOnError: true,
+      }
+    )
+  )[0]
 }
 
 async function fetchLearningPathHierarchyDataForIds(railcontentIds, collection) {
@@ -1471,7 +1501,16 @@ async function fetchLearningPathHierarchyDataForIds(railcontentIds, collection) 
   }
   const topLevelId = collection.id
 
-  const response = await fetchByRailContentIds([topLevelId], 'hierarchy-data')
+  const response = await fetchByRailContentIds(
+    [topLevelId],
+    'hierarchy-data',
+    undefined,
+    false,
+    {},
+    {
+      throwOnError: true,
+    }
+  )
   if (!response) return null
 
   let responseMap = {}
@@ -1488,11 +1527,11 @@ async function fetchLearningPathHierarchyDataForIds(railcontentIds, collection) 
  * @returns {Promise<object|null>}
  */
 async function fetchALaCarteHierarchyData(railcontentId) {
-  const topLevelId = await fetchTopLevelParentId(railcontentId)
+  const topLevelId = await fetchTopLevelParentId(railcontentId, { throwOnError: true })
   const childrenFilter = await new FilterBuilder('', { isChildrenFilter: true }).buildFilter()
   const query = buildHierarchyQuery(childrenFilter, `railcontent_id == ${topLevelId}`)
 
-  return fetchSanity(query, false, { processNeedAccess: false })
+  return fetchSanity(query, false, { processNeedAccess: false, throwOnError: true })
 }
 
 /**
@@ -1506,7 +1545,7 @@ async function fetchALaCarteHierarchyDataForIds(railcontentIds) {
   const childrenFilter = await new FilterBuilder('', { isChildrenFilter: true }).buildFilter()
   const query = buildHierarchyQuery(childrenFilter, `railcontent_id in [${idsString}]`)
 
-  const response = await fetchSanity(query, true, { processNeedAccess: false })
+  const response = await fetchSanity(query, true, { processNeedAccess: false, throwOnError: true })
   if (!response) return null
 
   return Object.fromEntries(response.map((item) => [item.railcontent_id, item]))
