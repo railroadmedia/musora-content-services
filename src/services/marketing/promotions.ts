@@ -5,8 +5,8 @@ import { Filters as f } from '../../lib/sanity/filter'
 import { groq } from '../../lib/sanity/groq'
 import type { GroqBuilder } from '../../lib/sanity/groq'
 import type { PromotionalCampaignDocument } from '../../lib/sanity/types/marketing'
-import { SanityQueryError } from '@/lib/sanity/runner'
-import { AsyncEither } from '@/lib/ads/async-either'
+import { SanityQueryError } from '../../lib/sanity/runner'
+import { AsyncEither } from '../../lib/ads/async-either'
 
 const excludeFromGeneratedIndex = [
   'campaignQuery',

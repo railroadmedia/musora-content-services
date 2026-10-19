@@ -3,7 +3,7 @@
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import { OnboardingRecommendedContent } from '@/services/user/onboarding'
+import { OnboardingRecommendedContent } from '../user/onboarding'
 
 
 const baseUrl = `/api/my-path/v1/placement-quiz`
