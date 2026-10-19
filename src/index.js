@@ -55,7 +55,7 @@ import {
 import {
 	downsamplePeaks,
 	getWaveformPeaks
-} from './services/audioRecording/waveformPeaks.js';
+} from './services/audioRecording/waveformPeaks.ts';
 
 import {
 	registerAwardCallback,
