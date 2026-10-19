@@ -237,6 +237,14 @@ describe('getHierarchy session cache', () => {
     expect(await getHierarchy(71201, null)).toBeNull()
   })
 
+  test('a failed request is logged once', async () => {
+    global.fetch = jest.fn(networkFailure) as any
+
+    await getHierarchy(71211, null)
+
+    expect(console.error).toHaveBeenCalledTimes(1)
+  })
+
   test('a lookup that fails while building the hierarchy logs the error', async () => {
     global.fetch = jest.fn((url: string) =>
       decodeURIComponent(url).includes("'top_parent'")

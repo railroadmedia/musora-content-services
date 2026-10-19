@@ -1706,8 +1706,8 @@ export async function fetchSanity(
       return null
     }
   } catch (error) {
-    console.error('fetchSanity: Fetch error:', { error, query })
     if (throwOnError) throw error
+    console.error('fetchSanity: Fetch error:', { error, query })
     return null
   }
 }
