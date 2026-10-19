@@ -138,7 +138,6 @@ import {
 	getNewAndUpcoming,
 	getOwnedContent,
 	getRecent,
-	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
@@ -276,6 +275,14 @@ import {
 } from './services/marketing/marketing.ts';
 
 import {
+	claimPromotionalCampaign,
+	dismissPromotionalCampaign,
+	fetchAvailablePromotionalCampaigns,
+	fetchPromotionalCampaigns,
+	fetchUserCampaignStates
+} from './services/marketing/promotions.ts';
+
+import {
 	acceptInvite,
 	createAccount,
 	createInvites,
@@ -409,10 +416,11 @@ import {
 
 import {
 	fetchSimilarItems,
+	getRecommendedForYou,
 	rankCategories,
 	rankItems,
 	recommendations
-} from './services/recommendations.js';
+} from './services/recommendations.ts';
 
 import {
 	getReportIssueOptions,
@@ -644,6 +652,7 @@ export {
 	buildImageSRC,
 	buildShareUrl,
 	calculateLongestStreaks,
+	claimPromotionalCampaign,
 	clearAllCachedData,
 	clearState,
 	closeComment,
@@ -689,6 +698,7 @@ export {
 	deleteRecording,
 	deleteThread,
 	deleteUserActivity,
+	dismissPromotionalCampaign,
 	doesUserHaveMembership,
 	downsamplePeaks,
 	duplicatePlaylist,
@@ -705,6 +715,7 @@ export {
 	fetchArtistLessons,
 	fetchArtists,
 	fetchAudioSettings,
+	fetchAvailablePromotionalCampaigns,
 	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
@@ -771,6 +782,7 @@ export {
 	fetchPost,
 	fetchPosts,
 	fetchPracticeGoals,
+	fetchPromotionalCampaigns,
 	fetchPublicAnnouncement,
 	fetchQuizAnswers,
 	fetchRecent,
@@ -799,6 +811,7 @@ export {
 	fetchUninterests,
 	fetchUnreadCount,
 	fetchUpcomingEvents,
+	fetchUserCampaignStates,
 	fetchUserPermissions,
 	fetchUserPlaylists,
 	fetchUserPracticeMeta,

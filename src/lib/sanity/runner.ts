@@ -1,3 +1,4 @@
+import { AsyncEither } from '../ads/async-either'
 import { Either } from '../ads/either'
 import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 
@@ -44,7 +45,7 @@ const defaultRunner = <T>(): QueryRunner<T> =>
 /**
  * @param {string} groq
  * @param {QueryRunner<T>} runner
- * @returns {Promise<Either<SanityQueryError, T | null>>}
+ * @returns {AsyncEither<SanityQueryError, T | null>}
  * @example
  * const result = await run<Song[]>(query().and(f.type('song')).build())
  * result.fold(
@@ -61,4 +62,4 @@ const defaultRunner = <T>(): QueryRunner<T> =>
 export const run = <T>(
   groq: string,
   runner: QueryRunner<T> = defaultRunner<T>()
-): Promise<Either<SanityQueryError, T | null>> => runner(groq)
+): AsyncEither<SanityQueryError, T | null> => AsyncEither.of(runner(groq))

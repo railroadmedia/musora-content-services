@@ -54,6 +54,7 @@ type ExpectedProgress = {
   state?: string
   percent?: number
   collection?: CollectionParameter
+  resumeTimeSeconds?: number
 }
 
 function expectProgress(data: any, expected: ExpectedProgress) {
@@ -63,6 +64,7 @@ function expectProgress(data: any, expected: ExpectedProgress) {
   if (expected.percent !== undefined) expect(data.progress_percent).toBe(expected.percent)
   if (expected.collection !== undefined) expect(data.collection_type).toBe(expected.collection.type)
   if (expected.collection !== undefined) expect(data.collection_id).toBe(expected.collection.id)
+  if (expected.resumeTimeSeconds !== undefined) expect(data.resume_time_seconds).toBe(expected.resumeTimeSeconds)
 }
 
 async function getOne(contentId: number, collection: CollectionParameter = null) {
@@ -316,9 +318,17 @@ describe('recordWatchSessionOffline', () => {
       const aLaCarte = await getOne(500, null)
       const playlistRec = await getOne(500, playlistCollection)
 
-      expectProgress(aLaCarte, { percent: 50, collection: selfCollection })
+      expectProgress(aLaCarte, { percent: 50, collection: selfCollection, resumeTimeSeconds: 100 })
       expect(playlistRec).toBeNull()
       expect(ctx.pushSpies.contentProgress).not.toHaveBeenCalled()
+    })
+
+    test('later session with lower percent still updates a-la-carte resume time, without regressing percent', async () => {
+      await recordWatchSessionOffline(500, 200, 150, 30, flatHierarchy(500), { collection: playlistCollection })
+      await recordWatchSessionOffline(500, 200, 20, 5, flatHierarchy(500), { collection: playlistCollection })
+
+      const aLaCarte = await getOne(500, null)
+      expectProgress(aLaCarte, { percent: 75, collection: selfCollection, resumeTimeSeconds: 20 })
     })
   })
 

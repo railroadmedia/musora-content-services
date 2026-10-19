@@ -67,14 +67,40 @@ export const save = async (
   progress: number,
   collection?: CollectionParameter,
   currentSeconds?: number,
+  options: SaveOptions = {}
+) => {
+  const activeCollection = withDefaultCollection(collection)
+  const response = await saveProgressPercent(contentId, progress, activeCollection, currentSeconds, options)
+  await saveResumeTime(contentId, activeCollection, currentSeconds)
+  return response
+}
+
+// resume time is last-write-wins, so it bypasses the percent gate that drops regressed progress
+const saveResumeTime = async (
+  contentId: number,
+  collection: CollectionParameter,
+  currentSeconds: number | undefined
+): Promise<void> => {
+  if (currentSeconds === undefined || currentSeconds === null) return
+
+  await db.contentProgress.updateResumeTime(contentId, collection, currentSeconds, { skipPush: true })
+  if (isPlaylistCollection(collection)) {
+    await db.contentProgress.updateResumeTime(contentId, null, currentSeconds, { skipPush: true })
+  }
+}
+
+const saveProgressPercent = async (
+  contentId: number,
+  progress: number,
+  activeCollection: CollectionParameter,
+  currentSeconds: number | undefined,
   {
     isOffline = false,
     hierarchy = null,
     skipPush = false,
     accessedDirectly = true,
-  }: SaveOptions = {}
+  }: SaveOptions
 ) => {
-  const activeCollection = withDefaultCollection(collection)
   const isPlaylist = isPlaylistCollection(activeCollection)
 
   let progresses: Record<number, number> = { [contentId]: progress }

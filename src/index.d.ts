@@ -134,7 +134,6 @@ import {
 	getNewAndUpcoming,
 	getOwnedContent,
 	getRecent,
-	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
@@ -272,6 +271,14 @@ import {
 } from './services/marketing/marketing.ts';
 
 import {
+	claimPromotionalCampaign,
+	dismissPromotionalCampaign,
+	fetchAvailablePromotionalCampaigns,
+	fetchPromotionalCampaigns,
+	fetchUserCampaignStates
+} from './services/marketing/promotions.ts';
+
+import {
 	acceptInvite,
 	createAccount,
 	createInvites,
@@ -405,10 +412,11 @@ import {
 
 import {
 	fetchSimilarItems,
+	getRecommendedForYou,
 	rankCategories,
 	rankItems,
 	recommendations
-} from './services/recommendations.js';
+} from './services/recommendations.ts';
 
 import {
 	getReportIssueOptions,
@@ -645,6 +653,7 @@ declare module 'musora-content-services' {
 		buildImageSRC,
 		buildShareUrl,
 		calculateLongestStreaks,
+		claimPromotionalCampaign,
 		clearAllCachedData,
 		clearState,
 		closeComment,
@@ -690,6 +699,7 @@ declare module 'musora-content-services' {
 		deleteRecording,
 		deleteThread,
 		deleteUserActivity,
+		dismissPromotionalCampaign,
 		doesUserHaveMembership,
 		downsamplePeaks,
 		duplicatePlaylist,
@@ -706,6 +716,7 @@ declare module 'musora-content-services' {
 		fetchArtistLessons,
 		fetchArtists,
 		fetchAudioSettings,
+		fetchAvailablePromotionalCampaigns,
 		fetchBrandsByContentIds,
 		fetchByRailContentId,
 		fetchByRailContentIds,
@@ -772,6 +783,7 @@ declare module 'musora-content-services' {
 		fetchPost,
 		fetchPosts,
 		fetchPracticeGoals,
+		fetchPromotionalCampaigns,
 		fetchPublicAnnouncement,
 		fetchQuizAnswers,
 		fetchRecent,
@@ -800,6 +812,7 @@ declare module 'musora-content-services' {
 		fetchUninterests,
 		fetchUnreadCount,
 		fetchUpcomingEvents,
+		fetchUserCampaignStates,
 		fetchUserPermissions,
 		fetchUserPlaylists,
 		fetchUserPracticeMeta,

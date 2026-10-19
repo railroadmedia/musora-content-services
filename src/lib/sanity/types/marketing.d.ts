@@ -92,3 +92,36 @@ export type FaqDocument = {
     answer?: string
   }[]
 }
+
+export type PromotionalCampaignDocument = {
+  _id: string
+  _type: "promotional-campaign"
+  _createdAt: string
+  _updatedAt: string
+  _rev: string
+  /** Campaign Name */
+  name: string
+  slug: { _type: "slug"; current: string }
+  /** Starts At */
+  starts_at: string
+  /** Ends At */
+  ends_at: string
+  /** Active? */
+  active?: boolean
+  /** Placements */
+  placements: {
+    _key: string
+    /** Placement Key */
+    key: string
+    title?: string
+    body?: string
+    /** Resolved to a CDN url by the promotions query projection. */
+    dark_mode_image?: string
+    /** Resolved to a CDN url by the promotions query projection. */
+    light_mode_image?: string
+    /** CTA Label */
+    cta_label?: string
+    /** Dismissible? */
+    dismissible?: boolean
+  }[]
+}
