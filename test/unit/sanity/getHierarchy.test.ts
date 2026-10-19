@@ -1,6 +1,7 @@
 import { initializeTestService } from '../../initializeTests.js'
 import { getHierarchies, getHierarchy } from '../../../src/services/sanity.js'
 import { COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
+import { globalConfig } from '../../../src/services/config.js'
 
 jest.mock('../../../src/services/permissions/index.ts', () => ({
   ...jest.requireActual('../../../src/services/permissions/index.ts'),
@@ -173,5 +174,15 @@ describe('getHierarchy session cache', () => {
     global.fetch = jest.fn(networkFailure) as any
 
     expect(await getHierarchies([71121, 71999], null)).toBeNull()
+  })
+
+  test('a lookup for another user does not reuse the cached hierarchy', async () => {
+    global.fetch = mockSanity(71130, [71131]) as any
+    await getHierarchy(71131, null)
+    globalConfig.sessionConfig = { ...globalConfig.sessionConfig, userId: 'another-user' }
+    global.fetch = jest.fn(networkFailure) as any
+
+    expect(await getHierarchy(71131, null)).toBeNull()
+    expect(await getHierarchies([71131], null)).toBeNull()
   })
 })

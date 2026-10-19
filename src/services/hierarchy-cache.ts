@@ -1,5 +1,6 @@
 import type { Hierarchy } from './progress/types'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE } from './sync/models/ContentProgress'
+import { globalConfig } from './config.js'
 
 const excludeFromGeneratedIndex = ['getHierarchyWithSessionCache', 'getHierarchiesWithSessionCache']
 
@@ -11,6 +12,7 @@ interface CollectionKeyParameter {
 }
 
 interface SessionEntry {
+  userId: unknown
   contentId: number
   collectionKey: string
   hierarchy: Hierarchy
@@ -22,6 +24,10 @@ let sessionEntry: SessionEntry | null = null
 // Same normalisation as ContentProgress.generateId, without its validators, so a lookup can't throw on its key.
 function toCollectionKey(collection?: CollectionKeyParameter | null): string {
   return `${collection?.type || COLLECTION_TYPE.SELF}:${collection?.id || COLLECTION_ID_SELF}`
+}
+
+function isCurrentUser(entry: SessionEntry): boolean {
+  return entry.userId === globalConfig.sessionConfig?.userId
 }
 
 function isIdle(entry: SessionEntry): boolean {
@@ -41,7 +47,10 @@ export async function getHierarchyWithSessionCache(
   const normalizedContentId = Number(contentId)
   const collectionKey = toCollectionKey(collection)
   const entry =
-    sessionEntry?.contentId === normalizedContentId && sessionEntry.collectionKey === collectionKey
+    sessionEntry &&
+    isCurrentUser(sessionEntry) &&
+    sessionEntry.contentId === normalizedContentId &&
+    sessionEntry.collectionKey === collectionKey
       ? sessionEntry
       : null
 
@@ -56,7 +65,13 @@ export async function getHierarchyWithSessionCache(
   }
 
   sessionEntry = hierarchy
-    ? { contentId: normalizedContentId, collectionKey, hierarchy, lastUsedAt: Date.now() }
+    ? {
+        userId: globalConfig.sessionConfig?.userId,
+        contentId: normalizedContentId,
+        collectionKey,
+        hierarchy,
+        lastUsedAt: Date.now(),
+      }
     : null
   return hierarchy
 }
@@ -67,7 +82,9 @@ export async function getHierarchiesWithSessionCache(
   fetchHierarchies: () => Promise<Record<number, Hierarchy> | null>
 ): Promise<Record<number, Hierarchy> | null> {
   const entry =
-    sessionEntry?.collectionKey === toCollectionKey(collection) &&
+    sessionEntry &&
+    isCurrentUser(sessionEntry) &&
+    sessionEntry.collectionKey === toCollectionKey(collection) &&
     contentIds.every((contentId) => Number(contentId) in sessionEntry!.hierarchy.parents)
       ? sessionEntry
       : null
