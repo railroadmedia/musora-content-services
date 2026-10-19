@@ -60,7 +60,8 @@ export async function getHierarchyWithSessionCache(
   let hierarchy: Hierarchy | null
   try {
     hierarchy = await fetchHierarchy()
-  } catch {
+  } catch (error) {
+    console.error('getHierarchy: lookup failed', error)
     return entry ? useEntry(entry) : null
   }
 
@@ -97,7 +98,8 @@ export async function getHierarchiesWithSessionCache(
 
   try {
     return await fetchHierarchies()
-  } catch {
+  } catch (error) {
+    console.error('getHierarchies: lookup failed', error)
     return entry ? fromEntry(entry) : null
   }
 }

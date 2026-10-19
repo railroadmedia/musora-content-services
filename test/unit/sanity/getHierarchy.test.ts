@@ -176,6 +176,22 @@ describe('getHierarchy session cache', () => {
     expect(await getHierarchies([71121, 71999], null)).toBeNull()
   })
 
+  test('a lookup that fails while building the hierarchy logs the error', async () => {
+    global.fetch = jest.fn((url: string) =>
+      decodeURIComponent(url).includes("'top_parent'")
+        ? sanityResponse([{ railcontent_id: 71141, top_parent: 71140 }])
+        : sanityResponse([{ railcontent_id: 71140, children: [null] }])
+    ) as any
+
+    expect(await getHierarchy(71141, null)).toBeNull()
+    expect(await getHierarchies([71141], null)).toBeNull()
+    expect(console.error).toHaveBeenCalledWith('getHierarchy: lookup failed', expect.any(TypeError))
+    expect(console.error).toHaveBeenCalledWith(
+      'getHierarchies: lookup failed',
+      expect.any(TypeError)
+    )
+  })
+
   test('a lookup for another user does not reuse the cached hierarchy', async () => {
     global.fetch = mockSanity(71130, [71131]) as any
     await getHierarchy(71131, null)
