@@ -2,6 +2,8 @@
  * @module FeatureFlags
  */
 
+import type { Brand } from '../../lib/brands'
+
 export type EvaluationReason =
   | 'override'
   | 'rule'
@@ -21,12 +23,15 @@ export type FeatureFlagEntry = {
 export type FeatureFlagPayload = Record<string, FeatureFlagEntry>
 
 /**
- * No brand. A flag has none -- brand is a targeting rule -- and the server files
- * an exposure under the brand of the request that carries it.
+ * The brand is carried here only so that pending reports can be grouped by it.
+ * It is sent once per request, not on each report: a flag has no brand of its
+ * own since brand became a targeting rule, and the server files a whole batch
+ * under the brand the request names.
  */
 export type ExposureReport = {
   flag: string
   variant: string
   version: number
   reason: EvaluationReason
+  brand: Brand
 }

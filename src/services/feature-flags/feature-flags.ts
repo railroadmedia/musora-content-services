@@ -2,6 +2,7 @@
  * @module FeatureFlags
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
+import type { Brand } from '../../lib/brands'
 import { globalConfig } from '../config'
 import type { EvaluationReason, ExposureReport, FeatureFlagPayload } from './types'
 
@@ -18,31 +19,36 @@ const FLUSH_DELAY_MS = 50
  */
 const RECORDABLE_REASONS: EvaluationReason[] = ['rollout', 'rule', 'override', 'holdout']
 
-let snapshot: FeatureFlagPayload | null = null
-let fetchedAt = 0
-let inFlight: Promise<void> | null = null
+/**
+ * Held per brand, because brand is a targeting attribute: one key can resolve to
+ * different variants on two brands, so one shared snapshot would answer for
+ * whichever brand happened to be fetched first.
+ */
+let snapshots: Record<string, FeatureFlagPayload> = {}
+let fetchedAt: Record<string, number> = {}
+let inFlight: Record<string, Promise<void>> = {}
 
 let pending: ExposureReport[] = []
 let reported = new Set<string>()
 let flushHandle: ReturnType<typeof setTimeout> | null = null
 
-async function load(): Promise<void> {
+async function load(brand: Brand): Promise<void> {
   const client = new HttpClient(globalConfig.baseUrl)
 
-  snapshot = await client.get<FeatureFlagPayload>(FLAGS_URL)
-  fetchedAt = Date.now()
+  snapshots[brand] = await client.get<FeatureFlagPayload>(`${FLAGS_URL}?brand=${encodeURIComponent(brand)}`)
+  fetchedAt[brand] = Date.now()
 }
 
 /**
  * Shared so that several reads in the same tick queue one request rather than
  * one each.
  */
-function refresh(): Promise<void> {
-  inFlight ??= load().finally(() => {
-    inFlight = null
+function refresh(brand: Brand): Promise<void> {
+  inFlight[brand] ??= load(brand).finally(() => {
+    delete inFlight[brand]
   })
 
-  return inFlight
+  return inFlight[brand]
 }
 
 /**
@@ -50,32 +56,53 @@ function refresh(): Promise<void> {
  * rather than on a timer means nothing is fetched for a session that never asks
  * about a flag, and no interval is left running in a mobile app.
  */
-function read(): FeatureFlagPayload {
-  if (snapshot === null || Date.now() - fetchedAt > REFRESH_AFTER_MS) {
-    refresh().catch(() => {})
+function read(brand: Brand): FeatureFlagPayload {
+  if (snapshots[brand] === undefined || Date.now() - (fetchedAt[brand] ?? 0) > REFRESH_AFTER_MS) {
+    refresh(brand).catch(() => {})
   }
 
-  return snapshot ?? {}
+  return snapshots[brand] ?? {}
 }
 
+/**
+ * One request per brand. The server files a whole batch under the brand the
+ * request names, so a batch that spanned brands would be filed under whichever
+ * one it was sent with.
+ */
 function flush(): void {
   flushHandle = null
 
-  const batch = pending.slice(0, MAX_EXPOSURES_PER_REQUEST)
-  pending = pending.slice(MAX_EXPOSURES_PER_REQUEST)
-
-  if (batch.length === 0) {
+  if (pending.length === 0) {
     return
   }
 
-  new HttpClient(globalConfig.baseUrl).post(EXPOSURES_URL, { exposures: batch }).catch(() => {
-    /*
-     * Dropped rather than retried. The server keys an exposure on
-     * (subject, flag, version) and ignores a duplicate, so the next
-     * session that reads this flag reports it again at no cost, and the
-     * recorded first_seen_at still describes the real first sighting.
-     */
-  })
+  const brand = pending[0].brand
+  const batch: ExposureReport[] = []
+  const rest: ExposureReport[] = []
+
+  for (const report of pending) {
+    if (report.brand === brand && batch.length < MAX_EXPOSURES_PER_REQUEST) {
+      batch.push(report)
+    } else {
+      rest.push(report)
+    }
+  }
+
+  pending = rest
+
+  new HttpClient(globalConfig.baseUrl)
+    .post(EXPOSURES_URL, {
+      brand,
+      exposures: batch.map(({ brand: _brand, ...report }) => report),
+    })
+    .catch(() => {
+      /*
+       * Dropped rather than retried. The server keys an exposure on
+       * (subject, flag, version) and ignores a duplicate, so the next
+       * session that reads this flag reports it again at no cost, and the
+       * recorded first_seen_at still describes the real first sighting.
+       */
+    })
 
   if (pending.length > 0) {
     schedule()
@@ -89,48 +116,54 @@ function schedule(): void {
 export const featureFlags = {
   /**
    * @param {string} flagKey
+   * @param {string} brand
    * @returns {boolean}
    */
-  accessible(flagKey: string): boolean {
-    return read()[flagKey]?.value === true
+  accessible(flagKey: string, brand: Brand): boolean {
+    return read(brand)[flagKey]?.value === true
   },
 
   /**
    * @param {string} flagKey
-   * @param {string} [fallback]
+   * @param {string} fallback
+   * @param {string} brand
    * @returns {string}
    */
-  variant(flagKey: string, fallback: string = ''): string {
-    const value = read()[flagKey]?.value
+  variant(flagKey: string, fallback: string, brand: Brand): string {
+    const value = read(brand)[flagKey]?.value
 
     return typeof value === 'string' ? value : fallback
   },
 
   /**
    * @param {string} flagKey
-   * @param {unknown} [fallback]
+   * @param {unknown} fallback
+   * @param {string} brand
    * @returns {unknown}
    */
-  value(flagKey: string, fallback: unknown = null): unknown {
-    const entry = read()[flagKey]
+  value(flagKey: string, fallback: unknown, brand: Brand): unknown {
+    const entry = read(brand)[flagKey]
 
     return entry === undefined ? fallback : entry.value
   },
 
   /**
    * @param {string} flagKey
+   * @param {string} brand
    * @returns {void}
    * @example
-   * featureFlags.recordExposure('new-checkout')
+   * featureFlags.recordExposure('new-checkout', 'drumeo')
    */
-  recordExposure(flagKey: string): void {
-    const entry = read()[flagKey]
+  recordExposure(flagKey: string, brand: Brand): void {
+    const entry = read(brand)[flagKey]
 
     if (!entry || entry.variant === null || !RECORDABLE_REASONS.includes(entry.reason)) {
       return
     }
 
-    const identity = `${flagKey}:${entry.version}`
+    // Keyed by brand as well, because the same key is a different evaluation on
+    // another brand and the subject genuinely met both.
+    const identity = `${brand}:${flagKey}:${entry.version}`
 
     if (reported.has(identity)) {
       return
@@ -144,32 +177,35 @@ export const featureFlags = {
       // to the definition this client evaluated under.
       version: entry.version,
       reason: entry.reason,
+      brand,
     })
 
     schedule()
   },
 
   /**
+   * @param {string} brand
    * @returns {boolean}
    */
-  isReady(): boolean {
-    return snapshot !== null
+  isReady(brand: Brand): boolean {
+    return snapshots[brand] !== undefined
   },
 
   /**
+   * @param {string} brand
    * @returns {Promise<void>}
    */
-  refresh(): Promise<void> {
-    return refresh()
+  refresh(brand: Brand): Promise<void> {
+    return refresh(brand)
   },
 
   /**
    * @returns {void}
    */
   reset(): void {
-    snapshot = null
-    fetchedAt = 0
-    inFlight = null
+    snapshots = {}
+    fetchedAt = {}
+    inFlight = {}
     pending = []
     reported = new Set()
 

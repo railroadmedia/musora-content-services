@@ -9,25 +9,33 @@ UI at `/admin/features` writes to, and the same one server-side PHP reads throug
 ```js
 import { featureFlags } from 'musora-content-services'
 
-if (featureFlags.accessible('new-checkout')) {
+if (featureFlags.accessible('new-checkout', brand)) {
   // ...
 }
 
-const copy = featureFlags.variant('checkout-copy', 'control')
+const copy = featureFlags.variant('checkout-copy', 'control', brand)
 ```
 
-Nothing needs initialising. `initializeService` starts the fetch, and reads
-answer synchronously from what has been fetched.
+Nothing needs initialising. The first read of a brand fetches that brand, and
+reads answer synchronously from what has been fetched.
 
 | | |
 |---|---|
-| `accessible(flagKey)` | `true` only when the flag's value is exactly `true` |
-| `variant(flagKey, fallback = '')` | the value when it is a string, otherwise the fallback |
-| `value(flagKey, fallback = null)` | the raw value, for `number` and `json` flags |
-| `recordExposure(flagKey)` | reports that this subject saw the flag |
-| `isReady()` | whether anything has been fetched yet |
-| `refresh()` | forces a fetch; you should not normally need this |
-| `reset()` | drops everything; called on logout |
+| `accessible(flagKey, brand)` | `true` only when the flag's value is exactly `true` |
+| `variant(flagKey, fallback, brand)` | the value when it is a string, otherwise the fallback |
+| `value(flagKey, fallback, brand)` | the raw value, for `number` and `json` flags |
+| `recordExposure(flagKey, brand)` | reports that this subject saw the flag |
+| `isReady(brand)` | whether that brand has been fetched yet |
+| `refresh(brand)` | forces a fetch; you should not normally need this |
+| `reset()` | drops every brand; called on logout |
+
+## Brand is not optional
+
+Brand is a targeting attribute, so one key can resolve differently per brand.
+Flags are held per brand and the brand you pass is the one you get an answer
+for -- passing the wrong one gives you a real answer to the wrong question,
+which is why there is no default. Exposures are filed under the same brand you
+read with.
 
 An unknown flag reads `false` / `''`, matching what the server answers for a key
 it does not have.

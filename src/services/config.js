@@ -126,19 +126,16 @@ export function initializeService(config) {
   }
 
   /*
-   * Reset unconditionally: this runs again whenever the session changes, and one
-   * user must never read the flags fetched for another. Fetching needs a
-   * session, since flags are evaluated for a user -- a logged-out caller reads
-   * defaults rather than sending a request that can only be refused.
+   * Reset only. This runs again whenever the session changes, and one user must
+   * never read the flags fetched for another.
+   *
+   * Nothing is prefetched: flags are held per brand and a brand is named by the
+   * caller, so there is no one brand to fetch for here. The first read of a
+   * brand fetches it, which also means a session that never asks about a flag
+   * never sends a request.
    */
   import('./feature-flags')
-    .then(({ featureFlags }) => {
-      featureFlags.reset()
-
-      if (globalConfig.sessionConfig?.token || globalConfig.sessionConfig?.userId) {
-        return featureFlags.refresh()
-      }
-    })
+    .then(({ featureFlags }) => featureFlags.reset())
     .catch(error => {
       console.error('Failed to initialize feature flags:', error)
     })
