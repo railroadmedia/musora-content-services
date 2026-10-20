@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.188.0](https://github.com/railroadmedia/musora-content-services/compare/v2.187.0...v2.188.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** add brand filtering to promotional campaign queries ([0d6fed8](https://github.com/railroadmedia/musora-content-services/commit/0d6fed83329ccfeabab2ddbd6dff129075c1207b))
+
 ## [2.187.0](https://github.com/railroadmedia/musora-content-services/compare/v2.186.1...v2.187.0) (2026-10-19)
 
 
