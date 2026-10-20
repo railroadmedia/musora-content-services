@@ -4,7 +4,13 @@
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import type { Brand } from '../../lib/brands'
 import { globalConfig } from '../config'
-import type { EvaluationReason, ExposureReport, FeatureFlagPayload } from './types'
+import type {
+  EvaluationReason,
+  ExposureReport,
+  FeatureFlagEntry,
+  FeatureFlagPayload,
+  FlagType,
+} from './types'
 
 const FLAGS_URL = '/api/feature/v1/flags'
 const EXPOSURES_URL = '/api/feature/v1/exposures'
@@ -31,6 +37,34 @@ let inFlight: Record<string, Promise<void>> = {}
 let pending: ExposureReport[] = []
 let reported = new Set<string>()
 let flushHandle: ReturnType<typeof setTimeout> | null = null
+let warned = new Set<string>()
+
+/**
+ * Reading a string flag with a boolean accessor answers false, which is
+ * indistinguishable from a boolean flag that is off -- so it is said out loud
+ * rather than left to look like a working flag that is simply disabled.
+ *
+ * A warning, not a throw: the read still answers, and a flag whose type was
+ * changed in the admin UI must not take a page down.
+ *
+ * Warned once per flag and accessor, because these are read in render paths.
+ */
+function warnOnTypeMismatch(
+  flagKey: string,
+  entry: FeatureFlagEntry | undefined,
+  accessor: string,
+  expected: FlagType
+): void {
+  if (entry === undefined || entry.type === expected || warned.has(`${flagKey}:${accessor}`)) {
+    return
+  }
+
+  warned.add(`${flagKey}:${accessor}`)
+  console.warn(
+    `featureFlags.${accessor}('${flagKey}') reads a ${expected} flag, but '${flagKey}' is typed ${entry.type}. ` +
+      `Use ${entry.type === 'string' ? 'variant()' : 'value()'} instead.`
+  )
+}
 
 async function load(brand: Brand): Promise<void> {
   const client = new HttpClient(globalConfig.baseUrl)
@@ -120,7 +154,11 @@ export const featureFlags = {
    * @returns {boolean}
    */
   accessible(flagKey: string, brand: Brand): boolean {
-    return read(brand)[flagKey]?.value === true
+    const entry = read(brand)[flagKey]
+
+    warnOnTypeMismatch(flagKey, entry, 'accessible', 'boolean')
+
+    return entry?.value === true
   },
 
   /**
@@ -136,9 +174,11 @@ export const featureFlags = {
    * @returns {string}
    */
   variant(flagKey: string, brand: Brand, fallback: string = ''): string {
-    const value = read(brand)[flagKey]?.value
+    const entry = read(brand)[flagKey]
 
-    return typeof value === 'string' ? value : fallback
+    warnOnTypeMismatch(flagKey, entry, 'variant', 'string')
+
+    return typeof entry?.value === 'string' ? entry.value : fallback
   },
 
   /**
@@ -214,6 +254,7 @@ export const featureFlags = {
     inFlight = {}
     pending = []
     reported = new Set()
+    warned = new Set()
 
     if (flushHandle !== null) {
       clearTimeout(flushHandle)

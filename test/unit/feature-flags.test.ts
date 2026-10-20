@@ -7,10 +7,11 @@ const EXPOSURES_URL = '/api/feature/v1/exposures'
 
 type Payload = Record<
   string,
-  { variant: string | null; value: unknown; version: number; reason: string }
+  { variant: string | null; value: unknown; version: number; reason: string; type?: string }
 >
 
 let fetchMock: jest.Mock
+let warnSpy: jest.SpyInstance
 
 function serve(payload: Payload) {
   fetchMock.mockImplementation((url: string) =>
@@ -53,6 +54,7 @@ describe('featureFlags', () => {
     jest.useFakeTimers()
     fetchMock = jest.fn()
     global.fetch = fetchMock as unknown as typeof fetch
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   afterEach(() => {
@@ -63,9 +65,9 @@ describe('featureFlags', () => {
   describe('reading', () => {
     it('is accessible only when the value is exactly true', async () => {
       await loadFlags({
-        on: { variant: 'on', value: true, version: 1, reason: 'rollout' },
-        numeric: { variant: 'on', value: 1, version: 1, reason: 'rollout' },
-        stringy: { variant: 'on', value: 'true', version: 1, reason: 'rollout' },
+        on: { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' },
+        numeric: { variant: 'on', value: 1, version: 1, reason: 'rollout', type: 'number' },
+        stringy: { variant: 'on', value: 'true', version: 1, reason: 'rollout', type: 'string' },
       })
 
       // Matches Evaluation::bool() on the server, which is a strict === true.
@@ -76,8 +78,8 @@ describe('featureFlags', () => {
 
     it('returns the fallback when a variant value is not a string', async () => {
       await loadFlags({
-        copy: { variant: 'treatment', value: 'treatment', version: 1, reason: 'rollout' },
-        flagged: { variant: 'on', value: true, version: 1, reason: 'rollout' },
+        copy: { variant: 'treatment', value: 'treatment', version: 1, reason: 'rollout', type: 'string' },
+        flagged: { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' },
       })
 
       expect(featureFlags.variant('copy', BRAND, 'control')).toBe('treatment')
@@ -86,8 +88,8 @@ describe('featureFlags', () => {
 
     it('hands back the raw value for number and json flags', async () => {
       await loadFlags({
-        limit: { variant: 'high', value: 25, version: 1, reason: 'rollout' },
-        config: { variant: 'a', value: { rows: 3 }, version: 1, reason: 'rollout' },
+        limit: { variant: 'high', value: 25, version: 1, reason: 'rollout', type: 'number' },
+        config: { variant: 'a', value: { rows: 3 }, version: 1, reason: 'rollout', type: 'json' },
       })
 
       expect(featureFlags.value('limit', BRAND, null)).toBe(25)
@@ -109,6 +111,61 @@ describe('featureFlags', () => {
     })
   })
 
+  describe('type mismatches', () => {
+    const typed: Payload = {
+      'checkout-copy': { variant: 'treatment', value: 'treatment', version: 1, reason: 'rollout', type: 'string' },
+      'new-checkout': { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' },
+    }
+
+    it('says so when a string flag is read with a boolean accessor', async () => {
+      await loadFlags(typed)
+
+      // Answers false either way, which is indistinguishable from a boolean
+      // flag that is simply off -- so the mismatch is said out loud.
+      expect(featureFlags.accessible('checkout-copy', BRAND)).toBe(false)
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("'checkout-copy' is typed string"))
+    })
+
+    it('says so when a boolean flag is read with a string accessor', async () => {
+      await loadFlags(typed)
+
+      expect(featureFlags.variant('new-checkout', BRAND, 'control')).toBe('control')
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("'new-checkout' is typed boolean"))
+    })
+
+    it('stays quiet when the accessor matches the type', async () => {
+      await loadFlags(typed)
+
+      featureFlags.accessible('new-checkout', BRAND)
+      featureFlags.variant('checkout-copy', BRAND)
+
+      expect(warnSpy).not.toHaveBeenCalled()
+    })
+
+    it('warns once per flag rather than once per read', async () => {
+      await loadFlags(typed)
+
+      // These are read in render paths, so a warning per call would bury the
+      // first one under thousands of copies.
+      featureFlags.accessible('checkout-copy', BRAND)
+      featureFlags.accessible('checkout-copy', BRAND)
+      featureFlags.accessible('checkout-copy', BRAND)
+
+      expect(warnSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('stays quiet for a flag it has no entry for', async () => {
+      await loadFlags({})
+
+      // Nothing was fetched, so nothing is known about the type. A warning here
+      // would fire on every read during the window before the first response.
+      featureFlags.accessible('never-created', BRAND)
+      featureFlags.variant('never-created', BRAND)
+
+      expect(warnSpy).not.toHaveBeenCalled()
+    })
+  })
+
   describe('exposures', () => {
     const rolledOut: Payload = {
       'checkout-copy': {
@@ -116,6 +173,7 @@ describe('featureFlags', () => {
         value: 'treatment',
         version: 4,
         reason: 'rollout',
+        type: 'string',
       },
     }
 
@@ -165,8 +223,8 @@ describe('featureFlags', () => {
 
     it('does not report a reason the server would discard', async () => {
       await loadFlags({
-        served: { variant: 'off', value: false, version: 2, reason: 'default' },
-        off: { variant: 'off', value: false, version: 2, reason: 'disabled' },
+        served: { variant: 'off', value: false, version: 2, reason: 'default', type: 'boolean' },
+        off: { variant: 'off', value: false, version: 2, reason: 'disabled', type: 'boolean' },
       })
 
       featureFlags.recordExposure('served', BRAND)
@@ -180,7 +238,7 @@ describe('featureFlags', () => {
     it('splits more than fifty exposures across requests', async () => {
       const many: Payload = {}
       for (let i = 0; i < 60; i += 1) {
-        many[`flag-${i}`] = { variant: 'on', value: true, version: 1, reason: 'rollout' }
+        many[`flag-${i}`] = { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' }
       }
       await loadFlags(many)
 
@@ -216,8 +274,8 @@ describe('featureFlags', () => {
 
   describe('brands', () => {
     const payloads: Record<string, Payload> = {
-      drumeo: { 'tour-banner': { variant: 'on', value: true, version: 3, reason: 'rule' } },
-      pianote: { 'tour-banner': { variant: 'off', value: false, version: 3, reason: 'rule' } },
+      drumeo: { 'tour-banner': { variant: 'on', value: true, version: 3, reason: 'rule', type: 'boolean' } },
+      pianote: { 'tour-banner': { variant: 'off', value: false, version: 3, reason: 'rule', type: 'boolean' } },
     }
 
     function serveByBrand() {
@@ -271,14 +329,14 @@ describe('featureFlags', () => {
 
   describe('freshness', () => {
     it('answers immediately and refreshes behind the read once stale', async () => {
-      await loadFlags({ ramp: { variant: 'off', value: false, version: 1, reason: 'rollout' } })
+      await loadFlags({ ramp: { variant: 'off', value: false, version: 1, reason: 'rollout', type: 'boolean' } })
       expect(requestsTo(FLAGS_URL)).toHaveLength(1)
 
       featureFlags.accessible('ramp', BRAND)
       expect(requestsTo(FLAGS_URL)).toHaveLength(1)
 
       jest.advanceTimersByTime(61_000)
-      serve({ ramp: { variant: 'on', value: true, version: 2, reason: 'rollout' } })
+      serve({ ramp: { variant: 'on', value: true, version: 2, reason: 'rollout', type: 'boolean' } })
 
       // The stale read still answers from what is held, and kicks off the fetch.
       expect(featureFlags.accessible('ramp', BRAND)).toBe(false)
@@ -303,7 +361,7 @@ describe('featureFlags', () => {
   describe('reset', () => {
     it('drops what was loaded so one user cannot read another user flags', async () => {
       await loadFlags({
-        'new-checkout': { variant: 'on', value: true, version: 1, reason: 'rollout' },
+        'new-checkout': { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' },
       })
       expect(featureFlags.accessible('new-checkout', BRAND)).toBe(true)
 

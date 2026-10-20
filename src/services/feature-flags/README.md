@@ -40,6 +40,23 @@ read with.
 An unknown flag reads `false` / `''`, matching what the server answers for a key
 it does not have.
 
+## Read a flag with the accessor its type expects
+
+Each flag declares a type (`boolean`, `string`, `number`, `json`) and the payload
+carries it. Reading a string flag with `accessible()` answers `false` -- which is
+exactly what a boolean flag that is off answers, so the mistake looks like a
+working flag rather than a bug. The module warns once per flag when the accessor
+and the type disagree:
+
+```
+featureFlags.accessible('checkout-copy') reads a boolean flag, but
+'checkout-copy' is typed string. Use variant() instead.
+```
+
+A warning, not a throw: the read still answers, and a type changed in the admin
+UI must not take a page down. Nothing is said for a flag with no entry yet --
+during the window before the first fetch there is no type to check against.
+
 ## Reading is free; being seen is not
 
 `accessible()` and `variant()` record nothing. Call `recordExposure()` at the

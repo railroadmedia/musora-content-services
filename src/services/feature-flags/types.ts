@@ -13,11 +13,14 @@ export type EvaluationReason =
   | 'disabled'
   | 'not_found'
 
+export type FlagType = 'boolean' | 'string' | 'number' | 'json'
+
 export type FeatureFlagEntry = {
   variant: string | null
   value: unknown
   version: number
   reason: EvaluationReason
+  type: FlagType
 }
 
 export type FeatureFlagPayload = Record<string, FeatureFlagEntry>
