@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.189.0](https://github.com/railroadmedia/musora-content-services/compare/v2.188.0...v2.189.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** add placeholder resolution for promotional campaign copy ([f5cebb3](https://github.com/railroadmedia/musora-content-services/commit/f5cebb3888ce1228ecba5ec17412c8bcfaff8c35))
+
 ## [2.188.0](https://github.com/railroadmedia/musora-content-services/compare/v2.187.0...v2.188.0) (2026-10-20)
 
 
