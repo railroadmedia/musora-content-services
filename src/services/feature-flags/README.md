@@ -96,7 +96,13 @@ window that is normally a few hundred milliseconds after sign-in.
 
 Each brand's snapshot refreshes at most once a minute, and only when something
 reads a flag on that brand — so a session that never touches a flag never
-fetches, and no timer is left running. A rollout ramped in the admin UI therefore reaches a session that is
+fetches, and no timer is left running.
+
+A failed fetch is left alone for five seconds before a read may try again.
+Nothing is held after a failure, so the staleness check stays true and reads
+happen in render paths; without that floor a backend outage becomes one request
+per read per component. `refresh(brand)` ignores the floor, for when you know
+the backend is back. A rollout ramped in the admin UI therefore reaches a session that is
 already open, which it would not if flags were only read at sign-in.
 
 ## Reactivity

@@ -327,6 +327,54 @@ describe('featureFlags', () => {
     })
   })
 
+  describe('a failing backend', () => {
+    async function failOnce() {
+      fetchMock.mockRejectedValue(new Error('offline'))
+      await featureFlags.refresh(BRAND).catch(() => {})
+    }
+
+    it('does not retry on every read while the backend is down', async () => {
+      await failOnce()
+      expect(requestsTo(FLAGS_URL)).toHaveLength(1)
+
+      // Nothing is held, so the staleness check stays true forever. Reads run
+      // in render paths, so without a floor an outage becomes one request per
+      // read per component.
+      featureFlags.accessible('anything', BRAND)
+      featureFlags.accessible('anything', BRAND)
+      featureFlags.accessible('anything', BRAND)
+
+      expect(requestsTo(FLAGS_URL)).toHaveLength(1)
+    })
+
+    it('tries again once the retry window has passed', async () => {
+      await failOnce()
+
+      jest.advanceTimersByTime(6_000)
+      featureFlags.accessible('anything', BRAND)
+
+      expect(requestsTo(FLAGS_URL)).toHaveLength(2)
+    })
+
+    it('lets an explicit refresh through regardless', async () => {
+      await failOnce()
+
+      await featureFlags.refresh(BRAND).catch(() => {})
+
+      expect(requestsTo(FLAGS_URL)).toHaveLength(2)
+    })
+
+    it('recovers and serves the real answer', async () => {
+      await failOnce()
+
+      jest.advanceTimersByTime(6_000)
+      serve({ back: { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' } })
+      await featureFlags.refresh(BRAND)
+
+      expect(featureFlags.accessible('back', BRAND)).toBe(true)
+    })
+  })
+
   describe('freshness', () => {
     it('answers immediately and refreshes behind the read once stale', async () => {
       await loadFlags({ ramp: { variant: 'off', value: false, version: 1, reason: 'rollout', type: 'boolean' } })

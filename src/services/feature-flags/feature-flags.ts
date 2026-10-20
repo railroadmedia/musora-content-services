@@ -16,6 +16,19 @@ const FLAGS_URL = '/api/feature/v1/flags'
 const EXPOSURES_URL = '/api/feature/v1/exposures'
 
 const REFRESH_AFTER_MS = 60_000
+
+/**
+ * How long a failed fetch is left alone before a read may try again.
+ *
+ * Without it a failure retries on every single read: nothing is held, so the
+ * staleness check is true forever, and reads happen in render paths. A backend
+ * outage would turn into a request per read per component.
+ *
+ * A flat floor rather than exponential backoff. Reads are already throttled by
+ * REFRESH_AFTER_MS once anything succeeds, so this only governs the outage case,
+ * and a fixed five seconds is enough to turn a hot loop into a trickle.
+ */
+const RETRY_AFTER_MS = 5_000
 const MAX_EXPOSURES_PER_REQUEST = 50
 const FLUSH_DELAY_MS = 50
 
@@ -32,6 +45,7 @@ const RECORDABLE_REASONS: EvaluationReason[] = ['rollout', 'rule', 'override', '
  */
 let snapshots: Record<string, FeatureFlagPayload> = {}
 let fetchedAt: Record<string, number> = {}
+let attemptedAt: Record<string, number> = {}
 let inFlight: Record<string, Promise<void>> = {}
 
 let pending: ExposureReport[] = []
@@ -69,6 +83,11 @@ function warnOnTypeMismatch(
 async function load(brand: Brand): Promise<void> {
   const client = new HttpClient(globalConfig.baseUrl)
 
+  // Recorded before the request, so it is set whether or not the request
+  // succeeds. fetchedAt is only moved on success, so a failure leaves the held
+  // snapshot stale rather than passing a failed fetch off as a fresh one.
+  attemptedAt[brand] = Date.now()
+
   snapshots[brand] = await client.get<FeatureFlagPayload>(`${FLAGS_URL}?brand=${encodeURIComponent(brand)}`)
   fetchedAt[brand] = Date.now()
 }
@@ -91,7 +110,10 @@ function refresh(brand: Brand): Promise<void> {
  * about a flag, and no interval is left running in a mobile app.
  */
 function read(brand: Brand): FeatureFlagPayload {
-  if (snapshots[brand] === undefined || Date.now() - (fetchedAt[brand] ?? 0) > REFRESH_AFTER_MS) {
+  const stale = snapshots[brand] === undefined || Date.now() - (fetchedAt[brand] ?? 0) > REFRESH_AFTER_MS
+  const mayRetry = Date.now() - (attemptedAt[brand] ?? 0) >= RETRY_AFTER_MS
+
+  if (stale && mayRetry) {
     refresh(brand).catch(() => {})
   }
 
@@ -238,6 +260,8 @@ export const featureFlags = {
   },
 
   /**
+   * Forces a fetch, ignoring the retry floor a read obeys.
+   *
    * @param {string} brand
    * @returns {Promise<void>}
    */
@@ -251,6 +275,7 @@ export const featureFlags = {
   reset(): void {
     snapshots = {}
     fetchedAt = {}
+    attemptedAt = {}
     inFlight = {}
     pending = []
     reported = new Set()
