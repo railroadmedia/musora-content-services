@@ -52,6 +52,7 @@ let pending: ExposureReport[] = []
 let reported = new Set<string>()
 let flushHandle: ReturnType<typeof setTimeout> | null = null
 let warned = new Set<string>()
+let teardownListener: (() => void) | null = null
 
 /**
  * Reading a string flag with a boolean accessor answers false, which is
@@ -124,14 +125,13 @@ function read(brand: Brand): FeatureFlagPayload {
  * One request per brand. The server files a whole batch under the brand the
  * request names, so a batch that spanned brands would be filed under whichever
  * one it was sent with.
+ *
+ * `keepalive` lets the request outlive the page, which is the whole point when
+ * this runs during teardown. It carries headers, unlike sendBeacon, and the
+ * Authorization header is what ties the report to a user -- a beacon would
+ * arrive unauthenticated and record nothing at all.
  */
-function flush(): void {
-  flushHandle = null
-
-  if (pending.length === 0) {
-    return
-  }
-
+function flushOnce(keepalive: boolean): void {
   const brand = pending[0].brand
   const batch: ExposureReport[] = []
   const rest: ExposureReport[] = []
@@ -147,10 +147,11 @@ function flush(): void {
   pending = rest
 
   new HttpClient(globalConfig.baseUrl)
-    .post(EXPOSURES_URL, {
-      brand,
-      exposures: batch.map(({ brand: _brand, ...report }) => report),
-    })
+    .post(
+      EXPOSURES_URL,
+      { brand, exposures: batch.map(({ brand: _brand, ...report }) => report) },
+      { keepalive }
+    )
     .catch(() => {
       /*
        * Dropped rather than retried. The server keys an exposure on
@@ -159,13 +160,76 @@ function flush(): void {
        * recorded first_seen_at still describes the real first sighting.
        */
     })
+}
+
+function flush(): void {
+  flushHandle = null
+
+  if (pending.length === 0) {
+    return
+  }
+
+  flushOnce(false)
 
   if (pending.length > 0) {
     schedule()
   }
 }
 
+/**
+ * Sends everything still queued, now.
+ *
+ * The queue flushes on a short timer so that a page checking several flags
+ * costs one request. Navigating away inside that window would otherwise take
+ * the reports with it -- and the exposure most likely to be lost is the one for
+ * whatever the subject just clicked through.
+ */
+function drain(): void {
+  if (flushHandle !== null) {
+    clearTimeout(flushHandle)
+    flushHandle = null
+  }
+
+  while (pending.length > 0) {
+    flushOnce(true)
+  }
+}
+
+/**
+ * Bound lazily, and only once something is actually queued, so a session that
+ * never records an exposure leaves no listener behind.
+ *
+ * Web only, by feature detection. React Native has no document and does not
+ * tear a page down the way a browser unloads one.
+ *
+ * The handler is held so that reset() can remove it. reset() runs on every
+ * session change, so a flag kept here instead would either leave the listener
+ * attached for a user who has signed out, or add a second one each time.
+ */
+function listenForTeardown(): void {
+  if (teardownListener !== null || typeof document === 'undefined') {
+    return
+  }
+
+  teardownListener = () => {
+    if (document.visibilityState === 'hidden') {
+      drain()
+    }
+  }
+
+  document.addEventListener('visibilitychange', teardownListener)
+}
+
+function stopListeningForTeardown(): void {
+  if (teardownListener !== null && typeof document !== 'undefined') {
+    document.removeEventListener('visibilitychange', teardownListener)
+  }
+
+  teardownListener = null
+}
+
 function schedule(): void {
+  listenForTeardown()
   flushHandle ??= setTimeout(flush, FLUSH_DELAY_MS)
 }
 
@@ -285,5 +349,7 @@ export const featureFlags = {
       clearTimeout(flushHandle)
       flushHandle = null
     }
+
+    stopListeningForTeardown()
   },
 }

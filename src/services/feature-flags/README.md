@@ -78,6 +78,13 @@ produced no usable conclusion.
 Reporting is cheap and safe to repeat: the server keys a record on
 `(subject, flag, version)` and ignores duplicates.
 
+Reports batch on a short timer so a page checking several flags costs one
+request. On the web, anything still queued is sent when the page is hidden —
+otherwise navigating away would take the reports with it, and the exposure most
+likely to be lost is the one for whatever the subject just clicked through. That
+send uses `fetch(keepalive)` rather than `sendBeacon`, because a beacon cannot
+carry the `Authorization` header and would arrive unattributed.
+
 ## Reads are synchronous, so they can be early
 
 A read before that brand's first fetch resolves returns the fallback, which is

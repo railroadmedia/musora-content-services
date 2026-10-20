@@ -33,6 +33,29 @@ function bodyOf(call: any[]) {
   return JSON.parse(call[1].body)
 }
 
+/** jest runs on node, so the page lifecycle has to be stood up by hand. */
+function givenADocument() {
+  const listeners: Record<string, Array<() => void>> = {}
+  const doc = {
+    visibilityState: 'visible',
+    addEventListener: (event: string, handler: () => void) => {
+      listeners[event] = [...(listeners[event] ?? []), handler]
+    },
+    removeEventListener: (event: string, handler: () => void) => {
+      listeners[event] = (listeners[event] ?? []).filter((each) => each !== handler)
+    },
+  }
+
+  ;(global as any).document = doc
+
+  return {
+    hide() {
+      doc.visibilityState = 'hidden'
+      ;(listeners.visibilitychange ?? []).forEach((handler) => handler())
+    },
+  }
+}
+
 const BRAND = 'drumeo'
 
 async function loadFlags(payload: Payload, brand: Brand = BRAND) {
@@ -324,6 +347,96 @@ describe('featureFlags', () => {
       expect(posted).toHaveLength(2)
       expect(posted.map((body) => body.brand).sort()).toEqual(['drumeo', 'pianote'])
       expect(posted.every((body) => body.exposures.length === 1)).toBe(true)
+    })
+  })
+
+  describe('leaving the page', () => {
+    const rolledOut: Payload = {
+      'checkout-copy': { variant: 'treatment', value: 'treatment', version: 4, reason: 'rollout', type: 'string' },
+    }
+
+    afterEach(() => {
+      delete (global as any).document
+    })
+
+    it('sends what is still queued instead of losing it', async () => {
+      const page = givenADocument()
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+
+      // Still inside the batching window: without a teardown flush this report
+      // leaves with the page.
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(0)
+
+      page.hide()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(1)
+      expect(bodyOf(requestsTo(EXPOSURES_URL)[0]).exposures).toHaveLength(1)
+    })
+
+    it('sends it in a way that outlives the page', async () => {
+      const page = givenADocument()
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      page.hide()
+
+      // keepalive rather than sendBeacon: a beacon cannot carry the
+      // Authorization header, so it would arrive unattributed.
+      expect(requestsTo(EXPOSURES_URL)[0][1].keepalive).toBe(true)
+      expect(requestsTo(EXPOSURES_URL)[0][1].headers['Content-Type']).toBe('application/json')
+    })
+
+    it('drains every brand, not just the first', async () => {
+      const page = givenADocument()
+      await loadFlags(rolledOut, 'drumeo')
+      await loadFlags(rolledOut, 'pianote')
+
+      featureFlags.recordExposure('checkout-copy', 'drumeo')
+      featureFlags.recordExposure('checkout-copy', 'pianote')
+      page.hide()
+
+      expect(requestsTo(EXPOSURES_URL).map(bodyOf).map((b) => b.brand).sort()).toEqual([
+        'drumeo',
+        'pianote',
+      ])
+    })
+
+    it('does not queue a second send for what it already drained', async () => {
+      const page = givenADocument()
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      page.hide()
+      await settle()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(1)
+    })
+
+    it('releases the listener on reset, rather than stacking one per session', async () => {
+      const page = givenADocument()
+      await loadFlags(rolledOut)
+      featureFlags.recordExposure('checkout-copy', BRAND)
+
+      featureFlags.reset()
+      page.hide()
+
+      // reset() runs on every session change. A listener left attached would
+      // fire for a user who has signed out, and a second would be added each
+      // time somebody signs in.
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(0)
+    })
+
+    it('leaves no listener behind where there is no page', async () => {
+      // React Native has no document. Reaching for one would throw on every
+      // exposure rather than simply doing nothing.
+      await loadFlags(rolledOut)
+
+      expect(() => featureFlags.recordExposure('checkout-copy', BRAND)).not.toThrow()
+      await settle()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(1)
     })
   })
 
