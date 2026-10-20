@@ -5,8 +5,8 @@ import { Filters as f } from '../../lib/sanity/filter'
 import { groq } from '../../lib/sanity/groq'
 import type { GroqBuilder } from '../../lib/sanity/groq'
 import type { PromotionalCampaignDocument } from '../../lib/sanity/types/marketing'
-import { SanityQueryError } from '../../lib/sanity/runner'
 import { AsyncEither } from '../../lib/ads/async-either'
+import { Brand } from '../../lib/brands'
 
 const excludeFromGeneratedIndex = [
   'campaignQuery',
@@ -36,6 +36,8 @@ export type WithUserCampaignState<T extends PromotionalCampaignDocument> = T & {
 }
 
 export interface CampaignQueryOptions {
+  /** Restricts the query to one brand's campaigns. */
+  brand?: Brand
   /** Restricts the query to one campaign, or to any of several. */
   slug?: string | string[]
   /** The moment the campaign window is tested against. Defaults to now. */
@@ -78,12 +80,13 @@ function slugFilter(slug: CampaignQueryOptions['slug']): string {
 export function campaignQuery(
   options: CampaignQueryOptions = {}
 ): GroqBuilder<PromotionalCampaignDocument[]> {
-  const { slug, on = new Date(), running = true, active = true } = options
+  const { brand, slug, on = new Date(), running = true, active = true } = options
 
   return groq<PromotionalCampaignDocument[]>()
     .and(
       f.combine(
         f.type('promotional-campaign'),
+        brand && f.brand(brand),
         active && f.flag('active'),
         running && f.dateWithin('starts_at', 'ends_at', on.toISOString()),
         slugFilter(slug)

@@ -99,6 +99,7 @@ export type PromotionalCampaignDocument = {
   _createdAt: string
   _updatedAt: string
   _rev: string
+  brand: "musora" | "drumeo" | "pianote" | "singeo" | "guitareo" | "playbass"
   /** Campaign Name */
   name: string
   slug: { _type: "slug"; current: string }

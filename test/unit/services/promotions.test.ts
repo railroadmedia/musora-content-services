@@ -119,8 +119,12 @@ describe('campaignQuery', () => {
     expect(campaignQuery({ on }).build()).toContain('order(starts_at desc)')
   })
 
-  test('is not scoped to a brand', () => {
+  test('is not scoped to a brand when none is given', () => {
     expect(campaignQuery({ on }).build()).not.toContain('brand')
+  })
+
+  test('filters by brand when one is given', () => {
+    expect(campaignQuery({ brand: 'drumeo', on }).build()).toContain('brand == "drumeo"')
   })
 })
 
