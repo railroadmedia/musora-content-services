@@ -10,6 +10,7 @@ import {
   fetchAvailablePromotionalCampaigns,
   fetchPromotionalCampaigns,
   fetchUserCampaignStates,
+  resolveCampaignCopy,
   userCampaignStateDecorator,
 } from '../../../src/services/marketing/promotions'
 import type { PromotionalCampaignDocument } from '../../../src/lib/sanity/types/marketing'
@@ -297,5 +298,75 @@ describe('fetchAvailablePromotionalCampaigns', () => {
     jest.spyOn(HttpClient, 'GET').mockRejectedValue(new Error('network'))
 
     await expect(fetchAvailablePromotionalCampaigns()).resolves.toEqual([])
+  })
+})
+
+describe('resolveCampaignCopy', () => {
+  const campaignWith = (
+    ...placements: Partial<PromotionalCampaignDocument['placements'][number]>[]
+  ) =>
+    ({
+      ...campaignDocument('black-friday-2026'),
+      placements: placements.map((placement, index) => ({
+        _key: `${index}`,
+        key: `${index}`,
+        ...placement,
+      })),
+    }) as PromotionalCampaignDocument
+
+  test('fills every copy field', () => {
+    const campaign = campaignWith({
+      title: 'Save {discount}',
+      body: 'Use {code} at checkout',
+      disclaimer: '{discount} off annual plans',
+      cta_label: 'Claim {discount}',
+    })
+
+    const [placement] = resolveCampaignCopy(campaign, {
+      discount: '$100',
+      code: 'SAVE100',
+    }).placements
+
+    expect(placement).toEqual(
+      expect.objectContaining({
+        title: 'Save $100',
+        body: 'Use SAVE100 at checkout',
+        disclaimer: '$100 off annual plans',
+        cta_label: 'Claim $100',
+      })
+    )
+  })
+
+  test('replaces repeated placeholders', () => {
+    const campaign = campaignWith({ title: '{discount} off, yes {discount}' })
+
+    expect(resolveCampaignCopy(campaign, { discount: '$100' }).placements[0].title).toBe(
+      '$100 off, yes $100'
+    )
+  })
+
+  test('drops a placement left with a placeholder that has no value', () => {
+    const campaign = campaignWith(
+      { key: 'web', body: 'Use {code}' },
+      { key: 'app', body: 'Save {discount}' }
+    )
+
+    const { placements } = resolveCampaignCopy(campaign, { discount: '$100' })
+
+    expect(placements).toEqual([expect.objectContaining({ key: 'app', body: 'Save $100' })])
+  })
+
+  test('keeps copy without placeholders and placements without copy', () => {
+    const campaign = campaignWith({ title: 'Black Friday' }, {})
+
+    expect(resolveCampaignCopy(campaign, {}).placements).toHaveLength(2)
+  })
+
+  test('does not mutate the given campaign', () => {
+    const campaign = campaignWith({ title: 'Save {discount}' })
+
+    resolveCampaignCopy(campaign, { discount: '$100' })
+
+    expect(campaign.placements[0].title).toBe('Save {discount}')
   })
 })

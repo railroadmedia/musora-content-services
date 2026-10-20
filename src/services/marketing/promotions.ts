@@ -169,6 +169,49 @@ export function decorateUserCampaignState<T extends PromotionalCampaignDocument>
 }
 
 // ============================================
+// COPY
+// ============================================
+
+export type CampaignCopyValues = Record<string, string>
+
+type Placement = PromotionalCampaignDocument['placements'][number]
+
+const PLACEHOLDER = /\{(\w+)\}/g
+
+const COPY_FIELDS = ['title', 'body', 'disclaimer', 'cta_label'] as const
+
+const fillPlaceholders = (text: string, values: CampaignCopyValues) =>
+  text.replace(PLACEHOLDER, (placeholder, name: string) => values[name] ?? placeholder)
+
+const hasPlaceholder = (text: string | undefined) => !!text && new RegExp(PLACEHOLDER).test(text)
+
+function resolvePlacementCopy(placement: Placement, values: CampaignCopyValues): Placement {
+  const resolved = { ...placement }
+
+  for (const field of COPY_FIELDS) {
+    if (resolved[field]) resolved[field] = fillPlaceholders(resolved[field], values)
+  }
+
+  return resolved
+}
+
+/**
+ * Replaces `{name}` placeholders in each placement's copy with the given values. A placement left
+ * with a placeholder that has no value is dropped, so raw `{name}` text never reaches the user.
+ */
+export function resolveCampaignCopy<T extends PromotionalCampaignDocument>(
+  campaign: T,
+  values: CampaignCopyValues
+): T {
+  return {
+    ...campaign,
+    placements: campaign.placements
+      .map((placement) => resolvePlacementCopy(placement, values))
+      .filter((placement) => !COPY_FIELDS.some((field) => hasPlaceholder(placement[field]))),
+  }
+}
+
+// ============================================
 // MUTATIONS
 // ============================================
 
