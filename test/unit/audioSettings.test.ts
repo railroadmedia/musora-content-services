@@ -17,6 +17,11 @@ const SETTINGS = {
   lesson_audio_enabled: false,
   take_volume: 100,
   lesson_volume: 50,
+  auto_gain_enabled: true,
+  input_device: null,
+  output_device: null,
+  audio_configured_at: null,
+  mic_opted_in_at: null,
 }
 
 describe('audio settings', () => {
@@ -51,5 +56,29 @@ describe('audio settings', () => {
 
     expect(mockPatch).toHaveBeenCalledWith('/api/audio-recording/v1/settings', changes)
     expect(result.lesson_volume).toBe(30)
+  })
+
+  test('sends the audio configuration', async () => {
+    const changes = {
+      auto_gain_enabled: false,
+      input_device: { id: 'mic-1', label: 'Scarlett 2i2 USB' },
+      output_device: null,
+    }
+    mockPatch.mockResolvedValue({ ...SETTINGS, ...changes, audio_configured_at: '2026-10-16T12:00:00+00:00' })
+
+    const result = await updateAudioSettings(changes)
+
+    expect(mockPatch).toHaveBeenCalledWith('/api/audio-recording/v1/settings', changes)
+    expect(result.input_device).toEqual({ id: 'mic-1', label: 'Scarlett 2i2 USB' })
+    expect(result.audio_configured_at).toBe('2026-10-16T12:00:00+00:00')
+  })
+
+  test('records that the user completed the mic opt-in', async () => {
+    mockPatch.mockResolvedValue({ ...SETTINGS, mic_opted_in_at: '2026-10-16T12:00:00+00:00' })
+
+    const result = await updateAudioSettings({ mic_opted_in: true })
+
+    expect(mockPatch).toHaveBeenCalledWith('/api/audio-recording/v1/settings', { mic_opted_in: true })
+    expect(result.mic_opted_in_at).toBe('2026-10-16T12:00:00+00:00')
   })
 })
