@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.190.0](https://github.com/railroadmedia/musora-content-services/compare/v2.189.0...v2.190.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** resolve placement copy in fetchAvailablePromotionalCampaigns ([ac69d37](https://github.com/railroadmedia/musora-content-services/commit/ac69d379a264e031b1f5bd999b6bed8c78fbfb58))
+
 ## [2.189.0](https://github.com/railroadmedia/musora-content-services/compare/v2.188.0...v2.189.0) (2026-10-20)
 
 
