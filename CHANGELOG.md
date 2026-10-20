@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.191.0](https://github.com/railroadmedia/musora-content-services/compare/v2.190.0...v2.191.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** match promotional campaign placeholders regardless of case ([3760945](https://github.com/railroadmedia/musora-content-services/commit/3760945f94e90e9c7248e80f61bcf3a18a6e00fc))
+
+
+### Bug Fixes
+
+* **MU2-2024:** keep placements with unresolved placeholders in promotional campaigns ([b271ae8](https://github.com/railroadmedia/musora-content-services/commit/b271ae873309a1c48f75719d95b5dd2b59129913))
+
 ## [2.190.0](https://github.com/railroadmedia/musora-content-services/compare/v2.189.0...v2.190.0) (2026-10-20)
 
 
