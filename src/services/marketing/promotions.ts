@@ -19,6 +19,21 @@ const excludeFromGeneratedIndex = [
 // TYPES
 // ============================================
 
+type PlacementDocument = PromotionalCampaignDocument['placements'][number]
+
+/** A placement as `campaignProjection` returns it, with both images resolved to CDN urls. */
+export type PromotionalCampaignPlacement = Omit<
+  PlacementDocument,
+  'dark_mode_image' | 'light_mode_image'
+> & {
+  dark_mode_image?: string
+  light_mode_image?: string
+}
+
+export type PromotionalCampaign = Omit<PromotionalCampaignDocument, 'placements'> & {
+  placements: PromotionalCampaignPlacement[]
+}
+
 export const USER_CAMPAIGN_STATE_FIELD = 'user_state' as const
 
 /**
@@ -31,7 +46,7 @@ export interface UserCampaignState {
   eligible: boolean
 }
 
-export type WithUserCampaignState<T extends PromotionalCampaignDocument> = T & {
+export type WithUserCampaignState<T extends PromotionalCampaign> = T & {
   user_state: UserCampaignState
 }
 
@@ -54,7 +69,7 @@ const UNTOUCHED: UserCampaignState = { claimed: false, dismissed: false, eligibl
 // UTILITIES
 // ============================================
 
-const filterCampaignsForUser = (campaigns: WithUserCampaignState<PromotionalCampaignDocument>[]) =>
+const filterCampaignsForUser = (campaigns: WithUserCampaignState<PromotionalCampaign>[]) =>
   campaigns.filter(
     (campaign) =>
       campaign.user_state.eligible && !campaign.user_state.claimed && !campaign.user_state.dismissed
@@ -79,10 +94,10 @@ function slugFilter(slug: CampaignQueryOptions['slug']): string {
 
 export function campaignQuery(
   options: CampaignQueryOptions = {}
-): GroqBuilder<PromotionalCampaignDocument[]> {
+): GroqBuilder<PromotionalCampaign[]> {
   const { brand, slug, on = new Date(), running = true, active = true } = options
 
-  return groq<PromotionalCampaignDocument[]>()
+  return groq<PromotionalCampaign[]>()
     .and(
       f.combine(
         f.type('promotional-campaign'),
@@ -103,7 +118,7 @@ export function campaignQuery(
 
 export async function fetchPromotionalCampaigns(
   options: CampaignQueryOptions = {}
-): Promise<PromotionalCampaignDocument[]> {
+): Promise<PromotionalCampaign[]> {
   return campaignQuery(options).run().recover([])
 }
 
@@ -112,7 +127,7 @@ export async function fetchPromotionalCampaigns(
  */
 export async function fetchAvailablePromotionalCampaigns(
   options: CampaignQueryOptions = {}
-): Promise<WithUserCampaignState<PromotionalCampaignDocument>[]> {
+): Promise<WithUserCampaignState<PromotionalCampaign>[]> {
   return campaignQuery(options)
     .run()
     .flatMap(decorateUserCampaignState)
@@ -144,7 +159,7 @@ export function userCampaignStateDecorator(
   return {
     field: USER_CAMPAIGN_STATE_FIELD,
     compute: async (item) => {
-      const campaign = item as unknown as PromotionalCampaignDocument
+      const campaign = item as unknown as PromotionalCampaign
 
       return states[campaign.slug?.current] ?? UNTOUCHED
     },
@@ -154,7 +169,7 @@ export function userCampaignStateDecorator(
 /**
  * Attaches each campaign's claim and dismiss state in a single backend request.
  */
-export function decorateUserCampaignState<T extends PromotionalCampaignDocument>(
+export function decorateUserCampaignState<T extends PromotionalCampaign>(
   campaigns: T[]
 ): AsyncEither<Error, WithUserCampaignState<T>[]> {
   return AsyncEither.attempt(async () => {
@@ -174,8 +189,6 @@ export function decorateUserCampaignState<T extends PromotionalCampaignDocument>
 
 export type CampaignCopyValues = Record<string, string>
 
-type Placement = PromotionalCampaignDocument['placements'][number]
-
 const PLACEHOLDER = /\{(\w+)\}/g
 
 const COPY_FIELDS = ['title', 'body', 'disclaimer', 'cta_label'] as const
@@ -185,7 +198,10 @@ const fillPlaceholders = (text: string, values: CampaignCopyValues) =>
 
 const hasPlaceholder = (text: string | undefined) => !!text && new RegExp(PLACEHOLDER).test(text)
 
-function resolvePlacementCopy(placement: Placement, values: CampaignCopyValues): Placement {
+function resolvePlacementCopy(
+  placement: PromotionalCampaignPlacement,
+  values: CampaignCopyValues
+): PromotionalCampaignPlacement {
   const resolved = { ...placement }
 
   for (const field of COPY_FIELDS) {
@@ -199,7 +215,7 @@ function resolvePlacementCopy(placement: Placement, values: CampaignCopyValues):
  * Replaces `{name}` placeholders in each placement's copy with the given values. A placement left
  * with a placeholder that has no value is dropped, so raw `{name}` text never reaches the user.
  */
-export function resolveCampaignCopy<T extends PromotionalCampaignDocument>(
+export function resolveCampaignCopy<T extends PromotionalCampaign>(
   campaign: T,
   values: CampaignCopyValues
 ): T {

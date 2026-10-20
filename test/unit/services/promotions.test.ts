@@ -13,7 +13,10 @@ import {
   resolveCampaignCopy,
   userCampaignStateDecorator,
 } from '../../../src/services/marketing/promotions'
-import type { PromotionalCampaignDocument } from '../../../src/lib/sanity/types/marketing'
+import type {
+  PromotionalCampaign,
+  PromotionalCampaignPlacement,
+} from '../../../src/services/marketing/promotions'
 
 jest.mock('../../../src/lib/sanity/runner', () => ({
   ...jest.requireActual('../../../src/lib/sanity/runner'),
@@ -24,9 +27,9 @@ const campaignDocument = (slug: string) =>
   ({
     _type: 'promotional-campaign',
     slug: { _type: 'slug', current: slug },
-  }) as unknown as PromotionalCampaignDocument
+  }) as unknown as PromotionalCampaign
 
-const queryResolving = (campaigns: PromotionalCampaignDocument[]) =>
+const queryResolving = (campaigns: PromotionalCampaign[]) =>
   jest
     .mocked(runner.run)
     .mockReturnValue(
@@ -302,9 +305,7 @@ describe('fetchAvailablePromotionalCampaigns', () => {
 })
 
 describe('resolveCampaignCopy', () => {
-  const campaignWith = (
-    ...placements: Partial<PromotionalCampaignDocument['placements'][number]>[]
-  ) =>
+  const campaignWith = (...placements: Partial<PromotionalCampaignPlacement>[]) =>
     ({
       ...campaignDocument('black-friday-2026'),
       placements: placements.map((placement, index) => ({
@@ -312,7 +313,7 @@ describe('resolveCampaignCopy', () => {
         key: `${index}`,
         ...placement,
       })),
-    }) as PromotionalCampaignDocument
+    }) as PromotionalCampaign
 
   test('fills every copy field', () => {
     const campaign = campaignWith({
