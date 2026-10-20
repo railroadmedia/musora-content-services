@@ -63,11 +63,17 @@ async function loadFlags(payload: Payload, brand: Brand = BRAND) {
   await featureFlags.refresh(brand)
 }
 
-/** The queue flushes on a timer, so tests wait for it rather than assert into a gap. */
+/**
+ * The queue flushes on a timer, so tests wait for it rather than assert into a
+ * gap. Several ticks, because a rejected request settles through the client's
+ * own promise chain before the module's catch runs.
+ */
 async function settle() {
   jest.advanceTimersByTime(100)
-  await Promise.resolve()
-  await Promise.resolve()
+
+  for (let tick = 0; tick < 10; tick += 1) {
+    await Promise.resolve()
+  }
 }
 
 describe('featureFlags', () => {
@@ -284,6 +290,34 @@ describe('featureFlags', () => {
       await settle()
 
       expect(bodyOf(requestsTo(EXPOSURES_URL)[0]).exposures).toHaveLength(1)
+    })
+
+    it('lets a failed report be sent again by a later read', async () => {
+      await loadFlags(rolledOut)
+      fetchMock.mockRejectedValue(new Error('offline'))
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(1)
+
+      // Without letting go of the batch this flag stays marked reported for the
+      // rest of the session, so a total failure looks exactly like everything
+      // working.
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(2)
+    })
+
+    it('still reports once per version when the report succeeds', async () => {
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(1)
     })
 
     it('survives a failed report without throwing', async () => {

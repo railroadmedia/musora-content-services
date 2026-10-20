@@ -76,7 +76,9 @@ were never shown anything cannot measure a difference. That is not hypothetical
 produced no usable conclusion.
 
 Reporting is cheap and safe to repeat: the server keys a record on
-`(subject, flag, version)` and ignores duplicates.
+`(subject, flag, version)` and ignores duplicates. A report that fails to send
+is let go of rather than held as sent, so the next read of that flag sends it
+again — there is no retry queue, but a failure is not permanent either.
 
 Reports batch on a short timer so a page checking several flags costs one
 request. On the web, anything still queued is sent when the page is hidden —

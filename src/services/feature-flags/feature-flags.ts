@@ -122,6 +122,15 @@ function read(brand: Brand): FeatureFlagPayload {
 }
 
 /**
+ * What `reported` is keyed by: one evaluation of one flag, on one brand, under
+ * one definition. Keyed by brand too, because the same key is a different
+ * evaluation on another brand and the subject genuinely met both.
+ */
+function identityOf(report: Pick<ExposureReport, 'flag' | 'version' | 'brand'>): string {
+  return `${report.brand}:${report.flag}:${report.version}`
+}
+
+/**
  * One request per brand. The server files a whole batch under the brand the
  * request names, so a batch that spanned brands would be filed under whichever
  * one it was sent with.
@@ -154,11 +163,21 @@ function flushOnce(keepalive: boolean): void {
     )
     .catch(() => {
       /*
-       * Dropped rather than retried. The server keys an exposure on
-       * (subject, flag, version) and ignores a duplicate, so the next
-       * session that reads this flag reports it again at no cost, and the
-       * recorded first_seen_at still describes the real first sighting.
+       * Not retried here -- there is no queue and no timer -- but the batch is
+       * let go of, so a later read of the same flag can send it again.
+       *
+       * Marking a flag reported before the request is what stops a render loop
+       * queueing it fifty times. Leaving it marked after a failure is what made
+       * a total failure indistinguishable from everything working: nothing is
+       * sent, nothing is retried, and nothing says so. Relying on the subject
+       * coming back in another session only works for subjects who come back,
+       * which is not the population a landing-page experiment is measuring.
+       *
+       * Safe to re-send: the server keys an exposure on
+       * (subject, flag, version) and ignores a duplicate, so first_seen_at
+       * still describes the real first sighting.
        */
+      batch.forEach((report) => reported.delete(identityOf(report)))
     })
 }
 
@@ -293,16 +312,7 @@ export const featureFlags = {
       return
     }
 
-    // Keyed by brand as well, because the same key is a different evaluation on
-    // another brand and the subject genuinely met both.
-    const identity = `${brand}:${flagKey}:${entry.version}`
-
-    if (reported.has(identity)) {
-      return
-    }
-
-    reported.add(identity)
-    pending.push({
+    const report: ExposureReport = {
       flag: flagKey,
       variant: entry.variant,
       // Echoed from what was served, never computed: it is what ties the record
@@ -310,7 +320,14 @@ export const featureFlags = {
       version: entry.version,
       reason: entry.reason,
       brand,
-    })
+    }
+
+    if (reported.has(identityOf(report))) {
+      return
+    }
+
+    reported.add(identityOf(report))
+    pending.push(report)
 
     schedule()
   },
