@@ -204,7 +204,13 @@ const PLACEHOLDER = /\{(\w+)\}/g
 const COPY_FIELDS = ['title', 'body', 'disclaimer', 'cta_label'] as const
 
 const fillPlaceholders = (text: string, values: CampaignPlaceholderValues) =>
-  text.replace(PLACEHOLDER, (placeholder, name: string) => values[name] ?? placeholder)
+  text.replace(
+    PLACEHOLDER,
+    (placeholder, name: string) => values[name.toLowerCase()] ?? placeholder
+  )
+
+const lowercaseKeys = (values: CampaignPlaceholderValues): CampaignPlaceholderValues =>
+  Object.fromEntries(Object.entries(values).map(([name, value]) => [name.toLowerCase(), value]))
 
 function resolvePlacementPlaceholders(
   placement: PromotionalCampaignPlacement,
@@ -221,16 +227,18 @@ function resolvePlacementPlaceholders(
 
 /**
  * Replaces `{name}` placeholders in each placement's copy with the given values. A placeholder with
- * no value is left as it is.
+ * no value is left as it is. Names match regardless of case, so `{price}` and `{PRICE}` both fill.
  */
 export function resolveCampaignPlaceholders<T extends PromotionalCampaign>(
   campaign: T,
   values: CampaignPlaceholderValues
 ): T {
+  const valuesByName = lowercaseKeys(values)
+
   return {
     ...campaign,
     placements: (campaign.placements ?? []).map((placement) =>
-      resolvePlacementPlaceholders(placement, values)
+      resolvePlacementPlaceholders(placement, valuesByName)
     ),
   }
 }

@@ -382,6 +382,14 @@ describe('resolveCampaignPlaceholders', () => {
     )
   })
 
+  test('matches placeholder names regardless of case', () => {
+    const campaign = campaignWith({ title: '{price}, {PRICE}, {Price}' })
+
+    expect(resolveCampaignPlaceholders(campaign, { Price: '$29' }).placements[0].title).toBe(
+      '$29, $29, $29'
+    )
+  })
+
   test('leaves a placeholder that has no value as it is', () => {
     const campaign = campaignWith(
       { key: 'web', body: 'Use {code}' },
