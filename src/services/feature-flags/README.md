@@ -13,7 +13,7 @@ if (featureFlags.accessible('new-checkout', brand)) {
   // ...
 }
 
-const copy = featureFlags.variant('checkout-copy', 'control', brand)
+const copy = featureFlags.variant('checkout-copy', brand, 'control')
 ```
 
 Nothing needs initialising. The first read of a brand fetches that brand, and
@@ -22,8 +22,8 @@ reads answer synchronously from what has been fetched.
 | | |
 |---|---|
 | `accessible(flagKey, brand)` | `true` only when the flag's value is exactly `true` |
-| `variant(flagKey, fallback, brand)` | the value when it is a string, otherwise the fallback |
-| `value(flagKey, fallback, brand)` | the raw value, for `number` and `json` flags |
+| `variant(flagKey, brand, fallback = '')` | the value when it is a string, otherwise the fallback |
+| `value(flagKey, brand, fallback = null)` | the raw value, for `number` and `json` flags |
 | `recordExposure(flagKey, brand)` | reports that this subject saw the flag |
 | `isReady(brand)` | whether that brand has been fetched yet |
 | `refresh(brand)` | forces a fetch; you should not normally need this |
@@ -46,7 +46,7 @@ it does not have.
 point the user actually sees the thing:
 
 ```js
-const variant = featureFlags.variant('checkout-copy', 'control')
+const variant = featureFlags.variant('checkout-copy', brand, 'control')
 
 onMounted(() => featureFlags.recordExposure('checkout-copy'))
 ```
@@ -63,11 +63,12 @@ Reporting is cheap and safe to repeat: the server keys a record on
 
 ## Reads are synchronous, so they can be early
 
-A read before the first fetch resolves returns the default. Use `isReady()` where
-that matters:
+A read before that brand's first fetch resolves returns the fallback, which is
+what the fallback is for -- not "the flag said no", which the server answers with
+the flag's own default. Use `isReady(brand)` where the difference matters:
 
 ```js
-if (featureFlags.isReady() && featureFlags.accessible('new-checkout')) {
+if (featureFlags.isReady(brand) && featureFlags.accessible('new-checkout', brand)) {
 ```
 
 Synchronous is the deliberate trade: an async read would put `useState` +
@@ -76,9 +77,9 @@ window that is normally a few hundred milliseconds after sign-in.
 
 ## Freshness
 
-The snapshot refreshes at most once a minute, and only when something reads a
-flag — so a session that never touches a flag never fetches, and no timer is left
-running. A rollout ramped in the admin UI therefore reaches a session that is
+Each brand's snapshot refreshes at most once a minute, and only when something
+reads a flag on that brand — so a session that never touches a flag never
+fetches, and no timer is left running. A rollout ramped in the admin UI therefore reaches a session that is
 already open, which it would not if flags were only read at sign-in.
 
 ## Reactivity

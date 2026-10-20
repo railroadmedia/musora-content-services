@@ -124,12 +124,18 @@ export const featureFlags = {
   },
 
   /**
+   * The fallback answers "no answer", not "the flag said no". A flag that is
+   * off, archived, out of schedule or in a holdout is served as its own default
+   * by the server; this is for a key that is not in the payload at all -- the
+   * window before the first fetch lands, a failed fetch, a draft, an unknown
+   * key, or a value that is not a string.
+   *
    * @param {string} flagKey
-   * @param {string} fallback
    * @param {string} brand
+   * @param {string} [fallback]
    * @returns {string}
    */
-  variant(flagKey: string, fallback: string, brand: Brand): string {
+  variant(flagKey: string, brand: Brand, fallback: string = ''): string {
     const value = read(brand)[flagKey]?.value
 
     return typeof value === 'string' ? value : fallback
@@ -137,11 +143,11 @@ export const featureFlags = {
 
   /**
    * @param {string} flagKey
-   * @param {unknown} fallback
    * @param {string} brand
+   * @param {unknown} [fallback]
    * @returns {unknown}
    */
-  value(flagKey: string, fallback: unknown, brand: Brand): unknown {
+  value(flagKey: string, brand: Brand, fallback: unknown = null): unknown {
     const entry = read(brand)[flagKey]
 
     return entry === undefined ? fallback : entry.value

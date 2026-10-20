@@ -80,8 +80,8 @@ describe('featureFlags', () => {
         flagged: { variant: 'on', value: true, version: 1, reason: 'rollout' },
       })
 
-      expect(featureFlags.variant('copy', 'control', BRAND)).toBe('treatment')
-      expect(featureFlags.variant('flagged', 'control', BRAND)).toBe('control')
+      expect(featureFlags.variant('copy', BRAND, 'control')).toBe('treatment')
+      expect(featureFlags.variant('flagged', BRAND, 'control')).toBe('control')
     })
 
     it('hands back the raw value for number and json flags', async () => {
@@ -90,16 +90,17 @@ describe('featureFlags', () => {
         config: { variant: 'a', value: { rows: 3 }, version: 1, reason: 'rollout' },
       })
 
-      expect(featureFlags.value('limit', null, BRAND)).toBe(25)
-      expect(featureFlags.value('config', null, BRAND)).toEqual({ rows: 3 })
-      expect(featureFlags.value('missing', 'fallback', BRAND)).toBe('fallback')
+      expect(featureFlags.value('limit', BRAND, null)).toBe(25)
+      expect(featureFlags.value('config', BRAND, null)).toEqual({ rows: 3 })
+      expect(featureFlags.value('missing', BRAND, 'fallback')).toBe('fallback')
     })
 
     it('treats an unknown flag the way the server does', async () => {
       await loadFlags({})
 
       expect(featureFlags.accessible('never-created', BRAND)).toBe(false)
-      expect(featureFlags.variant('never-created', '', BRAND)).toBe('')
+      expect(featureFlags.variant('never-created', BRAND)).toBe('')
+      expect(featureFlags.value('never-created', BRAND)).toBeNull()
     })
 
     it('answers with defaults before anything has been fetched', () => {
@@ -122,8 +123,8 @@ describe('featureFlags', () => {
       await loadFlags(rolledOut)
 
       featureFlags.accessible('checkout-copy', BRAND)
-      featureFlags.variant('checkout-copy', '', BRAND)
-      featureFlags.value('checkout-copy', null, BRAND)
+      featureFlags.variant('checkout-copy', BRAND)
+      featureFlags.value('checkout-copy', BRAND)
       await settle()
 
       // The decision the whole design rests on: delivering a value is not an
