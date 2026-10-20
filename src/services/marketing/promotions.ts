@@ -63,6 +63,11 @@ export interface CampaignQueryOptions {
   active?: boolean
 }
 
+export interface AvailableCampaignOptions extends CampaignQueryOptions {
+  /** Values for the `{name}` placeholders in placement copy. See `resolveCampaignCopy`. */
+  copyValues?: CampaignCopyValues
+}
+
 const UNTOUCHED: UserCampaignState = { claimed: false, dismissed: false, eligible: true }
 
 // ============================================
@@ -126,12 +131,15 @@ export async function fetchPromotionalCampaigns(
  * Every running campaign the user has not already claimed or dismissed, and is eligible.
  */
 export async function fetchAvailablePromotionalCampaigns(
-  options: CampaignQueryOptions = {}
+  options: AvailableCampaignOptions = {}
 ): Promise<WithUserCampaignState<PromotionalCampaign>[]> {
-  return campaignQuery(options)
+  const { copyValues = {}, ...queryOptions } = options
+
+  return campaignQuery(queryOptions)
     .run()
     .flatMap(decorateUserCampaignState)
     .map(filterCampaignsForUser)
+    .map((campaigns) => campaigns.map((campaign) => resolveCampaignCopy(campaign, copyValues)))
     .recover([])
 }
 
@@ -221,7 +229,7 @@ export function resolveCampaignCopy<T extends PromotionalCampaign>(
 ): T {
   return {
     ...campaign,
-    placements: campaign.placements
+    placements: (campaign.placements ?? [])
       .map((placement) => resolvePlacementCopy(placement, values))
       .filter((placement) => !COPY_FIELDS.some((field) => hasPlaceholder(placement[field]))),
   }

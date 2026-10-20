@@ -296,6 +296,39 @@ describe('fetchAvailablePromotionalCampaigns', () => {
     expect(get).not.toHaveBeenCalled()
   })
 
+  test('fills placement copy with the given values', async () => {
+    queryResolving([
+      {
+        ...campaignDocument('black-friday-2026'),
+        placements: [{ _key: '0', key: 'banner', title: 'Save {discount}' }],
+      },
+    ])
+    jest.spyOn(HttpClient, 'GET').mockResolvedValue({})
+
+    const [campaign] = await fetchAvailablePromotionalCampaigns({
+      copyValues: { discount: '$100' },
+    })
+
+    expect(campaign.placements).toEqual([expect.objectContaining({ title: 'Save $100' })])
+  })
+
+  test('drops placements with placeholders when no values are given', async () => {
+    queryResolving([
+      {
+        ...campaignDocument('black-friday-2026'),
+        placements: [
+          { _key: '0', key: 'banner', title: 'Save {discount}' },
+          { _key: '1', key: 'modal', title: 'Black Friday' },
+        ],
+      },
+    ])
+    jest.spyOn(HttpClient, 'GET').mockResolvedValue({})
+
+    const [campaign] = await fetchAvailablePromotionalCampaigns()
+
+    expect(campaign.placements).toEqual([expect.objectContaining({ key: 'modal' })])
+  })
+
   test('resolves to no campaigns when the state request fails', async () => {
     queryResolving([campaignDocument('black-friday-2026')])
     jest.spyOn(HttpClient, 'GET').mockRejectedValue(new Error('network'))
