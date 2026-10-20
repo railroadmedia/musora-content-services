@@ -64,8 +64,8 @@ export interface CampaignQueryOptions {
 }
 
 export interface AvailableCampaignOptions extends CampaignQueryOptions {
-  /** Values for the `{name}` placeholders in placement copy. See `resolveCampaignCopy`. */
-  copyValues?: CampaignCopyValues
+  /** Values for the `{name}` placeholders in placement copy. See `resolveCampaignPlaceholders`. */
+  placeholderValues?: CampaignPlaceholderValues
 }
 
 const UNTOUCHED: UserCampaignState = { claimed: false, dismissed: false, eligible: true }
@@ -133,13 +133,15 @@ export async function fetchPromotionalCampaigns(
 export async function fetchAvailablePromotionalCampaigns(
   options: AvailableCampaignOptions = {}
 ): Promise<WithUserCampaignState<PromotionalCampaign>[]> {
-  const { copyValues = {}, ...queryOptions } = options
+  const { placeholderValues = {}, ...queryOptions } = options
 
   return campaignQuery(queryOptions)
     .run()
     .flatMap(decorateUserCampaignState)
     .map(filterCampaignsForUser)
-    .map((campaigns) => campaigns.map((campaign) => resolveCampaignCopy(campaign, copyValues)))
+    .map((campaigns) =>
+      campaigns.map((campaign) => resolveCampaignPlaceholders(campaign, placeholderValues))
+    )
     .recover([])
 }
 
@@ -192,23 +194,23 @@ export function decorateUserCampaignState<T extends PromotionalCampaign>(
 }
 
 // ============================================
-// COPY
+// PLACEHOLDERS
 // ============================================
 
-export type CampaignCopyValues = Record<string, string>
+export type CampaignPlaceholderValues = Record<string, string>
 
 const PLACEHOLDER = /\{(\w+)\}/g
 
 const COPY_FIELDS = ['title', 'body', 'disclaimer', 'cta_label'] as const
 
-const fillPlaceholders = (text: string, values: CampaignCopyValues) =>
+const fillPlaceholders = (text: string, values: CampaignPlaceholderValues) =>
   text.replace(PLACEHOLDER, (placeholder, name: string) => values[name] ?? placeholder)
 
 const hasPlaceholder = (text: string | undefined) => !!text && new RegExp(PLACEHOLDER).test(text)
 
-function resolvePlacementCopy(
+function resolvePlacementPlaceholders(
   placement: PromotionalCampaignPlacement,
-  values: CampaignCopyValues
+  values: CampaignPlaceholderValues
 ): PromotionalCampaignPlacement {
   const resolved = { ...placement }
 
@@ -223,14 +225,14 @@ function resolvePlacementCopy(
  * Replaces `{name}` placeholders in each placement's copy with the given values. A placement left
  * with a placeholder that has no value is dropped, so raw `{name}` text never reaches the user.
  */
-export function resolveCampaignCopy<T extends PromotionalCampaign>(
+export function resolveCampaignPlaceholders<T extends PromotionalCampaign>(
   campaign: T,
-  values: CampaignCopyValues
+  values: CampaignPlaceholderValues
 ): T {
   return {
     ...campaign,
     placements: (campaign.placements ?? [])
-      .map((placement) => resolvePlacementCopy(placement, values))
+      .map((placement) => resolvePlacementPlaceholders(placement, values))
       .filter((placement) => !COPY_FIELDS.some((field) => hasPlaceholder(placement[field]))),
   }
 }
