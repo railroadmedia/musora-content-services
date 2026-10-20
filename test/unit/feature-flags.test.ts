@@ -6,7 +6,7 @@ const EXPOSURES_URL = '/api/feature/v1/exposures'
 
 type Payload = Record<
   string,
-  { variant: string | null; value: unknown; version: number; reason: string; brand?: string | null }
+  { variant: string | null; value: unknown; version: number; reason: string }
 >
 
 let fetchMock: jest.Mock
@@ -112,7 +112,6 @@ describe('featureFlags', () => {
         value: 'treatment',
         version: 4,
         reason: 'rollout',
-        brand: 'drumeo',
       },
     }
 
@@ -137,15 +136,32 @@ describe('featureFlags', () => {
 
       expect(bodyOf(requestsTo(EXPOSURES_URL)[0])).toEqual({
         exposures: [
-          { flag: 'checkout-copy', variant: 'treatment', version: 4, reason: 'rollout', brand: 'drumeo' },
+          { flag: 'checkout-copy', variant: 'treatment', version: 4, reason: 'rollout' },
         ],
       })
     })
 
+    it('sends exactly the fields the server validates, and no others', async () => {
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy')
+      await settle()
+
+      // Asserted as a key set rather than with toEqual, which ignores a key
+      // whose value is undefined. That is the exact shape a dropped payload
+      // field takes, and it reaches the server as a missing required field.
+      expect(Object.keys(bodyOf(requestsTo(EXPOSURES_URL)[0]).exposures[0]).sort()).toEqual([
+        'flag',
+        'reason',
+        'variant',
+        'version',
+      ])
+    })
+
     it('does not report a reason the server would discard', async () => {
       await loadFlags({
-        served: { variant: 'off', value: false, version: 2, reason: 'default', brand: 'drumeo' },
-        off: { variant: 'off', value: false, version: 2, reason: 'disabled', brand: 'drumeo' },
+        served: { variant: 'off', value: false, version: 2, reason: 'default' },
+        off: { variant: 'off', value: false, version: 2, reason: 'disabled' },
       })
 
       featureFlags.recordExposure('served')
@@ -159,7 +175,7 @@ describe('featureFlags', () => {
     it('splits more than fifty exposures across requests', async () => {
       const many: Payload = {}
       for (let i = 0; i < 60; i += 1) {
-        many[`flag-${i}`] = { variant: 'on', value: true, version: 1, reason: 'rollout', brand: 'drumeo' }
+        many[`flag-${i}`] = { variant: 'on', value: true, version: 1, reason: 'rollout' }
       }
       await loadFlags(many)
 

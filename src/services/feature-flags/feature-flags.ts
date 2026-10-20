@@ -71,7 +71,7 @@ function flush(): void {
   new HttpClient(globalConfig.baseUrl).post(EXPOSURES_URL, { exposures: batch }).catch(() => {
     /*
      * Dropped rather than retried. The server keys an exposure on
-     * (user, flag, brand, version) and ignores a duplicate, so the next
+     * (subject, flag, version) and ignores a duplicate, so the next
      * session that reads this flag reports it again at no cost, and the
      * recorded first_seen_at still describes the real first sighting.
      */
@@ -126,12 +126,7 @@ export const featureFlags = {
   recordExposure(flagKey: string): void {
     const entry = read()[flagKey]
 
-    if (
-      !entry ||
-      entry.variant === null ||
-      entry.brand === null ||
-      !RECORDABLE_REASONS.includes(entry.reason)
-    ) {
+    if (!entry || entry.variant === null || !RECORDABLE_REASONS.includes(entry.reason)) {
       return
     }
 
@@ -149,7 +144,6 @@ export const featureFlags = {
       // to the definition this client evaluated under.
       version: entry.version,
       reason: entry.reason,
-      brand: entry.brand,
     })
 
     schedule()

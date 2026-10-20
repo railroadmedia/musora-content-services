@@ -51,7 +51,7 @@ were never shown anything cannot measure a difference. That is not hypothetical
 produced no usable conclusion.
 
 Reporting is cheap and safe to repeat: the server keys a record on
-`(user, flag, brand, version)` and ignores duplicates.
+`(subject, flag, version)` and ignores duplicates.
 
 ## Reads are synchronous, so they can be early
 

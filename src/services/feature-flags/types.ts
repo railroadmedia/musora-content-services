@@ -2,8 +2,6 @@
  * @module FeatureFlags
  */
 
-import { Brand } from '@/lib/brands'
-
 export type EvaluationReason =
   | 'override'
   | 'rule'
@@ -18,15 +16,17 @@ export type FeatureFlagEntry = {
   value: unknown
   version: number
   reason: EvaluationReason
-  brand: Brand | null
 }
 
 export type FeatureFlagPayload = Record<string, FeatureFlagEntry>
 
+/**
+ * No brand. A flag has none -- brand is a targeting rule -- and the server files
+ * an exposure under the brand of the request that carries it.
+ */
 export type ExposureReport = {
   flag: string
   variant: string
   version: number
   reason: EvaluationReason
-  brand: Brand
 }
