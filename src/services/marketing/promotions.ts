@@ -206,8 +206,6 @@ const COPY_FIELDS = ['title', 'body', 'disclaimer', 'cta_label'] as const
 const fillPlaceholders = (text: string, values: CampaignPlaceholderValues) =>
   text.replace(PLACEHOLDER, (placeholder, name: string) => values[name] ?? placeholder)
 
-const hasPlaceholder = (text: string | undefined) => !!text && new RegExp(PLACEHOLDER).test(text)
-
 function resolvePlacementPlaceholders(
   placement: PromotionalCampaignPlacement,
   values: CampaignPlaceholderValues
@@ -222,8 +220,8 @@ function resolvePlacementPlaceholders(
 }
 
 /**
- * Replaces `{name}` placeholders in each placement's copy with the given values. A placement left
- * with a placeholder that has no value is dropped, so raw `{name}` text never reaches the user.
+ * Replaces `{name}` placeholders in each placement's copy with the given values. A placeholder with
+ * no value is left as it is.
  */
 export function resolveCampaignPlaceholders<T extends PromotionalCampaign>(
   campaign: T,
@@ -231,9 +229,9 @@ export function resolveCampaignPlaceholders<T extends PromotionalCampaign>(
 ): T {
   return {
     ...campaign,
-    placements: (campaign.placements ?? [])
-      .map((placement) => resolvePlacementPlaceholders(placement, values))
-      .filter((placement) => !COPY_FIELDS.some((field) => hasPlaceholder(placement[field]))),
+    placements: (campaign.placements ?? []).map((placement) =>
+      resolvePlacementPlaceholders(placement, values)
+    ),
   }
 }
 

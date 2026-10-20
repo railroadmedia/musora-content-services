@@ -312,7 +312,7 @@ describe('fetchAvailablePromotionalCampaigns', () => {
     expect(campaign.placements).toEqual([expect.objectContaining({ title: 'Save $100' })])
   })
 
-  test('drops placements with placeholders when no values are given', async () => {
+  test('keeps placements with placeholders when no values are given', async () => {
     queryResolving([
       {
         ...campaignDocument('black-friday-2026'),
@@ -326,7 +326,10 @@ describe('fetchAvailablePromotionalCampaigns', () => {
 
     const [campaign] = await fetchAvailablePromotionalCampaigns()
 
-    expect(campaign.placements).toEqual([expect.objectContaining({ key: 'modal' })])
+    expect(campaign.placements).toEqual([
+      expect.objectContaining({ key: 'banner', title: 'Save {discount}' }),
+      expect.objectContaining({ key: 'modal', title: 'Black Friday' }),
+    ])
   })
 
   test('resolves to no campaigns when the state request fails', async () => {
@@ -379,7 +382,7 @@ describe('resolveCampaignPlaceholders', () => {
     )
   })
 
-  test('drops a placement left with a placeholder that has no value', () => {
+  test('leaves a placeholder that has no value as it is', () => {
     const campaign = campaignWith(
       { key: 'web', body: 'Use {code}' },
       { key: 'app', body: 'Save {discount}' }
@@ -387,7 +390,10 @@ describe('resolveCampaignPlaceholders', () => {
 
     const { placements } = resolveCampaignPlaceholders(campaign, { discount: '$100' })
 
-    expect(placements).toEqual([expect.objectContaining({ key: 'app', body: 'Save $100' })])
+    expect(placements).toEqual([
+      expect.objectContaining({ key: 'web', body: 'Use {code}' }),
+      expect.objectContaining({ key: 'app', body: 'Save $100' }),
+    ])
   })
 
   test('keeps copy without placeholders and placements without copy', () => {
