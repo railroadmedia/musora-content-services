@@ -65,7 +65,7 @@ point the user actually sees the thing:
 ```js
 const variant = featureFlags.variant('checkout-copy', brand, 'control')
 
-onMounted(() => featureFlags.recordExposure('checkout-copy'))
+onMounted(() => featureFlags.recordExposure('checkout-copy', brand))
 ```
 
 This is deliberate, and it is the whole reason exposure is a separate call. A
@@ -124,7 +124,9 @@ on something Vue tracks — the user ref, typically, which is what
 ## What it does not do
 
 - **Logged-out users.** Flags are evaluated for a user; a logged-out caller reads
-  defaults. No request is made.
+  the fallback. The fetch is still attempted and fails, then retried every five
+  seconds while something keeps reading, so avoid reading flags on signed-out
+  screens.
 - **Local overrides.** The engine has per-user overrides that are auditable and
   visible in the admin UI. A client-side override would be invisible to anyone
   debugging and would quietly corrupt that person's experiment data.
