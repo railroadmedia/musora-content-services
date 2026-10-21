@@ -66,6 +66,8 @@ export interface CampaignQueryOptions {
 export interface AvailableCampaignOptions extends CampaignQueryOptions {
   /** Values for the `{name}` placeholders in placement copy. See `resolveCampaignPlaceholders`. */
   placeholderValues?: CampaignPlaceholderValues
+  /** Set true to drop campaigns the user is not eligible for, has claimed, or has dismissed. */
+  filterByUserState?: boolean
 }
 
 const UNTOUCHED: UserCampaignState = { claimed: false, dismissed: false, eligible: true }
@@ -128,17 +130,18 @@ export async function fetchPromotionalCampaigns(
 }
 
 /**
- * Every running campaign the user has not already claimed or dismissed, and is eligible.
+ * Every running campaign with the user's state attached. With `filterByUserState`, only those the
+ * user is eligible for and has not claimed or dismissed.
  */
 export async function fetchAvailablePromotionalCampaigns(
   options: AvailableCampaignOptions = {}
 ): Promise<WithUserCampaignState<PromotionalCampaign>[]> {
-  const { placeholderValues = {}, ...queryOptions } = options
+  const { placeholderValues = {}, filterByUserState = false, ...queryOptions } = options
 
   return campaignQuery(queryOptions)
     .run()
     .flatMap(decorateUserCampaignState)
-    .map(filterCampaignsForUser)
+    .map((campaigns) => (filterByUserState ? filterCampaignsForUser(campaigns) : campaigns))
     .map((campaigns) =>
       campaigns.map((campaign) => resolveCampaignPlaceholders(campaign, placeholderValues))
     )

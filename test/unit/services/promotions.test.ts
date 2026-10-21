@@ -261,10 +261,30 @@ describe('fetchAvailablePromotionalCampaigns', () => {
       dismissed: { claimed: false, dismissed: true },
     })
 
-    const result = await fetchAvailablePromotionalCampaigns()
+    const result = await fetchAvailablePromotionalCampaigns({ filterByUserState: true })
 
     expect(result).toEqual([
       expect.objectContaining({ slug: { _type: 'slug', current: 'untouched' } }),
+    ])
+  })
+
+  test('keeps every campaign with its user state when not filtering by user state', async () => {
+    queryResolving([campaignDocument('claimed'), campaignDocument('untouched')])
+    jest.spyOn(HttpClient, 'GET').mockResolvedValue({
+      claimed: { claimed: true, dismissed: false, eligible: true },
+    })
+
+    const result = await fetchAvailablePromotionalCampaigns()
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        slug: { _type: 'slug', current: 'claimed' },
+        user_state: { claimed: true, dismissed: false, eligible: true },
+      }),
+      expect.objectContaining({
+        slug: { _type: 'slug', current: 'untouched' },
+        user_state: { claimed: false, dismissed: false, eligible: true },
+      }),
     ])
   })
 
@@ -275,7 +295,7 @@ describe('fetchAvailablePromotionalCampaigns', () => {
       offered: { claimed: false, dismissed: false, eligible: true },
     })
 
-    const result = await fetchAvailablePromotionalCampaigns()
+    const result = await fetchAvailablePromotionalCampaigns({ filterByUserState: true })
 
     expect(result).toEqual([
       expect.objectContaining({ slug: { _type: 'slug', current: 'offered' } }),
