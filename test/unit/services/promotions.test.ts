@@ -10,9 +10,13 @@ import {
   fetchAvailablePromotionalCampaigns,
   fetchPromotionalCampaigns,
   fetchUserCampaignStates,
+  resolveCampaignPlaceholders,
   userCampaignStateDecorator,
 } from '../../../src/services/marketing/promotions'
-import type { PromotionalCampaignDocument } from '../../../src/lib/sanity/types/marketing'
+import type {
+  PromotionalCampaign,
+  PromotionalCampaignPlacement,
+} from '../../../src/services/marketing/promotions'
 
 jest.mock('../../../src/lib/sanity/runner', () => ({
   ...jest.requireActual('../../../src/lib/sanity/runner'),
@@ -23,9 +27,9 @@ const campaignDocument = (slug: string) =>
   ({
     _type: 'promotional-campaign',
     slug: { _type: 'slug', current: slug },
-  }) as unknown as PromotionalCampaignDocument
+  }) as unknown as PromotionalCampaign
 
-const queryResolving = (campaigns: PromotionalCampaignDocument[]) =>
+const queryResolving = (campaigns: PromotionalCampaign[]) =>
   jest
     .mocked(runner.run)
     .mockReturnValue(
@@ -119,8 +123,12 @@ describe('campaignQuery', () => {
     expect(campaignQuery({ on }).build()).toContain('order(starts_at desc)')
   })
 
-  test('is not scoped to a brand', () => {
+  test('is not scoped to a brand when none is given', () => {
     expect(campaignQuery({ on }).build()).not.toContain('brand')
+  })
+
+  test('filters by brand when one is given', () => {
+    expect(campaignQuery({ brand: 'drumeo', on }).build()).toContain('brand == "drumeo"')
   })
 })
 
@@ -253,10 +261,30 @@ describe('fetchAvailablePromotionalCampaigns', () => {
       dismissed: { claimed: false, dismissed: true },
     })
 
-    const result = await fetchAvailablePromotionalCampaigns()
+    const result = await fetchAvailablePromotionalCampaigns({ filterByUserState: true })
 
     expect(result).toEqual([
       expect.objectContaining({ slug: { _type: 'slug', current: 'untouched' } }),
+    ])
+  })
+
+  test('keeps every campaign with its user state when not filtering by user state', async () => {
+    queryResolving([campaignDocument('claimed'), campaignDocument('untouched')])
+    jest.spyOn(HttpClient, 'GET').mockResolvedValue({
+      claimed: { claimed: true, dismissed: false, eligible: true },
+    })
+
+    const result = await fetchAvailablePromotionalCampaigns()
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        slug: { _type: 'slug', current: 'claimed' },
+        user_state: { claimed: true, dismissed: false, eligible: true },
+      }),
+      expect.objectContaining({
+        slug: { _type: 'slug', current: 'untouched' },
+        user_state: { claimed: false, dismissed: false, eligible: true },
+      }),
     ])
   })
 
@@ -267,7 +295,7 @@ describe('fetchAvailablePromotionalCampaigns', () => {
       offered: { claimed: false, dismissed: false, eligible: true },
     })
 
-    const result = await fetchAvailablePromotionalCampaigns()
+    const result = await fetchAvailablePromotionalCampaigns({ filterByUserState: true })
 
     expect(result).toEqual([
       expect.objectContaining({ slug: { _type: 'slug', current: 'offered' } }),
@@ -288,10 +316,125 @@ describe('fetchAvailablePromotionalCampaigns', () => {
     expect(get).not.toHaveBeenCalled()
   })
 
+  test('fills placement copy with the given values', async () => {
+    queryResolving([
+      {
+        ...campaignDocument('black-friday-2026'),
+        placements: [{ _key: '0', key: 'banner', title: 'Save {discount}' }],
+      },
+    ])
+    jest.spyOn(HttpClient, 'GET').mockResolvedValue({})
+
+    const [campaign] = await fetchAvailablePromotionalCampaigns({
+      placeholderValues: { discount: '$100' },
+    })
+
+    expect(campaign.placements).toEqual([expect.objectContaining({ title: 'Save $100' })])
+  })
+
+  test('keeps placements with placeholders when no values are given', async () => {
+    queryResolving([
+      {
+        ...campaignDocument('black-friday-2026'),
+        placements: [
+          { _key: '0', key: 'banner', title: 'Save {discount}' },
+          { _key: '1', key: 'modal', title: 'Black Friday' },
+        ],
+      },
+    ])
+    jest.spyOn(HttpClient, 'GET').mockResolvedValue({})
+
+    const [campaign] = await fetchAvailablePromotionalCampaigns()
+
+    expect(campaign.placements).toEqual([
+      expect.objectContaining({ key: 'banner', title: 'Save {discount}' }),
+      expect.objectContaining({ key: 'modal', title: 'Black Friday' }),
+    ])
+  })
+
   test('resolves to no campaigns when the state request fails', async () => {
     queryResolving([campaignDocument('black-friday-2026')])
     jest.spyOn(HttpClient, 'GET').mockRejectedValue(new Error('network'))
 
     await expect(fetchAvailablePromotionalCampaigns()).resolves.toEqual([])
+  })
+})
+
+describe('resolveCampaignPlaceholders', () => {
+  const campaignWith = (...placements: Partial<PromotionalCampaignPlacement>[]) =>
+    ({
+      ...campaignDocument('black-friday-2026'),
+      placements: placements.map((placement, index) => ({
+        _key: `${index}`,
+        key: `${index}`,
+        ...placement,
+      })),
+    }) as PromotionalCampaign
+
+  test('fills every copy field', () => {
+    const campaign = campaignWith({
+      title: 'Save {discount}',
+      body: 'Use {code} at checkout',
+      disclaimer: '{discount} off annual plans',
+      cta_label: 'Claim {discount}',
+    })
+
+    const [placement] = resolveCampaignPlaceholders(campaign, {
+      discount: '$100',
+      code: 'SAVE100',
+    }).placements
+
+    expect(placement).toEqual(
+      expect.objectContaining({
+        title: 'Save $100',
+        body: 'Use SAVE100 at checkout',
+        disclaimer: '$100 off annual plans',
+        cta_label: 'Claim $100',
+      })
+    )
+  })
+
+  test('replaces repeated placeholders', () => {
+    const campaign = campaignWith({ title: '{discount} off, yes {discount}' })
+
+    expect(resolveCampaignPlaceholders(campaign, { discount: '$100' }).placements[0].title).toBe(
+      '$100 off, yes $100'
+    )
+  })
+
+  test('matches placeholder names regardless of case', () => {
+    const campaign = campaignWith({ title: '{price}, {PRICE}, {Price}' })
+
+    expect(resolveCampaignPlaceholders(campaign, { Price: '$29' }).placements[0].title).toBe(
+      '$29, $29, $29'
+    )
+  })
+
+  test('leaves a placeholder that has no value as it is', () => {
+    const campaign = campaignWith(
+      { key: 'web', body: 'Use {code}' },
+      { key: 'app', body: 'Save {discount}' }
+    )
+
+    const { placements } = resolveCampaignPlaceholders(campaign, { discount: '$100' })
+
+    expect(placements).toEqual([
+      expect.objectContaining({ key: 'web', body: 'Use {code}' }),
+      expect.objectContaining({ key: 'app', body: 'Save $100' }),
+    ])
+  })
+
+  test('keeps copy without placeholders and placements without copy', () => {
+    const campaign = campaignWith({ title: 'Black Friday' }, {})
+
+    expect(resolveCampaignPlaceholders(campaign, {}).placements).toHaveLength(2)
+  })
+
+  test('does not mutate the given campaign', () => {
+    const campaign = campaignWith({ title: 'Save {discount}' })
+
+    resolveCampaignPlaceholders(campaign, { discount: '$100' })
+
+    expect(campaign.placements[0].title).toBe('Save {discount}')
   })
 })

@@ -99,6 +99,7 @@ export type PromotionalCampaignDocument = {
   _createdAt: string
   _updatedAt: string
   _rev: string
+  brand: "musora" | "drumeo" | "pianote" | "singeo" | "guitareo" | "playbass"
   /** Campaign Name */
   name: string
   slug: { _type: "slug"; current: string }
@@ -115,10 +116,11 @@ export type PromotionalCampaignDocument = {
     key: string
     title?: string
     body?: string
-    /** Resolved to a CDN url by the promotions query projection. */
-    dark_mode_image?: string
-    /** Resolved to a CDN url by the promotions query projection. */
-    light_mode_image?: string
+    disclaimer?: string
+    /** Dark Image */
+    dark_mode_image?: { _type: "image"; asset: { _type: "reference"; _ref: string } }
+    /** Light Image */
+    light_mode_image?: { _type: "image"; asset: { _type: "reference"; _ref: string } }
     /** CTA Label */
     cta_label?: string
     /** Dismissible? */

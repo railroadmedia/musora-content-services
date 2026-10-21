@@ -225,7 +225,8 @@ import {
 	dismissPromotionalCampaign,
 	fetchAvailablePromotionalCampaigns,
 	fetchPromotionalCampaigns,
-	fetchUserCampaignStates
+	fetchUserCampaignStates,
+	resolveCampaignPlaceholders
 } from './services/marketing/promotions.ts';
 
 import {
@@ -900,6 +901,7 @@ export {
 	resetAllAwards,
 	resetAllLearningPaths,
 	resetPassword,
+	resolveCampaignPlaceholders,
 	restoreComment,
 	restoreItemFromPlaylist,
 	restoreNotification,
