@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.192.0](https://github.com/railroadmedia/musora-content-services/compare/v2.191.0...v2.192.0) (2026-10-21)
+
+
+### Features
+
+* **MU2-2024:** make user state filtering optional in fetchAvailablePromotionalCampaigns ([1917f4b](https://github.com/railroadmedia/musora-content-services/commit/1917f4b81bdc81185ec239d8a4b8eb26549cbd65))
+
 ## [2.191.0](https://github.com/railroadmedia/musora-content-services/compare/v2.190.0...v2.191.0) (2026-10-20)
 
 
