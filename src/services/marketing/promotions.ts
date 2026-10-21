@@ -204,7 +204,7 @@ export type CampaignPlaceholderValues = Record<string, string>
 
 const PLACEHOLDER = /\{(\w+)\}/g
 
-const COPY_FIELDS = ['title', 'body', 'disclaimer', 'cta_label'] as const
+const COPY_FIELDS = ['title', 'long_title', 'body', 'disclaimer', 'cta_label'] as const
 
 const fillPlaceholders = (text: string, values: CampaignPlaceholderValues) =>
   text.replace(

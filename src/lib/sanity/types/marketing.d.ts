@@ -115,6 +115,7 @@ export type PromotionalCampaignDocument = {
     /** Placement Key */
     key: string
     title?: string
+    long_title?: string
     body?: string
     disclaimer?: string
     /** Dark Image */
