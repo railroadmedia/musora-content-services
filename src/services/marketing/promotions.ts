@@ -7,6 +7,7 @@ import type { GroqBuilder } from '../../lib/sanity/groq'
 import type { PromotionalCampaignDocument } from '../../lib/sanity/types/marketing'
 import { AsyncEither } from '../../lib/ads/async-either'
 import { Brand } from '../../lib/brands'
+import { globalConfig } from '../config.js'
 
 const excludeFromGeneratedIndex = [
   'campaignQuery',
@@ -258,8 +259,13 @@ export function resolveCampaignPlaceholders(
 // MUTATIONS
 // ============================================
 
-export async function claimPromotionalCampaign(slug: string): Promise<void> {
-  await POST(`/api/promotions/v1/campaigns/${encodeURIComponent(slug)}/claim`)
+export async function claimPromotionalCampaign(
+  slug: string,
+  userId: number | null = null
+): Promise<void> {
+  await POST(`/api/promotions/v1/campaigns/${encodeURIComponent(slug)}/claim`, {
+    user_id: userId ?? globalConfig.sessionConfig.userId,
+  })
 }
 
 export async function dismissPromotionalCampaign(slug: string): Promise<void> {
