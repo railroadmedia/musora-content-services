@@ -32,7 +32,7 @@ import {
 	stopSessionOnPageExit,
 	trackAudioRecordingSession,
 	unshareRecording
-} from './services/audioRecording/audioRecording.js';
+} from './services/audioRecording/audioRecording.ts';
 
 import {
 	fetchAudioSettings,
