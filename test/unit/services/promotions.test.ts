@@ -379,10 +379,10 @@ describe('resolveCampaignPlaceholders', () => {
       cta_label: 'Claim {discount}',
     })
 
-    const [placement] = resolveCampaignPlaceholders(campaign, {
+    const [placement] = resolveCampaignPlaceholders({
       discount: '$100',
       code: 'SAVE100',
-    }).placements
+    })([campaign])[0].placements
 
     expect(placement).toEqual(
       expect.objectContaining({
@@ -397,15 +397,15 @@ describe('resolveCampaignPlaceholders', () => {
   test('replaces repeated placeholders', () => {
     const campaign = campaignWith({ title: '{discount} off, yes {discount}' })
 
-    expect(resolveCampaignPlaceholders(campaign, { discount: '$100' }).placements[0].title).toBe(
-      '$100 off, yes $100'
-    )
+    expect(
+      resolveCampaignPlaceholders({ discount: '$100' })([campaign])[0].placements[0].title
+    ).toBe('$100 off, yes $100')
   })
 
   test('matches placeholder names regardless of case', () => {
     const campaign = campaignWith({ title: '{price}, {PRICE}, {Price}' })
 
-    expect(resolveCampaignPlaceholders(campaign, { Price: '$29' }).placements[0].title).toBe(
+    expect(resolveCampaignPlaceholders({ Price: '$29' })([campaign])[0].placements[0].title).toBe(
       '$29, $29, $29'
     )
   })
@@ -416,7 +416,7 @@ describe('resolveCampaignPlaceholders', () => {
       { key: 'app', body: 'Save {discount}' }
     )
 
-    const { placements } = resolveCampaignPlaceholders(campaign, { discount: '$100' })
+    const [{ placements }] = resolveCampaignPlaceholders({ discount: '$100' })([campaign])
 
     expect(placements).toEqual([
       expect.objectContaining({ key: 'web', body: 'Use {code}' }),
@@ -427,13 +427,13 @@ describe('resolveCampaignPlaceholders', () => {
   test('keeps copy without placeholders and placements without copy', () => {
     const campaign = campaignWith({ title: 'Black Friday' }, {})
 
-    expect(resolveCampaignPlaceholders(campaign, {}).placements).toHaveLength(2)
+    expect(resolveCampaignPlaceholders({})([campaign])[0].placements).toHaveLength(2)
   })
 
   test('does not mutate the given campaign', () => {
     const campaign = campaignWith({ title: 'Save {discount}' })
 
-    resolveCampaignPlaceholders(campaign, { discount: '$100' })
+    resolveCampaignPlaceholders({ discount: '$100' })([campaign])
 
     expect(campaign.placements[0].title).toBe('Save {discount}')
   })

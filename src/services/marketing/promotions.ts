@@ -76,11 +76,21 @@ const UNTOUCHED: UserCampaignState = { claimed: false, dismissed: false, eligibl
 // UTILITIES
 // ============================================
 
-const filterCampaignsForUser = (campaigns: WithUserCampaignState<PromotionalCampaign>[]) =>
-  campaigns.filter(
-    (campaign) =>
-      campaign.user_state.eligible && !campaign.user_state.claimed && !campaign.user_state.dismissed
-  )
+function filterCampaignsForUser(
+  filterByUserState: boolean
+): (
+  campaigns: WithUserCampaignState<PromotionalCampaign>[]
+) => WithUserCampaignState<PromotionalCampaign>[] {
+  return (campaigns) =>
+    filterByUserState
+      ? campaigns.filter(
+          (campaign) =>
+            campaign.user_state.eligible &&
+            !campaign.user_state.claimed &&
+            !campaign.user_state.dismissed
+        )
+      : campaigns
+}
 
 // ============================================
 // QUERY BUILDING
@@ -141,10 +151,8 @@ export async function fetchAvailablePromotionalCampaigns(
   return campaignQuery(queryOptions)
     .run()
     .flatMap(decorateUserCampaignState)
-    .map((campaigns) => (filterByUserState ? filterCampaignsForUser(campaigns) : campaigns))
-    .map((campaigns) =>
-      campaigns.map((campaign) => resolveCampaignPlaceholders(campaign, placeholderValues))
-    )
+    .map(filterCampaignsForUser(filterByUserState))
+    .map(resolveCampaignPlaceholders(placeholderValues))
     .recover([])
 }
 
@@ -232,18 +240,18 @@ function resolvePlacementPlaceholders(
  * Replaces `{name}` placeholders in each placement's copy with the given values. A placeholder with
  * no value is left as it is. Names match regardless of case, so `{price}` and `{PRICE}` both fill.
  */
-export function resolveCampaignPlaceholders<T extends PromotionalCampaign>(
-  campaign: T,
+export function resolveCampaignPlaceholders(
   values: CampaignPlaceholderValues
-): T {
+): <T extends PromotionalCampaign>(campaigns: T[]) => T[] {
   const valuesByName = lowercaseKeys(values)
 
-  return {
-    ...campaign,
-    placements: (campaign.placements ?? []).map((placement) =>
-      resolvePlacementPlaceholders(placement, valuesByName)
-    ),
-  }
+  return (campaigns) =>
+    campaigns.map((campaign) => ({
+      ...campaign,
+      placements: (campaign.placements ?? []).map((placement) =>
+        resolvePlacementPlaceholders(placement, valuesByName)
+      ),
+    }))
 }
 
 // ============================================
