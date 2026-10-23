@@ -7,7 +7,7 @@
  */
 
 import { GET } from '../../infrastructure/http/HttpClient'
-import { BASE_PATH } from './audioRecording.js'
+import { BASE_PATH } from './audioRecording'
 
 /**
  * Downsample peaks array to target count (uses max in each bucket)

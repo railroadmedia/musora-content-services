@@ -3,12 +3,12 @@
  * Shared methods for audio recording functionality across FE and MA
  */
 
-import { GET, POST } from '../../infrastructure/http/HttpClient.ts'
+import { GET, POST } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 import { fetchByRailContentIds } from '../sanity.js'
-import { decorateAsync } from '../../lib/sanity/decorators/base.ts'
-import { mapLearningPathParentsTo } from '../my-path/learning-paths.ts'
-import { estimateClockOffset, monotonicNow } from './recordingClock.ts'
+import { decorateAsync } from '../../lib/sanity/decorators/base'
+import { mapLearningPathParentsTo } from '../my-path/learning-paths'
+import { ClockOffset, estimateClockOffset, monotonicNow } from './recordingClock'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -17,7 +17,213 @@ import { estimateClockOffset, monotonicNow } from './recordingClock.ts'
  */
 const excludeFromGeneratedIndex = ['uploadChunk', 'logEvent']
 
-const MIME_TYPES = {
+export type RecordingPlaybackStatus = 'pending' | 'ready' | 'failed' | null
+
+/**
+ * One take, as listed per lesson (listRecordings) and returned by renameRecording.
+ * `take_number` is only null for a take recorded outside a lesson.
+ */
+export interface RecordingTake {
+  folder: string
+  content_id: number | null
+  created_at: string
+  duration_ms: number
+  chunk_count: number
+  missing_chunks: number[]
+  format: string | null
+  take_number: number | null
+  name: string | null
+  is_shared: boolean
+  playback_status: RecordingPlaybackStatus
+}
+
+/** A take on a lesson, as every per-lesson list returns it: always numbered. */
+export type LessonRecordingTake = RecordingTake & { content_id: number; take_number: number }
+
+export type MyRecordingSummary = {
+  content_id: number
+  recording_count: number
+  latest_folder: string
+  latest_created_at: string
+  latest_duration_ms: number
+}
+
+export type RecordingLesson = {
+  id: number
+  title?: string
+  thumbnail?: string
+  type?: string
+  parent_id?: number
+  brand?: string
+  [key: string]: unknown
+}
+
+export type MyRecording = MyRecordingSummary & {
+  content: RecordingLesson | null
+}
+
+export interface PaginationMeta {
+  current_page: number
+  last_page: number
+  per_page: number
+  total: number
+}
+
+export interface MyRecordingsPage {
+  recordings: MyRecording[]
+  meta: PaginationMeta
+}
+
+export interface RecordingIndicators {
+  content_ids: number[]
+  processing_content_ids: number[]
+}
+
+export interface StartSessionExtras {
+  date?: string
+  startedAt?: number
+  timing?: Record<string, number | null> | null
+  capture?: Record<string, unknown> | null
+  device?: Record<string, unknown> | null
+}
+
+export interface StartSessionResponse {
+  folder: string
+  chunk_seconds: number
+  server_received_at: number
+  server_now: number
+  clock: ClockOffset | null
+}
+
+/** Web uploads a Blob; React Native a base64 string. */
+export type AudioChunk = Blob | string
+
+export interface ChunkTiming {
+  videoTimeStartMs?: number | null
+  chunkDurationMs?: number | null
+  firstDataDelayMs?: number | null
+  levelDb?: number | null
+  playbackRate?: number | null
+}
+
+export interface UploadChunkResponse {
+  path: string
+  bytes: number
+}
+
+export interface StopSessionResponse {
+  success: true
+  deleted: boolean
+  missing_chunks: number[]
+}
+
+export type RecordingStopReason = 'manual' | 'timeout' | 'max_duration'
+
+export type RecordingEventPosition = {
+  audio_ms?: number
+  chunk_index?: number
+  at?: number
+}
+
+export type RecordingEventExtra = RecordingEventPosition & Record<string, unknown>
+
+export interface RecordingEvent {
+  type: string
+  video_time_ms: number | null
+  elapsed_ms?: number | null
+  at: number
+  received_at?: number
+  reason?: string
+  from_video_time_ms?: number
+  audio_ms?: number
+  chunk_index?: number
+  from_rate?: number
+  to_rate?: number
+}
+
+export interface TrackAudioRecordingSessionOptions {
+  graceMs?: number
+  onTimeout?: () => void
+  maxActiveMs?: number
+  onMaxDuration?: () => void
+  getVideoTimeMs?: () => number | null
+  getAudioMs?: () => number | null
+  getChunkIndex?: () => number | null
+}
+
+export interface RecordingEventOverrides {
+  audioMs?: number
+  videoTimeMs?: number
+  chunkIndex?: number
+  at?: number
+  log?: boolean
+}
+
+export interface AudioRecordingSessionTracker {
+  pause: (overrides?: RecordingEventOverrides) => void
+  resume: (overrides?: RecordingEventOverrides) => void
+  finish: () => RecordingStopReason
+  activeElapsedMs: () => number
+  isPaused: () => boolean
+  elapsedMs: () => number
+}
+
+export interface TimelineChunk {
+  index: number
+  video_time_start_ms: number | null
+  video_time_ms: number | null
+  chunk_duration_ms: number | null
+  audio_start_ms: number | null
+  audio_end_ms: number | null
+  playback_rate: number
+  first_data_delay_ms: number | null
+}
+
+export interface RecordingTimeline {
+  video_time_ms_at_start: number | null
+  duration_ms: number
+  playback_rate_at_start: number | null
+  latency_ms: number | null
+  prior_latency_ms: number | null
+  chunks: TimelineChunk[]
+  events: RecordingEvent[]
+}
+
+export interface ShareRecordingResponse {
+  share_token: string
+}
+
+export interface DeleteLessonRecordingsResponse {
+  folders: string[]
+}
+
+export interface SharedRecording {
+  shared_by: string | null
+  content_id: number | null
+  take_number: number | null
+  name: string | null
+  created_at: string
+  duration_ms: number
+  playback: { url: string; expires_at: string; mime_type: string; peaks: number[] }
+}
+
+export interface ChunkFormatFixer {
+  feedChunk: (index: number, chunk: AudioChunk) => void
+  finish: () => Promise<Blob | null | undefined | false>
+}
+
+export interface AudioChunkUploader {
+  upload: (
+    index: number,
+    chunk: AudioChunk,
+    videoTimeMs?: number,
+    peaks?: number[] | null,
+    timing?: ChunkTiming | null
+  ) => Promise<UploadChunkResponse>
+  finish: () => Promise<void>
+}
+
+const MIME_TYPES: Record<string, string> = {
   m4a: 'audio/mp4',
   mp4: 'audio/mp4',
   webm: 'audio/webm',
@@ -25,7 +231,7 @@ const MIME_TYPES = {
   aac: 'audio/aac',
 }
 
-const EXTENSIONS = {
+const EXTENSIONS: Record<string, string> = {
   'audio/mp4': 'm4a',
   'audio/webm': 'webm',
   'audio/ogg': 'ogg',
@@ -47,24 +253,24 @@ const RECORDING_FORMATS = [
 // Exported for waveformPeaks.ts, which hits the same API prefix.
 export const BASE_PATH = '/api/audio-recording/v1'
 
-export function isFormatSupported(mimeType) {
+export function isFormatSupported(mimeType: string): boolean {
   return typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(mimeType)
 }
 
-export function getSupportedFormats() {
+export function getSupportedFormats(): string[] {
   return RECORDING_FORMATS.filter(isFormatSupported)
 }
 
-export function getExtensionForMimeType(mimeType) {
+export function getExtensionForMimeType(mimeType: string): string {
   const base = mimeType.split(';')[0].trim()
   return EXTENSIONS[base] || 'bin'
 }
 
-export function getMimeTypeForExtension(extension) {
+export function getMimeTypeForExtension(extension: string): string {
   return MIME_TYPES[extension] || 'application/octet-stream'
 }
 
-export function formatDurationMs(ms) {
+export function formatDurationMs(ms: number | null | undefined): string {
   if (!ms || !isFinite(ms)) return '0:00'
   const secs = Math.floor(ms / 1000)
   const mins = Math.floor(secs / 60)
@@ -86,11 +292,17 @@ export function formatDurationMs(ms) {
  * same timeline as each chunk's recorded_at. `date` defaults to the device's own local
  * calendar day (not UTC) — pass `extras.date` to override, otherwise a recording made
  * right around midnight always lands on the day the user actually experienced.
+ * `userId` is ignored by the backend, which records the session for the signed-in user.
  */
-export async function startSession(userId, contentId = null, videoTimeMs = null, extras = {}) {
+export async function startSession(
+  userId: number | null | undefined,
+  contentId: number | null = null,
+  videoTimeMs: number | null = null,
+  extras: StartSessionExtras = {}
+): Promise<StartSessionResponse> {
   const sentAt = Date.now()
   const sentPerf = monotonicNow()
-  const response = await POST(`${BASE_PATH}/start`, {
+  const response: Omit<StartSessionResponse, 'clock'> = await POST(`${BASE_PATH}/start`, {
     user_id: userId,
     content_id: contentId,
     video_time_ms: videoTimeMs,
@@ -122,26 +334,26 @@ export async function startSession(userId, contentId = null, videoTimeMs = null,
  *                       a chunk on every speed change, so one chunk has one speed)
  */
 export async function uploadChunk(
-  folder,
-  index,
-  extension,
-  chunk,
-  videoTimeMs = 0,
-  peaks = null,
-  timing = null
-) {
+  folder: string,
+  index: number,
+  extension: string,
+  chunk: AudioChunk,
+  videoTimeMs: number = 0,
+  peaks: number[] | null = null,
+  timing: ChunkTiming | null = null
+): Promise<UploadChunkResponse> {
   const body = new FormData()
   body.append('folder', folder)
-  body.append('index', index)
+  body.append('index', String(index))
   body.append('extension', extension)
-  body.append('video_time_ms', videoTimeMs)
-  body.append('recorded_at', Date.now())
+  body.append('video_time_ms', String(videoTimeMs))
+  body.append('recorded_at', String(Date.now()))
 
-  if (timing?.videoTimeStartMs != null) body.append('video_time_start_ms', timing.videoTimeStartMs)
-  if (timing?.chunkDurationMs != null) body.append('chunk_duration_ms', timing.chunkDurationMs)
-  if (timing?.firstDataDelayMs != null) body.append('first_data_delay_ms', timing.firstDataDelayMs)
-  if (timing?.levelDb != null) body.append('level_db', timing.levelDb)
-  if (timing?.playbackRate != null) body.append('playback_rate', timing.playbackRate)
+  if (timing?.videoTimeStartMs != null) body.append('video_time_start_ms', String(timing.videoTimeStartMs))
+  if (timing?.chunkDurationMs != null) body.append('chunk_duration_ms', String(timing.chunkDurationMs))
+  if (timing?.firstDataDelayMs != null) body.append('first_data_delay_ms', String(timing.firstDataDelayMs))
+  if (timing?.levelDb != null) body.append('level_db', String(timing.levelDb))
+  if (timing?.playbackRate != null) body.append('playback_rate', String(timing.playbackRate))
 
   // React Native can't reliably build a Blob from an in-memory chunk without a
   // filesystem library, so it passes a base64 string instead; web passes a Blob.
@@ -162,17 +374,18 @@ export async function uploadChunk(
  * `reason` null is a pause checkpoint; a reason marks the session finished. `videoTimeMs`
  * is the video position at stop and is what the 'end' event records as its video time.
  * `clock` is the `{ offset_ms, rtt_ms }` that startSession() measured, stored in metadata.
+ * `userId` is ignored by the backend, which stops the signed-in user's session.
  */
 export async function stopSession(
-  userId,
-  folder,
-  durationMs,
-  chunkCount,
-  format,
-  reason = null,
-  videoTimeMs = null,
-  clock = null
-) {
+  userId: number | null | undefined,
+  folder: string,
+  durationMs: number,
+  chunkCount: number,
+  format: string,
+  reason: string | null = null,
+  videoTimeMs: number | null = null,
+  clock: ClockOffset | null = null
+): Promise<StopSessionResponse> {
   return POST(`${BASE_PATH}/stop`, {
     user_id: userId,
     folder,
@@ -186,7 +399,9 @@ export async function stopSession(
   })
 }
 
-function clockFields(clock) {
+function clockFields(
+  clock: ClockOffset | null
+): { clock_offset_ms?: number; clock_rtt_ms?: number | null } {
   if (!clock || !Number.isFinite(clock.offset_ms)) return {}
   return { clock_offset_ms: clock.offset_ms, clock_rtt_ms: clock.rtt_ms ?? null }
 }
@@ -199,14 +414,17 @@ function clockFields(clock) {
  * records under missing_chunks.
  */
 export function stopSessionOnPageExit(
-  folder,
-  durationMs,
-  chunkCount,
-  format,
-  videoTimeMs = null,
-  clock = null
-) {
-  const headers = { 'Content-Type': 'application/json', Accept: 'application/json' }
+  folder: string,
+  durationMs: number,
+  chunkCount: number,
+  format: string,
+  videoTimeMs: number | null = null,
+  clock: ClockOffset | null = null
+): Promise<Response> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  }
   const token = globalConfig.sessionConfig?.token
   if (token) headers['Authorization'] = `Bearer ${token}`
 
@@ -242,7 +460,13 @@ export function stopSessionOnPageExit(
  *                        excluded); the clock to use for placing an event on the audio
  *   - extra.chunk_index: the chunk the event closed (pause, seek and speed change flush one)
  */
-export async function logEvent(folder, type, videoTimeMs, elapsedMs = null, extra = {}) {
+export async function logEvent(
+  folder: string,
+  type: string,
+  videoTimeMs: number,
+  elapsedMs: number | null = null,
+  extra: RecordingEventExtra = {}
+): Promise<unknown> {
   return POST(`${BASE_PATH}/event`, {
     folder,
     type,
@@ -260,12 +484,12 @@ export async function logEvent(folder, type, videoTimeMs, elapsedMs = null, extr
  * across the jump.
  */
 export async function logSeekEvent(
-  folder,
-  fromVideoTimeMs,
-  toVideoTimeMs,
-  elapsedMs = null,
-  position = {}
-) {
+  folder: string,
+  fromVideoTimeMs: number,
+  toVideoTimeMs: number,
+  elapsedMs: number | null = null,
+  position: RecordingEventPosition = {}
+): Promise<unknown> {
   return logEvent(folder, 'seek', toVideoTimeMs, elapsedMs, {
     from_video_time_ms: fromVideoTimeMs,
     ...position,
@@ -293,7 +517,10 @@ export async function logSeekEvent(
  * pause() and resume() accept overrides (`audioMs`, `videoTimeMs`, `chunkIndex`, `at`) for
  * an event that happened before the session existed, and `log: false` to only sync state.
  */
-export function trackAudioRecordingSession(folder, options = {}) {
+export function trackAudioRecordingSession(
+  folder: string,
+  options: TrackAudioRecordingSessionOptions = {}
+): AudioRecordingSessionTracker {
   const graceMs = options.graceMs ?? 180000
   const onTimeout = options.onTimeout ?? (() => {})
   const maxActiveMs = options.maxActiveMs ?? 900000
@@ -305,44 +532,46 @@ export function trackAudioRecordingSession(folder, options = {}) {
   const startedAt = monotonicNow()
 
   let paused = false
-  let pausedAt = null
+  let pausedAt: number | null = null
   let totalPausedMs = 0
-  let timer = null
-  let maxDurationTimer = null
-  let stopReason = 'manual'
+  let timer: ReturnType<typeof setTimeout> | null = null
+  let maxDurationTimer: ReturnType<typeof setTimeout> | null = null
+  let stopReason: RecordingStopReason = 'manual'
 
-  function elapsedMs() {
+  function elapsedMs(): number {
     return Math.round(monotonicNow() - startedAt)
   }
 
   // MediaRecorder.pause() genuinely stops capturing audio, so the wall-clock elapsed
   // time overcounts whenever a pause happened — this is what actually ended up recorded.
-  function activeElapsedMs() {
+  function activeElapsedMs(): number {
     const openPauseMs = paused && pausedAt !== null ? monotonicNow() - pausedAt : 0
     return Math.round(monotonicNow() - startedAt - totalPausedMs - openPauseMs)
   }
 
-  function videoTimeOrElapsed() {
+  function videoTimeOrElapsed(): number {
     const t = getVideoTimeMs ? getVideoTimeMs() : null
-    return Number.isFinite(t) && t >= 0 ? Math.round(t) : elapsedMs()
+    return typeof t === 'number' && Number.isFinite(t) && t >= 0 ? Math.round(t) : elapsedMs()
   }
 
-  function audioMs(overrides) {
+  function audioMs(overrides: RecordingEventOverrides): number | null {
     const t = overrides.audioMs ?? (getAudioMs ? getAudioMs() : null)
-    return Number.isFinite(t) ? Math.max(0, Math.round(t)) : null
+    return typeof t === 'number' && Number.isFinite(t) ? Math.max(0, Math.round(t)) : null
   }
 
-  function position(overrides) {
+  function position(overrides: RecordingEventOverrides): RecordingEventPosition {
     const chunkIndex = overrides.chunkIndex ?? (getChunkIndex ? getChunkIndex() : null)
-    const extra = {}
+    const extra: RecordingEventPosition = {}
     const measuredAudioMs = audioMs(overrides)
     if (measuredAudioMs !== null) extra.audio_ms = measuredAudioMs
-    if (Number.isFinite(chunkIndex) && chunkIndex > 0) extra.chunk_index = chunkIndex
+    if (typeof chunkIndex === 'number' && Number.isFinite(chunkIndex) && chunkIndex > 0) {
+      extra.chunk_index = chunkIndex
+    }
     if (Number.isFinite(overrides.at)) extra.at = overrides.at
     return extra
   }
 
-  function log(type, overrides) {
+  function log(type: string, overrides: RecordingEventOverrides): void {
     if (overrides.log === false) return
     logEvent(
       folder,
@@ -355,7 +584,7 @@ export function trackAudioRecordingSession(folder, options = {}) {
     })
   }
 
-  function startMaxDurationTimer() {
+  function startMaxDurationTimer(): void {
     if (stopReason === 'max_duration') return
 
     maxDurationTimer = setTimeout(() => {
@@ -365,14 +594,14 @@ export function trackAudioRecordingSession(folder, options = {}) {
     }, Math.max(0, maxActiveMs - activeElapsedMs()))
   }
 
-  function clearMaxDurationTimer() {
+  function clearMaxDurationTimer(): void {
     if (maxDurationTimer) {
       clearTimeout(maxDurationTimer)
       maxDurationTimer = null
     }
   }
 
-  function pause(overrides = {}) {
+  function pause(overrides: RecordingEventOverrides = {}): void {
     if (paused) return
     paused = true
     pausedAt = monotonicNow()
@@ -387,7 +616,7 @@ export function trackAudioRecordingSession(folder, options = {}) {
     }, graceMs)
   }
 
-  function resume(overrides = {}) {
+  function resume(overrides: RecordingEventOverrides = {}): void {
     if (!paused) return
     paused = false
 
@@ -406,7 +635,7 @@ export function trackAudioRecordingSession(folder, options = {}) {
     log('resume', overrides)
   }
 
-  function finish() {
+  function finish(): RecordingStopReason {
     if (timer) {
       clearTimeout(timer)
       timer = null
@@ -433,7 +662,11 @@ export function trackAudioRecordingSession(folder, options = {}) {
  * required — the backend rejects a request without it (422); pass a date to narrow further,
  * or omit it for every recording on that lesson regardless of date.
  */
-export async function listRecordings(userId = null, contentId, date = null) {
+export async function listRecordings(
+  userId: number | null = null,
+  contentId: number,
+  date: string | null = null
+): Promise<LessonRecordingTake[]> {
   if (!contentId) {
     throw new Error('listRecordings requires a contentId.')
   }
@@ -443,8 +676,8 @@ export async function listRecordings(userId = null, contentId, date = null) {
 
   // Omitted (rather than sent as the literal string "null"/"undefined") so the backend
   // falls back to the authenticated user, same as startSession/stopSession do.
-  if (userId) params.set('user_id', userId)
-  params.set('content_id', contentId)
+  if (userId) params.set('user_id', String(userId))
+  params.set('content_id', String(contentId))
   if (date) params.set('date', date)
 
   const query = params.toString()
@@ -459,10 +692,12 @@ export async function listRecordings(userId = null, contentId, date = null) {
  * (content_id, recording_count, latest folder/date/duration); the lesson's title/thumbnail
  * are fetched here (batched into one Sanity query) and attached under `content`, so this is
  * shared between FE and MA instead of each re-implementing the Sanity lookup.
- * @returns {Promise<{recordings: Array<Object>, meta: {current_page: number, last_page: number, per_page: number, total: number}}>}
  */
-export async function getMyRecordings({ page = 1, limit = 20 } = {}) {
-  const { data: recordings, meta } = await GET(
+export async function getMyRecordings({
+  page = 1,
+  limit = 20,
+}: { page?: number; limit?: number } = {}): Promise<MyRecordingsPage> {
+  const { data: recordings, meta }: { data: MyRecordingSummary[]; meta: PaginationMeta } = await GET(
     `${BASE_PATH}/my-recordings?page=${page}&limit=${limit}`
   )
 
@@ -471,10 +706,10 @@ export async function getMyRecordings({ page = 1, limit = 20 } = {}) {
   }
 
   const contentIds = recordings.map((recording) => recording.content_id)
-  const methodLessons = await mapLearningPathParentsTo(await fetchByRailContentIds(contentIds), {
+  const methodLessons = (await mapLearningPathParentsTo(await fetchByRailContentIds(contentIds), {
     type: true,
     parent_id: true,
-  })
+  })) as RecordingLesson[]
   const contentById = new Map(methodLessons.map((content) => [content.id, content]))
 
   const decoratedRecordings = await decorateAsync(
@@ -492,18 +727,19 @@ export async function getMyRecordings({ page = 1, limit = 20 } = {}) {
  * summary. Pass only `startDate` (YYYY-MM-DD) to scope it to that single calendar day
  * (daily tracker), or both `startDate` and `endDate` for an inclusive range (weekly
  * tracker); omit both for all-time.
- *
- * @returns {Promise<Array<number>>}
  */
-export async function getRecordedContentIds(startDate = null, endDate = null) {
+export async function getRecordedContentIds(
+  startDate: string | null = null,
+  endDate: string | null = null
+): Promise<number[]> {
   const { content_ids } = await getRecordingIndicators(startDate, endDate)
   return content_ids
 }
 
-/**
- * @returns {Promise<{content_ids: Array<number>, processing_content_ids: Array<number>}>}
- */
-export async function getRecordingIndicators(startDate = null, endDate = null) {
+export async function getRecordingIndicators(
+  startDate: string | null = null,
+  endDate: string | null = null
+): Promise<RecordingIndicators> {
   const params = new URLSearchParams()
   if (startDate) params.set('start_date', startDate)
   if (endDate) params.set('end_date', endDate)
@@ -512,7 +748,7 @@ export async function getRecordingIndicators(startDate = null, endDate = null) {
   return GET(`${BASE_PATH}/recorded-content-ids${query ? `?${query}` : ''}`)
 }
 
-export async function getRecordingTimeline(folder) {
+export async function getRecordingTimeline(folder: string): Promise<RecordingTimeline> {
   return GET(`${BASE_PATH}/timeline?folder=${encodeURIComponent(folder)}`)
 }
 
@@ -526,7 +762,7 @@ export async function getRecordingTimeline(folder) {
  *
  * Users get 409 here until the playback copy is ready; only staff get the raw chunks.
  */
-export function getCombinedAudioUrl(folder) {
+export function getCombinedAudioUrl(folder: string): string {
   return `${globalConfig.baseUrl ?? ''}${BASE_PATH}/combined?folder=${encodeURIComponent(folder)}`
 }
 
@@ -535,7 +771,7 @@ export function getCombinedAudioUrl(folder) {
  * sends it as an attachment (Content-Disposition), so the browser saves it instead of
  * playing it inline. Meant for a plain `<a :href>`/navigation, not a fetch.
  */
-export function getDownloadUrl(folder) {
+export function getDownloadUrl(folder: string): string {
   return `${globalConfig.baseUrl ?? ''}${BASE_PATH}/download?folder=${encodeURIComponent(folder)}`
 }
 
@@ -544,14 +780,14 @@ export function getDownloadUrl(folder) {
  * re-sharing an already-shared recording returns the same token, not a new one. The link
  * never expires on its own, only via unshareRecording().
  */
-export async function shareRecording(folder) {
+export async function shareRecording(folder: string): Promise<ShareRecordingResponse> {
   return POST(`${BASE_PATH}/share`, { folder })
 }
 
 /**
  * Revoke a recording's share link, if one exists. Owner only.
  */
-export async function unshareRecording(folder) {
+export async function unshareRecording(folder: string): Promise<unknown> {
   return POST(`${BASE_PATH}/unshare`, { folder })
 }
 
@@ -559,7 +795,7 @@ export async function unshareRecording(folder) {
  * Give a take a custom name. Owner only. Pass null or an empty string to clear it, so the
  * take shows as "Take {take_number}" again. Returns the updated recording.
  */
-export async function renameRecording(folder, name) {
+export async function renameRecording(folder: string, name: string | null): Promise<RecordingTake> {
   return POST(`${BASE_PATH}/rename`, { folder, name })
 }
 
@@ -568,7 +804,7 @@ export async function renameRecording(folder, name) {
  * can be brought back with restoreRecordings([folder]) during the undo window (10 minutes);
  * after that its audio is removed for good. Take numbers of the other takes never change.
  */
-export async function deleteRecording(folder) {
+export async function deleteRecording(folder: string): Promise<unknown> {
   return POST(`${BASE_PATH}/delete`, { folder })
 }
 
@@ -576,40 +812,35 @@ export async function deleteRecording(folder) {
  * Delete every take the user has on a lesson. Resolves to { folders } — pass that list to
  * restoreRecordings() to undo the whole delete.
  */
-export async function deleteLessonRecordings(contentId) {
-  return POST(`${BASE_PATH}/delete-lesson-recordings`, { content_id: contentId })
+export async function deleteLessonRecordings(
+  contentId: number
+): Promise<DeleteLessonRecordingsResponse> {
+  return POST(`${BASE_PATH}/delete-lesson-recordings`, {
+    content_id: contentId,
+  })
 }
 
 /**
  * Undo for deleteRecording / deleteLessonRecordings, within the undo window. Rejects with a 404
  * when nothing could be restored (the window has passed or the takes aren't the user's).
  */
-export async function restoreRecordings(folders) {
+export async function restoreRecordings(folders: string[]): Promise<unknown> {
   return POST(`${BASE_PATH}/restore`, { folders })
 }
 
 /**
- * Fetch metadata for a shared recording. Public endpoint — anyone with the token can view.
+ * Fetch metadata for a shared recording.
  * Returns the recording details (shared_by, content_id, take_number, name, duration_ms,
  * created_at) plus a short-lived playback URL. Returns null for invalid/expired/unshared
  * tokens (the backend returns 404 with a generic "unavailable" message for all of these).
  *
- * @param {string} token - 48-char alphanumeric share token
- * @returns {Promise<{
- *   shared_by: string,
- *   content_id: number,
- *   take_number: number,
- *   name: string|null,
- *   created_at: string,
- *   duration_ms: number,
- *   playback: { url: string, expires_at: string, mime_type: string }
- * }|null>}
+ * @param token - 48-char alphanumeric share token
  */
-export async function getSharedRecording(token) {
+export async function getSharedRecording(token: string): Promise<SharedRecording | null> {
   try {
     return await GET(`${BASE_PATH}/shared/${encodeURIComponent(token)}`)
   } catch (error) {
-    if (error?.response?.status === 404) {
+    if ((error as { response?: { status?: number } })?.response?.status === 404) {
       return null
     }
     throw error
@@ -622,11 +853,10 @@ export async function getSharedRecording(token) {
  * the shared recording modal/drawer. The caller supplies the brand's base URL (e.g.
  * "https://www.drumeo.com") since MCS doesn't know which brand context it's running in.
  *
- * @param {string} brandBaseUrl - Brand's web base URL (e.g. "https://www.drumeo.com")
- * @param {string} token - 48-char alphanumeric share token from shareRecording()
- * @returns {string} Full shareable URL
+ * @param brandBaseUrl - Brand's web base URL (e.g. "https://www.drumeo.com")
+ * @param token - 48-char alphanumeric share token from shareRecording()
  */
-export function buildShareUrl(brandBaseUrl, token) {
+export function buildShareUrl(brandBaseUrl: string, token: string): string {
   return `${brandBaseUrl}/shared-recording/${encodeURIComponent(token)}`
 }
 
@@ -634,7 +864,7 @@ export function buildShareUrl(brandBaseUrl, token) {
  * Playback URL for a shared recording — any signed-in user holding the token can reach it,
  * not just the owner. Same <audio src> vs. manual-fetch caveat as getCombinedAudioUrl.
  */
-export function getSharedCombinedAudioUrl(token) {
+export function getSharedCombinedAudioUrl(token: string): string {
   return `${globalConfig.baseUrl ?? ''}${BASE_PATH}/shared/${encodeURIComponent(token)}/combined`
 }
 
@@ -652,8 +882,12 @@ export function getSharedCombinedAudioUrl(token) {
  * since MA never produces WebM in the first place); omit it on any platform that has
  * nothing to fix.
  */
-export async function createAudioChunkUploader(folder, extension, createFormatFixer = null) {
-  let fixer = null
+export async function createAudioChunkUploader(
+  folder: string,
+  extension: string,
+  createFormatFixer: (() => ChunkFormatFixer | Promise<ChunkFormatFixer>) | null = null
+): Promise<AudioChunkUploader> {
+  let fixer: ChunkFormatFixer | null = null
   if (createFormatFixer) {
     try {
       fixer = await createFormatFixer()
@@ -663,15 +897,25 @@ export async function createAudioChunkUploader(folder, extension, createFormatFi
   }
 
   // the fixed chunk 1 replaces the original's sync sidecar too, so it must carry the same anchors
-  let firstChunkSync = null
+  let firstChunkSync: {
+    videoTimeMs?: number
+    peaks?: number[] | null
+    timing?: ChunkTiming | null
+  } | null = null
 
-  function upload(index, chunk, videoTimeMs, peaks, timing = null) {
+  function upload(
+    index: number,
+    chunk: AudioChunk,
+    videoTimeMs?: number,
+    peaks?: number[] | null,
+    timing: ChunkTiming | null = null
+  ): Promise<UploadChunkResponse> {
     fixer?.feedChunk(index, chunk)
     if (index === 1) firstChunkSync = { videoTimeMs, peaks, timing }
     return uploadChunk(folder, index, extension, chunk, videoTimeMs, peaks, timing)
   }
 
-  async function finish() {
+  async function finish(): Promise<void> {
     if (!fixer) return
 
     try {
