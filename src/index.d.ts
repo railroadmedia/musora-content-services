@@ -275,7 +275,8 @@ import {
 	dismissPromotionalCampaign,
 	fetchAvailablePromotionalCampaigns,
 	fetchPromotionalCampaigns,
-	fetchUserCampaignStates
+	fetchUserCampaignStates,
+	resolveCampaignPlaceholders
 } from './services/marketing/promotions.ts';
 
 import {
@@ -992,6 +993,7 @@ declare module 'musora-content-services' {
 		resetAllAwards,
 		resetAllLearningPaths,
 		resetPassword,
+		resolveCampaignPlaceholders,
 		restoreComment,
 		restoreItemFromPlaylist,
 		restoreNotification,

@@ -2,6 +2,64 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.192.1](https://github.com/railroadmedia/musora-content-services/compare/v2.192.0...v2.192.1) (2026-10-22)
+
+## [2.192.0](https://github.com/railroadmedia/musora-content-services/compare/v2.191.0...v2.192.0) (2026-10-21)
+
+
+### Features
+
+* **MU2-2024:** make user state filtering optional in fetchAvailablePromotionalCampaigns ([1917f4b](https://github.com/railroadmedia/musora-content-services/commit/1917f4b81bdc81185ec239d8a4b8eb26549cbd65))
+
+## [2.191.0](https://github.com/railroadmedia/musora-content-services/compare/v2.190.0...v2.191.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** match promotional campaign placeholders regardless of case ([3760945](https://github.com/railroadmedia/musora-content-services/commit/3760945f94e90e9c7248e80f61bcf3a18a6e00fc))
+
+
+### Bug Fixes
+
+* **MU2-2024:** keep placements with unresolved placeholders in promotional campaigns ([b271ae8](https://github.com/railroadmedia/musora-content-services/commit/b271ae873309a1c48f75719d95b5dd2b59129913))
+
+## [2.190.0](https://github.com/railroadmedia/musora-content-services/compare/v2.189.0...v2.190.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** resolve placement copy in fetchAvailablePromotionalCampaigns ([ac69d37](https://github.com/railroadmedia/musora-content-services/commit/ac69d379a264e031b1f5bd999b6bed8c78fbfb58))
+
+## [2.189.0](https://github.com/railroadmedia/musora-content-services/compare/v2.188.0...v2.189.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** add placeholder resolution for promotional campaign copy ([f5cebb3](https://github.com/railroadmedia/musora-content-services/commit/f5cebb3888ce1228ecba5ec17412c8bcfaff8c35))
+
+## [2.188.0](https://github.com/railroadmedia/musora-content-services/compare/v2.187.0...v2.188.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** add brand filtering to promotional campaign queries ([0d6fed8](https://github.com/railroadmedia/musora-content-services/commit/0d6fed83329ccfeabab2ddbd6dff129075c1207b))
+
+## [2.187.0](https://github.com/railroadmedia/musora-content-services/compare/v2.186.1...v2.187.0) (2026-10-19)
+
+
+### Features
+
+* **MU2-2024:** add disclaimer to the promotional campaign placement type ([9905117](https://github.com/railroadmedia/musora-content-services/commit/990511777622eca93758b5252c908900e484b6f5))
+
+### [2.186.1](https://github.com/railroadmedia/musora-content-services/compare/v2.186.0...v2.186.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* guard against null awards list when Sanity fetch fails ([#1053](https://github.com/railroadmedia/musora-content-services/issues/1053)) ([77f0bf7](https://github.com/railroadmedia/musora-content-services/commit/77f0bf711c2fcc5a5e47cb1a8d0328f670f5107d))
+* preserve resume time when duplicating playlist progress  ([#1045](https://github.com/railroadmedia/musora-content-services/issues/1045)) ([d62d394](https://github.com/railroadmedia/musora-content-services/commit/d62d394542b170741c818182405ca53efde046d1)), closes [#1079](https://github.com/railroadmedia/musora-content-services/issues/1079)
+* replace @/ alias imports with relative paths in src ([bc22248](https://github.com/railroadmedia/musora-content-services/commit/bc22248264a029904c7f8bae403c257268da47c6))
+
 ## [2.186.0](https://github.com/railroadmedia/musora-content-services/compare/v2.185.1...v2.186.0) (2026-10-16)
 
 
