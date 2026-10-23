@@ -292,9 +292,10 @@ export function formatDurationMs(ms: number | null | undefined): string {
  * same timeline as each chunk's recorded_at. `date` defaults to the device's own local
  * calendar day (not UTC) — pass `extras.date` to override, otherwise a recording made
  * right around midnight always lands on the day the user actually experienced.
+ * `userId` is ignored by the backend, which records the session for the signed-in user.
  */
 export async function startSession(
-  userId: number | null,
+  userId: number | null | undefined,
   contentId: number | null = null,
   videoTimeMs: number | null = null,
   extras: StartSessionExtras = {}
@@ -373,9 +374,10 @@ export async function uploadChunk(
  * `reason` null is a pause checkpoint; a reason marks the session finished. `videoTimeMs`
  * is the video position at stop and is what the 'end' event records as its video time.
  * `clock` is the `{ offset_ms, rtt_ms }` that startSession() measured, stored in metadata.
+ * `userId` is ignored by the backend, which stops the signed-in user's session.
  */
 export async function stopSession(
-  userId: number | null,
+  userId: number | null | undefined,
   folder: string,
   durationMs: number,
   chunkCount: number,
