@@ -6,10 +6,10 @@ import { GET, POST } from '../../infrastructure/http/HttpClient'
 import { fetchActivePathOnce, formatLocalDate, setCachedActivePath, setCachedDailySession } from './cache'
 import type { DailySessionResponse } from './daily-session'
 
-const ACTIVE_PATH_PATH = `/api/my-path/v2/active-path`
+const ACTIVE_PATH_ROUTE = `/api/my-path/v2/active-path`
 
 function activePathUrl(brand: string): string {
-  return `${ACTIVE_PATH_PATH}?brand=${brand}`
+  return `${ACTIVE_PATH_ROUTE}?brand=${brand}`
 }
 
 function activePathBody(brand: string, userDate: Date, learningPathId?: number, nodeId?: string): object {
@@ -48,7 +48,7 @@ export async function setActiveLearningPath(
   userDate: Date,
 ): Promise<DailySessionResponse> {
   const body = activePathBody(brand, userDate, learningPathId, nodeId)
-  const response = (await POST(ACTIVE_PATH_PATH, body)) as DailySessionResponse
+  const response = (await POST(ACTIVE_PATH_ROUTE, body)) as DailySessionResponse
   cacheActivePathAndDailySession(brand, userDate, response)
 
   return response
@@ -56,7 +56,7 @@ export async function setActiveLearningPath(
 
 export async function advanceActiveLearningPath(brand: string, userDate: Date): Promise<DailySessionResponse> {
   const body = activePathBody(brand, userDate)
-  const response = (await POST(`${ACTIVE_PATH_PATH}/advance`, body)) as DailySessionResponse
+  const response = (await POST(`${ACTIVE_PATH_ROUTE}/advance`, body)) as DailySessionResponse
   cacheActivePathAndDailySession(brand, userDate, response)
 
   return response

@@ -5,10 +5,10 @@
 import { GET } from '../../infrastructure/http/HttpClient'
 import { fetchLinearizedPathOnce } from './cache'
 
-const LINEARIZED_PATH_PATH = `/api/my-path/v2/linearized-path`
+const LINEARIZED_PATH_ROUTE = `/api/my-path/v2/linearized-path`
 
 function linearizedPathUrl(brand: string): string {
-  return `${LINEARIZED_PATH_PATH}?brand=${brand}`
+  return `${LINEARIZED_PATH_ROUTE}?brand=${brand}`
 }
 
 export interface LinearizedPathResponse {

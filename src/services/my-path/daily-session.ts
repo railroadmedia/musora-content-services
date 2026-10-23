@@ -11,10 +11,10 @@ import {
 } from './cache'
 import type { ActivePathResponse } from './active-path'
 
-const DAILY_SESSION_PATH = `/api/my-path/v2/daily-session`
+const DAILY_SESSION_ROUTE = `/api/my-path/v2/daily-session`
 
 function dailySessionUrl(brand: string, userDate: Date): string {
-  return `${DAILY_SESSION_PATH}?brand=${brand}&user_date=${encodeURIComponent(formatLocalDate(userDate))}`
+  return `${DAILY_SESSION_ROUTE}?brand=${brand}&user_date=${encodeURIComponent(formatLocalDate(userDate))}`
 }
 
 function dailySessionBody(brand: string, userDate: Date, replacePlaceholdersOnly: boolean): object {
@@ -56,7 +56,7 @@ export async function createDailySession(
   replacePlaceholdersOnly: boolean = false,
 ): Promise<DailySessionResponse | null> {
   const body = dailySessionBody(brand, userDate, replacePlaceholdersOnly)
-  const response = (await POST(DAILY_SESSION_PATH, body)) as DailySessionResponse | ''
+  const response = (await POST(DAILY_SESSION_ROUTE, body)) as DailySessionResponse | ''
   if (!response) return null
 
   setCachedActivePath(brand, response)

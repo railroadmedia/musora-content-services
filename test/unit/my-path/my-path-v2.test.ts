@@ -18,6 +18,8 @@ const {
   advanceActiveLearningPath,
 } = require('../../../src/services/my-path/active-path.ts')
 
+const MY_PATH_ROUTE = '/api/my-path/v2'
+
 const userDate = new Date('2026-01-01T10:00:00Z')
 
 const activePath = {
@@ -54,7 +56,7 @@ describe('fetchDailySession', () => {
 
     expect(result).toEqual(dailySession)
     const url = HttpClient.GET.mock.calls[0][0]
-    expect(url).toContain('/api/my-path/v2/daily-session?brand=drumeo&user_date=')
+    expect(url).toContain(MY_PATH_ROUTE + '/daily-session?brand=drumeo&user_date=')
   })
 
   test('creates the daily session when none exists', async () => {
@@ -100,7 +102,7 @@ describe('createDailySession', () => {
 
     expect(result).toEqual(dailySession)
     const [url, body] = HttpClient.POST.mock.calls[0]
-    expect(url).toBe('/api/my-path/v2/daily-session')
+    expect(url).toBe(MY_PATH_ROUTE + '/daily-session')
     expect(body).toEqual({ brand: 'drumeo', user_date: expect.stringMatching(/^2026-01-01 [+-]\d{2}:\d{2}$/), replace_placeholders_only: true })
   })
 
@@ -135,7 +137,7 @@ describe('fetchActiveLearningPath', () => {
     HttpClient.GET.mockResolvedValueOnce(activePath)
 
     expect(await fetchActiveLearningPath('drumeo')).toEqual(activePath)
-    expect(HttpClient.GET.mock.calls[0][0]).toBe('/api/my-path/v2/active-path?brand=drumeo')
+    expect(HttpClient.GET.mock.calls[0][0]).toBe(MY_PATH_ROUTE + '/active-path?brand=drumeo')
   })
 
   test('returns null when the user has no active path', async () => {
@@ -161,7 +163,7 @@ describe('setActiveLearningPath', () => {
 
     expect(result).toEqual(dailySession)
     const [url, body] = HttpClient.POST.mock.calls[0]
-    expect(url).toBe('/api/my-path/v2/active-path')
+    expect(url).toBe(MY_PATH_ROUTE + '/active-path')
     expect(body).toEqual({
       brand: 'drumeo',
       learning_path_id: 11,
@@ -210,7 +212,7 @@ describe('advanceActiveLearningPath', () => {
 
     expect(result).toEqual(next)
     const [url, body] = HttpClient.POST.mock.calls[0]
-    expect(url).toBe('/api/my-path/v2/active-path/advance')
+    expect(url).toBe(MY_PATH_ROUTE + '/active-path/advance')
     expect(body).toEqual({ brand: 'drumeo', user_date: expect.stringMatching(/^2026-01-01 [+-]\d{2}:\d{2}$/) })
 
     HttpClient.GET.mockClear()
@@ -306,7 +308,7 @@ describe('fetchLinearizedLearningPaths', () => {
     HttpClient.GET.mockResolvedValueOnce(linearizedPath)
 
     expect(await fetchLinearizedLearningPaths('drumeo')).toEqual(linearizedPath)
-    expect(HttpClient.GET.mock.calls[0][0]).toBe('/api/my-path/v2/linearized-path?brand=drumeo')
+    expect(HttpClient.GET.mock.calls[0][0]).toBe(MY_PATH_ROUTE + '/linearized-path?brand=drumeo')
   })
 
   test('returns null on an empty response', async () => {

@@ -42,8 +42,7 @@ const excludeFromGeneratedIndex = [
   'mapLearningPathParentsTo',
 ]
 
-const BASE_PATH: string = `/api/content-org`
-const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
+const LEARNING_PATHS_ROUTE = `/api/content-org/v1/user/learning-paths`
 
 interface ActiveLearningPathResponse {
   user_id: number
@@ -82,7 +81,7 @@ export async function getDailySession(brand: string, userDate: Date): Promise<Da
 
   try {
     return await fetchDailySessionOnce<DailySessionResponse>(brand, userDate, async () => {
-      const url = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
+      const url = `${LEARNING_PATHS_ROUTE}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
 
       const response = await GET(url)
 
@@ -110,7 +109,7 @@ export async function updateDailySession(
   keepFirstLearningPath: boolean = false,
 ): Promise<DailySessionResponse | null> {
   const dateWithTimezone = formatLocalDate(userDate)
-  const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
+  const url: string = `${LEARNING_PATHS_ROUTE}/daily-session/create`
   const body = {
     brand: brand,
     userDate: dateWithTimezone,
@@ -134,7 +133,7 @@ export async function updateDailySession(
  * @deprecated use fetchActiveLearningPath
  */
 export async function getActivePath(brand: string): Promise<ActiveLearningPathResponse | null> {
-  const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
+  const url: string = `${LEARNING_PATHS_ROUTE}/active-path/get?brand=${brand}`
 
   return (await fetchActivePathOnce<ActiveLearningPathResponse>(brand, () =>
     GET(url) as Promise<ActiveLearningPathResponse>,
@@ -148,7 +147,7 @@ export async function getActivePath(brand: string): Promise<ActiveLearningPathRe
  * @deprecated use setActiveLearningPath
  */
 export async function startLearningPath(brand: string, learningPathId: number): Promise<ActiveLearningPathResponse | null> {
-  const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
+  const url: string = `${LEARNING_PATHS_ROUTE}/active-path/set`
   const body = { brand: brand, learning_path_id: learningPathId }
 
   const response = (await POST(url, body)) as ActiveLearningPathResponse
@@ -179,7 +178,7 @@ export async function resetActiveLearningPath(brand: string, learningPathId: num
  * @deprecated v1 endpoint, also dev endpoint so dont use this.
  */
 export async function resetAllLearningPaths() {
-  const url: string = `${LEARNING_PATHS_PATH}/reset`
+  const url: string = `${LEARNING_PATHS_ROUTE}/reset`
 
   clearLearningPathCaches()
 
@@ -488,7 +487,7 @@ export async function completeMethodIntroVideo(
 
 async function methodIntroVideoCompleteActions(brand: string, learningPathId: number, userDate: Date) {
   const dateWithTimezone = formatLocalDate(userDate)
-  const url: string = `${LEARNING_PATHS_PATH}/method-intro-video-complete-actions`
+  const url: string = `${LEARNING_PATHS_ROUTE}/method-intro-video-complete-actions`
   const body = { brand: brand, learningPathId: learningPathId, userDate: dateWithTimezone }
   const response = (await POST(url, body)) as DailySessionResponse
 
