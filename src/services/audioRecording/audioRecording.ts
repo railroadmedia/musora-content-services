@@ -827,7 +827,7 @@ export async function restoreRecordings(folders: string[]): Promise<unknown> {
 }
 
 /**
- * Fetch metadata for a shared recording. Public endpoint — anyone with the token can view.
+ * Fetch metadata for a shared recording.
  * Returns the recording details (shared_by, content_id, take_number, name, duration_ms,
  * created_at) plus a short-lived playback URL. Returns null for invalid/expired/unshared
  * tokens (the backend returns 404 with a generic "unavailable" message for all of these).
