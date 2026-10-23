@@ -8,6 +8,7 @@
       "src/services/multi-user-accounts",
       "src/services/my-path",
       "src/services/awards",
+      "src/services/feature-flags",
       "src/services/api",
       "src/services/progress-row",
       "src/services/config.js",

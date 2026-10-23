@@ -1,0 +1,569 @@
+import { initializeTestService } from '../initializeTests.js'
+import { featureFlags } from '../../src/services/feature-flags'
+import type { Brand } from '../../src/lib/brands'
+
+const FLAGS_URL = '/api/feature/v1/flags'
+const EXPOSURES_URL = '/api/feature/v1/exposures'
+
+type Payload = Record<
+  string,
+  { variant: string | null; value: unknown; version: number; reason: string; type?: string }
+>
+
+let fetchMock: jest.Mock
+let warnSpy: jest.SpyInstance
+
+function serve(payload: Payload) {
+  fetchMock.mockImplementation((url: string) =>
+    Promise.resolve({
+      ok: true,
+      status: url.includes('exposures') ? 204 : 200,
+      headers: { get: () => 'application/json' },
+      json: async () => (url.includes('exposures') ? {} : payload),
+      text: async () => JSON.stringify(url.includes('exposures') ? {} : payload),
+    })
+  )
+}
+
+function requestsTo(url: string) {
+  return fetchMock.mock.calls.filter((call) => String(call[0]).includes(url))
+}
+
+function bodyOf(call: any[]) {
+  return JSON.parse(call[1].body)
+}
+
+/** jest runs on node, so the page lifecycle has to be stood up by hand. */
+function givenADocument() {
+  const listeners: Record<string, Array<() => void>> = {}
+  const doc = {
+    visibilityState: 'visible',
+    addEventListener: (event: string, handler: () => void) => {
+      listeners[event] = [...(listeners[event] ?? []), handler]
+    },
+    removeEventListener: (event: string, handler: () => void) => {
+      listeners[event] = (listeners[event] ?? []).filter((each) => each !== handler)
+    },
+  }
+
+  ;(global as any).document = doc
+
+  return {
+    hide() {
+      doc.visibilityState = 'hidden'
+      ;(listeners.visibilitychange ?? []).forEach((handler) => handler())
+    },
+  }
+}
+
+const BRAND = 'drumeo'
+
+async function loadFlags(payload: Payload, brand: Brand = BRAND) {
+  serve(payload)
+  await featureFlags.refresh(brand)
+}
+
+/**
+ * The queue flushes on a timer, so tests wait for it rather than assert into a
+ * gap. Several ticks, because a rejected request settles through the client's
+ * own promise chain before the module's catch runs.
+ */
+async function settle() {
+  jest.advanceTimersByTime(100)
+
+  for (let tick = 0; tick < 10; tick += 1) {
+    await Promise.resolve()
+  }
+}
+
+describe('featureFlags', () => {
+  beforeEach(() => {
+    initializeTestService()
+    featureFlags.reset()
+    jest.useFakeTimers()
+    fetchMock = jest.fn()
+    global.fetch = fetchMock as unknown as typeof fetch
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+    jest.restoreAllMocks()
+  })
+
+  describe('reading', () => {
+    it('is accessible only when the value is exactly true', async () => {
+      await loadFlags({
+        on: { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' },
+        numeric: { variant: 'on', value: 1, version: 1, reason: 'rollout', type: 'number' },
+        stringy: { variant: 'on', value: 'true', version: 1, reason: 'rollout', type: 'string' },
+      })
+
+      // Matches Evaluation::bool() on the server, which is a strict === true.
+      expect(featureFlags.accessible('on', BRAND)).toBe(true)
+      expect(featureFlags.accessible('numeric', BRAND)).toBe(false)
+      expect(featureFlags.accessible('stringy', BRAND)).toBe(false)
+    })
+
+    it('returns the fallback when a variant value is not a string', async () => {
+      await loadFlags({
+        copy: { variant: 'treatment', value: 'treatment', version: 1, reason: 'rollout', type: 'string' },
+        flagged: { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' },
+      })
+
+      expect(featureFlags.variant('copy', BRAND, 'control')).toBe('treatment')
+      expect(featureFlags.variant('flagged', BRAND, 'control')).toBe('control')
+    })
+
+    it('hands back the raw value for number and json flags', async () => {
+      await loadFlags({
+        limit: { variant: 'high', value: 25, version: 1, reason: 'rollout', type: 'number' },
+        config: { variant: 'a', value: { rows: 3 }, version: 1, reason: 'rollout', type: 'json' },
+      })
+
+      expect(featureFlags.value('limit', BRAND, null)).toBe(25)
+      expect(featureFlags.value('config', BRAND, null)).toEqual({ rows: 3 })
+      expect(featureFlags.value('missing', BRAND, 'fallback')).toBe('fallback')
+    })
+
+    it('treats an unknown flag the way the server does', async () => {
+      await loadFlags({})
+
+      expect(featureFlags.accessible('never-created', BRAND)).toBe(false)
+      expect(featureFlags.variant('never-created', BRAND)).toBe('')
+      expect(featureFlags.value('never-created', BRAND)).toBeNull()
+    })
+
+    it('answers with defaults before anything has been fetched', () => {
+      expect(featureFlags.isReady(BRAND)).toBe(false)
+      expect(featureFlags.accessible('anything', BRAND)).toBe(false)
+    })
+  })
+
+  describe('type mismatches', () => {
+    const typed: Payload = {
+      'checkout-copy': { variant: 'treatment', value: 'treatment', version: 1, reason: 'rollout', type: 'string' },
+      'new-checkout': { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' },
+    }
+
+    it('says so when a string flag is read with a boolean accessor', async () => {
+      await loadFlags(typed)
+
+      // Answers false either way, which is indistinguishable from a boolean
+      // flag that is simply off -- so the mismatch is said out loud.
+      expect(featureFlags.accessible('checkout-copy', BRAND)).toBe(false)
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("'checkout-copy' is typed string"))
+    })
+
+    it('says so when a boolean flag is read with a string accessor', async () => {
+      await loadFlags(typed)
+
+      expect(featureFlags.variant('new-checkout', BRAND, 'control')).toBe('control')
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("'new-checkout' is typed boolean"))
+    })
+
+    it('stays quiet when the accessor matches the type', async () => {
+      await loadFlags(typed)
+
+      featureFlags.accessible('new-checkout', BRAND)
+      featureFlags.variant('checkout-copy', BRAND)
+
+      expect(warnSpy).not.toHaveBeenCalled()
+    })
+
+    it('warns once per flag rather than once per read', async () => {
+      await loadFlags(typed)
+
+      // These are read in render paths, so a warning per call would bury the
+      // first one under thousands of copies.
+      featureFlags.accessible('checkout-copy', BRAND)
+      featureFlags.accessible('checkout-copy', BRAND)
+      featureFlags.accessible('checkout-copy', BRAND)
+
+      expect(warnSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('stays quiet for a flag it has no entry for', async () => {
+      await loadFlags({})
+
+      // Nothing was fetched, so nothing is known about the type. A warning here
+      // would fire on every read during the window before the first response.
+      featureFlags.accessible('never-created', BRAND)
+      featureFlags.variant('never-created', BRAND)
+
+      expect(warnSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('exposures', () => {
+    const rolledOut: Payload = {
+      'checkout-copy': {
+        variant: 'treatment',
+        value: 'treatment',
+        version: 4,
+        reason: 'rollout',
+        type: 'string',
+      },
+    }
+
+    it('records nothing merely for reading a flag', async () => {
+      await loadFlags(rolledOut)
+
+      featureFlags.accessible('checkout-copy', BRAND)
+      featureFlags.variant('checkout-copy', BRAND)
+      featureFlags.value('checkout-copy', BRAND)
+      await settle()
+
+      // The decision the whole design rests on: delivering a value is not an
+      // encounter, and counting it would inflate every denominator.
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(0)
+    })
+
+    it('reports the version it was served, not one it computed', async () => {
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+
+      expect(bodyOf(requestsTo(EXPOSURES_URL)[0])).toEqual({
+        brand: BRAND,
+        exposures: [
+          { flag: 'checkout-copy', variant: 'treatment', version: 4, reason: 'rollout' },
+        ],
+      })
+    })
+
+    it('sends exactly the fields the server validates, and no others', async () => {
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+
+      // Asserted as a key set rather than with toEqual, which ignores a key
+      // whose value is undefined. That is the exact shape a dropped payload
+      // field takes, and it reaches the server as a missing required field.
+      expect(Object.keys(bodyOf(requestsTo(EXPOSURES_URL)[0]).exposures[0]).sort()).toEqual([
+        'flag',
+        'reason',
+        'variant',
+        'version',
+      ])
+    })
+
+    it('does not report a reason the server would discard', async () => {
+      await loadFlags({
+        served: { variant: 'off', value: false, version: 2, reason: 'default', type: 'boolean' },
+        off: { variant: 'off', value: false, version: 2, reason: 'disabled', type: 'boolean' },
+      })
+
+      featureFlags.recordExposure('served', BRAND)
+      featureFlags.recordExposure('off', BRAND)
+      featureFlags.recordExposure('never-created', BRAND)
+      await settle()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(0)
+    })
+
+    it('splits more than fifty exposures across requests', async () => {
+      const many: Payload = {}
+      for (let i = 0; i < 60; i += 1) {
+        many[`flag-${i}`] = { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' }
+      }
+      await loadFlags(many)
+
+      Object.keys(many).forEach((key) => featureFlags.recordExposure(key, BRAND))
+      await settle()
+      await settle()
+
+      const calls = requestsTo(EXPOSURES_URL)
+      expect(calls).toHaveLength(2)
+      expect(bodyOf(calls[0]).exposures).toHaveLength(50)
+      expect(bodyOf(calls[1]).exposures).toHaveLength(10)
+    })
+
+    it('reports a flag once per version rather than once per call', async () => {
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+
+      expect(bodyOf(requestsTo(EXPOSURES_URL)[0]).exposures).toHaveLength(1)
+    })
+
+    it('lets a failed report be sent again by a later read', async () => {
+      await loadFlags(rolledOut)
+      fetchMock.mockRejectedValue(new Error('offline'))
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(1)
+
+      // Without letting go of the batch this flag stays marked reported for the
+      // rest of the session, so a total failure looks exactly like everything
+      // working.
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(2)
+    })
+
+    it('still reports once per version when the report succeeds', async () => {
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(1)
+    })
+
+    it('survives a failed report without throwing', async () => {
+      await loadFlags(rolledOut)
+      fetchMock.mockRejectedValueOnce(new Error('offline'))
+
+      expect(() => featureFlags.recordExposure('checkout-copy', BRAND)).not.toThrow()
+      await settle()
+    })
+  })
+
+  describe('brands', () => {
+    const payloads: Record<string, Payload> = {
+      drumeo: { 'tour-banner': { variant: 'on', value: true, version: 3, reason: 'rule', type: 'boolean' } },
+      pianote: { 'tour-banner': { variant: 'off', value: false, version: 3, reason: 'rule', type: 'boolean' } },
+    }
+
+    function serveByBrand() {
+      fetchMock.mockImplementation((url: string) => {
+        const brand = String(url).match(/brand=([a-z]+)/)?.[1] ?? 'drumeo'
+
+        return Promise.resolve({
+          ok: true,
+          status: String(url).includes('exposures') ? 204 : 200,
+          headers: { get: () => 'application/json' },
+          json: async () => (String(url).includes('exposures') ? {} : payloads[brand]),
+          text: async () => JSON.stringify(payloads[brand]),
+        })
+      })
+    }
+
+    it('asks for the brand it was given', async () => {
+      await loadFlags({}, 'pianote')
+
+      expect(String(requestsTo(FLAGS_URL)[0][0])).toContain('brand=pianote')
+    })
+
+    it('keeps one brand answer from being served for another', async () => {
+      serveByBrand()
+      await featureFlags.refresh('drumeo')
+      await featureFlags.refresh('pianote')
+
+      // Same key, same version, opposite answers: brand is a targeting
+      // attribute, so a shared snapshot would hand one brand the other's.
+      expect(featureFlags.accessible('tour-banner', 'drumeo')).toBe(true)
+      expect(featureFlags.accessible('tour-banner', 'pianote')).toBe(false)
+    })
+
+    it('reports the same key on two brands as two exposures', async () => {
+      serveByBrand()
+      await featureFlags.refresh('drumeo')
+      await featureFlags.refresh('pianote')
+
+      featureFlags.recordExposure('tour-banner', 'drumeo')
+      featureFlags.recordExposure('tour-banner', 'pianote')
+      await settle()
+
+      // One request per brand: the server files a whole batch under the brand
+      // the request names, so a mixed batch would mislabel half of it.
+      const posted = requestsTo(EXPOSURES_URL).map(bodyOf)
+      expect(posted).toHaveLength(2)
+      expect(posted.map((body) => body.brand).sort()).toEqual(['drumeo', 'pianote'])
+      expect(posted.every((body) => body.exposures.length === 1)).toBe(true)
+    })
+  })
+
+  describe('leaving the page', () => {
+    const rolledOut: Payload = {
+      'checkout-copy': { variant: 'treatment', value: 'treatment', version: 4, reason: 'rollout', type: 'string' },
+    }
+
+    afterEach(() => {
+      delete (global as any).document
+    })
+
+    it('sends what is still queued instead of losing it', async () => {
+      const page = givenADocument()
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+
+      // Still inside the batching window: without a teardown flush this report
+      // leaves with the page.
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(0)
+
+      page.hide()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(1)
+      expect(bodyOf(requestsTo(EXPOSURES_URL)[0]).exposures).toHaveLength(1)
+    })
+
+    it('sends it in a way that outlives the page', async () => {
+      const page = givenADocument()
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      page.hide()
+
+      // keepalive rather than sendBeacon: a beacon cannot carry the
+      // Authorization header, so it would arrive unattributed.
+      expect(requestsTo(EXPOSURES_URL)[0][1].keepalive).toBe(true)
+      expect(requestsTo(EXPOSURES_URL)[0][1].headers['Content-Type']).toBe('application/json')
+    })
+
+    it('drains every brand, not just the first', async () => {
+      const page = givenADocument()
+      await loadFlags(rolledOut, 'drumeo')
+      await loadFlags(rolledOut, 'pianote')
+
+      featureFlags.recordExposure('checkout-copy', 'drumeo')
+      featureFlags.recordExposure('checkout-copy', 'pianote')
+      page.hide()
+
+      expect(requestsTo(EXPOSURES_URL).map(bodyOf).map((b) => b.brand).sort()).toEqual([
+        'drumeo',
+        'pianote',
+      ])
+    })
+
+    it('does not queue a second send for what it already drained', async () => {
+      const page = givenADocument()
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      page.hide()
+      await settle()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(1)
+    })
+
+    it('releases the listener on reset, rather than stacking one per session', async () => {
+      const page = givenADocument()
+      await loadFlags(rolledOut)
+      featureFlags.recordExposure('checkout-copy', BRAND)
+
+      featureFlags.reset()
+      page.hide()
+
+      // reset() runs on every session change. A listener left attached would
+      // fire for a user who has signed out, and a second would be added each
+      // time somebody signs in.
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(0)
+    })
+
+    it('leaves no listener behind where there is no page', async () => {
+      // React Native has no document. Reaching for one would throw on every
+      // exposure rather than simply doing nothing.
+      await loadFlags(rolledOut)
+
+      expect(() => featureFlags.recordExposure('checkout-copy', BRAND)).not.toThrow()
+      await settle()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(1)
+    })
+  })
+
+  describe('a failing backend', () => {
+    async function failOnce() {
+      fetchMock.mockRejectedValue(new Error('offline'))
+      await featureFlags.refresh(BRAND).catch(() => {})
+    }
+
+    it('does not retry on every read while the backend is down', async () => {
+      await failOnce()
+      expect(requestsTo(FLAGS_URL)).toHaveLength(1)
+
+      // Nothing is held, so the staleness check stays true forever. Reads run
+      // in render paths, so without a floor an outage becomes one request per
+      // read per component.
+      featureFlags.accessible('anything', BRAND)
+      featureFlags.accessible('anything', BRAND)
+      featureFlags.accessible('anything', BRAND)
+
+      expect(requestsTo(FLAGS_URL)).toHaveLength(1)
+    })
+
+    it('tries again once the retry window has passed', async () => {
+      await failOnce()
+
+      jest.advanceTimersByTime(6_000)
+      featureFlags.accessible('anything', BRAND)
+
+      expect(requestsTo(FLAGS_URL)).toHaveLength(2)
+    })
+
+    it('lets an explicit refresh through regardless', async () => {
+      await failOnce()
+
+      await featureFlags.refresh(BRAND).catch(() => {})
+
+      expect(requestsTo(FLAGS_URL)).toHaveLength(2)
+    })
+
+    it('recovers and serves the real answer', async () => {
+      await failOnce()
+
+      jest.advanceTimersByTime(6_000)
+      serve({ back: { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' } })
+      await featureFlags.refresh(BRAND)
+
+      expect(featureFlags.accessible('back', BRAND)).toBe(true)
+    })
+  })
+
+  describe('freshness', () => {
+    it('answers immediately and refreshes behind the read once stale', async () => {
+      await loadFlags({ ramp: { variant: 'off', value: false, version: 1, reason: 'rollout', type: 'boolean' } })
+      expect(requestsTo(FLAGS_URL)).toHaveLength(1)
+
+      featureFlags.accessible('ramp', BRAND)
+      expect(requestsTo(FLAGS_URL)).toHaveLength(1)
+
+      jest.advanceTimersByTime(61_000)
+      serve({ ramp: { variant: 'on', value: true, version: 2, reason: 'rollout', type: 'boolean' } })
+
+      // The stale read still answers from what is held, and kicks off the fetch.
+      expect(featureFlags.accessible('ramp', BRAND)).toBe(false)
+
+      // refresh() hands back the request that read already started, so this
+      // waits on that one rather than guessing how many ticks it needs.
+      await featureFlags.refresh(BRAND)
+
+      expect(requestsTo(FLAGS_URL)).toHaveLength(2)
+      expect(featureFlags.accessible('ramp', BRAND)).toBe(true)
+    })
+
+    it('collapses concurrent refreshes into one request', async () => {
+      serve({})
+
+      await Promise.all([featureFlags.refresh(BRAND), featureFlags.refresh(BRAND), featureFlags.refresh(BRAND)])
+
+      expect(requestsTo(FLAGS_URL)).toHaveLength(1)
+    })
+  })
+
+  describe('reset', () => {
+    it('drops what was loaded so one user cannot read another user flags', async () => {
+      await loadFlags({
+        'new-checkout': { variant: 'on', value: true, version: 1, reason: 'rollout', type: 'boolean' },
+      })
+      expect(featureFlags.accessible('new-checkout', BRAND)).toBe(true)
+
+      featureFlags.reset()
+
+      expect(featureFlags.isReady(BRAND)).toBe(false)
+      expect(featureFlags.accessible('new-checkout', BRAND)).toBe(false)
+    })
+  })
+})
