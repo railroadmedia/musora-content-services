@@ -308,7 +308,6 @@ export async function recordUserPractice(practiceDetails) {
     instrument_id: practiceDetails.instrument_id ?? null,
   })
 
-  streakCalculator.invalidate()
   return result
 }
 
@@ -318,7 +317,6 @@ export async function trackUserPractice(contentId, incSeconds) {
     skipPush: true,
   }) // NOTE - SKIPS PUSH
 
-  streakCalculator.invalidate()
   return result
 }
 
@@ -343,7 +341,6 @@ export async function trackUserPractice(contentId, incSeconds) {
  */
 export async function updateUserPractice(id, practiceDetails) {
   const result = await db.practices.updateDetails(id, practiceDetails)
-  streakCalculator.invalidate()
   return result
 }
 
@@ -361,7 +358,6 @@ export async function updateUserPractice(id, practiceDetails) {
  */
 export async function removeUserPractice(id) {
   const result = await db.practices.deleteOne(id)
-  streakCalculator.invalidate()
   return result
 }
 
@@ -400,7 +396,6 @@ export async function restoreUserPractice(id) {
 export async function deletePracticeSession(day) {
   const ids = await db.practices.queryAllIds(Q.where('date', day))
   const result = await db.practices.deleteSome(ids.data)
-  streakCalculator.invalidate()
   return result
 }
 
@@ -429,7 +424,6 @@ export async function restorePracticeSession(date) {
     (total, practice) => total + (practice.duration || 0),
     0
   )
-  streakCalculator.invalidate()
   return { data: formattedMeta, practiceDuration }
 }
 
