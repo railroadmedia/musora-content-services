@@ -16,6 +16,7 @@ import {
 } from '../../../src/services/contentProgress.js'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 import db from '../../../src/services/sync/repository-proxy'
+import { getHierarchy } from '../../../src/services/sanity.js'
 
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
 jest.mock('../../../src/services/my-path/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
@@ -134,6 +135,19 @@ describe('saveContentProgress', () => {
     const record = await db.contentProgress.getOneProgressByContentId(800, null)
     expect(record.data?.progress_percent).toBe(50)
     expect(ctx.pushSpies.contentProgress).toHaveBeenCalledWith('save-content-progress')
+  })
+
+  test('online save with a passed-in hierarchy uses it without a hierarchy lookup', async () => {
+    const hierarchy = {
+      metadata: { 810: { ...meta, brand: 'pianote' } },
+      parents: {},
+      children: {},
+    }
+    await saveContentProgress(810, collectionSelf, 40, null, { hierarchy })
+    const record = await db.contentProgress.getOneProgressByContentId(810, null)
+    expect(record.data?.progress_percent).toBe(40)
+    expect(record.data?.content_brand).toBe('pianote')
+    expect(getHierarchy).not.toHaveBeenCalled()
   })
 })
 
