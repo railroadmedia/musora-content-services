@@ -1,10 +1,6 @@
-import { logEvent } from './audioRecording.js'
+import { logEvent, RecordingEventPosition } from './audioRecording'
 
-export interface RecordingEventPosition {
-  audio_ms?: number
-  chunk_index?: number
-  at?: number
-}
+export type { RecordingEventPosition }
 
 /**
  * The recorder closes the current chunk at a speed change, so every chunk records at a single
