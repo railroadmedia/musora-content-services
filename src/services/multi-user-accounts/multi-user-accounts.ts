@@ -49,6 +49,8 @@ export interface MultiUserAccountResponse {
   is_primary_account_holder: boolean
   membership_level: 'plus' | 'basic'
   is_lifetime_addon: boolean
+  is_free_duo: boolean
+  tier_key: string
   // The following fields are not included for public or subaccount users
   active_invites?: InviteResponse[]
   available_seats?: number
