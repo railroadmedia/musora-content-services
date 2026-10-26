@@ -109,12 +109,15 @@ export type PromotionalCampaignDocument = {
   ends_at: string
   /** Active? */
   active?: boolean
+  /** Cart Link */
+  cart_link?: string
   /** Placements */
   placements: {
     _key: string
     /** Placement Key */
     key: string
     title?: string
+    long_title?: string
     body?: string
     disclaimer?: string
     /** Dark Image */

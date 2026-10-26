@@ -6,7 +6,7 @@ import { globalConfig } from '../config.js'
 import { OnboardingRecommendedContent } from '../user/onboarding'
 
 
-const baseUrl = `/api/my-path/v1/placement-quiz`
+const PLACEMENT_QUIZ_ROUTE = `/api/my-path/v2/placement-quiz`
 
 interface PlacementQuizAnswers {
   skill_level: 'new' | 'beginner' | 'intermediate' | 'advanced' | 'expert'
@@ -36,7 +36,7 @@ interface StorePlacementQuizResponse {
  */
 export async function fetchQuizAnswers(brand: string): Promise<PlacementQuizResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<PlacementQuizResponse>(`${baseUrl}?brand=${brand}`)
+  return httpClient.get<PlacementQuizResponse>(`${PLACEMENT_QUIZ_ROUTE}?brand=${brand}`)
 }
 
 /**
@@ -54,5 +54,5 @@ export async function storeQuizAnswers(brand: string, answers: PlacementQuizAnsw
   }
 
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<StorePlacementQuizResponse>(baseUrl, body)
+  return httpClient.post<StorePlacementQuizResponse>(PLACEMENT_QUIZ_ROUTE, body)
 }

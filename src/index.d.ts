@@ -241,6 +241,17 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	advanceActiveLearningPath,
+	fetchActiveLearningPath,
+	setActiveLearningPath
+} from './services/my-path/active-path.ts';
+
+import {
+	createDailySession,
+	fetchDailySession
+} from './services/my-path/daily-session.ts';
+
+import {
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
 	fetchLearningPathLessons,
@@ -589,6 +600,7 @@ declare module 'musora-content-services' {
 		addContextToContent,
 		addContextToLearningPaths,
 		addItemToPlaylist,
+		advanceActiveLearningPath,
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
@@ -618,6 +630,7 @@ declare module 'musora-content-services' {
 		convertToTimeZone,
 		createAccount,
 		createComment,
+		createDailySession,
 		createForumCategory,
 		createInvites,
 		createPendingAccount,
@@ -648,6 +661,7 @@ declare module 'musora-content-services' {
 		extractFromRecordId,
 		extractSanityUrl,
 		featureFlags,
+		fetchActiveLearningPath,
 		fetchAll,
 		fetchAllFilterOptions,
 		fetchAllPublicAnnouncements,
@@ -673,6 +687,7 @@ declare module 'musora-content-services' {
 		fetchContentTypeCounts,
 		fetchCourseCollectionData,
 		fetchCustomerPayments,
+		fetchDailySession,
 		fetchEnrollmentPageMetadata,
 		fetchFollowedThreads,
 		fetchForumCategories,
@@ -920,6 +935,7 @@ declare module 'musora-content-services' {
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
 		sendRevenueCatPurchaseMetadata,
+		setActiveLearningPath,
 		setSessionUserData,
 		setStudentViewForUser,
 		setUserPinnedProgressRow,

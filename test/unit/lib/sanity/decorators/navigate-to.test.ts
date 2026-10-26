@@ -201,13 +201,16 @@ describe('navigate-to decorator', () => {
     })
 
     test('two-depth: prefetches grandchild ids in a single batched call', async () => {
-      const { default: repositoryProxy } = require('../../../../../src/services/sync/repository-proxy')
+      const {
+        default: repositoryProxy,
+      } = require('../../../../../src/services/sync/repository-proxy')
       const courseA = parent(101, 'course', [child(201), child(202)])
       const collection = parent(1, 'course-collection', [courseA])
       await decorateNavigateTo(collection)
 
       expect(repositoryProxy.contentProgress.getSomeProgressByContentIds).toHaveBeenCalledTimes(1)
-      const [requestedIds] = repositoryProxy.contentProgress.getSomeProgressByContentIds.mock.calls[0]
+      const [requestedIds] =
+        repositoryProxy.contentProgress.getSomeProgressByContentIds.mock.calls[0]
       expect(requestedIds).toEqual(expect.arrayContaining([1, 101, 201, 202]))
     })
 
@@ -229,8 +232,8 @@ describe('navigate-to decorator', () => {
       const result = await decorateNavigateTo(item)
       expect(result.navigateTo).not.toBeNull()
       const children = result.children as NavigateToDecoratable[]
-      expect((children[0] as Record<string, unknown>).navigateTo).toBeUndefined()
-      expect((children[1] as Record<string, unknown>).navigateTo).toBeUndefined()
+      expect((children[0] as unknown as Record<string, unknown>).navigateTo).toBeUndefined()
+      expect((children[1] as unknown as Record<string, unknown>).navigateTo).toBeUndefined()
     })
 
     test('skill-pack uses course flow', async () => {

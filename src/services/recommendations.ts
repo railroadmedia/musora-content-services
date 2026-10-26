@@ -39,7 +39,6 @@ interface RecommendedContent {
   live_event_start_time?: string | null
   live_event_end_time?: string | null
   children?: RecommendedContent[]
-  [key: string]: unknown
 }
 
 type DecoratedRecommendedContent = WithNeedLifetimeUpgrade<

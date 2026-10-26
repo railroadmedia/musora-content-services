@@ -1,12 +1,13 @@
 import { GET, POST } from '../../infrastructure/http/HttpClient'
 import { decorateAsync } from '../../lib/sanity/decorators/base'
-import type { Decoratable, FieldDecoratorAsync } from '../../lib/sanity/decorators/base'
+import type { FieldDecoratorAsync } from '../../lib/sanity/decorators/base'
 import { Filters as f } from '../../lib/sanity/filter'
 import { groq } from '../../lib/sanity/groq'
 import type { GroqBuilder } from '../../lib/sanity/groq'
 import type { PromotionalCampaignDocument } from '../../lib/sanity/types/marketing'
 import { AsyncEither } from '../../lib/ads/async-either'
 import { Brand } from '../../lib/brands'
+import { globalConfig } from '../config.js'
 
 const excludeFromGeneratedIndex = [
   'campaignQuery',
@@ -66,6 +67,8 @@ export interface CampaignQueryOptions {
 export interface AvailableCampaignOptions extends CampaignQueryOptions {
   /** Values for the `{name}` placeholders in placement copy. See `resolveCampaignPlaceholders`. */
   placeholderValues?: CampaignPlaceholderValues
+  /** Set true to drop campaigns the user is not eligible for, has claimed, or has dismissed. */
+  filterByUserState?: boolean
 }
 
 const UNTOUCHED: UserCampaignState = { claimed: false, dismissed: false, eligible: true }
@@ -128,17 +131,18 @@ export async function fetchPromotionalCampaigns(
 }
 
 /**
- * Every running campaign the user has not already claimed or dismissed, and is eligible.
+ * Every running campaign with the user's state attached. With `filterByUserState`, only those the
+ * user is eligible for and has not claimed or dismissed.
  */
 export async function fetchAvailablePromotionalCampaigns(
   options: AvailableCampaignOptions = {}
 ): Promise<WithUserCampaignState<PromotionalCampaign>[]> {
-  const { placeholderValues = {}, ...queryOptions } = options
+  const { placeholderValues = {}, filterByUserState = false, ...queryOptions } = options
 
   return campaignQuery(queryOptions)
     .run()
     .flatMap(decorateUserCampaignState)
-    .map(filterCampaignsForUser)
+    .map((campaigns) => (filterByUserState ? filterCampaignsForUser(campaigns) : campaigns))
     .map((campaigns) =>
       campaigns.map((campaign) => resolveCampaignPlaceholders(campaign, placeholderValues))
     )
@@ -163,16 +167,12 @@ export async function fetchUserCampaignStates(
 // DECORATION
 // ============================================
 
-export function userCampaignStateDecorator(
+export function userCampaignStateDecorator<T extends PromotionalCampaign>(
   states: Record<string, UserCampaignState>
-): FieldDecoratorAsync<Decoratable, typeof USER_CAMPAIGN_STATE_FIELD, UserCampaignState> {
+): FieldDecoratorAsync<T, typeof USER_CAMPAIGN_STATE_FIELD, UserCampaignState> {
   return {
     field: USER_CAMPAIGN_STATE_FIELD,
-    compute: async (item) => {
-      const campaign = item as unknown as PromotionalCampaign
-
-      return states[campaign.slug?.current] ?? UNTOUCHED
-    },
+    compute: async (campaign) => states[campaign.slug?.current] ?? UNTOUCHED,
   }
 }
 
@@ -186,10 +186,9 @@ export function decorateUserCampaignState<T extends PromotionalCampaign>(
     if (!campaigns.length) return []
 
     const states = await fetchUserCampaignStates(campaigns.map((campaign) => campaign.slug.current))
-    const { field, compute } = userCampaignStateDecorator(states)
-    const decorated = await decorateAsync(campaigns as unknown as Decoratable[], field, compute)
+    const { field, compute } = userCampaignStateDecorator<T>(states)
 
-    return decorated as unknown as WithUserCampaignState<T>[]
+    return decorateAsync(campaigns, field, compute)
   })
 }
 
@@ -201,7 +200,7 @@ export type CampaignPlaceholderValues = Record<string, string>
 
 const PLACEHOLDER = /\{(\w+)\}/g
 
-const COPY_FIELDS = ['title', 'body', 'disclaimer', 'cta_label'] as const
+const COPY_FIELDS = ['title', 'long_title', 'body', 'disclaimer', 'cta_label'] as const
 
 const fillPlaceholders = (text: string, values: CampaignPlaceholderValues) =>
   text.replace(
@@ -247,8 +246,13 @@ export function resolveCampaignPlaceholders<T extends PromotionalCampaign>(
 // MUTATIONS
 // ============================================
 
-export async function claimPromotionalCampaign(slug: string): Promise<void> {
-  await POST(`/api/promotions/v1/campaigns/${encodeURIComponent(slug)}/claim`)
+export async function claimPromotionalCampaign(
+  slug: string,
+  userId: number | null = null
+): Promise<void> {
+  await POST(`/api/promotions/v1/campaigns/${encodeURIComponent(slug)}/claim`, {
+    user_id: userId ?? globalConfig.sessionConfig.userId,
+  })
 }
 
 export async function dismissPromotionalCampaign(slug: string): Promise<void> {
