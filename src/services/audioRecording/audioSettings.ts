@@ -16,6 +16,7 @@ export interface AudioSettings {
   lesson_volume: number
   auto_gain_enabled: boolean
   input_volume: number
+  musora_volume: number
   input_device: AudioDevice | null
   output_device: AudioDevice | null
   audio_configured_at: string | null
@@ -36,6 +37,7 @@ export type AudioSettingsChanges = Partial<
     | 'lesson_volume'
     | 'auto_gain_enabled'
     | 'input_volume'
+    | 'musora_volume'
     | 'input_device'
     | 'output_device'
   >
