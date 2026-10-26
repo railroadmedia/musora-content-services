@@ -270,6 +270,10 @@ import {
 } from './services/my-path/learning-paths.ts';
 
 import {
+	fetchLinearizedLearningPaths
+} from './services/my-path/linearized-path.ts';
+
+import {
 	fetchQuizAnswers,
 	storeQuizAnswers
 } from './services/my-path/placement-quiz.ts';
@@ -709,6 +713,7 @@ declare module 'musora-content-services' {
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
 		fetchLikeCount,
+		fetchLinearizedLearningPaths,
 		fetchLiveEvent,
 		fetchLiveEventPollingState,
 		fetchLiveStreamData,
