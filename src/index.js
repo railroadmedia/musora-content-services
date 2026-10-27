@@ -151,6 +151,10 @@ import {
 } from './services/endScreen/endScreen.ts';
 
 import {
+	featureFlags
+} from './services/feature-flags/index.ts';
+
+import {
 	createForumCategory,
 	deleteForumCategory,
 	fetchForumCategories,
@@ -268,6 +272,10 @@ import {
 	startLearningPath,
 	updateDailySession
 } from './services/my-path/learning-paths.ts';
+
+import {
+	fetchLinearizedLearningPaths
+} from './services/my-path/linearized-path.ts';
 
 import {
 	fetchQuizAnswers,
@@ -655,6 +663,7 @@ export {
 	enrollUserInGuidedCourse,
 	extractFromRecordId,
 	extractSanityUrl,
+	featureFlags,
 	fetchActiveLearningPath,
 	fetchAll,
 	fetchAllFilterOptions,
@@ -703,6 +712,7 @@ export {
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
 	fetchLikeCount,
+	fetchLinearizedLearningPaths,
 	fetchLiveEvent,
 	fetchLiveEventPollingState,
 	fetchLiveStreamData,
