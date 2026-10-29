@@ -295,6 +295,17 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	advanceActiveLearningPath,
+	fetchActiveLearningPath,
+	setActiveLearningPath
+} from './services/my-path/active-path.ts';
+
+import {
+	createDailySession,
+	fetchDailySession
+} from './services/my-path/daily-session.ts';
+
+import {
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
 	fetchLearningPathLessons,
@@ -643,6 +654,7 @@ export {
 	addContextToContent,
 	addContextToLearningPaths,
 	addItemToPlaylist,
+	advanceActiveLearningPath,
 	applyCloudflareWrapper,
 	applySanityTransformations,
 	assignModeratorToComment,
@@ -674,6 +686,7 @@ export {
 	createAccount,
 	createAudioChunkUploader,
 	createComment,
+	createDailySession,
 	createForumCategory,
 	createInvites,
 	createLessonNote,
@@ -709,6 +722,7 @@ export {
 	estimateClockOffset,
 	extractFromRecordId,
 	extractSanityUrl,
+	fetchActiveLearningPath,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPublicAnnouncements,
@@ -735,6 +749,7 @@ export {
 	fetchContentTypeCounts,
 	fetchCourseCollectionData,
 	fetchCustomerPayments,
+	fetchDailySession,
 	fetchEnrollmentPageMetadata,
 	fetchFollowedThreads,
 	fetchForumCategories,
@@ -1006,6 +1021,7 @@ export {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	sendRevenueCatPurchaseMetadata,
+	setActiveLearningPath,
 	setSessionUserData,
 	setStudentViewForUser,
 	setUserPinnedProgressRow,

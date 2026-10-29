@@ -109,6 +109,8 @@ export type PromotionalCampaignDocument = {
   ends_at: string
   /** Active? */
   active?: boolean
+  /** Cart Link */
+  cart_link?: string
   /** Placements */
   placements: {
     _key: string

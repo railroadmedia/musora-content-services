@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.193.0](https://github.com/railroadmedia/musora-content-services/compare/v2.192.2...v2.193.0) (2026-10-23)
+
+
+### Features
+
+* **BEHLTP-493:** My Path v2 daily session and active path endpoints ([#1074](https://github.com/railroadmedia/musora-content-services/issues/1074)) ([0556afc](https://github.com/railroadmedia/musora-content-services/commit/0556afc97874e2528700b79121cbfc6855b73702))
+
+### [2.192.2](https://github.com/railroadmedia/musora-content-services/compare/v2.192.1...v2.192.2) (2026-10-23)
+
 ### [2.192.1](https://github.com/railroadmedia/musora-content-services/compare/v2.192.0...v2.192.1) (2026-10-22)
 
 ## [2.192.0](https://github.com/railroadmedia/musora-content-services/compare/v2.191.0...v2.192.0) (2026-10-21)
