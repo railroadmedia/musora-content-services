@@ -22,6 +22,7 @@ export interface AudioSettings {
   audio_configured_at: string | null
   mic_opted_in_at: string | null
   mic_opt_in_prompted_at: string | null
+  mic_access_granted_at: string | null
   audio_setup_toast_shown_at: string | null
 }
 
@@ -44,6 +45,7 @@ export type AudioSettingsChanges = Partial<
 > & {
   mic_opted_in?: true
   mic_opt_in_prompted?: true
+  mic_access_granted?: true
   audio_setup_toast_shown?: true
 }
 
