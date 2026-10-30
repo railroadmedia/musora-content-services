@@ -49,7 +49,8 @@ import {
 } from './services/audioRecording/recordingClock.ts';
 
 import {
-	logRateChangeEvent
+	logRateChangeEvent,
+	logResumeEvent
 } from './services/audioRecording/recordingEvents.ts';
 
 import {
@@ -957,6 +958,7 @@ export {
 	listRecordings,
 	lockThread,
 	logRateChangeEvent,
+	logResumeEvent,
 	logSeekEvent,
 	login,
 	loginAsUser,

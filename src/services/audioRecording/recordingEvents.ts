@@ -19,3 +19,15 @@ export async function logRateChangeEvent(
     ...position,
   })
 }
+
+/**
+ * For a client that resumes the recorder itself: log the resume once the mic has actually
+ * restarted, so `videoTimeMs` and `position` match where the audio picks up again.
+ */
+export async function logResumeEvent(
+  folder: string,
+  videoTimeMs: number,
+  position: RecordingEventPosition = {}
+): Promise<unknown> {
+  return logEvent(folder, 'resume', videoTimeMs, null, position)
+}
