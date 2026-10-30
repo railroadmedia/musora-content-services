@@ -28,4 +28,12 @@ describe('getRecordingPlaybackUrl', () => {
     expect(mockGet.mock.calls[0][0]).toContain('format=original')
     expect(mockGet.mock.calls[0][0]).toContain('download=1')
   })
+
+  test('asks for the lossless enhanced take', async () => {
+    mockGet.mockResolvedValue({ url: null, expires_at: null, mime_type: null })
+
+    await getRecordingPlaybackUrl('user-audio/1_2026-09-24_120000/', { enhanced: true })
+
+    expect(mockGet.mock.calls[0][0]).toContain('format=enhanced')
+  })
 })
