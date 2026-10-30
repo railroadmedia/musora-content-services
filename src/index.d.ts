@@ -644,7 +644,7 @@ import {
 } from './services/whoLiked.ts';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -959,7 +959,7 @@ declare module 'musora-content-services' {
 		listRecordings,
 		lockThread,
 		logRateChangeEvent,
-	logResumeEvent,
+	  logResumeEvent,
 		logSeekEvent,
 		login,
 		loginAsUser,
