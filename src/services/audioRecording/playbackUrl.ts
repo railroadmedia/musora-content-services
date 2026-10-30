@@ -9,6 +9,7 @@ export interface RecordingPlaybackUrl {
 
 export interface RecordingPlaybackUrlOptions {
   original?: boolean
+  enhanced?: boolean
   download?: boolean
 }
 
@@ -22,6 +23,7 @@ export async function getRecordingPlaybackUrl(
 ): Promise<RecordingPlaybackUrl> {
   const params = new URLSearchParams({ folder })
   if (options.original) params.set('format', 'original')
+  if (options.enhanced) params.set('format', 'enhanced')
   if (options.download) params.set('download', '1')
 
   return GET(`/api/audio-recording/v1/playback-url?${params}`)
