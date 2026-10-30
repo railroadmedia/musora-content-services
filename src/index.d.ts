@@ -45,7 +45,8 @@ import {
 } from './services/audioRecording/recordingClock.ts';
 
 import {
-	logRateChangeEvent
+	logRateChangeEvent,
+	logResumeEvent
 } from './services/audioRecording/recordingEvents.ts';
 
 import {
@@ -958,6 +959,7 @@ declare module 'musora-content-services' {
 		listRecordings,
 		lockThread,
 		logRateChangeEvent,
+	logResumeEvent,
 		logSeekEvent,
 		login,
 		loginAsUser,
