@@ -198,6 +198,9 @@ export interface DeleteLessonRecordingsResponse {
 }
 
 export interface SharedRecording {
+  is_owner: boolean
+  // only sent to the owner
+  folder?: string
   shared_by: string | null
   content_id: number | null
   take_number: number | null
