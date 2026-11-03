@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.194.1](https://github.com/railroadmedia/musora-content-services/compare/v2.194.0...v2.194.1) (2026-11-03)
+
+
+### Bug Fixes
+
+* **BR-1322:** remove streak calculator cache so synced practices show up ([cdb7b11](https://github.com/railroadmedia/musora-content-services/commit/cdb7b1190b1484faedde9d67fb487502737336a2))
+
 ## [2.194.0](https://github.com/railroadmedia/musora-content-services/compare/v2.193.0...v2.194.0) (2026-10-31)
 
 
