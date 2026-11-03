@@ -42,4 +42,5 @@ export interface Lesson {
   need_access: boolean
   need_lifetime_upgrade: boolean
   page_type: LessonPageType
+  is_plus_content: boolean
 }
