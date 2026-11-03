@@ -29,6 +29,7 @@ export interface Lesson {
   genre: Genre | string | null
   id: number
   image: string
+  is_plus_content: boolean
   length_in_seconds: number
   parent_id: number | null
   permission_id: number[]
@@ -42,5 +43,4 @@ export interface Lesson {
   need_access: boolean
   need_lifetime_upgrade: boolean
   page_type: LessonPageType
-  is_plus_content: boolean
 }
