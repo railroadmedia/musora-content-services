@@ -90,6 +90,89 @@ describe('updateNote / deleteNote', () => {
   })
 })
 
+describe('observeNotesForContent', () => {
+  const observe = (contentId: number) => {
+    const emissions: string[][] = []
+    const stop = repo.observeNotesForContent(contentId, (notes) => {
+      emissions.push(notes.map((note) => note.notes))
+    })
+    return { emissions, stop }
+  }
+
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 20))
+
+  test('emits the lesson notes right away, oldest first', async () => {
+    await repo.createNote(900, '2026-09-08', 'First')
+    await repo.createNote(900, '2026-09-08', 'Second')
+
+    const { emissions, stop } = observe(900)
+    await settle()
+
+    expect(emissions.at(-1)).toEqual(['First', 'Second'])
+    stop()
+  })
+
+  test('emits again when a note is added', async () => {
+    const { emissions, stop } = observe(901)
+    await settle()
+
+    await repo.createNote(901, '2026-09-08', 'New')
+    await settle()
+
+    expect(emissions.at(-1)).toEqual(['New'])
+    stop()
+  })
+
+  test('emits again when a note text is edited', async () => {
+    const created = await repo.createNote(902, '2026-09-08', 'Original')
+    const { emissions, stop } = observe(902)
+    await settle()
+
+    await repo.updateNote(created.data.id, 'Edited')
+    await settle()
+
+    expect(emissions.at(-1)).toEqual(['Edited'])
+    stop()
+  })
+
+  test('emits again when a note is deleted', async () => {
+    const created = await repo.createNote(903, '2026-09-08', 'To delete')
+    const { emissions, stop } = observe(903)
+    await settle()
+
+    await repo.deleteNote(created.data.id)
+    await settle()
+
+    expect(emissions.at(-1)).toEqual([])
+    stop()
+  })
+
+  test('ignores notes on other lessons', async () => {
+    const { emissions, stop } = observe(904)
+    await settle()
+    const emissionCount = emissions.length
+
+    await repo.createNote(905, '2026-09-08', 'Other lesson')
+    await settle()
+
+    expect(emissions).toHaveLength(emissionCount)
+    expect(emissions.at(-1)).toEqual([])
+    stop()
+  })
+
+  test('stops emitting once stopped', async () => {
+    const { emissions, stop } = observe(906)
+    await settle()
+    stop()
+    const emissionCount = emissions.length
+
+    await repo.createNote(906, '2026-09-08', 'After stop')
+    await settle()
+
+    expect(emissions).toHaveLength(emissionCount)
+  })
+})
+
 describe('getContentIdsWithNotes', () => {
   test('returns distinct content ids that have at least one note', async () => {
     await repo.createNote(600, '2026-09-08', 'First')

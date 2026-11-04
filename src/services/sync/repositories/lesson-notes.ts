@@ -14,6 +14,16 @@ export default class LessonNotesRepository extends SyncRepository<LessonNote> {
     return await this.queryAll(...clauses)
   }
 
+  // observeWithColumns so an edited note's text re-emits, not only added or removed notes
+  observeNotesForContent(contentId: number, callback: (notes: LessonNote[]) => void): () => void {
+    const subscription = this.store.collection
+      .query(Q.where('content_id', contentId), Q.sortBy('created_at', 'asc'))
+      .observeWithColumns(['notes'])
+      .subscribe(callback)
+
+    return () => subscription.unsubscribe()
+  }
+
   async createNote(contentId: number, date: string, notes: string, timestampMs: number | null = null) {
     return await this.insertOne((r) => {
       r.content_id = contentId
