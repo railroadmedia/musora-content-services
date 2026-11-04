@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.194.4](https://github.com/railroadmedia/musora-content-services/compare/v2.194.3...v2.194.4) (2026-11-04)
+
+
+### Bug Fixes
+
+* **BEHLTP-574:** block app subscribers from using web upgrade ([#1097](https://github.com/railroadmedia/musora-content-services/issues/1097)) ([59144b1](https://github.com/railroadmedia/musora-content-services/commit/59144b1d10289790c1419171ce9fb32279a356cc))
+
 ### [2.194.3](https://github.com/railroadmedia/musora-content-services/compare/v2.194.1...v2.194.3) (2026-11-03)
 
 ### [2.194.2](https://github.com/railroadmedia/musora-content-services/compare/v2.194.1...v2.194.2) (2026-11-03)
