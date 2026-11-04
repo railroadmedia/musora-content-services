@@ -103,12 +103,24 @@ describe('observeNotesForContent', () => {
 
   test('emits the lesson notes right away, oldest first', async () => {
     await repo.createNote(900, '2026-09-08', 'First')
+    await settle()
     await repo.createNote(900, '2026-09-08', 'Second')
 
     const { emissions, stop } = observe(900)
     await settle()
 
     expect(emissions.at(-1)).toEqual(['First', 'Second'])
+    stop()
+  })
+
+  test('emits the same plain notes getNotesForContent returns', async () => {
+    await repo.createNote(907, '2026-09-08', 'Plain', 5000)
+    const emitted: unknown[][] = []
+    const stop = repo.observeNotesForContent(907, (notes) => emitted.push(notes))
+    await settle()
+
+    const result = await repo.getNotesForContent(907)
+    expect(emitted.at(-1)).toEqual(result.data)
     stop()
   })
 

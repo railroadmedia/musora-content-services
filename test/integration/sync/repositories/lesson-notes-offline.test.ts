@@ -68,3 +68,22 @@ describe('reading lesson notes while offline', () => {
     expect(notes.data[0].notes).toBe('Written after the initial pull')
   })
 })
+
+describe('observing and refreshing lesson notes while offline', () => {
+  beforeEach(() => connectivity.setOnline(false))
+
+  test('emits a note written offline', async () => {
+    const emissions: string[][] = []
+    const stop = repo.observeNotesForContent(500, (notes) => emissions.push(notes.map((note) => note.notes)))
+
+    await repo.createNote(500, '2026-09-09', 'Written offline')
+    await new Promise((resolve) => setTimeout(resolve, 20))
+
+    expect(emissions.at(-1)).toEqual(['Written offline'])
+    stop()
+  })
+
+  test('pull resolves without throwing', async () => {
+    await expect(repo.pull()).resolves.toMatchObject({ ok: false })
+  })
+})
