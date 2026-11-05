@@ -74,6 +74,7 @@ export const DEFAULT_FIELDS = [
   'enrollment_start_time',
   'enrollment_end_time',
   'membership_tier',
+  "'is_plus_content': membership_tier == 'plus'",
 ]
 
 // these are identical... why
@@ -98,6 +99,7 @@ export const DEFAULT_CHILD_FIELDS = [
   'child_count',
   `"parent_id": ${parentReferenceField}->railcontent_id`,
   `"grandparent_id": ${grandParentReferenceField}->railcontent_id`,
+  "'is_plus_content': membership_tier == 'plus'",
 ]
 
 export const playAlongMp3sFields = [
