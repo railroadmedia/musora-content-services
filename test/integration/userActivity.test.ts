@@ -46,7 +46,6 @@ jest.mock('../../src/services/user/streakCalculator.ts', () => ({
       calculatedAt: Date.now(),
       lastPracticeDate: null,
     }),
-    invalidate: jest.fn(),
   }
 }))
 

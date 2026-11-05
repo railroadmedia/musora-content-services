@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.194.4](https://github.com/railroadmedia/musora-content-services/compare/v2.194.3...v2.194.4) (2026-11-04)
+
+
+### Bug Fixes
+
+* **BEHLTP-574:** block app subscribers from using web upgrade ([#1097](https://github.com/railroadmedia/musora-content-services/issues/1097)) ([59144b1](https://github.com/railroadmedia/musora-content-services/commit/59144b1d10289790c1419171ce9fb32279a356cc))
+
+### [2.194.3](https://github.com/railroadmedia/musora-content-services/compare/v2.194.1...v2.194.3) (2026-11-03)
+
+### [2.194.2](https://github.com/railroadmedia/musora-content-services/compare/v2.194.1...v2.194.2) (2026-11-03)
+
+### [2.194.1](https://github.com/railroadmedia/musora-content-services/compare/v2.194.0...v2.194.1) (2026-11-03)
+
+
+### Bug Fixes
+
+* **BR-1322:** remove streak calculator cache so synced practices show up ([cdb7b11](https://github.com/railroadmedia/musora-content-services/commit/cdb7b1190b1484faedde9d67fb487502737336a2))
+
+## [2.194.0](https://github.com/railroadmedia/musora-content-services/compare/v2.193.0...v2.194.0) (2026-10-31)
+
+
+### Features
+
+* **MU2-2048:** add is_pending to the account status response type ([#1095](https://github.com/railroadmedia/musora-content-services/issues/1095)) ([a4cf235](https://github.com/railroadmedia/musora-content-services/commit/a4cf2350fd1d2d42fd7848d486b227e985e4c68f))
+
 ## [2.193.0](https://github.com/railroadmedia/musora-content-services/compare/v2.192.2...v2.193.0) (2026-10-23)
 
 

@@ -13,6 +13,7 @@ const LOCAL_PART_MASK = '***'
 
 export interface AccountStatus {
   requires_setup: boolean
+  is_pending: boolean
   last_login_provider?: OAuthProvider
 }
 
