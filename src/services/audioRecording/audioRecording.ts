@@ -179,7 +179,7 @@ export interface TimelineChunk {
   first_data_delay_ms: number | null
 }
 
-export type PlaybackLatencySource = 'stored' | 'auto' | 'prior' | 'device'
+export type PlaybackLatencySource = 'stored' | 'prior' | 'device'
 
 export interface RecordingTimeline {
   video_time_ms_at_start: number | null
