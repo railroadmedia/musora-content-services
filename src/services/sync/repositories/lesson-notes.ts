@@ -2,6 +2,7 @@ import SyncRepository, { Q } from './base'
 import LessonNote from '../models/LessonNote'
 import { RecordId } from '@nozbe/watermelondb'
 import { hasVisibleText } from '../../../lib/html'
+import { ModelSerialized } from '../serializers/model'
 
 export default class LessonNotesRepository extends SyncRepository<LessonNote> {
   async getNotesForContent(contentId: number, date: string | null = null) {
@@ -12,6 +13,19 @@ export default class LessonNotesRepository extends SyncRepository<LessonNote> {
     clauses.push(Q.sortBy('created_at', 'asc'))
 
     return await this.queryAll(...clauses)
+  }
+
+  // observeWithColumns so an edited note's text re-emits, not only added or removed notes
+  observeNotesForContent(
+    contentId: number,
+    callback: (notes: ModelSerialized<LessonNote>[]) => void
+  ): () => void {
+    const subscription = this.store.collection
+      .query(Q.where('content_id', contentId), Q.sortBy('created_at', 'asc'))
+      .observeWithColumns(['notes'])
+      .subscribe((records) => callback(records.map((record) => this.store.modelSerializer.toPlainObject(record))))
+
+    return () => subscription.unsubscribe()
   }
 
   async createNote(contentId: number, date: string, notes: string, timestampMs: number | null = null) {

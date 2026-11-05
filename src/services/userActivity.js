@@ -666,6 +666,38 @@ export async function getLessonNotes(contentId, date = null) {
 }
 
 /**
+ * Pulls the latest lesson notes from the server into the local database, e.g. when the
+ * notes drawer opens, so notes saved on another device show up without waiting for the
+ * next background sync. Observers from observeLessonNotes() are notified of any change.
+ *
+ * @returns {Promise<void>}
+ *
+ * @example
+ * refreshLessonNotes()
+ */
+export async function refreshLessonNotes() {
+  await db.lessonNotes.pull()
+}
+
+/**
+ * Calls `callback` with the lesson's notes, oldest first, right away and again whenever
+ * they change: a note added, edited or deleted on this device, or pulled from the server
+ * after being saved on another one. Returns a function that stops listening.
+ *
+ * @param {number} contentId
+ * @param {function(Object[]): void} callback
+ * @returns {function(): void} - call it to stop listening
+ *
+ * @example
+ * const stopObserving = observeLessonNotes(12345, notes => setNotes(notes))
+ * // when the notes drawer closes:
+ * stopObserving()
+ */
+export function observeLessonNotes(contentId, callback) {
+  return db.lessonNotes.observeNotesForContent(contentId, callback)
+}
+
+/**
  * Creates a new note on a lesson. A lesson can have any number of notes, each a discrete
  * entry. `timestampMs` is the video position at save time — pass null for notes created
  * outside the playback experience (e.g. the practice tracker), where there is no position
