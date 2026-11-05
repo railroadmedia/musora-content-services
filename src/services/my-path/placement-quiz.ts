@@ -14,17 +14,22 @@ interface PlacementQuizAnswers {
   gear: string[]
 }
 
-// todo(BEHLTP-494): return recommended_content too.
 interface PlacementQuizResponse {
   user_id: string
   brand: string
   answers: PlacementQuizAnswers
 }
 
-interface StorePlacementQuizResponse {
+export interface PlacementQuizSetActiveLearningPath {
+  id: number
+  node_id: string
+  brand: string
+}
+
+export interface StorePlacementQuizResponse {
   placement_quiz: PlacementQuizResponse
-  recommended_content: OnboardingRecommendedContent
-  error?: any
+  recommended_content: OnboardingRecommendedContent | null
+  set_active_learning_path: PlacementQuizSetActiveLearningPath | null
 }
 
 /**
