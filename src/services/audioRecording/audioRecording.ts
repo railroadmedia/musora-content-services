@@ -799,6 +799,39 @@ export async function unshareRecording(folder: string): Promise<unknown> {
   return POST(`${BASE_PATH}/unshare`, { folder })
 }
 
+export type FeedbackJobStatus = 'queued' | 'running' | 'done' | 'failed' | 'skipped'
+
+export interface FeedbackJob {
+  job_id: string
+  status: FeedbackJobStatus
+  stage: string
+  elapsed_s?: number
+  total_s?: number
+  reason?: string
+  created_at?: string
+  finished_at?: string
+}
+
+export interface FeedbackStatusResponse {
+  job: FeedbackJob | null
+  note: string | null
+}
+
+/**
+ * Queue an AI feedback run (re-grade + take note) for the user's own take. Staging-only for
+ * now: the backend answers 404 while on-demand feedback is switched off.
+ */
+export async function requestFeedback(folder: string): Promise<{ job: FeedbackJob }> {
+  return POST(`${BASE_PATH}/feedback`, { folder })
+}
+
+/**
+ * Latest feedback job for the take; `note` is the take note once the job is done.
+ */
+export async function getFeedbackStatus(folder: string): Promise<FeedbackStatusResponse> {
+  return GET(`${BASE_PATH}/feedback?folder=${encodeURIComponent(folder)}`)
+}
+
 /**
  * Give a take a custom name. Owner only. Pass null or an empty string to clear it, so the
  * take shows as "Take {take_number}" again. Returns the updated recording.
@@ -970,6 +1003,8 @@ export default {
   getDownloadUrl,
   shareRecording,
   unshareRecording,
+  requestFeedback,
+  getFeedbackStatus,
   renameRecording,
   deleteRecording,
   deleteLessonRecordings,

@@ -13,6 +13,7 @@ import {
 	getCombinedAudioUrl,
 	getDownloadUrl,
 	getExtensionForMimeType,
+	getFeedbackStatus,
 	getMimeTypeForExtension,
 	getMyRecordings,
 	getRecordedContentIds,
@@ -25,6 +26,7 @@ import {
 	listRecordings,
 	logSeekEvent,
 	renameRecording,
+	requestFeedback,
 	restoreRecordings,
 	shareRecording,
 	startSession,
@@ -323,6 +325,10 @@ import {
 	startLearningPath,
 	updateDailySession
 } from './services/my-path/learning-paths.ts';
+
+import {
+	fetchLinearizedLearningPaths
+} from './services/my-path/linearized-path.ts';
 
 import {
 	fetchQuizAnswers,
@@ -774,6 +780,7 @@ export {
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
 	fetchLikeCount,
+	fetchLinearizedLearningPaths,
 	fetchLiveEvent,
 	fetchLiveEventPollingState,
 	fetchLiveStreamData,
@@ -869,6 +876,7 @@ export {
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
 	getExtensionForMimeType,
+	getFeedbackStatus,
 	getHierarchies,
 	getHierarchy,
 	getIdsWhereLastAccessedFromMethod,
@@ -1006,6 +1014,7 @@ export {
 	reportComment,
 	reportPlaylist,
 	requestEmailChange,
+	requestFeedback,
 	requestMagicLoginLink,
 	rescindInvite,
 	reset,
