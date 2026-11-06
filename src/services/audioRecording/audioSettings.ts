@@ -24,7 +24,7 @@ export interface AudioSettings {
   mic_opt_in_prompted_at: string | null
   mic_access_granted_at: string | null
   audio_setup_toast_shown_at: string | null
-  test_speaker_url: string
+  test_speaker_url: string | null
 }
 
 export type AudioSettingsChanges = Partial<
