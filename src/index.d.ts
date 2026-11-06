@@ -202,6 +202,10 @@ import {
 } from './services/endScreen/endScreen.ts';
 
 import {
+	featureFlags
+} from './services/feature-flags/index.ts';
+
+import {
 	createForumCategory,
 	deleteForumCategory,
 	fetchForumCategories,
@@ -319,6 +323,10 @@ import {
 	startLearningPath,
 	updateDailySession
 } from './services/my-path/learning-paths.ts';
+
+import {
+	fetchLinearizedLearningPaths
+} from './services/my-path/linearized-path.ts';
 
 import {
 	fetchQuizAnswers,
@@ -726,6 +734,7 @@ declare module 'musora-content-services' {
 		estimateClockOffset,
 		extractFromRecordId,
 		extractSanityUrl,
+		featureFlags,
 		fetchActiveLearningPath,
 		fetchAll,
 		fetchAllFilterOptions,
@@ -775,6 +784,7 @@ declare module 'musora-content-services' {
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
 		fetchLikeCount,
+		fetchLinearizedLearningPaths,
 		fetchLiveEvent,
 		fetchLiveEventPollingState,
 		fetchLiveStreamData,
