@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.196.0](https://github.com/railroadmedia/musora-content-services/compare/v2.195.0...v2.196.0) (2026-11-06)
+
+
+### Features
+
+* add help text to the recording issue report option, warning that recordings may be reviewed, via a new optional helpText field on ReportIssueOption ([43c0cc5](https://github.com/railroadmedia/musora-content-services/commit/43c0cc56fd64a7c2253fe21213d5c7c4033515b6))
+* add is_owner and the owner-only folder to the SharedRecording type ([b24b756](https://github.com/railroadmedia/musora-content-services/commit/b24b7568bcec6af982890bd98ef1d799b4eea69f))
+* **audio recordings:** New method to download audio recordings as single file ([40a9485](https://github.com/railroadmedia/musora-content-services/commit/40a9485937ab5b69da0fbced8cbc1fbf537f9c70))
+* **audio-recording:** add audioRecording service with full recording and playback support ([66f26ee](https://github.com/railroadmedia/musora-content-services/commit/66f26ee3a620e3508014ef62f09875e6ad9c182f))
+* **audio-recording:** add getRecordingPlaybackUrl for presigned links to finished takes ([be4585d](https://github.com/railroadmedia/musora-content-services/commit/be4585d38af20438968025bdd5b0b0926ff05cde))
+* **audio-recording:** add pause/resume, WebM duration fix, and mobile-compatible upload ([e0f3507](https://github.com/railroadmedia/musora-content-services/commit/e0f35071f344482fc8b225f307e4e85b94729d53))
+* **audio-recording:** add playback_latency_ms and playback_latency_source to RecordingTimeline ([b58baa4](https://github.com/railroadmedia/musora-content-services/commit/b58baa4b59d5f3ab88fcb04b19764095b37ad08a))
+* **audio-recording:** event recording positions, chunk playback speed and clock offset ([#1084](https://github.com/railroadmedia/musora-content-services/issues/1084)) ([eb962f4](https://github.com/railroadmedia/musora-content-services/commit/eb962f40c94c215ff3d1360b357a3f51d3178e9f))
+* **audio-recording:** keepalive stop for page exit ([6a79dfb](https://github.com/railroadmedia/musora-content-services/commit/6a79dfb640321a5bc7958a85f254844a2032d6ba))
+* **audio-recording:** let getRecordingPlaybackUrl ask for the lossless enhanced take ([95e9a4b](https://github.com/railroadmedia/musora-content-services/commit/95e9a4b4c987cf4b93a30a35a342c704c3b1e309))
+* **audio-recording:** log seek events with from/to video positions ([01f6b9a](https://github.com/railroadmedia/musora-content-services/commit/01f6b9acfde3579b2a9ba5767c1cf47f227bb572))
+* **audio-recording:** send each chunk's loudest RMS level as level_db ([3f853e7](https://github.com/railroadmedia/musora-content-services/commit/3f853e748b3f27a9abeede68170779cca3dc6eec))
+* **audio-recording:** send sync anchors for practice alignment ([5bfeacd](https://github.com/railroadmedia/musora-content-services/commit/5bfeacdd1c049e2e8e84f9750e86cff67227925c))
+* **audio-recording:** send the client's device report with startSession ([5d0e7fa](https://github.com/railroadmedia/musora-content-services/commit/5d0e7fa1e6b2cfeb5ad6400c4038d0812254ca7b))
+* **audio-recording:** split peak capture from waveform rendering ([18ae798](https://github.com/railroadmedia/musora-content-services/commit/18ae7983a786bf17f4e2de2e7b8b2bf96ea6861c))
+* **BEHSTP-559:** add renameRecording for custom take names ([287129f](https://github.com/railroadmedia/musora-content-services/commit/287129f25428cef9afc98dc396bf8d07af2084c1))
+* **BEHSTP-560:** New methods for delete audio recording and restore ([83c2409](https://github.com/railroadmedia/musora-content-services/commit/83c2409622f74482fbf4f37c6c0a80d6b9b14855))
+* **BEHSTP-561:** update endpoint for listRecorings method ([48c1e76](https://github.com/railroadmedia/musora-content-services/commit/48c1e76cc505b4caa57527ede56895fa72249bd6))
+* **BEHSTP-564:** add getSharedRecording and buildShareUrl for shared recording links ([5e544e9](https://github.com/railroadmedia/musora-content-services/commit/5e544e90c7c3fda0f25829f35bd5067b15d94bad))
+* **BEHSTP-565:** end an audio recording session after 15 minutes of recorded time ([cece055](https://github.com/railroadmedia/musora-content-services/commit/cece0551c5f60127fb1d4b1e3414abef024b8057))
+* **BEHSTP-566:** skip lesson notes with no visible text in getContentIdsWithLessonNotes method ([4bb564d](https://github.com/railroadmedia/musora-content-services/commit/4bb564d15e5fd5e83029242e8d8bc441ef3440b0))
+* **BEHSTP-567:** add fetchAudioSettings and updateAudioSettings for the audio settings ([5815ad3](https://github.com/railroadmedia/musora-content-services/commit/5815ad34ccd179efa6943a037f3c104d599af394))
+* **BEHSTP-569:** provide the recording issue on lessons the user has recorded on and send the reported take folder ([a402cba](https://github.com/railroadmedia/musora-content-services/commit/a402cbaa5b36904de3bf8351b67408f7eb039391))
+* **BEHSTP-572:** paginate getMyRecordings and map each lesson to its learning path ([425d77f](https://github.com/railroadmedia/musora-content-services/commit/425d77fe60acb84e7ab430bde69585c8391ddfb7))
+* **BEHSTP-575:** add playback_status to the recording playback link type, add getRecordingIndicators returning the recorded and still saving lesson ids ([6f79558](https://github.com/railroadmedia/musora-content-services/commit/6f79558ed76eff1f599f9aabf4301a52ab8a4a22))
+* **BEHSTP-577:** add getWatchedMethodLessonCount counting the distinct method lessons with progress ([42873ed](https://github.com/railroadmedia/musora-content-services/commit/42873eded93619d1da18203e200285c8fac0ac91))
+* **BEHSTP-577:** count only completed method lessons for the mic opt-in trigger ([372a030](https://github.com/railroadmedia/musora-content-services/commit/372a0304a5b3b2a7b135b27da6968b7fc612ead7))
+* **BEHSTP-580:** return block_recording with lesson content ([9d5fd80](https://github.com/railroadmedia/musora-content-services/commit/9d5fd80a9fb488e668f6ccbd130318d931a7c80e))
+* **BEHSTP-583:** add getRecordingTimeline method ([e6c692c](https://github.com/railroadmedia/musora-content-services/commit/e6c692c102d28794223d4c6e6baf54b7ac8c840b))
+* **BEHSTP-585:** add the input volume, mic opt-in prompted and audio setup toast shown to the audio settings types ([38fb612](https://github.com/railroadmedia/musora-content-services/commit/38fb6120affdd9529abcbb184c979d1e3063ad15))
+* **BEHSTP-585:** add the mic opt-in and audio configuration to the audio settings types ([0e9665f](https://github.com/railroadmedia/musora-content-services/commit/0e9665fdc8b697c91852cec044b87bf05940c4e3))
+* **BEHSTP-591:** add the Musora volume to the audio settings types ([5268d3c](https://github.com/railroadmedia/musora-content-services/commit/5268d3cd8a14f6a8345b73a62b988632145cf420))
+* **BEHSTP-599:** add mic_access_granted to the audio settings types ([742cdfb](https://github.com/railroadmedia/musora-content-services/commit/742cdfbafa78ca9631763530201bb18b69163cb7))
+* **BEHSTP-602:** export logResumeEvent for clients that log the resume themselves ([61005b3](https://github.com/railroadmedia/musora-content-services/commit/61005b3bf9208b4dd9b8adef6c634c2a64553203))
+* **BEHSTP-602:** format file ([f7f0943](https://github.com/railroadmedia/musora-content-services/commit/f7f094312cacddfddfdea0cd956308e6201c4092))
+* **BEHSTP-608:** add refreshLessonNotes and observeLessonNotes ([94e1566](https://github.com/railroadmedia/musora-content-services/commit/94e1566514e16d40e5a059bb3c0c0ecc7dbc57ca))
+* **BEHSTP-692:** add test_speaker_url to the audio settings type ([156e8d0](https://github.com/railroadmedia/musora-content-services/commit/156e8d0ebcbb99e9a677a2cd426f865b186b4b60))
+* **lesson-notes:** Adds lesson-scoped notes (multiple per lesson, client-generated id) using the same pull/push sync pattern as day notes. content_id, date and timestamp_ms are set once and never overwritten on edit ([9b87200](https://github.com/railroadmedia/musora-content-services/commit/9b8720067a30a3cba14fbf818e1b6be036d60fb1))
+* **lesson-notes:** support date-scoped reads, bump raw length limit, add offline test coverage ([c66dd8d](https://github.com/railroadmedia/musora-content-services/commit/c66dd8de47b8c74cbb3baa50a691badb4973feb8))
+
+
+### Bug Fixes
+
+* **audio-recording:** drop auto from the playback latency sources ([cbe7efd](https://github.com/railroadmedia/musora-content-services/commit/cbe7efdf5e24bda2f823cc7e2a84d69c6160b4ed))
+* **audio-recording:** keep chunk 1's sync anchors when re-uploading the seekability-fixed chunk ([05fdcc7](https://github.com/railroadmedia/musora-content-services/commit/05fdcc7d559ea573f8dd55457ed6997e223a08ff))
+* **audio-recording:** prefer WebM Opus over MP4 when choosing the recording format ([e6e027d](https://github.com/railroadmedia/musora-content-services/commit/e6e027dcfc2e22f419f5ea375cb2eff9a4b0e576))
+* **audio-recording:** route through the shared authenticated HTTP client ([d867484](https://github.com/railroadmedia/musora-content-services/commit/d867484b56d7593edadb814316610d0943e679c6))
+* **audio-recording:** send local calendar day at session start, support date-range lookups ([1b345a3](https://github.com/railroadmedia/musora-content-services/commit/1b345a3882d025ee443cef54e4cf70cba2e85707))
+* **BEHSTP-569:** link a recording issue report to the lesson inside its learning path ([fac5de9](https://github.com/railroadmedia/musora-content-services/commit/fac5de9f70b152386fda28580aa46235844ccbd1))
+* **BEHSTP-589:** accept an undefined userId in startSession and stopSession, since the backend uses the signed-in user ([b1004f3](https://github.com/railroadmedia/musora-content-services/commit/b1004f310755ec00fdffc3d597ca5a1ee0f8f850))
+* **BEHSTP-589:** share is not public ([028fcaa](https://github.com/railroadmedia/musora-content-services/commit/028fcaa588492e66c96477058dac5f4f33fcfa57))
+* **BEHSTP-608:** pass observeLessonNotes the same plain notes getLessonNotes returns ([4c9330c](https://github.com/railroadmedia/musora-content-services/commit/4c9330cb8430e0258a2ba68db04e22f69162c570))
+* **BEHSTP-692:** allow a null test_speaker_url in the audio settings type ([4708d57](https://github.com/railroadmedia/musora-content-services/commit/4708d57fe77527b3cd699157ebc29484c23d18d4))
+* **MU2-2025:** replace @/ alias imports in src with relative paths ([#1088](https://github.com/railroadmedia/musora-content-services/issues/1088)) ([129faff](https://github.com/railroadmedia/musora-content-services/commit/129faff35bae0fed2b05875ddc111a8d2ed2d626))
+
 ## [2.195.0](https://github.com/railroadmedia/musora-content-services/compare/v2.194.4...v2.195.0) (2026-11-05)
 
 
