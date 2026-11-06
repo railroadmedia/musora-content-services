@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.195.0](https://github.com/railroadmedia/musora-content-services/compare/v2.194.4...v2.195.0) (2026-11-05)
+
+
+### Features
+
+* **BR-1521:** add would be accessible flag ([#1098](https://github.com/railroadmedia/musora-content-services/issues/1098)) ([8d355e5](https://github.com/railroadmedia/musora-content-services/commit/8d355e524e2e112101618d08b4dbad6608e3186f))
+
+
+### Bug Fixes
+
+* **BR-1325:** bound currentWeekPracticeDays to today, not just the end of the week ([708dd52](https://github.com/railroadmedia/musora-content-services/commit/708dd52486664c4c12df02274e85a8cfc2e3346d))
+* **BR-1325:** bound weekly practice-days calculation to the current week ([2fe7f60](https://github.com/railroadmedia/musora-content-services/commit/2fe7f60e017c61337ae313726be099df8d32a49a))
+* **BR-1325:** format files with prettier ([90a033e](https://github.com/railroadmedia/musora-content-services/commit/90a033e479bf2ebbd06c9bab00ca1cf86eb93e5c))
+* check progress on last Essentials node before fetching subsequent nodes ([#1100](https://github.com/railroadmedia/musora-content-services/issues/1100)) ([3e6eb24](https://github.com/railroadmedia/musora-content-services/commit/3e6eb24e3e20ac2a47c92796a328c2c4527b5c38))
+
 ### [2.194.4](https://github.com/railroadmedia/musora-content-services/compare/v2.194.3...v2.194.4) (2026-11-04)
 
 
