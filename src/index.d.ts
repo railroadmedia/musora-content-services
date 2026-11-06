@@ -9,6 +9,7 @@ import {
 	getCombinedAudioUrl,
 	getDownloadUrl,
 	getExtensionForMimeType,
+	getFeedbackStatus,
 	getMimeTypeForExtension,
 	getMyRecordings,
 	getRecordedContentIds,
@@ -21,6 +22,7 @@ import {
 	listRecordings,
 	logSeekEvent,
 	renameRecording,
+	requestFeedback,
 	restoreRecordings,
 	shareRecording,
 	startSession,
@@ -654,7 +656,7 @@ import {
 } from './services/whoLiked.ts';
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -880,6 +882,7 @@ declare module 'musora-content-services' {
 		getEnrichedLearningPath,
 		getEnrichedLearningPaths,
 		getExtensionForMimeType,
+		getFeedbackStatus,
 		getHierarchies,
 		getHierarchy,
 		getIdsWhereLastAccessedFromMethod,
@@ -971,7 +974,7 @@ declare module 'musora-content-services' {
 		listRecordings,
 		lockThread,
 		logRateChangeEvent,
-	  logResumeEvent,
+		logResumeEvent,
 		logSeekEvent,
 		login,
 		loginAsUser,
@@ -1017,6 +1020,7 @@ declare module 'musora-content-services' {
 		reportComment,
 		reportPlaylist,
 		requestEmailChange,
+		requestFeedback,
 		requestMagicLoginLink,
 		rescindInvite,
 		reset,
