@@ -1,6 +1,5 @@
 import { initializeTestService } from '../initializeTests.js'
 import { getUserWeeklyStats } from '../../src/services/userActivity.js'
-import { streakCalculator } from '../../src/services/user/streakCalculator'
 
 let mockPracticeData: { date: string; duration_seconds: number }[] = []
 
@@ -50,7 +49,6 @@ describe('currentWeekPracticeDays', () => {
       { date: '2026-09-28', duration_seconds: 60 }, // next week - must not count
       { date: '2032-08-25', duration_seconds: 60 }, // far future garbage row - must not count
     ]
-    streakCalculator.invalidate()
 
     const stats = await getUserWeeklyStats()
 
@@ -63,7 +61,6 @@ describe('currentWeekPracticeDays', () => {
       { date: '2026-09-22', duration_seconds: 60 }, // Tuesday, today
       { date: '2026-09-25', duration_seconds: 60 }, // Friday, still this week, but in the future
     ]
-    streakCalculator.invalidate()
 
     const stats = await getUserWeeklyStats()
 
@@ -72,7 +69,6 @@ describe('currentWeekPracticeDays', () => {
 
   test('counts a single practice made today as one day, not zero', async () => {
     mockPracticeData = [{ date: '2026-09-22', duration_seconds: 60 }]
-    streakCalculator.invalidate()
 
     const stats = await getUserWeeklyStats()
 
@@ -86,7 +82,6 @@ describe('currentWeekPracticeDays', () => {
       { date: '2026-09-20', duration_seconds: 60 }, // Sunday, last week
       { date: '2026-09-21', duration_seconds: 60 }, // Monday, this week
     ]
-    streakCalculator.invalidate()
 
     const stats = await getUserWeeklyStats()
 
