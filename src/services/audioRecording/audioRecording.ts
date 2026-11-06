@@ -179,12 +179,17 @@ export interface TimelineChunk {
   first_data_delay_ms: number | null
 }
 
+export type PlaybackLatencySource = 'stored' | 'prior' | 'device'
+
 export interface RecordingTimeline {
   video_time_ms_at_start: number | null
   duration_ms: number
   playback_rate_at_start: number | null
   latency_ms: number | null
   prior_latency_ms: number | null
+  // the latency to play the take with: place the lesson at recToVideo(take ms - playback_latency_ms)
+  playback_latency_ms: number | null
+  playback_latency_source: PlaybackLatencySource | null
   chunks: TimelineChunk[]
   events: RecordingEvent[]
 }
