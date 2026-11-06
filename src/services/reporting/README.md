@@ -194,6 +194,7 @@ const commentOptions = getReportIssueOptions('comment')
 - `video_issue` - Video issue
 - `download_unavailable` - Download is not available (mobile app only)
 - `assignment_issue` - An issue with lesson assignment
+- `recording_issue` - Recording playback or sharing issue (content only, and only when `getReportIssueOptions(type, isMobileApp, hasRecordings)` gets `hasRecordings: true`). Pass `recordingFolder` to `report()` when reporting from a take's own menu: the support email then links only that take, otherwise every take the user has on the lesson. The links only open for the owner and admins.
 - `other` - Other
 
 ### Comments & Forum Posts:

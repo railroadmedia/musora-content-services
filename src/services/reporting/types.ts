@@ -20,7 +20,7 @@ export type CommentIssueType = 'offensive_language' | 'abusive' | 'personal_info
 /**
  * Valid issue types for content
  */
-export type ContentIssueType = 'incorrect_metadata' | 'video_issue' | 'download_unavailable' | 'assignment_issue' | 'other'
+export type ContentIssueType = 'incorrect_metadata' | 'video_issue' | 'download_unavailable' | 'assignment_issue' | 'recording_issue' | 'other'
 
 /**
  * Valid issue types for playlists
@@ -53,4 +53,5 @@ export interface ReportResponse {
 export interface ReportIssueOption {
   value: string
   label: string
+  helpText?: string
 }

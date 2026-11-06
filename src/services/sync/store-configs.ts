@@ -1,5 +1,5 @@
 import { SyncStoreConfig } from "./store"
-import { ContentLike, ContentProgress, Practice, UserAwardProgress, PracticeDayNote } from "./models"
+import { ContentLike, ContentProgress, Practice, UserAwardProgress, PracticeDayNote, LessonNote } from "./models"
 import { handlePull, handlePush, makeFetchRequest } from "./fetch"
 
 import type BaseModel from "./models/Base"
@@ -47,6 +47,13 @@ export default function createStoresFromConfig() {
       model: UserAwardProgress,
       pull: handlePull(makeFetchRequest('/api/content/v1/user/awards')),
       push: handlePush(makeFetchRequest('/api/content/v1/user/awards', { method: 'POST' })),
+    }),
+
+    c({
+      model: LessonNote,
+      pull: handlePull(makeFetchRequest('/api/user/practices/v1/lesson-notes')),
+      push: handlePush(makeFetchRequest('/api/user/practices/v1/lesson-notes', { method: 'POST' })),
+      purgeGracePeriod: 12_000 as EpochMs // delete undo toast duration is 10s
     })
   ]
 }

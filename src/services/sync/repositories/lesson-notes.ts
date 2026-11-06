@@ -1,0 +1,60 @@
+import SyncRepository, { Q } from './base'
+import LessonNote from '../models/LessonNote'
+import { RecordId } from '@nozbe/watermelondb'
+import { hasVisibleText } from '../../../lib/html'
+import { ModelSerialized } from '../serializers/model'
+
+export default class LessonNotesRepository extends SyncRepository<LessonNote> {
+  async getNotesForContent(contentId: number, date: string | null = null) {
+    const clauses: Q.Clause[] = [Q.where('content_id', contentId)]
+    if (date !== null) {
+      clauses.push(Q.where('date', date))
+    }
+    clauses.push(Q.sortBy('created_at', 'asc'))
+
+    return await this.queryAll(...clauses)
+  }
+
+  // observeWithColumns so an edited note's text re-emits, not only added or removed notes
+  observeNotesForContent(
+    contentId: number,
+    callback: (notes: ModelSerialized<LessonNote>[]) => void
+  ): () => void {
+    const subscription = this.store.collection
+      .query(Q.where('content_id', contentId), Q.sortBy('created_at', 'asc'))
+      .observeWithColumns(['notes'])
+      .subscribe((records) => callback(records.map((record) => this.store.modelSerializer.toPlainObject(record))))
+
+    return () => subscription.unsubscribe()
+  }
+
+  async createNote(contentId: number, date: string, notes: string, timestampMs: number | null = null) {
+    return await this.insertOne((r) => {
+      r.content_id = contentId
+      r.date = date
+      r.notes = notes
+      r.timestamp_ms = timestampMs
+    })
+  }
+
+  async updateNote(id: RecordId, notes: string) {
+    return await this.updateOneId(id, (r) => {
+      r.notes = notes
+    })
+  }
+
+  async deleteNote(id: RecordId) {
+    return await this.deleteOne(id)
+  }
+
+  /**
+   * Every lesson id the user has at least one note with visible text on — for a practice tracker indicator,
+   * mirroring getRecordedContentIds() but resolved from the local, already-synced table
+   * rather than a network call.
+   */
+  async getContentIdsWithNotes(): Promise<number[]> {
+    const result = await this.getAll()
+    const notesWithText = result.data.filter((note) => hasVisibleText(note.notes))
+    return Array.from(new Set(notesWithText.map((note) => note.content_id)))
+  }
+}

@@ -5,7 +5,8 @@ import {
   ContentLikesRepository,
   ContentProgressRepository,
   PracticesRepository,
-  PracticeDayNotesRepository
+  PracticeDayNotesRepository,
+  LessonNotesRepository
 } from "./repositories"
 import UserAwardProgressRepository from "./repositories/user-award-progress"
 import {
@@ -13,7 +14,8 @@ import {
   ContentProgress,
   Practice,
   UserAwardProgress,
-  PracticeDayNote
+  PracticeDayNote,
+  LessonNote
 } from "./models"
 
 
@@ -23,6 +25,7 @@ interface SyncRepositories {
   practices: PracticesRepository;
   userAwardProgress: UserAwardProgressRepository;
   practiceDayNotes: PracticeDayNotesRepository;
+  lessonNotes: LessonNotesRepository;
 }
 
 
@@ -58,6 +61,9 @@ const proxy = new Proxy({} as SyncRepositories, {
           break;
         case 'practiceDayNotes':
           cache.practiceDayNotes = new PracticeDayNotesRepository(manager.getStore(PracticeDayNote));
+          break;
+        case 'lessonNotes':
+          cache.lessonNotes = new LessonNotesRepository(manager.getStore(LessonNote));
           break;
         default:
           throw new SyncError(`Repository '${String(prop)}' not found`);
