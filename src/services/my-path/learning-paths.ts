@@ -35,6 +35,9 @@ import {
   setCachedDailySession,
 } from './cache'
 import { LEARNING_PATH_LESSON } from '../../contentTypeConfig'
+import { featureFlags } from '../feature-flags'
+import { Brands } from '../../lib/brands'
+import { advanceActiveLearningPath, fetchActiveLearningPath } from './active-path'
 
 const excludeFromGeneratedIndex = [
   'onLearningPathCompletedActions',
@@ -43,6 +46,8 @@ const excludeFromGeneratedIndex = [
 ]
 
 const LEARNING_PATHS_ROUTE = `/api/content-org/v1/user/learning-paths`
+
+const MY_PATH_FLAG = 'my-path'
 
 interface ActiveLearningPathResponse {
   user_id: number
@@ -576,11 +581,68 @@ async function resetIfPossible(
   return status !== '' ? await contentStatusReset(contentId, collection) : null
 }
 
-export async function onLearningPathCompletedActions(contentId: number) {
+export async function onLearningPathCompletedActions(contentId: number): Promise<void> {
   const learningPathId = contentId
-  const learningPath = await getEnrichedLearningPath(learningPathId)
+  const brand = await getBrand(learningPathId)
 
-  const brand = learningPath.brand
+  if (!brand) return
+
+  if (await isMyPathEnabled()) {
+    await advanceNode(brand, learningPathId)
+    return
+  }
+
+  await advanceLearningPath(brand, learningPathId)
+}
+
+async function getBrand(contentId: number): Promise<string|null> {
+  const collection: CollectionObject = { id: contentId, type: COLLECTION_TYPE.LEARNING_PATH }
+  const record = await db.contentProgress.getOneProgressByContentId(contentId, collection)
+  let brand = record.data?.content_brand ?? null
+
+  if (!brand) {
+    const learningPath = await getEnrichedLearningPath(contentId)
+    brand = learningPath.brand
+  }
+
+  return brand
+}
+
+/**
+ * Advances active node and resets its LP's intro video
+ * @param brand
+ * @param learningPathId
+ */
+async function advanceNode(brand: string, learningPathId: number): Promise<void> {
+  const activeLearningPath = await fetchActiveLearningPath(brand)
+
+  // LP progress is shared across nodes, so completing it from any node advances the active one.
+  if (activeLearningPath?.active_learning_path_id !== learningPathId) return
+
+  const response = await advanceActiveLearningPath(brand, new Date())
+
+  const nextLearningPathId = response.active_learning_path_id
+
+  if (nextLearningPathId === learningPathId) return
+
+  const nextLearningPath = await getEnrichedLearningPath(nextLearningPathId)
+  const prerollId = nextLearningPath.preroll?.id
+
+  if (prerollId) {
+    await contentStatusReset(
+      prerollId,
+      { id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF },
+      { skipPush: false })
+  }
+}
+
+/**
+ * Advances active learning path and resets its intro video
+ * @param brand
+ * @param learningPathId
+ * @deprecated only for use with Method. remove this once My Path is permanently on.
+ */
+async function advanceLearningPath(brand: string, learningPathId: number): Promise<void> {
   const activeLearningPath = await getActivePath(brand)
 
   if (activeLearningPath.active_learning_path_id !== learningPathId) return
@@ -680,4 +742,11 @@ export function isNextLessonLocked(learningPath: fetchLearningPathLessonsRespons
   if (accessibleDailies.length === allLearningPathDailies.length) return false
 
   return accessibleDailies.every((lesson) => lesson.progressStatus === 'completed')
+}
+
+async function isMyPathEnabled(): Promise<boolean> {
+  if (!featureFlags.isReady(Brands.Musora)) {
+    await featureFlags.refresh(Brands.Musora).catch(() => {})
+  }
+  return featureFlags.accessible(MY_PATH_FLAG, Brands.Musora)
 }
