@@ -81,15 +81,29 @@ function warnOnTypeMismatch(
   )
 }
 
+/**
+ * Bumped by reset(). A fetch that was started under an earlier session must not
+ * land in this one: the payload is that user's evaluation, and the snapshots it
+ * would write into are by then the next user's.
+ */
+let generation = 0
+
 async function load(brand: Brand): Promise<void> {
   const client = new HttpClient(globalConfig.baseUrl)
+  const startedIn = generation
 
   // Recorded before the request, so it is set whether or not the request
   // succeeds. fetchedAt is only moved on success, so a failure leaves the held
   // snapshot stale rather than passing a failed fetch off as a fresh one.
   attemptedAt[brand] = Date.now()
 
-  snapshots[brand] = await client.get<FeatureFlagPayload>(`${FLAGS_URL}?brand=${encodeURIComponent(brand)}`)
+  const payload = await client.get<FeatureFlagPayload>(`${FLAGS_URL}?brand=${encodeURIComponent(brand)}`)
+
+  if (startedIn !== generation) {
+    return
+  }
+
+  snapshots[brand] = payload
   fetchedAt[brand] = Date.now()
 }
 
@@ -98,8 +112,12 @@ async function load(brand: Brand): Promise<void> {
  * one each.
  */
 function refresh(brand: Brand): Promise<void> {
+  const startedIn = generation
+
   inFlight[brand] ??= load(brand).finally(() => {
-    delete inFlight[brand]
+    if (startedIn === generation) {
+      delete inFlight[brand]
+    }
   })
 
   return inFlight[brand]
@@ -354,6 +372,7 @@ export const featureFlags = {
    * @returns {void}
    */
   reset(): void {
+    generation += 1
     snapshots = {}
     fetchedAt = {}
     attemptedAt = {}

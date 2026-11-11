@@ -384,6 +384,95 @@ describe('featureFlags', () => {
     })
   })
 
+  describe('resetting while a fetch is in flight', () => {
+    const previousUser: Payload = {
+      'checkout-copy': { variant: 'treatment', value: 'treatment', version: 4, reason: 'rollout', type: 'string' },
+    }
+
+    function holdTheNextFlagsResponse() {
+      let release: () => void = () => {}
+      const gate = new Promise<void>((resolve) => {
+        release = resolve
+      })
+
+      fetchMock.mockImplementationOnce(async () => {
+        await gate
+
+        return {
+          ok: true,
+          status: 200,
+          headers: { get: () => 'application/json' },
+          json: async () => previousUser,
+          text: async () => JSON.stringify(previousUser),
+        }
+      })
+
+      return release
+    }
+
+    it('does not hand the previous session its flags to the next one', async () => {
+      const release = holdTheNextFlagsResponse()
+      const stale = featureFlags.refresh(BRAND)
+
+      featureFlags.reset()
+      release()
+      await stale
+
+      expect(featureFlags.isReady(BRAND)).toBe(false)
+      expect(featureFlags.variant('checkout-copy', BRAND, 'control')).toBe('control')
+    })
+
+    it('lets the new session fetch while the old request is still pending', async () => {
+      const release = holdTheNextFlagsResponse()
+      const stale = featureFlags.refresh(BRAND)
+
+      featureFlags.reset()
+      serve({})
+      await featureFlags.refresh(BRAND)
+
+      expect(requestsTo(FLAGS_URL)).toHaveLength(2)
+
+      release()
+      await stale
+
+      expect(featureFlags.variant('checkout-copy', BRAND, 'control')).toBe('control')
+    })
+
+    it('keeps the old request from clearing the new one from the in-flight table', async () => {
+      const release = holdTheNextFlagsResponse()
+      const stale = featureFlags.refresh(BRAND)
+
+      featureFlags.reset()
+
+      let releaseNext: () => void = () => {}
+      const nextGate = new Promise<void>((resolve) => {
+        releaseNext = resolve
+      })
+      fetchMock.mockImplementationOnce(async () => {
+        await nextGate
+
+        return {
+          ok: true,
+          status: 200,
+          headers: { get: () => 'application/json' },
+          json: async () => ({}),
+          text: async () => '{}',
+        }
+      })
+
+      const current = featureFlags.refresh(BRAND)
+      release()
+      await stale
+
+      const joined = featureFlags.refresh(BRAND)
+
+      expect(requestsTo(FLAGS_URL)).toHaveLength(2)
+
+      releaseNext()
+      await Promise.all([current, joined])
+    })
+  })
+
   describe('leaving the page', () => {
     const rolledOut: Payload = {
       'checkout-copy': { variant: 'treatment', value: 'treatment', version: 4, reason: 'rollout', type: 'string' },
