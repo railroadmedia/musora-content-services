@@ -582,17 +582,16 @@ async function resetIfPossible(
 }
 
 export async function onLearningPathCompletedActions(contentId: number): Promise<void> {
-  const learningPathId = contentId
-  const brand = await getBrand(learningPathId)
+  const brand = await getBrand(contentId)
 
   if (!brand) return
 
   if (await isMyPathEnabled()) {
-    await advanceNode(brand, learningPathId)
+    await advanceNode(brand, contentId)
     return
   }
 
-  await advanceLearningPath(brand, learningPathId)
+  await advanceLearningPath(brand, contentId)
 }
 
 /**
@@ -660,7 +659,7 @@ async function advanceNode(brand: string, learningPathId: number): Promise<void>
 async function getBrand(contentId: number): Promise<string|null> {
   const collection: CollectionObject = { id: contentId, type: COLLECTION_TYPE.LEARNING_PATH }
   const record = await db.contentProgress.getOneProgressByContentId(contentId, collection)
-  let brand = record.data?.content_brand ?? null
+  let brand = record?.data?.content_brand ?? null
 
   if (!brand) {
     const learningPath = await getEnrichedLearningPath(contentId)
