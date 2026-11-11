@@ -21,7 +21,7 @@ const ACTIVE_PATH_FIELDS = [
   'active_learning_path_created_at',
 ] as const
 
-const DAILY_SESSION_FIELDS = [...ACTIVE_PATH_FIELDS, 'daily_session', 'user_date'] as const
+const DAILY_SESSION_FIELDS = ['user_id', 'brand', 'daily_session', 'user_date'] as const
 
 const LINEARIZED_PATH_FIELDS = ['linearized_learning_paths'] as const
 

@@ -32,14 +32,18 @@ export interface DailySessionGroup {
   is_placeholder: boolean
 }
 
-export interface DailySessionResponse extends ActivePathResponse {
+export interface DailySession {
+  user_id: number
+  brand: string
   daily_session: DailySessionGroup[]
   user_date: string
 }
 
-export async function fetchDailySession(brand: string, userDate: Date): Promise<DailySessionResponse | null> {
+export interface DailySessionResponse extends ActivePathResponse, DailySession {}
+
+export async function fetchDailySession(brand: string, userDate: Date): Promise<DailySession | null> {
   try {
-    const response = await fetchDailySessionOnce<DailySessionResponse>(brand, userDate, async () => {
+    const response = await fetchDailySessionOnce<DailySession>(brand, userDate, async () => {
       const existing = (await GET(dailySessionUrl(brand, userDate))) as DailySessionResponse | ''
       return existing || (await createDailySession(brand, userDate)) || ''
     })
