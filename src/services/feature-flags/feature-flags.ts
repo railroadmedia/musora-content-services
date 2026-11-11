@@ -173,6 +173,8 @@ function flushOnce(keepalive: boolean): void {
 
   pending = rest
 
+  const startedIn = generation
+
   new HttpClient(globalConfig.baseUrl)
     .post(
       EXPOSURES_URL,
@@ -195,7 +197,9 @@ function flushOnce(keepalive: boolean): void {
        * (subject, flag, version) and ignores a duplicate, so first_seen_at
        * still describes the real first sighting.
        */
-      batch.forEach((report) => reported.delete(identityOf(report)))
+      if (startedIn === generation) {
+        batch.forEach((report) => reported.delete(identityOf(report)))
+      }
     })
 }
 

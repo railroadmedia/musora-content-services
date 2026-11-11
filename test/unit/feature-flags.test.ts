@@ -320,6 +320,36 @@ describe('featureFlags', () => {
       expect(requestsTo(EXPOSURES_URL)).toHaveLength(1)
     })
 
+    it('does not release the next session’s exposure when an earlier session’s report fails', async () => {
+      await loadFlags(rolledOut)
+
+      let failEarlierReport: () => void = () => {}
+      fetchMock.mockImplementationOnce(
+        () =>
+          new Promise((_, reject) => {
+            failEarlierReport = () => reject(new Error('offline'))
+          })
+      )
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+
+      featureFlags.reset()
+      await loadFlags(rolledOut)
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(2)
+
+      failEarlierReport()
+      await settle()
+
+      featureFlags.recordExposure('checkout-copy', BRAND)
+      await settle()
+
+      expect(requestsTo(EXPOSURES_URL)).toHaveLength(2)
+    })
+
     it('survives a failed report without throwing', async () => {
       await loadFlags(rolledOut)
       fetchMock.mockRejectedValueOnce(new Error('offline'))
