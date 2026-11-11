@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.197.0](https://github.com/railroadmedia/musora-content-services/compare/v2.196.0...v2.197.0) (2026-11-11)
+
+
+### Features
+
+* feature flags from the backend engine ([#1042](https://github.com/railroadmedia/musora-content-services/issues/1042)) ([61446de](https://github.com/railroadmedia/musora-content-services/commit/61446dec8e4c32c2cdb27b41231cbe77d388e5e9)), closes [railroadmedia/musora-platform-backend#1617](https://github.com/railroadmedia/musora-platform-backend/issues/1617)
+
+
+### Bug Fixes
+
+* **BEHLTP-633:** advance active LP with v2 my-path endpoint when FF is on ([#1106](https://github.com/railroadmedia/musora-content-services/issues/1106)) ([c948cf9](https://github.com/railroadmedia/musora-content-services/commit/c948cf91d99f8f5d4850edde30da06d3453d3e67))
+
 ## [2.196.0](https://github.com/railroadmedia/musora-content-services/compare/v2.195.0...v2.196.0) (2026-11-06)
 
 
