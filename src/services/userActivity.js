@@ -484,9 +484,10 @@ export async function getPracticeSessions(params = {}, options = {}) {
 }
 
 /**
- * Retrieves and formats the current user's practice sessions for the current Monday-Sunday week
+ * Retrieves and formats the current user's practice sessions for a Monday-Sunday week, the current one by default
  *
  * @param {Object} [params={}] - Parameters for fetching the week's practice sessions.
+ * @param {string} [params.weekStart] - Any day of the week to return (YYYY-MM-DD), usually its Monday; defaults to the current week.
  * @param {number} [params.page=1] - The page number, only applied when `limit` is set.
  * @param {number} [params.limit] - Max sessions to return; omit to return all of the week's sessions unpaginated.
  * @returns {Promise<Object>} - A promise that resolves to an object containing:
@@ -500,12 +501,16 @@ export async function getPracticeSessions(params = {}, options = {}) {
  * getWeeklyPracticeSessions()
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
+ *
+ * @example
+ * // A past week, e.g. from the practice calendar's week checkmark
+ * getWeeklyPracticeSessions({ weekStart: '2026-11-02' })
  */
 export async function getWeeklyPracticeSessions(params = {}, options = {}) {
-  const { page = 1, limit } = params
+  const { weekStart, page = 1, limit } = params
 
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const startOfWeek = getMonday(new Date(), timeZone)
+  const startOfWeek = getMonday(weekStart ?? new Date(), timeZone)
   const weekDays = Array.from({ length: 7 }, (_, i) =>
     startOfWeek.add(i, 'day').format('YYYY-MM-DD')
   )

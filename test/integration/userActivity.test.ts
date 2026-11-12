@@ -57,6 +57,16 @@ jest.mock('../../src/services/railcontent.js', () => ({
 
 const repositoryProxy: any = require('../../src/services/sync/repository-proxy.ts')
 
+function queriedPracticeDays(): string[] {
+  const [dateClause] = repositoryProxy.practices.queryAll.mock.calls.at(-1)
+  return dateClause.comparison.right.values
+}
+
+function weekOf(monday: string): string[] {
+  const [year, month, day] = monday.split('-').map(Number)
+  return Array.from({ length: 7 }, (_, i) => new Date(Date.UTC(year, month - 1, day + i)).toISOString().slice(0, 10))
+}
+
 describe('User Activity API Tests', function () {
   beforeEach(() => {
     initializeTestService()
@@ -181,6 +191,27 @@ describe('User Activity API Tests', function () {
       const result = await getWeeklyPracticeSessions({}, { pull: true })
 
       expect(result.data.total).toBe(mockPracticesData.length)
+    })
+
+    test('queries the current week when no weekStart is given', async () => {
+      jest.useFakeTimers({ now: new Date('2025-03-12T12:00:00') })
+
+      await getWeeklyPracticeSessions()
+
+      jest.useRealTimers()
+      expect(queriedPracticeDays()).toEqual(weekOf('2025-03-10'))
+    })
+
+    test('queries the week starting at weekStart', async () => {
+      await getWeeklyPracticeSessions({ weekStart: '2025-02-10' })
+
+      expect(queriedPracticeDays()).toEqual(weekOf('2025-02-10'))
+    })
+
+    test('queries the Monday-Sunday week of a weekStart that is not a Monday', async () => {
+      await getWeeklyPracticeSessions({ weekStart: '2025-02-13' })
+
+      expect(queriedPracticeDays()).toEqual(weekOf('2025-02-10'))
     })
 
     test('returns an empty result when there are no sessions', async () => {
