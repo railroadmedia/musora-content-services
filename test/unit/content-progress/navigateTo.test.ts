@@ -35,6 +35,7 @@ jest.mock('../../../src/services/sync/repository-proxy', () => {
 
 jest.mock('../../../src/services/my-path/learning-paths', () => ({
   getDailySession: jest.fn().mockResolvedValue(null),
+  getActivePath: jest.fn().mockResolvedValue(null),
   onLearningPathCompletedActions: jest.fn().mockResolvedValue(undefined),
 }))
 
@@ -44,7 +45,7 @@ jest.mock('../../../src/services/sanity.js', () => ({
   getSanityDate: jest.fn((date: Date) => date.toISOString()),
 }))
 
-const { getDailySession } = jest.requireMock('../../../src/services/my-path/learning-paths')
+const { getDailySession, getActivePath } = jest.requireMock('../../../src/services/my-path/learning-paths')
 
 const child = (id: number, type = 'lesson') => ({
   id,
@@ -373,8 +374,8 @@ describe('getNavigateToForMethod', () => {
     mockProgressRecords = [
       { content_id: 301, state: 'completed', progress_percent: 100, updated_at: 900 },
     ]
+    getActivePath.mockResolvedValueOnce({ active_learning_path_id: 10 })
     getDailySession.mockResolvedValueOnce({
-      active_learning_path_id: 10,
       daily_session: [{ content_ids: [301, 302] }],
     })
     const result = await getNavigateToForMethod([lpContent(10, [child(300), child(301), child(302)])])
