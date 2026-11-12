@@ -268,10 +268,6 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
-	createTestUser
-} from './services/liveTesting.ts';
-
-import {
 	fetchMarketingAll,
 	fetchMarketingFaqs,
 	fetchMarketingPracticeGoals,
@@ -705,7 +701,6 @@ export {
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
-	createTestUser,
 	createThread,
 	deleteAccount,
 	deleteAllNotifications,
