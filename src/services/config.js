@@ -151,6 +151,7 @@ export function initializeService(config) {
  */
 export function updateSessionConfig(sessionConfig) {
   globalConfig.sessionConfig = deepMerge(globalConfig.sessionConfig, sessionConfig)
+  globalConfig.railcontentConfig = deepMerge(globalConfig.railcontentConfig, sessionConfig)
 }
 
 export function initializeEnvVar(config) {
