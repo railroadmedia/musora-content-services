@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.197.1](https://github.com/railroadmedia/musora-content-services/compare/v2.197.0...v2.197.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* read active learning path from the active path, not the daily session ([#1107](https://github.com/railroadmedia/musora-content-services/issues/1107)) ([7d261b1](https://github.com/railroadmedia/musora-content-services/commit/7d261b107112177dbd15a961f58b92877b63dd0c))
+
 ## [2.197.0](https://github.com/railroadmedia/musora-content-services/compare/v2.196.0...v2.197.0) (2026-11-11)
 
 
