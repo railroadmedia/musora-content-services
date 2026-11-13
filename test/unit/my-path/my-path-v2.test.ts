@@ -36,6 +36,13 @@ const dailySession = {
   daily_session: [{ content_ids: [1, 2], learning_path_id: 11, node_id: 'node-a', is_placeholder: false }],
 }
 
+const cachedDailySession = {
+  user_id: dailySession.user_id,
+  brand: dailySession.brand,
+  user_date: dailySession.user_date,
+  daily_session: dailySession.daily_session,
+}
+
 const linearizedPath = {
   linearized_learning_paths: [{ id: 11, children: [{ id: 1 }] }],
 }
@@ -54,7 +61,7 @@ describe('fetchDailySession', () => {
 
     const result = await fetchDailySession('drumeo', userDate)
 
-    expect(result).toEqual(dailySession)
+    expect(result).toEqual(cachedDailySession)
     const url = HttpClient.GET.mock.calls[0][0]
     expect(url).toContain(MY_PATH_ROUTE + '/daily-session?brand=drumeo&user_date=')
   })
@@ -65,7 +72,7 @@ describe('fetchDailySession', () => {
 
     const result = await fetchDailySession('drumeo', userDate)
 
-    expect(result).toEqual(dailySession)
+    expect(result).toEqual(cachedDailySession)
     expect(HttpClient.POST).toHaveBeenCalledTimes(1)
   })
 
@@ -126,7 +133,7 @@ describe('createDailySession', () => {
     await createDailySession('drumeo', userDate)
     HttpClient.GET.mockClear()
 
-    expect(await fetchDailySession('drumeo', userDate)).toEqual(dailySession)
+    expect(await fetchDailySession('drumeo', userDate)).toEqual(cachedDailySession)
     expect(await fetchActiveLearningPath('drumeo')).toEqual(activePath)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
@@ -186,7 +193,7 @@ describe('setActiveLearningPath', () => {
       active_learning_path_id: 22,
       active_node_id: 'node-b',
     })
-    expect(await fetchDailySession('drumeo', userDate)).toEqual(next)
+    expect(await fetchDailySession('drumeo', userDate)).toEqual(cachedDailySession)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
 
@@ -217,7 +224,7 @@ describe('advanceActiveLearningPath', () => {
 
     HttpClient.GET.mockClear()
     expect(await fetchActiveLearningPath('drumeo')).toEqual({ ...activePath, active_learning_path_id: 12 })
-    expect(await fetchDailySession('drumeo', userDate)).toEqual(next)
+    expect(await fetchDailySession('drumeo', userDate)).toEqual(cachedDailySession)
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
 })
@@ -377,11 +384,16 @@ describe('cached data isolation', () => {
     expect(cached).not.toHaveProperty('user_date')
   })
 
-  test('the daily session cache keeps the active path fields alongside the daily session', async () => {
+  test('the daily session cache holds only daily session fields', async () => {
     HttpClient.POST.mockResolvedValueOnce(dailySession)
     await createDailySession('drumeo', userDate)
 
-    expect(await fetchDailySession('drumeo', userDate)).toEqual(dailySession)
+    const cached = await fetchDailySession('drumeo', userDate)
+
+    expect(cached).toEqual(cachedDailySession)
+    expect(cached).not.toHaveProperty('active_learning_path_id')
+    expect(cached).not.toHaveProperty('active_node_id')
+    expect(cached).not.toHaveProperty('active_learning_path_created_at')
   })
 
   test('fields outside the allowlist are dropped from cached POST responses', async () => {
@@ -406,7 +418,7 @@ describe('cached data isolation', () => {
     returned.daily_session.push({ content_ids: [99], learning_path_id: 11, node_id: 'x', is_placeholder: false })
     returned.active_learning_path_id = 999
 
-    expect(await fetchDailySession('drumeo', userDate)).toEqual(dailySession)
+    expect(await fetchDailySession('drumeo', userDate)).toEqual(cachedDailySession)
     expect(await fetchActiveLearningPath('drumeo')).toEqual(activePath)
   })
 

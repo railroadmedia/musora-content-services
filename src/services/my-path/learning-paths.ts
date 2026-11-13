@@ -53,6 +53,7 @@ interface ActiveLearningPathResponse {
   user_id: number
   brand: string
   active_learning_path_id: number
+  active_learning_path_created_at?: string
 }
 
 interface DailySessionResponse {
@@ -357,9 +358,12 @@ export async function fetchLearningPathLessons(
   const learningPath = await getEnrichedLearningPath(learningPathId)
   if (!learningPath || learningPath.children?.length === 0) return null
 
-  let dailySession = (await getDailySession(brand, userDate)) as DailySessionResponse
+  const [dailySession, activePath] = await Promise.all([
+    getDailySession(brand, userDate) as Promise<DailySessionResponse>,
+    getActivePath(brand),
+  ])
 
-  const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
+  const isActiveLearningPath = (activePath?.active_learning_path_id || 0) == learningPathId
   if (!isActiveLearningPath) {
     return {
       ...learningPath,
@@ -425,8 +429,8 @@ export async function fetchLearningPathLessons(
   return {
     ...learningPath,
     is_active_learning_path: isActiveLearningPath,
-    active_learning_path_id: dailySession?.active_learning_path_id,
-    active_learning_path_created_at: dailySession?.active_learning_path_created_at,
+    active_learning_path_id: activePath?.active_learning_path_id,
+    active_learning_path_created_at: activePath?.active_learning_path_created_at,
     upcoming_lessons: upcomingLessons,
     completed_lessons: completedLessons,
     learning_path_dailies: thisLPDailies,
