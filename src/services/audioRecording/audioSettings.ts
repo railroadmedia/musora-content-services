@@ -11,6 +11,8 @@ export interface AudioSettings {
   help_improve_coach: boolean
   help_improve_coach_updated_at: string | null
   coach_feedback_enabled: boolean
+  share_notes_enabled: boolean
+  speed_warning_suppressed: boolean
   lesson_audio_enabled: boolean
   take_volume: number
   lesson_volume: number
@@ -23,6 +25,7 @@ export interface AudioSettings {
   mic_opted_in_at: string | null
   mic_opt_in_prompted_at: string | null
   mic_access_granted_at: string | null
+  feedback_opt_in_completed_at: string | null
   audio_setup_toast_shown_at: string | null
   test_speaker_url: string | null
 }
@@ -34,6 +37,8 @@ export type AudioSettingsChanges = Partial<
     | 'voice_commands_enabled'
     | 'help_improve_coach'
     | 'coach_feedback_enabled'
+    | 'share_notes_enabled'
+    | 'speed_warning_suppressed'
     | 'lesson_audio_enabled'
     | 'take_volume'
     | 'lesson_volume'
@@ -47,6 +52,7 @@ export type AudioSettingsChanges = Partial<
   mic_opted_in?: true
   mic_opt_in_prompted?: true
   mic_access_granted?: true
+  feedback_opt_in_completed?: true
   audio_setup_toast_shown?: true
 }
 
@@ -55,6 +61,7 @@ const SETTINGS_PATH = '/api/audio-recording/v1/settings'
 /**
  * Resolves to the defaults when the user has never saved any setting. `recording_enabled`
  * is the user's preference only: recording still needs the device's mic permission.
+ * `coach_feedback_enabled` is always false while `recording_enabled` is false.
  */
 export async function fetchAudioSettings(): Promise<AudioSettings> {
   return GET(SETTINGS_PATH)
