@@ -38,7 +38,13 @@ describe('take feedback', () => {
   })
 
   test('throws when the Feedback setting is off', async () => {
-    const error = { status: 422, body: { title: 'Feedback is turned off in the audio settings.' } }
+    const error = {
+      status: 422,
+      body: {
+        title: 'Feedback is turned off in the audio settings.',
+        additional_details: { rejected: [] },
+      },
+    }
     mockPost.mockRejectedValue(error)
 
     await expect(requestFeedback([folder])).rejects.toBe(error)
