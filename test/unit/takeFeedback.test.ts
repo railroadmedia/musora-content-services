@@ -28,6 +28,22 @@ describe('take feedback', () => {
     expect(result).toEqual(response)
   })
 
+  test('returns the rejected takes when none of them can be requested', async () => {
+    const rejected = [{ folder, reason: 'ineligible' }]
+    mockPost.mockRejectedValue({ status: 422, body: { additional_details: { rejected } } })
+
+    const result = await requestFeedback([folder])
+
+    expect(result).toEqual({ requested: [], rejected })
+  })
+
+  test('throws when the Feedback setting is off', async () => {
+    const error = { status: 422, body: { title: 'Feedback is turned off in the audio settings.' } }
+    mockPost.mockRejectedValue(error)
+
+    await expect(requestFeedback([folder])).rejects.toBe(error)
+  })
+
   test("fetches the take's feedback state by folder", async () => {
     const response = { feedback_state: 'reviewing', feedback: null, job: null }
     mockGet.mockResolvedValue(response)

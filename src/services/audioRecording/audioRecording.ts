@@ -862,16 +862,27 @@ export interface RequestFeedbackResponse {
 
 /**
  * Ask for AI feedback on one or more of the user's own takes. The takes that can't be requested
- * come back in `rejected` without blocking the others; the backend answers 422 when none can be
- * requested or the user's Feedback setting is off, and 404 while on-demand feedback is switched off.
+ * come back in `rejected` without blocking the others, also when none of them can be requested.
+ * Throws the HTTP error when the user's Feedback setting is off (422), while on-demand feedback is
+ * switched off (404), and when the feedback service is unavailable (502, worth retrying).
  */
 export async function requestFeedback(folders: string[]): Promise<RequestFeedbackResponse> {
-  return POST(`${BASE_PATH}/feedback`, { folders })
+  try {
+    return await POST(`${BASE_PATH}/feedback`, { folders })
+  } catch (error: any) {
+    const rejected = error?.status === 422 ? error?.body?.additional_details?.rejected : undefined
+    if (!Array.isArray(rejected)) {
+      throw error
+    }
+
+    return { requested: [], rejected }
+  }
 }
 
 /**
- * The take's feedback state and, once it's `available`, its feedback. `job` is the FBL job while
- * the take is `reviewing`, null otherwise.
+ * The take's feedback state and, once it's `available`, its feedback. Poll on `feedback_state`:
+ * `job` is the FBL job while the take is `reviewing` and FBL can report it, null otherwise (also
+ * while reviewing, when FBL is unreachable or doesn't know the take).
  */
 export async function getFeedbackStatus(folder: string): Promise<FeedbackStatusResponse> {
   return GET(`${BASE_PATH}/feedback?folder=${encodeURIComponent(folder)}`)
