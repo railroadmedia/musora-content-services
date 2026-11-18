@@ -226,7 +226,7 @@ describe('getDailySession', () => {
     const resp = { active_learning_path_id: 5, daily_session: [] }
     setApiResponses({ dailySession: resp })
     const result = await getDailySession('drumeo', new Date('2026-01-01T10:00:00Z'))
-    expect(result).toEqual(resp)
+    expect(result).toEqual({ daily_session: [] })
     expect(HttpClient.GET.mock.calls[0][0]).toContain('/daily-session/get?brand=drumeo')
   })
 
@@ -235,7 +235,7 @@ describe('getDailySession', () => {
     const created = { active_learning_path_id: 9, daily_session: [] }
     HttpClient.POST.mockResolvedValueOnce(created)
     const result = await getDailySession('pianote', new Date('2026-01-01T10:00:00Z'))
-    expect(result).toEqual(created)
+    expect(result).toEqual({ daily_session: [] })
     expect(HttpClient.POST).toHaveBeenCalledTimes(1)
   })
 
@@ -246,8 +246,8 @@ describe('getDailySession', () => {
       getDailySession('drumeo', new Date('2026-01-01T10:00:00Z')),
       getDailySession('drumeo', new Date('2026-01-01T10:00:00Z')),
     ])
-    expect(a).toEqual(resp)
-    expect(b).toEqual(resp)
+    expect(a).toEqual({ daily_session: [] })
+    expect(b).toEqual({ daily_session: [] })
     expect(HttpClient.GET).toHaveBeenCalledTimes(1)
   })
 
@@ -294,7 +294,7 @@ describe('updateDailySession', () => {
     await updateDailySession('drumeo', userDate)
     HttpClient.GET.mockClear()
 
-    expect(await getDailySession('drumeo', userDate)).toEqual(resp)
+    expect(await getDailySession('drumeo', userDate)).toEqual({ user_id: 1, brand: 'drumeo', daily_session: [] })
     expect(await getActivePath('drumeo')).toEqual({ user_id: 1, brand: 'drumeo', active_learning_path_id: 7 })
     expect(HttpClient.GET).not.toHaveBeenCalled()
   })
@@ -529,7 +529,10 @@ describe('fetchLearningPathLessons', () => {
 
   test('returns is_active_learning_path false when not active', async () => {
     sanity.fetchByRailContentId.mockResolvedValueOnce(makeLp(1, [{ id: 100 }]))
-    setApiResponses({ dailySession: { active_learning_path_id: 999, daily_session: [] } })
+    setApiResponses({
+      activePath: { active_learning_path_id: 999 },
+      dailySession: { daily_session: [] },
+    })
     const result = await fetchLearningPathLessons(1, 'drumeo', new Date())
     expect(result.is_active_learning_path).toBe(false)
   })
@@ -539,9 +542,8 @@ describe('fetchLearningPathLessons', () => {
     sanity.fetchByRailContentId.mockResolvedValue(lp)
     await contentStatusCompleted(101, { type: lpType, id: 5 })
     setApiResponses({
+      activePath: { active_learning_path_id: 5, active_learning_path_created_at: '2026-01-01' },
       dailySession: {
-        active_learning_path_id: 5,
-        active_learning_path_created_at: '2026-01-01',
         daily_session: [{ learning_path_id: 5, content_ids: [100] }],
       },
     })
@@ -570,8 +572,8 @@ describe('fetchLearningPathLessons', () => {
       return Promise.resolve(false)
     })
     setApiResponses({
+      activePath: { active_learning_path_id: 5 },
       dailySession: {
-        active_learning_path_id: 5,
         daily_session: [
           { learning_path_id: 4, content_ids: [40] },
           { learning_path_id: 5, content_ids: [100] },
@@ -599,9 +601,10 @@ describe('fetchLearningPathLessons', () => {
     setApiResponses({ activePath: { active_learning_path_id: 999 } })
     await contentStatusCompleted(5, { type: lpType, id: 5 })
     await contentStatusCompleted(100, { type: lpType, id: 5 })
+    clearLearningPathCaches()
     setApiResponses({
+      activePath: { active_learning_path_id: 5 },
       dailySession: {
-        active_learning_path_id: 5,
         daily_session: [
           { learning_path_id: 5, content_ids: [100] },
           { learning_path_id: 6, content_ids: [60] },
@@ -618,8 +621,8 @@ describe('fetchLearningPathLessons', () => {
     const lp = makeLp(5, [{ id: 100 }])
     sanity.fetchByRailContentId.mockResolvedValueOnce(lp)
     setApiResponses({
+      activePath: { active_learning_path_id: 5 },
       dailySession: {
-        active_learning_path_id: 5,
         daily_session: [{ learning_path_id: 5 }],
       },
     })

@@ -22,6 +22,7 @@ import {
 	getSharedCombinedAudioUrl,
 	getSharedRecording,
 	getSupportedFormats,
+	getTakeFeedback,
 	isFormatSupported,
 	listRecordings,
 	logSeekEvent,
@@ -208,6 +209,10 @@ import {
 } from './services/endScreen/endScreen.ts';
 
 import {
+	featureFlags
+} from './services/feature-flags/index.ts';
+
+import {
 	createForumCategory,
 	deleteForumCategory,
 	fetchForumCategories,
@@ -264,10 +269,6 @@ import {
 	isBucketUrl,
 	verifyImageSRC
 } from './services/imageSRCVerify.js';
-
-import {
-	createTestUser
-} from './services/liveTesting.ts';
 
 import {
 	fetchMarketingAll,
@@ -703,7 +704,6 @@ export {
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
-	createTestUser,
 	createThread,
 	deleteAccount,
 	deleteAllNotifications,
@@ -731,6 +731,7 @@ export {
 	estimateClockOffset,
 	extractFromRecordId,
 	extractSanityUrl,
+	featureFlags,
 	fetchActiveLearningPath,
 	fetchAll,
 	fetchAllFilterOptions,
@@ -929,6 +930,7 @@ export {
 	getStreaksAndMessage,
 	getSupportedFormats,
 	getTabResults,
+	getTakeFeedback,
 	getTimeRemainingUntilLocal,
 	getToday,
 	getUpgradePrice,

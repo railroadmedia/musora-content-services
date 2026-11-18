@@ -1,4 +1,5 @@
 import { setSessionUserData } from './config.js'
+import { featureFlags } from './feature-flags'
 
 /**
  * Clears all client-side cached state in musora-content-services.
@@ -7,4 +8,5 @@ import { setSessionUserData } from './config.js'
  */
 export function clearState(): void {
   setSessionUserData(null)
+  featureFlags.reset()
 }

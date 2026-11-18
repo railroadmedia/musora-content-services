@@ -30,18 +30,20 @@ export async function getPracticeSessionsOffline(
 
 /**
  * @param offlineTimestamp - Minimum `updated_at` epoch ms to include
+ * @param options.weekStart - Any day of the week to return (YYYY-MM-DD), usually its Monday; defaults to the current week
  * @param options.page - Page number, only applied when `limit` is set (default 1)
  * @param options.limit - Max sessions to return
  * @returns {Promise<{data: {practices: object[], practiceDuration: number, total: number, currentPage: number, totalPages: number}}>}
  */
 export async function getWeeklyPracticeSessionsOffline(
   offlineTimestamp: number, {
+    weekStart,
     page = 1,
     limit
-  }: { page?: number, limit?: number } = {}
+  }: { weekStart?: string, page?: number, limit?: number } = {}
 ) {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const startOfWeek = getMonday(new Date(), timeZone)
+  const startOfWeek = getMonday(weekStart ?? new Date(), timeZone)
   const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
 
   const query = await db.practices.queryAll(

@@ -3,7 +3,7 @@ import { db } from './sync'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
-import { getDailySession, onLearningPathCompletedActions } from './my-path/learning-paths.ts'
+import { getActivePath, getDailySession, onLearningPathCompletedActions } from './my-path/learning-paths.ts'
 import { duplicateProgressToALaCarteOffline } from './offline/progress.ts'
 
 /**
@@ -75,9 +75,12 @@ export async function getNavigateToForMethod(data) {
   let navigateToData = {}
 
   const brand = data[0].brand || null
-  const dailySessionResponse = await getDailySession(brand, new Date())
+  const [dailySessionResponse, activePath] = await Promise.all([
+    getDailySession(brand, new Date()),
+    getActivePath(brand),
+  ])
   const dailySession = dailySessionResponse?.daily_session || null
-  const activeLearningPathId = dailySessionResponse?.active_learning_path_id || null
+  const activeLearningPathId = activePath?.active_learning_path_id || null
 
   for (const content of data) {
     if (!content) continue

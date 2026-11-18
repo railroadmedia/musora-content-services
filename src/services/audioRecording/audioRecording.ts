@@ -20,6 +20,12 @@ const excludeFromGeneratedIndex = ['uploadChunk', 'logEvent']
 export type RecordingPlaybackStatus = 'pending' | 'ready' | 'failed' | null
 
 /**
+ * `reviewing` once feedback was requested and until its note is saved, then `available`.
+ * A take nobody asked feedback for is `none`, even when it was graded automatically.
+ */
+export type TakeFeedbackState = 'none' | 'reviewing' | 'available'
+
+/**
  * One take, as listed per lesson (listRecordings) and returned by renameRecording.
  * `take_number` is only null for a take recorded outside a lesson.
  */
@@ -35,6 +41,8 @@ export interface RecordingTake {
   name: string | null
   is_shared: boolean
   playback_status: RecordingPlaybackStatus
+  feedback_eligible: boolean
+  feedback_state: TakeFeedbackState
 }
 
 /** A take on a lesson, as every per-lesson list returns it: always numbered. */
@@ -74,9 +82,15 @@ export interface MyRecordingsPage {
   meta: PaginationMeta
 }
 
+/**
+ * Lesson ids for the practice list rows: lessons with a recording, a take still saving,
+ * a take under review (the Reviewing indicator) and a take with feedback (the dot on the mic).
+ */
 export interface RecordingIndicators {
   content_ids: number[]
   processing_content_ids: number[]
+  reviewing_content_ids: number[]
+  feedback_content_ids: number[]
 }
 
 export interface StartSessionExtras {
@@ -823,6 +837,21 @@ export interface FeedbackStatusResponse {
  */
 export async function requestFeedback(folder: string): Promise<{ job: FeedbackJob }> {
   return POST(`${BASE_PATH}/feedback`, { folder })
+}
+
+export interface TakeFeedback {
+  folder: string
+  take_number: number | null
+  name: string | null
+  body: string
+  created_at: string
+}
+
+/**
+ * The take's feedback once it's `available` (see `feedback_state`), otherwise null.
+ */
+export async function getTakeFeedback(folder: string): Promise<{ feedback: TakeFeedback | null }> {
+  return GET(`${BASE_PATH}/take-feedback?folder=${encodeURIComponent(folder)}`)
 }
 
 /**
