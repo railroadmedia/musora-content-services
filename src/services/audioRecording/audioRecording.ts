@@ -1044,6 +1044,16 @@ export interface PracticeFeedback {
 }
 
 /**
+ * The user's feedback on a lesson, summarizing the takes they requested feedback on, or null when
+ * there is none yet.
+ */
+export async function getLessonFeedback(
+  contentId: number
+): Promise<{ feedback: PracticeFeedback | null }> {
+  return GET(`${BASE_PATH}/lesson-feedback?content_id=${contentId}`)
+}
+
+/**
  * The user's practice feedback for a day (`YYYY-MM-DD`), or null when there is none.
  */
 export async function getDailyFeedback(date: string): Promise<{ feedback: PracticeFeedback | null }> {
@@ -1093,6 +1103,7 @@ export default {
   buildShareUrl,
   getSharedCombinedAudioUrl,
   createAudioChunkUploader,
+  getLessonFeedback,
   getDailyFeedback,
   getWeeklyFeedback,
 }
