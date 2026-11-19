@@ -826,19 +826,6 @@ export interface FeedbackJob {
   finished_at?: string
 }
 
-export interface FeedbackStatusResponse {
-  job: FeedbackJob | null
-  note: string | null
-}
-
-/**
- * Queue an AI feedback run (re-grade + take note) for the user's own take. Staging-only for
- * now: the backend answers 404 while on-demand feedback is switched off.
- */
-export async function requestFeedback(folder: string): Promise<{ job: FeedbackJob }> {
-  return POST(`${BASE_PATH}/feedback`, { folder })
-}
-
 export interface TakeFeedback {
   folder: string
   take_number: number | null
@@ -847,15 +834,56 @@ export interface TakeFeedback {
   created_at: string
 }
 
-/**
- * The take's feedback once it's `available` (see `feedback_state`), otherwise null.
- */
-export async function getTakeFeedback(folder: string): Promise<{ feedback: TakeFeedback | null }> {
-  return GET(`${BASE_PATH}/take-feedback?folder=${encodeURIComponent(folder)}`)
+export interface FeedbackStatusResponse {
+  feedback_state: TakeFeedbackState
+  feedback: TakeFeedback | null
+  job: FeedbackJob | null
+}
+
+export interface RequestedFeedbackTake {
+  folder: string
+  take_number: number | null
+  name: string | null
+  feedback_state: TakeFeedbackState
+}
+
+export type FeedbackRequestRejection =
+  | 'not_found'
+  | 'deleted'
+  | 'ineligible'
+  | 'processing'
+  | 'already_reviewing'
+  | 'already_has_feedback'
+
+export interface RequestFeedbackResponse {
+  requested: RequestedFeedbackTake[]
+  rejected: { folder: string; reason: FeedbackRequestRejection }[]
 }
 
 /**
- * Latest feedback job for the take; `note` is the take note once the job is done.
+ * Ask for AI feedback on one or more of the user's own takes. The takes that can't be requested
+ * come back in `rejected` without blocking the others, also when none of them can be requested.
+ * Throws the HTTP error when the user's Feedback setting is off or `folders` is empty or repeats a
+ * folder (422), while on-demand feedback is switched off (404), and when the feedback service is
+ * unavailable (502, worth retrying).
+ */
+export async function requestFeedback(folders: string[]): Promise<RequestFeedbackResponse> {
+  try {
+    return await POST(`${BASE_PATH}/feedback`, { folders })
+  } catch (error: any) {
+    const rejected = error?.status === 422 ? error?.body?.additional_details?.rejected : undefined
+    if (!Array.isArray(rejected) || rejected.length === 0) {
+      throw error
+    }
+
+    return { requested: [], rejected }
+  }
+}
+
+/**
+ * The take's feedback state and, once it's `available`, its feedback. Poll on `feedback_state`:
+ * `job` is the FBL job while the take is `reviewing` and FBL can report it, null otherwise (also
+ * while reviewing, when FBL is unreachable or doesn't know the take).
  */
 export async function getFeedbackStatus(folder: string): Promise<FeedbackStatusResponse> {
   return GET(`${BASE_PATH}/feedback?folder=${encodeURIComponent(folder)}`)
