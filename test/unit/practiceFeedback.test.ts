@@ -9,6 +9,7 @@ jest.mock('../../src/infrastructure/http/HttpClient.ts', () => ({
 
 import {
   getDailyFeedback,
+  getLessonFeedback,
   getWeeklyFeedback,
 } from '../../src/services/audioRecording/audioRecording'
 
@@ -23,6 +24,17 @@ describe('practice feedback', () => {
 
     expect(mockGet).toHaveBeenCalledWith('/api/audio-recording/v1/daily-feedback?date=2026-10-12')
     expect(result).toEqual(response)
+  })
+
+  test("fetches a lesson's feedback by content id", async () => {
+    mockGet.mockResolvedValue({ feedback: null })
+
+    const result = await getLessonFeedback(452481)
+
+    expect(mockGet).toHaveBeenCalledWith(
+      '/api/audio-recording/v1/lesson-feedback?content_id=452481'
+    )
+    expect(result).toEqual({ feedback: null })
   })
 
   test("fetches a week's feedback by its Monday", async () => {
