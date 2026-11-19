@@ -1037,6 +1037,29 @@ export async function createAudioChunkUploader(
   return { upload, finish }
 }
 
+export interface PracticeFeedback {
+  body: string
+  created_at: string
+  summary: Record<string, unknown> | null
+}
+
+/**
+ * The user's practice feedback for a day (`YYYY-MM-DD`), or null when there is none.
+ */
+export async function getDailyFeedback(date: string): Promise<{ feedback: PracticeFeedback | null }> {
+  return GET(`${BASE_PATH}/daily-feedback?date=${encodeURIComponent(date)}`)
+}
+
+/**
+ * The user's practice feedback for the week starting on `weekStart` (a Monday, `YYYY-MM-DD`), or
+ * null when there is none. Past weeks work too.
+ */
+export async function getWeeklyFeedback(
+  weekStart: string
+): Promise<{ feedback: PracticeFeedback | null }> {
+  return GET(`${BASE_PATH}/weekly-feedback?week_start=${encodeURIComponent(weekStart)}`)
+}
+
 export default {
   MIME_TYPES,
   EXTENSIONS,
@@ -1070,4 +1093,6 @@ export default {
   buildShareUrl,
   getSharedCombinedAudioUrl,
   createAudioChunkUploader,
+  getDailyFeedback,
+  getWeeklyFeedback,
 }
