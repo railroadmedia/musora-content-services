@@ -331,6 +331,7 @@ export const progressTypesMapping = {
     'live',
     'course-lesson',
     'routine',
+    'special',
   ],
   method: [LEARNING_PATH_LESSON],
   course: ['course'],
