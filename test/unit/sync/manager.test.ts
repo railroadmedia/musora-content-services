@@ -17,6 +17,13 @@ jest.mock('../../../src/services/awards/internal/content-progress-observer', () 
   },
 }))
 
+// Introspection fetches its server config on setup; keep manager tests off the network.
+jest.mock('../../../src/services/sync/introspection', () => ({
+  __esModule: true,
+  default: jest.fn(() => jest.fn().mockResolvedValue(undefined)),
+  triggerManualDump: jest.fn().mockResolvedValue(undefined),
+}))
+
 // ---
 
 function makeMockStrategy() {
