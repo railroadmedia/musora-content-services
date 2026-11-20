@@ -58,3 +58,37 @@ export async function loginAsUser(userId: string): Promise<AuthResponse> {
     {}
   )
 }
+
+export interface MagicLinkAuthResponse extends AuthResponse {
+  refresh_token: string | null
+  redirect_to: string | null
+}
+
+export interface MagicLinkDeviceParams {
+  device_name?: string
+  device_token?: string
+  platform?: 'ios' | 'android'
+}
+
+/**
+ * Resolves whether or not an account exists for the email, so the endpoint
+ * cannot be used to discover which addresses are registered.
+ */
+export async function requestMagicLoginLink(
+  email: string,
+  redirectTo: string | null = null
+): Promise<void> {
+  const apiUrl = '/api/user-management-system/v1/sessions/magic-link'
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  await httpClient.post(apiUrl, { email, redirect_to: redirectTo })
+}
+
+export async function loginWithMagicLink(
+  email: string,
+  token: string,
+  params: MagicLinkDeviceParams = {}
+): Promise<MagicLinkAuthResponse> {
+  const apiUrl = '/api/user-management-system/v1/sessions/magic-link/exchange'
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post<MagicLinkAuthResponse>(apiUrl, { email, token, ...params })
+}

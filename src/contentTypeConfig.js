@@ -74,6 +74,7 @@ export const DEFAULT_FIELDS = [
   'enrollment_start_time',
   'enrollment_end_time',
   'membership_tier',
+  "'is_plus_content': membership_tier == 'plus'",
 ]
 
 // these are identical... why
@@ -98,6 +99,7 @@ export const DEFAULT_CHILD_FIELDS = [
   'child_count',
   `"parent_id": ${parentReferenceField}->railcontent_id`,
   `"grandparent_id": ${grandParentReferenceField}->railcontent_id`,
+  "'is_plus_content': membership_tier == 'plus'",
 ]
 
 export const playAlongMp3sFields = [
@@ -509,6 +511,7 @@ export let contentTypeConfig = {
       `"resources": ${resourcesField}`,
       'soundslice',
       'soundslice_slug',
+      'block_recording',
       'instrumentless',
       `"description": ${descriptionField}`,
       assignmentsField,
@@ -529,6 +532,7 @@ export let contentTypeConfig = {
       `"resources": ${resourcesField}`,
       'soundslice',
       'soundslice_slug',
+      'block_recording',
       'instrumentless',
       `"description": ${descriptionField}`,
       assignmentsField,
@@ -549,6 +553,7 @@ export let contentTypeConfig = {
   'learning-path-v2': {
     fields: [
       `"intro_video": intro_video->{ ${getIntroVideoFields('learning-path-v2').join(', ')} }`,
+      `"preroll": intro_video->{ ${getPrerollFields().join(', ')} }`,
       'total_skills',
       `"resource": ${resourcesField}`,
     ],
@@ -693,6 +698,7 @@ export let contentTypeConfig = {
       "thumbnail": thumbnail.asset->url,
       length_in_seconds,
       intro_video,
+      "preroll": intro_video,
       child[]->{
         ${DEFAULT_FIELDS.join(',')}
       }
@@ -726,6 +732,20 @@ export function getIntroVideoFields(type) {
   }
 
   return fields
+}
+
+export function getPrerollFields() {
+  return [
+    `"id": railcontent_id`,
+    'title',
+    'brand',
+    `"instructor": ${instructorField}`,
+    `"type": _type`,
+    `"description": ${descriptionField}`,
+    `"thumbnail": thumbnail.asset->url`,
+    'length_in_seconds',
+    'video',
+  ]
 }
 
 export const plusMembershipPermissions = 92

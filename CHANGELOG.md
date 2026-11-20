@@ -2,6 +2,270 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.197.1](https://github.com/railroadmedia/musora-content-services/compare/v2.197.0...v2.197.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* read active learning path from the active path, not the daily session ([#1107](https://github.com/railroadmedia/musora-content-services/issues/1107)) ([7d261b1](https://github.com/railroadmedia/musora-content-services/commit/7d261b107112177dbd15a961f58b92877b63dd0c))
+
+## [2.197.0](https://github.com/railroadmedia/musora-content-services/compare/v2.196.0...v2.197.0) (2026-11-11)
+
+
+### Features
+
+* feature flags from the backend engine ([#1042](https://github.com/railroadmedia/musora-content-services/issues/1042)) ([61446de](https://github.com/railroadmedia/musora-content-services/commit/61446dec8e4c32c2cdb27b41231cbe77d388e5e9)), closes [railroadmedia/musora-platform-backend#1617](https://github.com/railroadmedia/musora-platform-backend/issues/1617)
+
+
+### Bug Fixes
+
+* **BEHLTP-633:** advance active LP with v2 my-path endpoint when FF is on ([#1106](https://github.com/railroadmedia/musora-content-services/issues/1106)) ([c948cf9](https://github.com/railroadmedia/musora-content-services/commit/c948cf91d99f8f5d4850edde30da06d3453d3e67))
+
+## [2.196.0](https://github.com/railroadmedia/musora-content-services/compare/v2.195.0...v2.196.0) (2026-11-06)
+
+
+### Features
+
+* add help text to the recording issue report option, warning that recordings may be reviewed, via a new optional helpText field on ReportIssueOption ([43c0cc5](https://github.com/railroadmedia/musora-content-services/commit/43c0cc56fd64a7c2253fe21213d5c7c4033515b6))
+* add is_owner and the owner-only folder to the SharedRecording type ([b24b756](https://github.com/railroadmedia/musora-content-services/commit/b24b7568bcec6af982890bd98ef1d799b4eea69f))
+* **audio recordings:** New method to download audio recordings as single file ([40a9485](https://github.com/railroadmedia/musora-content-services/commit/40a9485937ab5b69da0fbced8cbc1fbf537f9c70))
+* **audio-recording:** add audioRecording service with full recording and playback support ([66f26ee](https://github.com/railroadmedia/musora-content-services/commit/66f26ee3a620e3508014ef62f09875e6ad9c182f))
+* **audio-recording:** add getRecordingPlaybackUrl for presigned links to finished takes ([be4585d](https://github.com/railroadmedia/musora-content-services/commit/be4585d38af20438968025bdd5b0b0926ff05cde))
+* **audio-recording:** add pause/resume, WebM duration fix, and mobile-compatible upload ([e0f3507](https://github.com/railroadmedia/musora-content-services/commit/e0f35071f344482fc8b225f307e4e85b94729d53))
+* **audio-recording:** add playback_latency_ms and playback_latency_source to RecordingTimeline ([b58baa4](https://github.com/railroadmedia/musora-content-services/commit/b58baa4b59d5f3ab88fcb04b19764095b37ad08a))
+* **audio-recording:** event recording positions, chunk playback speed and clock offset ([#1084](https://github.com/railroadmedia/musora-content-services/issues/1084)) ([eb962f4](https://github.com/railroadmedia/musora-content-services/commit/eb962f40c94c215ff3d1360b357a3f51d3178e9f))
+* **audio-recording:** keepalive stop for page exit ([6a79dfb](https://github.com/railroadmedia/musora-content-services/commit/6a79dfb640321a5bc7958a85f254844a2032d6ba))
+* **audio-recording:** let getRecordingPlaybackUrl ask for the lossless enhanced take ([95e9a4b](https://github.com/railroadmedia/musora-content-services/commit/95e9a4b4c987cf4b93a30a35a342c704c3b1e309))
+* **audio-recording:** log seek events with from/to video positions ([01f6b9a](https://github.com/railroadmedia/musora-content-services/commit/01f6b9acfde3579b2a9ba5767c1cf47f227bb572))
+* **audio-recording:** send each chunk's loudest RMS level as level_db ([3f853e7](https://github.com/railroadmedia/musora-content-services/commit/3f853e748b3f27a9abeede68170779cca3dc6eec))
+* **audio-recording:** send sync anchors for practice alignment ([5bfeacd](https://github.com/railroadmedia/musora-content-services/commit/5bfeacdd1c049e2e8e84f9750e86cff67227925c))
+* **audio-recording:** send the client's device report with startSession ([5d0e7fa](https://github.com/railroadmedia/musora-content-services/commit/5d0e7fa1e6b2cfeb5ad6400c4038d0812254ca7b))
+* **audio-recording:** split peak capture from waveform rendering ([18ae798](https://github.com/railroadmedia/musora-content-services/commit/18ae7983a786bf17f4e2de2e7b8b2bf96ea6861c))
+* **BEHSTP-559:** add renameRecording for custom take names ([287129f](https://github.com/railroadmedia/musora-content-services/commit/287129f25428cef9afc98dc396bf8d07af2084c1))
+* **BEHSTP-560:** New methods for delete audio recording and restore ([83c2409](https://github.com/railroadmedia/musora-content-services/commit/83c2409622f74482fbf4f37c6c0a80d6b9b14855))
+* **BEHSTP-561:** update endpoint for listRecorings method ([48c1e76](https://github.com/railroadmedia/musora-content-services/commit/48c1e76cc505b4caa57527ede56895fa72249bd6))
+* **BEHSTP-564:** add getSharedRecording and buildShareUrl for shared recording links ([5e544e9](https://github.com/railroadmedia/musora-content-services/commit/5e544e90c7c3fda0f25829f35bd5067b15d94bad))
+* **BEHSTP-565:** end an audio recording session after 15 minutes of recorded time ([cece055](https://github.com/railroadmedia/musora-content-services/commit/cece0551c5f60127fb1d4b1e3414abef024b8057))
+* **BEHSTP-566:** skip lesson notes with no visible text in getContentIdsWithLessonNotes method ([4bb564d](https://github.com/railroadmedia/musora-content-services/commit/4bb564d15e5fd5e83029242e8d8bc441ef3440b0))
+* **BEHSTP-567:** add fetchAudioSettings and updateAudioSettings for the audio settings ([5815ad3](https://github.com/railroadmedia/musora-content-services/commit/5815ad34ccd179efa6943a037f3c104d599af394))
+* **BEHSTP-569:** provide the recording issue on lessons the user has recorded on and send the reported take folder ([a402cba](https://github.com/railroadmedia/musora-content-services/commit/a402cbaa5b36904de3bf8351b67408f7eb039391))
+* **BEHSTP-572:** paginate getMyRecordings and map each lesson to its learning path ([425d77f](https://github.com/railroadmedia/musora-content-services/commit/425d77fe60acb84e7ab430bde69585c8391ddfb7))
+* **BEHSTP-575:** add playback_status to the recording playback link type, add getRecordingIndicators returning the recorded and still saving lesson ids ([6f79558](https://github.com/railroadmedia/musora-content-services/commit/6f79558ed76eff1f599f9aabf4301a52ab8a4a22))
+* **BEHSTP-577:** add getWatchedMethodLessonCount counting the distinct method lessons with progress ([42873ed](https://github.com/railroadmedia/musora-content-services/commit/42873eded93619d1da18203e200285c8fac0ac91))
+* **BEHSTP-577:** count only completed method lessons for the mic opt-in trigger ([372a030](https://github.com/railroadmedia/musora-content-services/commit/372a0304a5b3b2a7b135b27da6968b7fc612ead7))
+* **BEHSTP-580:** return block_recording with lesson content ([9d5fd80](https://github.com/railroadmedia/musora-content-services/commit/9d5fd80a9fb488e668f6ccbd130318d931a7c80e))
+* **BEHSTP-583:** add getRecordingTimeline method ([e6c692c](https://github.com/railroadmedia/musora-content-services/commit/e6c692c102d28794223d4c6e6baf54b7ac8c840b))
+* **BEHSTP-585:** add the input volume, mic opt-in prompted and audio setup toast shown to the audio settings types ([38fb612](https://github.com/railroadmedia/musora-content-services/commit/38fb6120affdd9529abcbb184c979d1e3063ad15))
+* **BEHSTP-585:** add the mic opt-in and audio configuration to the audio settings types ([0e9665f](https://github.com/railroadmedia/musora-content-services/commit/0e9665fdc8b697c91852cec044b87bf05940c4e3))
+* **BEHSTP-591:** add the Musora volume to the audio settings types ([5268d3c](https://github.com/railroadmedia/musora-content-services/commit/5268d3cd8a14f6a8345b73a62b988632145cf420))
+* **BEHSTP-599:** add mic_access_granted to the audio settings types ([742cdfb](https://github.com/railroadmedia/musora-content-services/commit/742cdfbafa78ca9631763530201bb18b69163cb7))
+* **BEHSTP-602:** export logResumeEvent for clients that log the resume themselves ([61005b3](https://github.com/railroadmedia/musora-content-services/commit/61005b3bf9208b4dd9b8adef6c634c2a64553203))
+* **BEHSTP-602:** format file ([f7f0943](https://github.com/railroadmedia/musora-content-services/commit/f7f094312cacddfddfdea0cd956308e6201c4092))
+* **BEHSTP-608:** add refreshLessonNotes and observeLessonNotes ([94e1566](https://github.com/railroadmedia/musora-content-services/commit/94e1566514e16d40e5a059bb3c0c0ecc7dbc57ca))
+* **BEHSTP-692:** add test_speaker_url to the audio settings type ([156e8d0](https://github.com/railroadmedia/musora-content-services/commit/156e8d0ebcbb99e9a677a2cd426f865b186b4b60))
+* **lesson-notes:** Adds lesson-scoped notes (multiple per lesson, client-generated id) using the same pull/push sync pattern as day notes. content_id, date and timestamp_ms are set once and never overwritten on edit ([9b87200](https://github.com/railroadmedia/musora-content-services/commit/9b8720067a30a3cba14fbf818e1b6be036d60fb1))
+* **lesson-notes:** support date-scoped reads, bump raw length limit, add offline test coverage ([c66dd8d](https://github.com/railroadmedia/musora-content-services/commit/c66dd8de47b8c74cbb3baa50a691badb4973feb8))
+
+
+### Bug Fixes
+
+* **audio-recording:** drop auto from the playback latency sources ([cbe7efd](https://github.com/railroadmedia/musora-content-services/commit/cbe7efdf5e24bda2f823cc7e2a84d69c6160b4ed))
+* **audio-recording:** keep chunk 1's sync anchors when re-uploading the seekability-fixed chunk ([05fdcc7](https://github.com/railroadmedia/musora-content-services/commit/05fdcc7d559ea573f8dd55457ed6997e223a08ff))
+* **audio-recording:** prefer WebM Opus over MP4 when choosing the recording format ([e6e027d](https://github.com/railroadmedia/musora-content-services/commit/e6e027dcfc2e22f419f5ea375cb2eff9a4b0e576))
+* **audio-recording:** route through the shared authenticated HTTP client ([d867484](https://github.com/railroadmedia/musora-content-services/commit/d867484b56d7593edadb814316610d0943e679c6))
+* **audio-recording:** send local calendar day at session start, support date-range lookups ([1b345a3](https://github.com/railroadmedia/musora-content-services/commit/1b345a3882d025ee443cef54e4cf70cba2e85707))
+* **BEHSTP-569:** link a recording issue report to the lesson inside its learning path ([fac5de9](https://github.com/railroadmedia/musora-content-services/commit/fac5de9f70b152386fda28580aa46235844ccbd1))
+* **BEHSTP-589:** accept an undefined userId in startSession and stopSession, since the backend uses the signed-in user ([b1004f3](https://github.com/railroadmedia/musora-content-services/commit/b1004f310755ec00fdffc3d597ca5a1ee0f8f850))
+* **BEHSTP-589:** share is not public ([028fcaa](https://github.com/railroadmedia/musora-content-services/commit/028fcaa588492e66c96477058dac5f4f33fcfa57))
+* **BEHSTP-608:** pass observeLessonNotes the same plain notes getLessonNotes returns ([4c9330c](https://github.com/railroadmedia/musora-content-services/commit/4c9330cb8430e0258a2ba68db04e22f69162c570))
+* **BEHSTP-692:** allow a null test_speaker_url in the audio settings type ([4708d57](https://github.com/railroadmedia/musora-content-services/commit/4708d57fe77527b3cd699157ebc29484c23d18d4))
+* **MU2-2025:** replace @/ alias imports in src with relative paths ([#1088](https://github.com/railroadmedia/musora-content-services/issues/1088)) ([129faff](https://github.com/railroadmedia/musora-content-services/commit/129faff35bae0fed2b05875ddc111a8d2ed2d626))
+
+## [2.195.0](https://github.com/railroadmedia/musora-content-services/compare/v2.194.4...v2.195.0) (2026-11-05)
+
+
+### Features
+
+* **BR-1521:** add would be accessible flag ([#1098](https://github.com/railroadmedia/musora-content-services/issues/1098)) ([8d355e5](https://github.com/railroadmedia/musora-content-services/commit/8d355e524e2e112101618d08b4dbad6608e3186f))
+
+
+### Bug Fixes
+
+* **BR-1325:** bound currentWeekPracticeDays to today, not just the end of the week ([708dd52](https://github.com/railroadmedia/musora-content-services/commit/708dd52486664c4c12df02274e85a8cfc2e3346d))
+* **BR-1325:** bound weekly practice-days calculation to the current week ([2fe7f60](https://github.com/railroadmedia/musora-content-services/commit/2fe7f60e017c61337ae313726be099df8d32a49a))
+* **BR-1325:** format files with prettier ([90a033e](https://github.com/railroadmedia/musora-content-services/commit/90a033e479bf2ebbd06c9bab00ca1cf86eb93e5c))
+* check progress on last Essentials node before fetching subsequent nodes ([#1100](https://github.com/railroadmedia/musora-content-services/issues/1100)) ([3e6eb24](https://github.com/railroadmedia/musora-content-services/commit/3e6eb24e3e20ac2a47c92796a328c2c4527b5c38))
+
+### [2.194.4](https://github.com/railroadmedia/musora-content-services/compare/v2.194.3...v2.194.4) (2026-11-04)
+
+
+### Bug Fixes
+
+* **BEHLTP-574:** block app subscribers from using web upgrade ([#1097](https://github.com/railroadmedia/musora-content-services/issues/1097)) ([59144b1](https://github.com/railroadmedia/musora-content-services/commit/59144b1d10289790c1419171ce9fb32279a356cc))
+
+### [2.194.3](https://github.com/railroadmedia/musora-content-services/compare/v2.194.1...v2.194.3) (2026-11-03)
+
+### [2.194.2](https://github.com/railroadmedia/musora-content-services/compare/v2.194.1...v2.194.2) (2026-11-03)
+
+### [2.194.1](https://github.com/railroadmedia/musora-content-services/compare/v2.194.0...v2.194.1) (2026-11-03)
+
+
+### Bug Fixes
+
+* **BR-1322:** remove streak calculator cache so synced practices show up ([cdb7b11](https://github.com/railroadmedia/musora-content-services/commit/cdb7b1190b1484faedde9d67fb487502737336a2))
+
+## [2.194.0](https://github.com/railroadmedia/musora-content-services/compare/v2.193.0...v2.194.0) (2026-10-31)
+
+
+### Features
+
+* **MU2-2048:** add is_pending to the account status response type ([#1095](https://github.com/railroadmedia/musora-content-services/issues/1095)) ([a4cf235](https://github.com/railroadmedia/musora-content-services/commit/a4cf2350fd1d2d42fd7848d486b227e985e4c68f))
+
+## [2.193.0](https://github.com/railroadmedia/musora-content-services/compare/v2.192.2...v2.193.0) (2026-10-23)
+
+
+### Features
+
+* **BEHLTP-493:** My Path v2 daily session and active path endpoints ([#1074](https://github.com/railroadmedia/musora-content-services/issues/1074)) ([0556afc](https://github.com/railroadmedia/musora-content-services/commit/0556afc97874e2528700b79121cbfc6855b73702))
+
+### [2.192.2](https://github.com/railroadmedia/musora-content-services/compare/v2.192.1...v2.192.2) (2026-10-23)
+
+### [2.192.1](https://github.com/railroadmedia/musora-content-services/compare/v2.192.0...v2.192.1) (2026-10-22)
+
+## [2.192.0](https://github.com/railroadmedia/musora-content-services/compare/v2.191.0...v2.192.0) (2026-10-21)
+
+
+### Features
+
+* **MU2-2024:** make user state filtering optional in fetchAvailablePromotionalCampaigns ([1917f4b](https://github.com/railroadmedia/musora-content-services/commit/1917f4b81bdc81185ec239d8a4b8eb26549cbd65))
+
+## [2.191.0](https://github.com/railroadmedia/musora-content-services/compare/v2.190.0...v2.191.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** match promotional campaign placeholders regardless of case ([3760945](https://github.com/railroadmedia/musora-content-services/commit/3760945f94e90e9c7248e80f61bcf3a18a6e00fc))
+
+
+### Bug Fixes
+
+* **MU2-2024:** keep placements with unresolved placeholders in promotional campaigns ([b271ae8](https://github.com/railroadmedia/musora-content-services/commit/b271ae873309a1c48f75719d95b5dd2b59129913))
+
+## [2.190.0](https://github.com/railroadmedia/musora-content-services/compare/v2.189.0...v2.190.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** resolve placement copy in fetchAvailablePromotionalCampaigns ([ac69d37](https://github.com/railroadmedia/musora-content-services/commit/ac69d379a264e031b1f5bd999b6bed8c78fbfb58))
+
+## [2.189.0](https://github.com/railroadmedia/musora-content-services/compare/v2.188.0...v2.189.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** add placeholder resolution for promotional campaign copy ([f5cebb3](https://github.com/railroadmedia/musora-content-services/commit/f5cebb3888ce1228ecba5ec17412c8bcfaff8c35))
+
+## [2.188.0](https://github.com/railroadmedia/musora-content-services/compare/v2.187.0...v2.188.0) (2026-10-20)
+
+
+### Features
+
+* **MU2-2024:** add brand filtering to promotional campaign queries ([0d6fed8](https://github.com/railroadmedia/musora-content-services/commit/0d6fed83329ccfeabab2ddbd6dff129075c1207b))
+
+## [2.187.0](https://github.com/railroadmedia/musora-content-services/compare/v2.186.1...v2.187.0) (2026-10-19)
+
+
+### Features
+
+* **MU2-2024:** add disclaimer to the promotional campaign placement type ([9905117](https://github.com/railroadmedia/musora-content-services/commit/990511777622eca93758b5252c908900e484b6f5))
+
+### [2.186.1](https://github.com/railroadmedia/musora-content-services/compare/v2.186.0...v2.186.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* guard against null awards list when Sanity fetch fails ([#1053](https://github.com/railroadmedia/musora-content-services/issues/1053)) ([77f0bf7](https://github.com/railroadmedia/musora-content-services/commit/77f0bf711c2fcc5a5e47cb1a8d0328f670f5107d))
+* preserve resume time when duplicating playlist progress  ([#1045](https://github.com/railroadmedia/musora-content-services/issues/1045)) ([d62d394](https://github.com/railroadmedia/musora-content-services/commit/d62d394542b170741c818182405ca53efde046d1)), closes [#1079](https://github.com/railroadmedia/musora-content-services/issues/1079)
+* replace @/ alias imports with relative paths in src ([bc22248](https://github.com/railroadmedia/musora-content-services/commit/bc22248264a029904c7f8bae403c257268da47c6))
+
+## [2.186.0](https://github.com/railroadmedia/musora-content-services/compare/v2.185.1...v2.186.0) (2026-10-16)
+
+
+### Features
+
+* **MU2-1384:** Port recommendations to the new sanity builders ([#1058](https://github.com/railroadmedia/musora-content-services/issues/1058)) ([0e2e41f](https://github.com/railroadmedia/musora-content-services/commit/0e2e41f86e26e16af18b894ab2472d54e3008022))
+* **MU2-2025:** Add promotional campaign queries and claim state ([#1081](https://github.com/railroadmedia/musora-content-services/issues/1081)) ([921ab1e](https://github.com/railroadmedia/musora-content-services/commit/921ab1effee488253413fd42146377e986571e45))
+
+### [2.185.1](https://github.com/railroadmedia/musora-content-services/compare/v2.185.0...v2.185.1) (2026-10-06)
+
+## [2.185.0](https://github.com/railroadmedia/musora-content-services/compare/v2.184.1...v2.185.0) (2026-10-01)
+
+
+### Features
+
+* **BEHLTP-380:** preroll LP intros ([#1066](https://github.com/railroadmedia/musora-content-services/issues/1066)) ([4706a1f](https://github.com/railroadmedia/musora-content-services/commit/4706a1f19d15ddfd409a85d2d8ebb1f70e134a99))
+
+### [2.184.1](https://github.com/railroadmedia/musora-content-services/compare/v2.184.0...v2.184.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* update AccountSetupProps interface to return correct type ([7c5aa63](https://github.com/railroadmedia/musora-content-services/commit/7c5aa6304dc2c22f7399ae8f55cf2e930097a8f6))
+
+## [2.184.0](https://github.com/railroadmedia/musora-content-services/compare/v2.183.2...v2.184.0) (2026-09-26)
+
+
+### Features
+
+* **BEHLTP-457:** Sub account onboarding flow - Add Token to invite email linke  ([#1061](https://github.com/railroadmedia/musora-content-services/issues/1061)) ([ea3a068](https://github.com/railroadmedia/musora-content-services/commit/ea3a068c07972762b3f3a6ed67e0ff7d7e592588))
+
+### [2.183.2](https://github.com/railroadmedia/musora-content-services/compare/v2.183.1...v2.183.2) (2026-09-24)
+
+
+### Bug Fixes
+
+* pass send_email down as body param on POST request ([afd8ada](https://github.com/railroadmedia/musora-content-services/commit/afd8ada65ab6c702f5b2ec1e63900adf5cd51e40))
+
+### [2.183.1](https://github.com/railroadmedia/musora-content-services/compare/v2.183.0...v2.183.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* send_email param on account status ([ad43c46](https://github.com/railroadmedia/musora-content-services/commit/ad43c46102a14d9a4ce0136dbc682e7f3a6adb08))
+
+## [2.183.0](https://github.com/railroadmedia/musora-content-services/compare/v2.182.0...v2.183.0) (2026-09-24)
+
+
+### Features
+
+* **MU2-1970:** Add magic link login services ([#1056](https://github.com/railroadmedia/musora-content-services/issues/1056)) ([964dc8e](https://github.com/railroadmedia/musora-content-services/commit/964dc8ee532b2bd30e36b697527cee8d5a039ae6))
+
+## [2.182.0](https://github.com/railroadmedia/musora-content-services/compare/v2.181.0...v2.182.0) (2026-09-21)
+
+
+### Features
+
+* **BEHLTP-368:** placement quiz endpoints ([#1051](https://github.com/railroadmedia/musora-content-services/issues/1051)) ([248b4c9](https://github.com/railroadmedia/musora-content-services/commit/248b4c9e48b056a651d44c129d5d0cb3ce80777d))
+* **BEHLTP-395:** add resetActiveLearningPath() ([#1055](https://github.com/railroadmedia/musora-content-services/issues/1055)) ([02df2df](https://github.com/railroadmedia/musora-content-services/commit/02df2dffd59844ff0c11a43f357efa6ed346a07f))
+
+
+### Bug Fixes
+
+* move learning-paths.ts to my-path/ module ([#1054](https://github.com/railroadmedia/musora-content-services/issues/1054)) ([49fb9a9](https://github.com/railroadmedia/musora-content-services/commit/49fb9a983512e1d657285ddd13555d5ae9cb8e7b))
+
+## [2.181.0](https://github.com/railroadmedia/musora-content-services/compare/v2.180.0...v2.181.0) (2026-09-17)
+
+
+### Features
+
+* allow merged config ([#1018](https://github.com/railroadmedia/musora-content-services/issues/1018)) ([8d8a9aa](https://github.com/railroadmedia/musora-content-services/commit/8d8a9aaed048e83b7dfeb15a7c12fabd199721f1))
+
+
+### Bug Fixes
+
+* **BR-717:** expire streak cache at calendar day boundary ([1f4481c](https://github.com/railroadmedia/musora-content-services/commit/1f4481cc5a71afa990c39d5927099b093a475c83))
+* **BR-964:** unpin deleted playlists at fetch time ([#1052](https://github.com/railroadmedia/musora-content-services/issues/1052)) ([0367143](https://github.com/railroadmedia/musora-content-services/commit/036714377469beccbceae93d138a9d2280516395))
+
 ## [2.180.0](https://github.com/railroadmedia/musora-content-services/compare/v2.179.0...v2.180.0) (2026-09-04)
 
 

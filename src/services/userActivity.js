@@ -13,7 +13,7 @@ import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
 import { streakCalculator } from './user/streakCalculator'
-import { mapContentsThatWereLastProgressedFromMethod } from "./content-org/learning-paths.ts";
+import { mapContentsThatWereLastProgressedFromMethod } from './my-path/learning-paths.ts'
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -113,6 +113,10 @@ export async function getUserWeeklyStats() {
   )
 
   const practiceDaysSet = new Set(Object.keys(weekPractices))
+  const todayStr = today.format('YYYY-MM-DD')
+  // Days practiced so far this week, not the whole Monday-Sunday span - a day
+  // later this week hasn't happened yet, so it can't count as "practiced".
+  const currentWeekPracticeDays = [...practiceDaysSet].filter((d) => d <= todayStr).length
   let dailyStats = []
   for (let i = 0; i < 7; i++) {
     const day = startOfWeek.add(i, 'day')
@@ -139,7 +143,7 @@ export async function getUserWeeklyStats() {
       streakMessagePart1: streakData.streakMessagePart1,
       streakMessagePart2: streakData.streakMessagePart2,
       practices: weekPractices,
-      currentWeekPracticeDays: streakData.currentWeekPracticeDays,
+      currentWeekPracticeDays,
       todaysPracticeSeconds: streakData.todaysPracticeSeconds,
     },
   }
@@ -308,7 +312,6 @@ export async function recordUserPractice(practiceDetails) {
     instrument_id: practiceDetails.instrument_id ?? null,
   })
 
-  streakCalculator.invalidate()
   return result
 }
 
@@ -318,7 +321,6 @@ export async function trackUserPractice(contentId, incSeconds) {
     skipPush: true,
   }) // NOTE - SKIPS PUSH
 
-  streakCalculator.invalidate()
   return result
 }
 
@@ -343,7 +345,6 @@ export async function trackUserPractice(contentId, incSeconds) {
  */
 export async function updateUserPractice(id, practiceDetails) {
   const result = await db.practices.updateDetails(id, practiceDetails)
-  streakCalculator.invalidate()
   return result
 }
 
@@ -361,7 +362,6 @@ export async function updateUserPractice(id, practiceDetails) {
  */
 export async function removeUserPractice(id) {
   const result = await db.practices.deleteOne(id)
-  streakCalculator.invalidate()
   return result
 }
 
@@ -400,7 +400,6 @@ export async function restoreUserPractice(id) {
 export async function deletePracticeSession(day) {
   const ids = await db.practices.queryAllIds(Q.where('date', day))
   const result = await db.practices.deleteSome(ids.data)
-  streakCalculator.invalidate()
   return result
 }
 
@@ -429,7 +428,6 @@ export async function restorePracticeSession(date) {
     (total, practice) => total + (practice.duration || 0),
     0
   )
-  streakCalculator.invalidate()
   return { data: formattedMeta, practiceDuration }
 }
 
@@ -508,7 +506,9 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
 
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const startOfWeek = getMonday(new Date(), timeZone)
-  const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
+  const weekDays = Array.from({ length: 7 }, (_, i) =>
+    startOfWeek.add(i, 'day').format('YYYY-MM-DD')
+  )
 
   if (options.pull) {
     await db.practices.pull()
@@ -516,7 +516,10 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
     db.practices.pull()
   }
 
-  const query = await db.practices.queryAll(Q.where('date', Q.oneOf(weekDays)), Q.sortBy('created_at', 'asc'))
+  const query = await db.practices.queryAll(
+    Q.where('date', Q.oneOf(weekDays)),
+    Q.sortBy('created_at', 'asc')
+  )
   const data = query.data
 
   return formatPracticeSessionData(data, page, limit)
@@ -524,7 +527,9 @@ export async function getWeeklyPracticeSessions(params = {}, options = {}) {
 
 async function formatPracticeSessionData(data, page, limit) {
   if (!data.length)
-    return { data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 } }
+    return {
+      data: { practices: [], practiceDuration: 0, total: 0, currentPage: page, totalPages: 1 },
+    }
 
   const practiceDuration = Math.round(
     data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0)
@@ -652,6 +657,122 @@ export async function updatePracticeNotes(payload) {
   })
 }
 
+/**
+ * Notes attached to a specific lesson, oldest first (the order they were taken in during
+ * playback), in addition to the daily/weekly notes above. Pass `date` to scope it to the
+ * notes taken on that specific day (e.g. for a single practice tracker item), omit it for
+ * every note ever taken on the lesson.
+ *
+ * @param {number} contentId
+ * @param {string|null} [date] - YYYY-MM-DD
+ * @returns {Promise<Object[]>}
+ *
+ * @example
+ * getLessonNotes(12345).then(notes => console.log(notes))
+ * getLessonNotes(12345, '2026-09-08').then(notes => console.log(notes))
+ */
+export async function getLessonNotes(contentId, date = null) {
+  const result = await db.lessonNotes.getNotesForContent(contentId, date)
+  return result.data
+}
+
+/**
+ * Pulls the latest lesson notes from the server into the local database, e.g. when the
+ * notes drawer opens, so notes saved on another device show up without waiting for the
+ * next background sync. Observers from observeLessonNotes() are notified of any change.
+ *
+ * @returns {Promise<void>}
+ *
+ * @example
+ * refreshLessonNotes()
+ */
+export async function refreshLessonNotes() {
+  await db.lessonNotes.pull()
+}
+
+/**
+ * Calls `callback` with the lesson's notes, oldest first, right away and again whenever
+ * they change: a note added, edited or deleted on this device, or pulled from the server
+ * after being saved on another one. Returns a function that stops listening.
+ *
+ * @param {number} contentId
+ * @param {function(Object[]): void} callback
+ * @returns {function(): void} - call it to stop listening
+ *
+ * @example
+ * const stopObserving = observeLessonNotes(12345, notes => setNotes(notes))
+ * // when the notes drawer closes:
+ * stopObserving()
+ */
+export function observeLessonNotes(contentId, callback) {
+  return db.lessonNotes.observeNotesForContent(contentId, callback)
+}
+
+/**
+ * Creates a new note on a lesson. A lesson can have any number of notes, each a discrete
+ * entry. `timestampMs` is the video position at save time — pass null for notes created
+ * outside the playback experience (e.g. the practice tracker), where there is no position
+ * to capture. `date` defaults to the device's own local calendar day (not UTC) — pass it
+ * explicitly only to override, otherwise a note taken right around midnight always lands
+ * on the day the user actually experienced.
+ *
+ * @param {number} contentId
+ * @param {string} notes
+ * @param {number|null} [timestampMs]
+ * @param {string|null} [date] - YYYY-MM-DD, defaults to today (local)
+ *
+ * @example
+ * createLessonNote(12345, 'Focus on the bridge next time', 95000)
+ */
+export async function createLessonNote(contentId, notes, timestampMs = null, date = null) {
+  return await db.lessonNotes.createNote(
+    contentId,
+    date ?? new Date().toLocaleDateString('sv-SE'), // YYYY-MM-DD wall clock date in user's timezone
+    notes,
+    timestampMs
+  )
+}
+
+/**
+ * Updates an existing lesson note's text. A note's original timestamp is preserved
+ * server-side regardless of what's sent — only the text is ever editable after creation.
+ *
+ * @param {string} id - the local record id from getLessonNotes()
+ * @param {string} notes
+ *
+ * @example
+ * updateLessonNote(note.id, 'Focus on the bridge and the outro next time')
+ */
+export async function updateLessonNote(id, notes) {
+  return await db.lessonNotes.updateNote(id, notes)
+}
+
+/**
+ * Deletes a lesson note.
+ *
+ * @param {string} id - the local record id from getLessonNotes()
+ *
+ * @example
+ * deleteLessonNote(note.id)
+ */
+export async function deleteLessonNote(id) {
+  return await db.lessonNotes.deleteNote(id)
+}
+
+/**
+ * Lesson ids the user has at least one note on — a lightweight "has notes" indicator
+ * (e.g. for a practice tracker card), mirroring getRecordedContentIds() but resolved
+ * from the local, already-synced lesson notes table rather than a network call.
+ *
+ * @returns {Promise<Array<number>>}
+ *
+ * @example
+ * getContentIdsWithLessonNotes().then(ids => console.log(ids))
+ */
+export async function getContentIdsWithLessonNotes() {
+  return await db.lessonNotes.getContentIdsWithNotes()
+}
+
 export function getStreaksAndMessage(practices) {
   let {
     currentDailyStreak,
@@ -659,7 +780,6 @@ export function getStreaksAndMessage(practices) {
     streakMessage,
     streakMessagePart1,
     streakMessagePart2,
-    currentWeekPracticeDays,
   } = calculateStreaks(practices, true)
 
   return {
@@ -668,7 +788,6 @@ export function getStreaksAndMessage(practices) {
     streakMessage,
     streakMessagePart1,
     streakMessagePart2,
-    currentWeekPracticeDays,
   }
 }
 
@@ -690,7 +809,6 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     return {
       currentDailyStreak: 0,
       currentWeeklyStreak: 0,
-      currentWeekPracticeDays: 0,
       streakMessage: joinStreakMessageParts(
         streakMessages.startStreak.part1,
         streakMessages.startStreak.part2
@@ -741,11 +859,8 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   }
   currentWeeklyStreak = weeklyStreak
 
-  // Qualifying days (calendar days with at least one recorded practice) within the
-  // current Monday-anchored week — used for the weekly practice-days target progress.
   let today = new Date()
   let currentWeekStart = getMonday(today, timeZone)
-  let currentWeekPracticeDays = sortedPracticeDays.filter((date) => date >= currentWeekStart).length
 
   // Calculate streak message only if includeStreakMessage is true
   if (includeStreakMessage) {
@@ -798,7 +913,6 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     streakMessage: joinStreakMessageParts(streakMessageParts.part1, streakMessageParts.part2),
     streakMessagePart1: streakMessageParts.part1,
     streakMessagePart2: streakMessageParts.part2,
-    currentWeekPracticeDays,
   }
 }
 
@@ -916,7 +1030,7 @@ async function formatPracticeMeta(practices = []) {
       duration: practice.duration_seconds || 0,
       duration_seconds: practice.duration_seconds || 0,
       content_url: content?.url || null,
-      title: practice.content_id ? content?.title : practice?.title  || practice.content_id,
+      title: practice.content_id ? content?.title : practice?.title || practice.content_id,
       category_id: practice.category_id,
       instrument_id: practice.instrument_id,
       content_type: getFormattedType(content?.type || '', content?.brand || null),

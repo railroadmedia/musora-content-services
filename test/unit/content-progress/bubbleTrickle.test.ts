@@ -33,7 +33,7 @@ jest.mock('../../../src/services/sanity.js', () => ({
   getSanityDate: jest.fn((date: Date) => date.toISOString()),
 }))
 
-jest.mock('../../../src/services/content-org/learning-paths', () => ({
+jest.mock('../../../src/services/my-path/learning-paths', () => ({
   getDailySession: jest.fn(),
   onLearningPathCompletedActions: jest.fn(),
 }))

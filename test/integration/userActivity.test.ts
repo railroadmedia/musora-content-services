@@ -33,7 +33,7 @@ jest.mock('../../src/services/contentAggregator.js', () => ({
   addContextToContent: jest.fn().mockResolvedValue([]),
 }))
 
-jest.mock('../../src/services/content-org/learning-paths.ts', () => ({
+jest.mock('../../src/services/my-path/learning-paths.ts', () => ({
   mapContentsThatWereLastProgressedFromMethod: jest.fn((contents) => Promise.resolve(contents)),
 }))
 
@@ -46,7 +46,6 @@ jest.mock('../../src/services/user/streakCalculator.ts', () => ({
       calculatedAt: Date.now(),
       lastPracticeDate: null,
     }),
-    invalidate: jest.fn(),
   }
 }))
 

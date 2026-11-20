@@ -92,3 +92,41 @@ export type FaqDocument = {
     answer?: string
   }[]
 }
+
+export type PromotionalCampaignDocument = {
+  _id: string
+  _type: "promotional-campaign"
+  _createdAt: string
+  _updatedAt: string
+  _rev: string
+  brand: "musora" | "drumeo" | "pianote" | "singeo" | "guitareo" | "playbass"
+  /** Campaign Name */
+  name: string
+  slug: { _type: "slug"; current: string }
+  /** Starts At */
+  starts_at: string
+  /** Ends At */
+  ends_at: string
+  /** Active? */
+  active?: boolean
+  /** Cart Link */
+  cart_link?: string
+  /** Placements */
+  placements: {
+    _key: string
+    /** Placement Key */
+    key: string
+    title?: string
+    long_title?: string
+    body?: string
+    disclaimer?: string
+    /** Dark Image */
+    dark_mode_image?: { _type: "image"; asset: { _type: "reference"; _ref: string } }
+    /** Light Image */
+    light_mode_image?: { _type: "image"; asset: { _type: "reference"; _ref: string } }
+    /** CTA Label */
+    cta_label?: string
+    /** Dismissible? */
+    dismissible?: boolean
+  }[]
+}

@@ -37,12 +37,11 @@ export async function fetchArtists(
 ): Promise<Artists> {
   const type = f.type('artist')
   const postFilter = `lesson_count > 0`
-  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
+  const { sort = 'lower(name)', offset = 0, limit } = options
 
   const data = query()
     .and(type)
     .order(getSortOrder(sort, brand))
-    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
@@ -50,6 +49,8 @@ export async function fetchArtists(
       `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .postFilter(postFilter)
+
+  if (limit) data.slice(offset, limit)
 
   const q = `{
     "data": ${data},
@@ -140,7 +141,7 @@ export async function fetchArtistLessons(
     f.notDeprecated(),
     f.referencesIDWithFilter(f.combine(f.type('artist'), f.slug(slug))),
     f.brand(brand),
-    f.permissions({showMembershipRestrictedContent: true}),
+    f.permissions({ showMembershipRestrictedContent: true }),
     f.searchMatch('title', searchTerm),
     f.includedFields(includedFields),
     f.progressIds(progressIds)

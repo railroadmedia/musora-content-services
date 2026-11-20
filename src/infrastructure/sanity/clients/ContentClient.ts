@@ -18,16 +18,16 @@ export class ContentClient extends SanityClient {
   public async fetchById<T>(options: FetchByIdOptions): Promise<T | null> {
     try {
       const { type, id, fields, includeChildren = false } = options
-      
+
       // Build the base query
       let query = `*[railcontent_id == ${id} && _type == '${type}']`
-      
+
       // Build fields string
       let fieldsString = this.buildFieldsString(type, fields, includeChildren)
-      
+
       // Complete the query
       query += `{${fieldsString}}[0]`
-      
+
       return await this.fetchSingle<T>(query)
     } catch (error: any) {
       this.handleContentError(error, `fetchById(${JSON.stringify(options)})`)
@@ -110,17 +110,16 @@ export class ContentClient extends SanityClient {
       "'thumbnail': thumbnail.asset->url",
       'difficulty',
       'difficulty_string',
-      'web_url_path',
-      "'url': web_url_path",
       'published_on',
       "'type': _type",
       'brand',
       'status',
       "'slug': slug.current",
-      "'permission_id': permission[]->railcontent_id",
+      "'permission_id': permission_v2",
       'length_in_seconds',
       "'artist': artist->name",
-      "'instructors': instructor[]->name"
+      "'instructors': instructor[]->name",
+      "'is_plus_content': membership_tier == 'plus'",
     ]
 
     // Use custom fields if provided, otherwise use defaults
@@ -137,7 +136,8 @@ export class ContentClient extends SanityClient {
           "image": thumbnail.asset->url,
           "instructors": instructor[]->name,
           length_in_seconds,
-          web_url_path
+          "'permission_id': permission_v2",
+          "is_plus_content": membership_tier == 'plus',
         }`
       ]
     }
@@ -161,4 +161,4 @@ export class ContentClient extends SanityClient {
       originalError: error,
     }
   }
-} 
+}

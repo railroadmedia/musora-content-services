@@ -10,7 +10,7 @@ import { COLLECTION_ID_SELF, COLLECTION_TYPE } from '../../../src/services/sync/
 import db from '../../../src/services/sync/repository-proxy'
 
 jest.mock('../../../src/services/sanity.js', () => require('./__mocks__/mocks').mockSanity())
-jest.mock('../../../src/services/content-org/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
+jest.mock('../../../src/services/my-path/learning-paths.ts', () => require('./__mocks__/mocks').mockLearningPaths())
 jest.mock('../../../src/services/awards/internal/content-progress-observer', () => require('./__mocks__/mocks').mockContentProgressObserver())
 jest.mock('../../../src/services/progress-events', () => require('./__mocks__/mocks').mockProgressEvents())
 
@@ -104,7 +104,7 @@ describe('bubbleAndTrickleProgressesSafely', () => {
 // ─── handleLearningPathProgressActions ────────────────────────────────────────
 
 describe('handleLearningPathProgressActions', () => {
-  const mockLearningPaths = jest.requireMock('../../../src/services/content-org/learning-paths.ts')
+  const mockLearningPaths = jest.requireMock('../../../src/services/my-path/learning-paths.ts')
 
   beforeEach(() => {
     mockLearningPaths.onLearningPathCompletedActions.mockClear()
@@ -228,7 +228,7 @@ describe('getIdsWhereLastAccessedFromMethod', () => {
 // ─── Scenario: LP lesson completion ───────────────────────────────────────────
 
 describe('Scenario: LP lesson at 100% triggers completion and duplicates to a-la-carte', () => {
-  const mockLearningPaths = jest.requireMock('../../../src/services/content-org/learning-paths.ts')
+  const mockLearningPaths = jest.requireMock('../../../src/services/my-path/learning-paths.ts')
 
   beforeEach(() => {
     mockLearningPaths.onLearningPathCompletedActions.mockClear()
@@ -246,7 +246,7 @@ describe('Scenario: LP lesson at 100% triggers completion and duplicates to a-la
 })
 
 describe('Scenario: Offline LP progress skips award check', () => {
-  const mockLearningPaths = jest.requireMock('../../../src/services/content-org/learning-paths.ts')
+  const mockLearningPaths = jest.requireMock('../../../src/services/my-path/learning-paths.ts')
 
   beforeEach(() => {
     mockLearningPaths.onLearningPathCompletedActions.mockClear()

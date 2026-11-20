@@ -22,7 +22,7 @@ const CACHE_EXPIRY_MS = 5 * 60 * 1000
 /**
  * Retrieves user's pinned data by brand, from localStorage or BE call.
  * @param brand
- * @returns {Promise<any|*|{id, type}>}
+ * @returns {Promise<any|*|{id, type}>} - only id and type
  */
 async function getUserPinnedItem(brand) {
   const key = getUserPinProgressKey()
@@ -170,7 +170,12 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, opti
 
   const [contentCardMap, playlistCards, methodCard] = await getCards(brand, limit, userPinnedItem)
 
-  const pinnedCard = await popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard)
+  let pinnedCard = null
+  try {
+    pinnedCard = await popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard, brand) // todo: catch errors in here
+  } catch (error) {
+    console.error('Error popping pinned item:', error)
+  }
 
   let allResultsLength = playlistCards.length + contentCardMap.size
   if (methodCard) {
@@ -207,7 +212,7 @@ async function getCards(brand, limit, userPinnedItem) {
  * If userPinnedItem is not found, generate the pinned card from scratch.
  *
  **/
-async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard) {
+async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard, brand) {
   if (!userPinnedItem) return null
   const pinnedId = parseInt(userPinnedItem.id)
   const progressType = userPinnedItem.progressType ?? userPinnedItem.type
@@ -236,13 +241,24 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
     if (pinnedPlaylist) {
       item = pinnedPlaylist
     } else {
-      const playlist = await fetchPlaylist(pinnedId)
-      item = processPlaylistItem({
-        id: pinnedId,
-        playlist: playlist,
-        type: 'playlist',
-        progressTimestamp: new Date().getTime(),
-      })
+      let playlist
+      try {
+        playlist = await fetchPlaylist(pinnedId)
+      } catch (error) {
+        if (error?.status !== 404) {
+          throw error
+        }
+        unpinProgressRow(brand)
+      }
+
+      if (playlist) {
+        item = processPlaylistItem({
+          id: pinnedId,
+          playlist: playlist,
+          type: 'playlist',
+          progressTimestamp: new Date().getTime(),
+        })
+      }
     }
   } else if (progressType === 'method') {
     // simply get method card and return

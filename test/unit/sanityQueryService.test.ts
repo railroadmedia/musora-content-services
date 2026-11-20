@@ -2,7 +2,10 @@ import { initializeTestService } from '../initializeTests.js'
 import { getSortOrder } from '../../src/services/sanity.js'
 import { processMetadata } from '../../src/contentMetaData.js'
 import { FilterBuilder } from '../../src/filterBuilder.js'
-import { getFieldsForContentTypeWithFilteredChildren } from '../../src/contentTypeConfig.js'
+import {
+  getFieldsForContentType,
+  getFieldsForContentTypeWithFilteredChildren,
+} from '../../src/contentTypeConfig.js'
 
 jest.mock('../../src/services/permissions/index.ts', () => ({
   ...jest.requireActual('../../src/services/permissions/index.ts'),
@@ -187,6 +190,10 @@ describe('Sanity Queries', function() {
   test('invalidContentType', async () => {
     const metaData = processMetadata('guitareo', 'not a real type')
     expect(metaData).toBeNull()
+  })
+
+  test('lessonPlaybackFieldsIncludeBlockRecording', () => {
+    expect(getFieldsForContentType('download', false)).toContain('block_recording')
   })
 
   test('newAndScheduledProjectionIncludesChildren', async () => {

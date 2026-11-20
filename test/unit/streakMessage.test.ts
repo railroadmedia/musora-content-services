@@ -1,6 +1,5 @@
 import { initializeTestService } from '../initializeTests.js'
 import {getUserWeeklyStats, userActivityContext} from '../../src/services/userActivity.js'
-import { streakCalculator } from '../../src/services/user/streakCalculator'
 import {log} from '../log.js'
 
 let mockPracticeData: { date: string; duration_seconds: number }[] = []
@@ -229,7 +228,6 @@ async function testExpectedMessageForDays(exampleData, expectedMessages, startDa
       let activeDays = sliceExampleData(startDate, i, includeToday, exampleData)
       mockPracticeData = activeDays.map(({ date, duration_seconds }) => ({ date, duration_seconds }))
       userActivityContext.clearCache()
-      streakCalculator.invalidate()
       let practices = await getUserWeeklyStats()
       const state = includeToday ? 'STARTED' :  'NOT-STARTED'
       const expected = includeToday && !!expectedMessages[i].complete ? expectedMessages[i].complete :

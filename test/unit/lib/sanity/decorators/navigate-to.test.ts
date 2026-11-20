@@ -201,13 +201,16 @@ describe('navigate-to decorator', () => {
     })
 
     test('two-depth: prefetches grandchild ids in a single batched call', async () => {
-      const { default: repositoryProxy } = require('../../../../../src/services/sync/repository-proxy')
+      const {
+        default: repositoryProxy,
+      } = require('../../../../../src/services/sync/repository-proxy')
       const courseA = parent(101, 'course', [child(201), child(202)])
       const collection = parent(1, 'course-collection', [courseA])
       await decorateNavigateTo(collection)
 
       expect(repositoryProxy.contentProgress.getSomeProgressByContentIds).toHaveBeenCalledTimes(1)
-      const [requestedIds] = repositoryProxy.contentProgress.getSomeProgressByContentIds.mock.calls[0]
+      const [requestedIds] =
+        repositoryProxy.contentProgress.getSomeProgressByContentIds.mock.calls[0]
       expect(requestedIds).toEqual(expect.arrayContaining([1, 101, 201, 202]))
     })
 
@@ -229,8 +232,8 @@ describe('navigate-to decorator', () => {
       const result = await decorateNavigateTo(item)
       expect(result.navigateTo).not.toBeNull()
       const children = result.children as NavigateToDecoratable[]
-      expect((children[0] as Record<string, unknown>).navigateTo).toBeUndefined()
-      expect((children[1] as Record<string, unknown>).navigateTo).toBeUndefined()
+      expect((children[0] as unknown as Record<string, unknown>).navigateTo).toBeUndefined()
+      expect((children[1] as unknown as Record<string, unknown>).navigateTo).toBeUndefined()
     })
 
     test('skill-pack uses course flow', async () => {
@@ -352,6 +355,49 @@ describe('navigate-to decorator', () => {
       const collection = parent(1, 'course-collection', [courseA])
       const result = await decorateNavigateTo(collection)
       expect(result.navigateTo).toBeNull()
+    })
+
+    test('documentary uses course flow', async () => {
+      const item = parent(1, 'documentary', [child(101), child(102)])
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 40, updated_at: 1000 },
+        { content_id: 101, state: 'completed', progress_percent: 100, updated_at: 900 },
+        { content_id: 102, state: '', progress_percent: 0, updated_at: 0 },
+      ]
+      mockLastInteracted = 101
+
+      const result = await decorateNavigateTo(item)
+
+      expect(result.navigateTo).toMatchObject({ id: 102 })
+    })
+
+    test('skips null children left by a filtered GROQ dereference', async () => {
+      const item = parent(1, 'course', [null as any, child(101), null as any])
+
+      const result = await decorateNavigateTo(item)
+
+      expect(result.navigateTo).toMatchObject({ id: 101 })
+    })
+
+    test('returns null when every child was filtered out', async () => {
+      const item = parent(1, 'course', [null as any, undefined as any])
+
+      const result = await decorateNavigateTo(item)
+
+      expect(result.navigateTo).toBeNull()
+    })
+
+    test('skips null grandchildren in a course collection', async () => {
+      const course = parent(101, 'course', [null as any, child(1001)])
+      const collectionWithHoles = parent(1, 'course-collection', [null as any, course])
+      mockProgressRecords = [
+        { content_id: 1, state: 'started', progress_percent: 40, updated_at: 1000 },
+      ]
+      mockLastInteracted = 101
+
+      const result = await decorateNavigateTo(collectionWithHoles)
+
+      expect(result.navigateTo).toMatchObject({ id: 101, child: { id: 1001 } })
     })
 
     test('output shape matches NavigateTo interface', async () => {

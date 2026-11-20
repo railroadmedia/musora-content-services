@@ -80,6 +80,7 @@ export function conditionalComposition(opts: { withAccess: boolean; withPageType
 }
 
 interface ProgressDecoratable extends AccessDecoratable {
+  id: number
   progress_percent?: number
   is_liked?: boolean
 }
@@ -94,7 +95,7 @@ async function fetchLiked(id: number): Promise<boolean> {
 
 export async function singleAsyncDecorator() {
   const decorated = (await decorateAsync(rows, 'progress_percent', (item) =>
-    fetchProgress(item.id as number)
+    fetchProgress(item.id)
   )) as ProgressDecoratable[]
   decorated[0].progress_percent satisfies number | undefined
   return decorated
@@ -104,7 +105,7 @@ export async function parallelAsyncDecorators() {
   const decorators: FieldDecoratorAsync<ProgressDecoratable>[] = [
     {
       field: 'progress_percent',
-      compute: (item) => fetchProgress(item.id as number),
+      compute: (item) => fetchProgress(item.id),
     },
     {
       field: 'is_liked',
@@ -127,7 +128,7 @@ export async function mixedSyncThenAsync() {
   return decorateAllAsync(withAccess, [
     {
       field: 'progress_percent',
-      compute: (item) => fetchProgress(item.id as number),
+      compute: (item) => fetchProgress(item.id),
     },
     {
       field: 'is_liked',

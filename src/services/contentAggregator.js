@@ -127,12 +127,12 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
  * Key behaviors:
  * 1. Enriches all learning paths in a method structure
  * 2. Auto-sets collection for learning-path-v2 items when no collection specified
- * 3. Enriches intro videos when dataField_includeIntroVideo is true
+ * 3. Enriches LP preroll when dataField_includePreroll is true
  *
  * @param dataPromise - promise or method that provides sanity data
  * @param dataArgs - Arguments to pass to the dataPromise
  * @param options - Same as addContextToContent, plus:
- * @param options.dataField_includeIntroVideo - If true, adds progress to intro_video field where it exists
+ * @param options.dataField_includePreroll - If true, adds progress to preroll (and intro_video for FF) field where it exists
  *
  * @returns {Promise<Object | false>} - Enriched data or false if no data found
  *
@@ -140,7 +140,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
  * // Enrich method structure with all learning paths
  * const method = await addContextToMethodContent(fetchMethodV2Structure, brand, {
  *   dataField: 'learningPaths',
- *   dataField_includeIntroVideo: true,
+ *   dataField_includePreroll: true,
  *   addProgressStatus: true,
  *   addProgressPercentage: true,
  * })
@@ -151,7 +151,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
  *   collection: { id: lpId, type: 'learning-path-v2' },
  *   dataField: 'children',
  *   dataField_includeParent: true,
- *   dataField_includeIntroVideo: true,
+ *   dataField_includePreroll: true,
  *   addProgressStatus: true,
  * })
  */
@@ -163,7 +163,7 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
   const {
     dataField = null,
     dataField_includeParent = false,
-    dataField_includeIntroVideo = false,
+    dataField_includePreroll = false,
     addProgressPercentage = false,
     addProgressStatus = false,
     addProgressTimestamp = false,
@@ -175,8 +175,9 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
   } = options
 
   let dataFields = dataField ? [dataField] : []
-  if (dataField_includeIntroVideo) {
-    dataFields.push('intro_video')
+  if (dataField_includePreroll) {
+    dataFields.push('preroll')
+    dataFields.push('intro_video') // todo: remove intro_video things when My Path feature flag is removed.
   }
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -187,7 +188,7 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
   if (!data) return false
 
   let items, recordIds
-  [data, items, recordIds] = addRecordIdsToData(data, dataField, isDataAnArray, dataField_includeParent, dataField_includeIntroVideo) ?? []
+  [data, items, recordIds] = addRecordIdsToData(data, dataField, isDataAnArray, dataField_includeParent, dataField_includePreroll) ?? []
   if (items.length === 0) return data
 
   const ids = recordIds.map(item => extractFromRecordId(item).contentId)
@@ -304,7 +305,7 @@ function extractItemsFromData(data, dataField, isParentArray, includeParent) {
   return items
 }
 
-function addRecordIdsToData(data, dataField, isDataAnArray, includeParent, includeIntroVideo) {
+function addRecordIdsToData(data, dataField, isDataAnArray, includeParent, includePreroll) {
   let items = []
   let recordIds = []
 
@@ -317,10 +318,11 @@ function addRecordIdsToData(data, dataField, isDataAnArray, includeParent, inclu
         items.push(content)
         recordIds.push(content.record_id)
       }
-      if (includeIntroVideo && content.intro_video?.id) {
-        content.intro_video.record_id = generateRecordId(content.intro_video.id, null)
-        items.push(content.intro_video)
-        recordIds.push(content.intro_video.record_id)
+      if (includePreroll && content.preroll?.id) {
+        content.preroll.record_id = generateRecordId(content.preroll.id, null)
+        content.intro_video.record_id = generateRecordId(content.intro_video.id, null) // for My Path feature flag, maintaining Method functionality.
+        items.push(content.preroll)
+        recordIds.push(content.preroll.record_id)
       }
       if (dataField) {
         for (const child of content[dataField] ?? []) {

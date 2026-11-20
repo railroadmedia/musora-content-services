@@ -10,7 +10,6 @@ export interface StreakData {
   streakMessagePart2: string
   calculatedAt: number // timestamp
   lastPracticeDate: string | null
-  currentWeekPracticeDays: number
   todaysPracticeSeconds: number
 }
 export interface PracticeData {
@@ -20,16 +19,7 @@ export interface PracticeData {
   }>
 }
 class StreakCalculator {
-  private cache: StreakData | null = null
   async getStreakData(): Promise<StreakData> {
-    if (this.cache) {
-      return this.cache
-    }
-
-    return await this.recalculate()
-  }
-
-  async recalculate(): Promise<StreakData> {
     const allPractices = await this.fetchAllPractices()
 
     const {
@@ -38,10 +28,9 @@ class StreakCalculator {
       streakMessage,
       streakMessagePart1,
       streakMessagePart2,
-      currentWeekPracticeDays,
     } = getStreaksAndMessage(allPractices)
 
-    this.cache = {
+    return {
       currentDailyStreak: currentDailyStreak,
       currentWeeklyStreak: currentWeeklyStreak,
       streakMessage: streakMessage,
@@ -49,13 +38,8 @@ class StreakCalculator {
       streakMessagePart2: streakMessagePart2,
       calculatedAt: Date.now(),
       lastPracticeDate: this.getLastPracticeDate(allPractices),
-      currentWeekPracticeDays: currentWeekPracticeDays,
       todaysPracticeSeconds: this.getTodaysPracticeSeconds(allPractices),
     }
-    return this.cache
-  }
-  invalidate(): void {
-    this.cache = null
   }
 
   private async fetchAllPractices(): Promise<PracticeData> {
@@ -78,10 +62,11 @@ class StreakCalculator {
 
   private getTodaysPracticeSeconds(practices: PracticeData): number {
     const today = dayjs().format('YYYY-MM-DD')
-    return (practices[today] || []).reduce((total, practice) => total + practice.duration_seconds, 0)
+    return (practices[today] || []).reduce(
+      (total, practice) => total + practice.duration_seconds,
+      0
+    )
   }
 }
-
-
 
 export const streakCalculator = new StreakCalculator()

@@ -14,6 +14,7 @@ import { Brands } from '../../lib/brands'
 import { generateContentUrl, generatePlaylistUrl, generateForumPostUrl, generateCommentUrl } from '../urlBuilder'
 import {fetchByRailContentId, fetchByRailContentIds} from "../sanity";
 import {addContextToContent} from "../contentAggregator";
+import { mapLearningPathParentsTo } from '../my-path/learning-paths'
 
 /**
  * Parameters for submitting a report with type-safe issue values
@@ -31,6 +32,8 @@ export type ReportParams<T extends ReportableType = ReportableType> = {
   brand: Brands | string
   /** Full URL to the reported content (generated via urlBuilder) */
   contentUrl?: string
+  /** For 'recording_issue' reported from a take's own menu: that take's folder, so support gets only its link */
+  recordingFolder?: string
   /** Content data for URL generation (only needed if contentUrl not provided) */
   content?: {
     id: number
@@ -97,6 +100,10 @@ export async function report<T extends ReportableType>(
     requestBody.details = params.details
   }
 
+  if (params.recordingFolder) {
+    requestBody.recording_folder = params.recordingFolder
+  }
+
   // Generate content_url for reports (relative URL - backend adds domain)
   if (params.type === 'content') {
     // Fetch content and add navigateTo for courses/packs/etc
@@ -106,8 +113,17 @@ export async function report<T extends ReportableType>(
       { addNavigateTo: true }
     )
     const content = contents?.[0]
+    const methodLesson =
+      content && params.issue === 'recording_issue' ? await findMethodLesson(content) : null
 
-    if (content) {
+    if (methodLesson) {
+      requestBody.content_url = await generateContentUrl({
+        id: methodLesson.id,
+        type: methodLesson.type,
+        parentId: methodLesson.parent_id,
+        brand: methodLesson.brand,
+      })
+    } else if (content) {
       requestBody.content_url = await generateContentUrl({
         id: content.id,
         type: content.type,
@@ -158,10 +174,25 @@ export async function report<T extends ReportableType>(
 }
 
 /**
+ * Recordings are only made from Method, so a recording issue links the lesson inside its learning
+ * path rather than its skill pack. Null when the lesson isn't in a learning path.
+ */
+async function findMethodLesson(content: any): Promise<any | null> {
+  const [methodLesson] = (await mapLearningPathParentsTo([content], { type: true, parent_id: true })) as any[]
+
+  if (!methodLesson?.parent_id || methodLesson.parent_id === content.parent_id) {
+    return null
+  }
+
+  return methodLesson
+}
+
+/**
  * Get valid report issue options for a specific reportable type
  *
  * @param {ReportableType} type - The type of content being reported
  * @param {boolean} isMobileApp - Whether this is for mobile app (includes download option)
+ * @param {boolean} hasRecordings - Whether the user has recordings on this lesson; adds 'recording_issue' (content only)
  * @returns {ReportIssueOption[]} Array of valid issue options with their labels
  *
  * @example
@@ -187,7 +218,8 @@ export async function report<T extends ReportableType>(
  */
 export function getReportIssueOptions(
   type: ReportableType,
-  isMobileApp: boolean = false
+  isMobileApp: boolean = false,
+  hasRecordings: boolean = false
 ): ReportIssueOption[] {
   switch (type) {
     case 'forum_post':
@@ -209,7 +241,7 @@ export function getReportIssueOptions(
       ]
 
     case 'content':
-      const contentOptions = [
+      const contentOptions: ReportIssueOption[] = [
         {
           value: 'incorrect_metadata',
           label: 'The lesson image, title or description is incorrect',
@@ -222,10 +254,14 @@ export function getReportIssueOptions(
         contentOptions.push({ value: 'download_unavailable', label: 'Download is not available' })
       }
 
-      contentOptions.push(
-        { value: 'assignment_issue', label: 'An issue with lesson assignment' },
-        { value: 'other', label: 'Other reasons' }
-      )
+      contentOptions.push({ value: 'assignment_issue', label: 'An issue with lesson assignment' })
+
+      // Only exist on lessons the user has recorded on
+      if (hasRecordings) {
+        contentOptions.push({ value: 'recording_issue', label: 'Recording playback or sharing issue', helpText: 'We may review your recordings to help fix the issue.' })
+      }
+
+      contentOptions.push({ value: 'other', label: 'Other reasons' })
 
       return contentOptions
 

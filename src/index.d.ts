@@ -1,6 +1,60 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	buildShareUrl,
+	createAudioChunkUploader,
+	deleteLessonRecordings,
+	deleteRecording,
+	formatDurationMs,
+	getCombinedAudioUrl,
+	getDownloadUrl,
+	getExtensionForMimeType,
+	getMimeTypeForExtension,
+	getMyRecordings,
+	getRecordedContentIds,
+	getRecordingIndicators,
+	getRecordingTimeline,
+	getSharedCombinedAudioUrl,
+	getSharedRecording,
+	getSupportedFormats,
+	isFormatSupported,
+	listRecordings,
+	logSeekEvent,
+	renameRecording,
+	restoreRecordings,
+	shareRecording,
+	startSession,
+	stopSession,
+	stopSessionOnPageExit,
+	trackAudioRecordingSession,
+	unshareRecording
+} from './services/audioRecording/audioRecording.ts';
+
+import {
+	fetchAudioSettings,
+	updateAudioSettings
+} from './services/audioRecording/audioSettings.ts';
+
+import {
+	getRecordingPlaybackUrl
+} from './services/audioRecording/playbackUrl.ts';
+
+import {
+	estimateClockOffset,
+	monotonicNow
+} from './services/audioRecording/recordingClock.ts';
+
+import {
+	logRateChangeEvent,
+	logResumeEvent
+} from './services/audioRecording/recordingEvents.ts';
+
+import {
+	downsamplePeaks,
+	getWaveformPeaks
+} from './services/audioRecording/waveformPeaks.ts';
+
+import {
 	registerAwardCallback,
 	registerProgressCallback
 } from './services/awards/award-callbacks.js';
@@ -21,6 +75,7 @@ import {
 	globalConfig,
 	initializeEnvVar,
 	initializeService,
+	setSessionUserData,
 	updateSessionConfig
 } from './services/config.js';
 
@@ -55,23 +110,6 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
-	completeLearningPathIntroVideo,
-	completeMethodIntroVideo,
-	fetchLearningPathLessons,
-	fetchLearningPathProgressCheckLessons,
-	getActivePath,
-	getDailySession,
-	getEnrichedLearningPath,
-	getEnrichedLearningPaths,
-	getLearningPathLessonsByIds,
-	isNextLessonLocked,
-	mapContentToParent,
-	resetAllLearningPaths,
-	startLearningPath,
-	updateDailySession
-} from './services/content-org/learning-paths.ts';
-
-import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -97,7 +135,6 @@ import {
 	getNewAndUpcoming,
 	getOwnedContent,
 	getRecent,
-	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
@@ -139,6 +176,7 @@ import {
 	getResumeTimeSecondsByIds,
 	getResumeTimeSecondsByRecordIds,
 	getStartedOrCompletedProgressOnly,
+	getWatchedMethodLessonCount,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -162,6 +200,10 @@ import {
 import {
 	getEndScreen
 } from './services/endScreen/endScreen.ts';
+
+import {
+	featureFlags
+} from './services/feature-flags/index.ts';
 
 import {
 	createForumCategory,
@@ -222,16 +264,21 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
-	createTestUser
-} from './services/liveTesting.ts';
-
-import {
 	fetchMarketingAll,
 	fetchMarketingFaqs,
 	fetchMarketingPracticeGoals,
 	fetchMarketingStats,
 	fetchMarketingTestimonials
 } from './services/marketing/marketing.ts';
+
+import {
+	claimPromotionalCampaign,
+	dismissPromotionalCampaign,
+	fetchAvailablePromotionalCampaigns,
+	fetchPromotionalCampaigns,
+	fetchUserCampaignStates,
+	resolveCampaignPlaceholders
+} from './services/marketing/promotions.ts';
 
 import {
 	acceptInvite,
@@ -243,6 +290,49 @@ import {
 	rescindInvite,
 	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
+	advanceActiveLearningPath,
+	fetchActiveLearningPath,
+	setActiveLearningPath
+} from './services/my-path/active-path.ts';
+
+import {
+	createDailySession,
+	fetchDailySession
+} from './services/my-path/daily-session.ts';
+
+import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
+	fetchLearningPathLessons,
+	fetchLearningPathProgressCheckLessons,
+	getActivePath,
+	getDailySession,
+	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
+	getLearningPathLessonsByIds,
+	isNextLessonLocked,
+	mapContentToParent,
+	resetActiveLearningPath,
+	resetAllLearningPaths,
+	startLearningPath,
+	updateDailySession
+} from './services/my-path/learning-paths.ts';
+
+import {
+	fetchLinearizedLearningPaths
+} from './services/my-path/linearized-path.ts';
+
+import {
+	fetchQuizAnswers,
+	storeQuizAnswers
+} from './services/my-path/placement-quiz.ts';
+
+import {
+	completeMyPathIntroVideo,
+	completePreroll
+} from './services/my-path/preroll.ts';
 
 import {
 	deleteAllNotifications,
@@ -339,10 +429,11 @@ import {
 
 import {
 	fetchSimilarItems,
+	getRecommendedForYou,
 	rankCategories,
 	rankItems,
 	recommendations
-} from './services/recommendations.js';
+} from './services/recommendations.ts';
 
 import {
 	getReportIssueOptions,
@@ -422,6 +513,7 @@ import {
 	confirmEmailChange,
 	createPendingAccount,
 	deleteAccount,
+	maskEmail,
 	numberOfActiveUsers,
 	requestEmailChange,
 	resetPassword,
@@ -508,7 +600,9 @@ import {
 import {
 	listOAuthProviders,
 	loginAsUser,
+	loginWithMagicLink,
 	redirectToOAuthProvider,
+	requestMagicLoginLink,
 	unlinkOAuthProvider,
 	verifyOAuthToken
 } from './services/user/session.ts';
@@ -521,10 +615,14 @@ import {
 
 import {
 	calculateLongestStreaks,
+	createLessonNote,
 	createPracticeNotes,
+	deleteLessonNote,
 	deletePracticeSession,
 	deleteUserActivity,
 	fetchRecentActivitiesActiveTabs,
+	getContentIdsWithLessonNotes,
+	getLessonNotes,
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
@@ -532,13 +630,16 @@ import {
 	getUserMonthlyStats,
 	getUserWeeklyStats,
 	getWeeklyPracticeSessions,
+	observeLessonNotes,
 	recordUserActivity,
 	recordUserPractice,
+	refreshLessonNotes,
 	removeUserPractice,
 	restorePracticeSession,
 	restoreUserActivity,
 	restoreUserPractice,
 	trackUserPractice,
+	updateLessonNote,
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
@@ -549,7 +650,7 @@ import {
 } from './services/whoLiked.ts';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -561,6 +662,7 @@ declare module 'musora-content-services' {
 		addContextToContent,
 		addContextToLearningPaths,
 		addItemToPlaylist,
+		advanceActiveLearningPath,
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
@@ -569,12 +671,16 @@ declare module 'musora-content-services' {
 		blockedUsers,
 		buildEntityAndTotalQuery,
 		buildImageSRC,
+		buildShareUrl,
 		calculateLongestStreaks,
+		claimPromotionalCampaign,
 		clearAllCachedData,
 		clearState,
 		closeComment,
 		completeLearningPathIntroVideo,
 		completeMethodIntroVideo,
+		completeMyPathIntroVideo,
+		completePreroll,
 		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusCompletedMany,
@@ -586,41 +692,53 @@ declare module 'musora-content-services' {
 		contentStatusStartedOffline,
 		convertToTimeZone,
 		createAccount,
+		createAudioChunkUploader,
 		createComment,
+		createDailySession,
 		createForumCategory,
 		createInvites,
+		createLessonNote,
 		createPendingAccount,
 		createPlaylist,
 		createPost,
 		createPracticeNotes,
-		createTestUser,
 		createThread,
 		deleteAccount,
 		deleteAllNotifications,
 		deleteComment,
 		deleteForumCategory,
 		deleteItemsFromPlaylist,
+		deleteLessonNote,
+		deleteLessonRecordings,
 		deleteNotification,
 		deletePicture,
 		deletePlaylist,
 		deletePost,
 		deletePracticeSession,
 		deleteProfilePicture,
+		deleteRecording,
 		deleteThread,
 		deleteUserActivity,
+		dismissPromotionalCampaign,
 		doesUserHaveMembership,
+		downsamplePeaks,
 		duplicatePlaylist,
 		editComment,
 		emitProgressSaved,
 		enrollUserInGuidedCourse,
+		estimateClockOffset,
 		extractFromRecordId,
 		extractSanityUrl,
+		featureFlags,
+		fetchActiveLearningPath,
 		fetchAll,
 		fetchAllFilterOptions,
 		fetchAllPublicAnnouncements,
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
+		fetchAudioSettings,
+		fetchAvailablePromotionalCampaigns,
 		fetchBrandsByContentIds,
 		fetchByRailContentId,
 		fetchByRailContentIds,
@@ -639,6 +757,7 @@ declare module 'musora-content-services' {
 		fetchContentTypeCounts,
 		fetchCourseCollectionData,
 		fetchCustomerPayments,
+		fetchDailySession,
 		fetchEnrollmentPageMetadata,
 		fetchFollowedThreads,
 		fetchForumCategories,
@@ -660,6 +779,7 @@ declare module 'musora-content-services' {
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
 		fetchLikeCount,
+		fetchLinearizedLearningPaths,
 		fetchLiveEvent,
 		fetchLiveEventPollingState,
 		fetchLiveStreamData,
@@ -687,7 +807,9 @@ declare module 'musora-content-services' {
 		fetchPost,
 		fetchPosts,
 		fetchPracticeGoals,
+		fetchPromotionalCampaigns,
 		fetchPublicAnnouncement,
+		fetchQuizAnswers,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
@@ -714,6 +836,7 @@ declare module 'musora-content-services' {
 		fetchUninterests,
 		fetchUnreadCount,
 		fetchUpcomingEvents,
+		fetchUserCampaignStates,
 		fetchUserPermissions,
 		fetchUserPlaylists,
 		fetchUserPracticeMeta,
@@ -723,6 +846,7 @@ declare module 'musora-content-services' {
 		filterCoursesInCourseCollections,
 		flushWatchSession,
 		followThread,
+		formatDurationMs,
 		generateAuthSessionUrl,
 		generateCommentUrl,
 		generateContentUrl,
@@ -738,15 +862,19 @@ declare module 'musora-content-services' {
 		getAllStartedOrCompleted,
 		getAwardStatistics,
 		getBadgeFields,
+		getCombinedAudioUrl,
 		getCompletedAwards,
 		getCompletedAwardsByUser,
 		getContentAwards,
 		getContentAwardsByIds,
+		getContentIdsWithLessonNotes,
 		getContentRows,
 		getDailySession,
+		getDownloadUrl,
 		getEndScreen,
 		getEnrichedLearningPath,
 		getEnrichedLearningPaths,
+		getExtensionForMimeType,
 		getHierarchies,
 		getHierarchy,
 		getIdsWhereLastAccessedFromMethod,
@@ -755,8 +883,11 @@ declare module 'musora-content-services' {
 		getLearningPathLessonsByIds,
 		getLegacyMethods,
 		getLessonContentRows,
+		getLessonNotes,
 		getMCSVersion,
+		getMimeTypeForExtension,
 		getMonday,
+		getMyRecordings,
 		getNavigateTo,
 		getNavigateToForMethod,
 		getNavigateToForPlaylists,
@@ -779,15 +910,22 @@ declare module 'musora-content-services' {
 		getRecentActivity,
 		getRecentActivityOffline,
 		getRecommendedForYou,
+		getRecordedContentIds,
+		getRecordingIndicators,
+		getRecordingPlaybackUrl,
+		getRecordingTimeline,
 		getReportIssueOptions,
 		getResumeTimeSecondsByIds,
 		getResumeTimeSecondsByRecordIds,
 		getSanityDate,
 		getScheduleContentRows,
+		getSharedCombinedAudioUrl,
+		getSharedRecording,
 		getSongTypesFor,
 		getSortOrder,
 		getStartedOrCompletedProgressOnly,
 		getStreaksAndMessage,
+		getSupportedFormats,
 		getTabResults,
 		getTimeRemainingUntilLocal,
 		getToday,
@@ -797,6 +935,8 @@ declare module 'musora-content-services' {
 		getUserPinProgressKey,
 		getUserSignature,
 		getUserWeeklyStats,
+		getWatchedMethodLessonCount,
+		getWaveformPeaks,
 		getWeekNumber,
 		getWeeklyPracticeSessions,
 		getWeeklyPracticeSessionsOffline,
@@ -810,6 +950,7 @@ declare module 'musora-content-services' {
 		isBucketUrl,
 		isContentLiked,
 		isContentLikedByIds,
+		isFormatSupported,
 		isNextDay,
 		isNextLessonLocked,
 		isSameDate,
@@ -822,9 +963,14 @@ declare module 'musora-content-services' {
 		likePlaylist,
 		likePost,
 		listOAuthProviders,
+		listRecordings,
 		lockThread,
+		logRateChangeEvent,
+	  logResumeEvent,
+		logSeekEvent,
 		login,
 		loginAsUser,
+		loginWithMagicLink,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
@@ -833,7 +979,10 @@ declare module 'musora-content-services' {
 		markNotificationAsRead,
 		markNotificationAsUnread,
 		markThreadAsRead,
+		maskEmail,
+		monotonicNow,
 		numberOfActiveUsers,
+		observeLessonNotes,
 		onProgressSaved,
 		openComment,
 		otherStats,
@@ -850,27 +999,33 @@ declare module 'musora-content-services' {
 		recordWatchSession,
 		recordWatchSessionOffline,
 		redirectToOAuthProvider,
+		refreshLessonNotes,
 		registerAwardCallback,
 		registerProgressCallback,
 		removeContentAsInterested,
 		removeContentAsNotInterested,
 		removeUserFromActiveMultiUserAccount,
 		removeUserPractice,
+		renameRecording,
 		replyToComment,
 		report,
 		reportComment,
 		reportPlaylist,
 		requestEmailChange,
+		requestMagicLoginLink,
 		rescindInvite,
 		reset,
+		resetActiveLearningPath,
 		resetAllAwards,
 		resetAllLearningPaths,
 		resetPassword,
+		resolveCampaignPlaceholders,
 		restoreComment,
 		restoreItemFromPlaylist,
 		restoreNotification,
 		restorePracticeSession,
 		restorePurchases,
+		restoreRecordings,
 		restoreUserActivity,
 		restoreUserPractice,
 		search,
@@ -878,19 +1033,27 @@ declare module 'musora-content-services' {
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
 		sendRevenueCatPurchaseMetadata,
+		setActiveLearningPath,
+		setSessionUserData,
 		setStudentViewForUser,
 		setUserPinnedProgressRow,
 		setUserSignature,
 		setupAccount,
+		shareRecording,
 		startLearningPath,
 		startLiveEventPolling,
 		startOnboarding,
+		startSession,
 		status,
+		stopSession,
+		stopSessionOnPageExit,
+		storeQuizAnswers,
 		toDayjs,
 		toLocalDay,
 		togglePlaylistPrivate,
 		toggleSignaturePrivate,
 		toggleStudentView,
+		trackAudioRecordingSession,
 		trackUserPractice,
 		unEnrollUserInGuidedCourse,
 		unassignModeratorToComment,
@@ -905,10 +1068,13 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
+		unshareRecording,
+		updateAudioSettings,
 		updateBrand,
 		updateDailySession,
 		updateDisplayName,
 		updateForumCategory,
+		updateLessonNote,
 		updateMultiUserAccount,
 		updateNotificationSetting,
 		updateOnboarding,

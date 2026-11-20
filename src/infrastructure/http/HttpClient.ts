@@ -10,6 +10,7 @@ import { globalConfig } from '../../services/config'
 type _RequestOptions = {
   dataVersion?: string | null
   cache?: RequestCache
+  keepalive?: boolean
 }
 
 export class HttpClient {
@@ -83,7 +84,7 @@ export class HttpClient {
   ): Promise<T> {
     try {
       const headers = this.buildHeaders(options.dataVersion)
-      const requestOptions = this.buildRequestOptions(method, headers, body, options.cache)
+      const requestOptions = this.buildRequestOptions(method, headers, body, options.cache, options.keepalive)
       const fullUrl = this.resolveUrl(url)
 
       return await this.requestExecutor.execute<T>(fullUrl, requestOptions)
@@ -113,7 +114,8 @@ export class HttpClient {
     method: string,
     headers: Record<string, string>,
     body: any,
-    cache?: RequestCache | null
+    cache?: RequestCache | null,
+    keepalive?: boolean
   ): RequestOptions {
     const options: RequestOptions = {
       method,
@@ -123,6 +125,10 @@ export class HttpClient {
 
     if (cache) {
       options.cache = cache
+    }
+
+    if (keepalive) {
+      options.keepalive = true
     }
 
     if (body) {

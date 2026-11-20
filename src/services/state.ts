@@ -1,5 +1,5 @@
-import { streakCalculator } from './user/streakCalculator'
 import { setSessionUserData } from './config.js'
+import { featureFlags } from './feature-flags'
 
 /**
  * Clears all client-side cached state in musora-content-services.
@@ -7,6 +7,6 @@ import { setSessionUserData } from './config.js'
  * between user sessions.
  */
 export function clearState(): void {
-  streakCalculator.invalidate()
   setSessionUserData(null)
+  featureFlags.reset()
 }

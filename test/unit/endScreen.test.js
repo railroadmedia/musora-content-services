@@ -19,7 +19,7 @@ jest.mock('../../src/services/contentLikes.js', () => ({
 jest.mock('../../src/services/userActivity.js', () => ({
   ...jest.requireActual('../../src/services/userActivity'),
 }))
-jest.mock('../../src/services/content-org/learning-paths.ts', () => ({
+jest.mock('../../src/services/my-path/learning-paths.ts', () => ({
   enrollInLearningPath: jest.fn(),
   getLearningPathProgress: jest.fn()
 }))
@@ -36,8 +36,8 @@ jest.mock('../../src/services/sanity.js', () => ({
   fetchRelatedLessons: jest.fn()
 }))
 
-jest.mock('../../src/services/recommendations.js', () => ({
-  ...jest.requireActual('../../src/services/recommendations.js'),
+jest.mock('../../src/services/recommendations', () => ({
+  ...jest.requireActual('../../src/services/recommendations'),
   fetchSimilarItems: jest.fn(),
   rankCategories: jest.fn()
 }))
@@ -51,7 +51,7 @@ jest.mock('../../src/services/user/management.js', () => ({
 }))
 
 import { getEndScreen } from '../../src/services/endScreen/endScreen.ts'
-import * as recommendationsModule from '../../src/services/recommendations.js'
+import * as recommendationsModule from '../../src/services/recommendations'
 import * as sanityModule from '../../src/services/sanity.js'
 
 describe('getEndScreen', () => {

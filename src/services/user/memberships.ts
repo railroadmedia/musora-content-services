@@ -42,6 +42,7 @@ export interface UserMembershipResponse {
     has_had_apple_subscription: boolean
     has_had_google_subscription: boolean
     has_had_web_subscription: boolean
+    active_app_subscription_platform: 'apple' | 'google' | null
   }
 }
 
