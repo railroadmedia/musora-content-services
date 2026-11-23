@@ -170,8 +170,6 @@ export async function fetchRechargeTokens(): Promise<RechargeTokens> {
 /**
  * Upgrades the user's subscription or provides a prefilled add-to-cart URL.
  *
- * @param {boolean} featureFlag - MultiUserAccount feature Flag - default false
- * @param {string} sku- product sku to upgrade to, required if feature flag is set
  *
  * @returns {Promise<UpgradeSubscriptionResponse>} A promise that resolves to an object containing either:
  *  - {string} action - The action performed (e.g., 'instant_upgrade').
@@ -183,15 +181,13 @@ export async function fetchRechargeTokens(): Promise<RechargeTokens> {
  * @throws {Error} Throws an error if the request fails.
  *
  * @example
- * upgradeSubscription()
+ * upgradeSubscription('musora-base-family-annual-recurring-membership')
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function upgradeSubscription(featureFlag = false, sku): Promise<UpgradeSubscriptionResponse> {
-  let featureFlagValue = featureFlag ? 1 : 0
-  let skuValue = sku ? `&sku=${sku}` : ''
+export async function upgradeSubscription(sku: string): Promise<UpgradeSubscriptionResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<UpgradeSubscriptionResponse>(`${baseUrl}/v1/update-subscription?${multiUserAccountFeatureFlag}=${featureFlagValue}${skuValue}`)
+  return httpClient.get<UpgradeSubscriptionResponse>(`${baseUrl}/v1/update-subscription?sku=${sku}`)
 }
 
 /**
@@ -272,7 +268,6 @@ export async function restorePurchases(
  * Get the upgrade price from Basic to Plus membership.
  * Returns the price based on the user's subscription interval.
  *
- * @param {boolean} featureFlag - MultiUserAccount feature Flag - default false
  *
  * For monthly subscribers: Returns the monthly upgrade cost (difference between Plus and Base monthly prices, ~$5/month)
  * For yearly subscribers: Returns the monthly equivalent upgrade cost ($3.33/month from $40/year)
@@ -297,10 +292,9 @@ export async function restorePurchases(
  *     console.error('Failed to fetch upgrade price:', error)
  *   })
  */
-export async function getUpgradePrice(featureFlag = false) {
-  let featureFlagValue = featureFlag ? 1 : 0
+export async function getUpgradePrice() {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return  httpClient.get(`${baseUrl}/v1/upgrade-price?${multiUserAccountFeatureFlag}=${featureFlagValue}`)
+  return  httpClient.get(`${baseUrl}/v1/upgrade-price`)
 }
 
 /**
