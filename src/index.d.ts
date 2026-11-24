@@ -41,6 +41,10 @@ import {
 } from './services/audioRecording/audioSettings.ts';
 
 import {
+	generateFeedback
+} from './services/audioRecording/feedbackTestTriggers.ts';
+
+import {
 	getRecordingPlaybackUrl
 } from './services/audioRecording/playbackUrl.ts';
 
@@ -856,6 +860,7 @@ declare module 'musora-content-services' {
 		generateCommentUrl,
 		generateContentUrl,
 		generateContentUrlWithDomain,
+		generateFeedback,
 		generateForumPostUrl,
 		generatePlaylistUrl,
 		generateRecordId,
