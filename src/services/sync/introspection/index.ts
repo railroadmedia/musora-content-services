@@ -22,7 +22,10 @@ export type IntrospectionModelConfig = {
 
 export type IntrospectionConfig = Record<string, IntrospectionModelConfig>
 
+const CONFIG_MAX_AGE_MS = 60 * 60 * 1000
+
 let configPromise: Promise<IntrospectionConfig | null> | null = null
+let configFetchedAt = 0
 
 function isKnownModelName(modelName: string): boolean {
   return Object.prototype.hasOwnProperty.call(models, modelName)
@@ -34,6 +37,7 @@ function withKnownModelsOnly(config: IntrospectionConfig): IntrospectionConfig {
 
 export async function fetchConfig(): Promise<IntrospectionConfig | null> {
   if (!configPromise) {
+    configFetchedAt = Date.now()
     configPromise = diagnosticsFetch('/settings')
       .then((response) => (response.ok ? (response.json() as Promise<IntrospectionConfig>) : null))
       .then((config) => (config ? withKnownModelsOnly(config) : null))
@@ -44,6 +48,18 @@ export async function fetchConfig(): Promise<IntrospectionConfig | null> {
   if (!config) configPromise = null
 
   return config
+}
+
+export function clearConfigCache() {
+  configPromise = null
+}
+
+function isConfigStale(): boolean {
+  return Date.now() - configFetchedAt >= CONFIG_MAX_AGE_MS
+}
+
+function isSameConfig(a: IntrospectionConfig, b: IntrospectionConfig): boolean {
+  return JSON.stringify(a) === JSON.stringify(b)
 }
 
 const LAST_DUMP_AT_BY_MODEL_KEY = 'introspection_last_dump_at_by_model'
@@ -176,10 +192,11 @@ function buildDeleteEvents(tableName: string, ids: string[], previous: (RawRecor
   }))
 }
 
-async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<any>>, context: SyncContext) {
-  const config = await fetchConfig()
-  if (!config) return () => {}
-
+function subscribeToWriteEvents(
+  storesRegistry: Record<string, SyncStore<any>>,
+  context: SyncContext,
+  config: IntrospectionConfig
+) {
   const activeModelNames = Object.entries(config)
     .filter(([, modelConfig]) => modelConfig.event_mode !== 'off')
     .map(([modelName]) => modelName)
@@ -209,10 +226,11 @@ async function subscribeToWriteEvents(storesRegistry: Record<string, SyncStore<a
   }
 }
 
-async function startCursorReporting(storesRegistry: Record<string, SyncStore<any>>, context: SyncContext) {
-  const config = await fetchConfig()
-  if (!config) return () => {}
-
+function startCursorReporting(
+  storesRegistry: Record<string, SyncStore<any>>,
+  context: SyncContext,
+  config: IntrospectionConfig
+) {
   const enabledStores = Object.fromEntries(
     Object.entries(config)
       .filter(([, modelConfig]) => modelConfig.cursor_enabled)
@@ -231,31 +249,54 @@ export default function setup(context: SyncContext, database: Database, storesRe
   let unsubscribeVisibilityWait: (() => void) | null = null
   let stopReportingCursors: (() => void) | null = null
   let isTornDown = false
-  let hasStarted = false
+  let activeConfig: IntrospectionConfig | null = null
   const lastDumpAttemptAtByModel = new Map<string, number>()
 
   async function start() {
-    if (hasStarted || isTornDown) return
+    if (activeConfig || isTornDown) return
     const config = await fetchConfig()
-    if (!config || hasStarted || isTornDown) return
-    hasStarted = true
+    if (!config || activeConfig || isTornDown) return
+    activeConfig = config
 
-    startCursorReporting(storesRegistry, context).then((stop) => {
-      if (isTornDown) return stop()
-      stopReportingCursors = stop
-    })
+    stopReportingCursors = startCursorReporting(storesRegistry, context, config)
+    unsubscribeWriteEvents = subscribeToWriteEvents(storesRegistry, context, config)
+    scheduleNextDump(config)
+  }
 
-    subscribeToWriteEvents(storesRegistry, context).then((unsubscribe) => {
-      if (isTornDown) return unsubscribe()
-      unsubscribeWriteEvents = unsubscribe
-    })
+  function stop() {
+    activeConfig = null
+    if (timer) clearTimeout(timer)
+    timer = null
+    stopReportingCursors?.()
+    stopReportingCursors = null
+    unsubscribeWriteEvents?.()
+    unsubscribeWriteEvents = null
+    unsubscribeVisibilityWait?.()
+    unsubscribeVisibilityWait = null
+  }
 
-    scheduleNextDump()
+  async function restartIfConfigChanged() {
+    if (isTornDown || !isConfigStale()) return
+    clearConfigCache()
+    const config = await fetchConfig()
+    if (!config || isTornDown) return
+    if (activeConfig && isSameConfig(config, activeConfig)) return
+
+    stop()
+    start()
   }
 
   const unsubscribeConnectivity = context.connectivity.subscribe((isOnline) => {
     if (isOnline) start()
   })
+
+  const unsubscribeVisibility = context.visibility.subscribe((isVisible) => {
+    if (isVisible) restartIfConfigChanged()
+  })
+
+  const configRefreshTimer = setInterval(() => {
+    if (context.visibility.getValue()) restartIfConfigChanged()
+  }, CONFIG_MAX_AGE_MS)
 
   function waitUntilVisible(onVisible: () => void) {
     unsubscribeVisibilityWait = context.visibility.subscribe((isVisible) => {
@@ -266,9 +307,8 @@ export default function setup(context: SyncContext, database: Database, storesRe
     })
   }
 
-  async function scheduleNextDump() {
-    const config = await fetchConfig()
-    if (!config) return
+  async function scheduleNextDump(config: IntrospectionConfig) {
+    const isCurrent = () => !isTornDown && activeConfig === config
 
     const dumpableModelNames = Object.entries(config)
       .filter(([, modelConfig]) => modelConfig.dump_mode === 'interval')
@@ -283,11 +323,11 @@ export default function setup(context: SyncContext, database: Database, storesRe
       })
     )
     const delay = Math.max(0, Math.min(...dueAtByModel.values()) - Date.now())
-    if (isTornDown) return
+    if (!isCurrent()) return
 
     timer = setTimeout(async () => {
       if (!context.visibility.getValue()) {
-        waitUntilVisible(scheduleNextDump)
+        waitUntilVisible(() => scheduleNextDump(config))
         return
       }
 
@@ -298,11 +338,11 @@ export default function setup(context: SyncContext, database: Database, storesRe
       dueModelNames.forEach((modelName) => lastDumpAttemptAtByModel.set(modelName, attemptedAt))
 
       try {
-        await performDump(database, dueModelNames, context, CompressionWorker, () => isTornDown)
+        await performDump(database, dueModelNames, context, CompressionWorker, () => !isCurrent())
       } catch (error) {
         SyncTelemetry.getInstance()?.capture(error)
       }
-      if (!isTornDown) scheduleNextDump()
+      if (isCurrent()) scheduleNextDump(config)
     }, delay)
   }
 
@@ -310,10 +350,10 @@ export default function setup(context: SyncContext, database: Database, storesRe
 
   return async () => {
     isTornDown = true
-    if (timer) clearTimeout(timer)
-    stopReportingCursors?.()
-    unsubscribeVisibilityWait?.()
+    stop()
+    clearInterval(configRefreshTimer)
     unsubscribeConnectivity()
-    unsubscribeWriteEvents?.()
+    unsubscribeVisibility()
+    clearConfigCache()
   }
 }
