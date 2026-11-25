@@ -117,6 +117,8 @@ export const chapterField = `chapter[]{
 
 export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
+export const harmonyField = `"harmony": harmony{arrangement, "slug": notation->slug.current, "minPlayerVersion": notation->min_player_version}`
+
 export const resourcesField = `[
           ... resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
           ... coalesce(parent_content_reference[count(@->resource) > 0]->resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )}, []),
@@ -512,6 +514,7 @@ export let contentTypeConfig = {
       `"resources": ${resourcesField}`,
       'soundslice',
       'soundslice_slug',
+      harmonyField,
       'block_recording',
       'instrumentless',
       `"description": ${descriptionField}`,
@@ -533,6 +536,7 @@ export let contentTypeConfig = {
       `"resources": ${resourcesField}`,
       'soundslice',
       'soundslice_slug',
+      harmonyField,
       'block_recording',
       'instrumentless',
       `"description": ${descriptionField}`,
