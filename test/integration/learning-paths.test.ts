@@ -431,7 +431,7 @@ describe('resetActiveLearningPath', () => {
     expect(body.brand).toBe('drumeo')
   })
 
-  test('throws when updateDailySession fails', async () => {
+  test('throws when createDailySession fails', async () => {
     sanity.fetchByRailContentId.mockResolvedValue(makeLp(6))
     HttpClient.POST.mockRejectedValueOnce(new Error('boom'))
 
