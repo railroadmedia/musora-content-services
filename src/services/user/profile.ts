@@ -54,6 +54,10 @@ export async function otherStats(
   } as OtherStatsDTO
 }
 
+export async function getMe(): Promise<UserResource> {
+  return GET<UserResource>(`${baseUrl}/v1/me`)
+}
+
 export async function deleteProfilePicture(): Promise<void> {
   const url = `${baseUrl}/v1/users/profile_picture`
   await DELETE(url)

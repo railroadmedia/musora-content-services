@@ -593,6 +593,7 @@ import {
 
 import {
 	deleteProfilePicture,
+	getMe,
 	otherStats,
 	updateProfileVisibility
 } from './services/user/profile.ts';
@@ -884,6 +885,7 @@ export {
 	getLessonContentRows,
 	getLessonNotes,
 	getMCSVersion,
+	getMe,
 	getMimeTypeForExtension,
 	getMonday,
 	getMyRecordings,

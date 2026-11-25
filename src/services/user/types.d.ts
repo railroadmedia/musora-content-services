@@ -90,6 +90,7 @@ export interface User {
   is_challenge_owner: number
   login_as_users: boolean
   badge: string | null
+  is_vip: bool
 }
 
 export interface AuthResponse {

@@ -99,6 +99,7 @@
  * @property {string} first_access_at
  * @property {number} is_challenge_owner
  * @property {boolean} login_as_users
+ * @property {boolean} is_vip
  */
 
 /**
