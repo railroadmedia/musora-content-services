@@ -156,7 +156,13 @@ export default class SyncManager {
       this.storesRegistry[table] = this.createStore(storeConfig, database)
     })
 
-    this.teardownIntrospection = setupIntrospection(this.context, database, this.storesRegistry, this.IntrospectionCompressionWorker)
+    // Introspection is diagnostics only: if it fails to set up, sync carries on without it.
+    try {
+      this.teardownIntrospection = setupIntrospection(this.context, database, this.storesRegistry, this.IntrospectionCompressionWorker)
+    } catch (error) {
+      this.teardownIntrospection = null
+      this.telemetry.warn('[SyncManager] Failed to set up introspection', { extra: error })
+    }
 
     this.context.start()
     this.retry.start()
@@ -261,7 +267,12 @@ export default class SyncManager {
           this.context.stop()
 
           contentProgressObserver.stop()
+        } catch (error) {
+          // capture, but don't rethrow
+          this.telemetry.capture(error)
+        }
 
+        try {
           await this.teardownIntrospection?.()
         } catch (error) {
           // capture, but don't rethrow

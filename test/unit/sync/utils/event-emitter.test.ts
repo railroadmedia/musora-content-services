@@ -61,4 +61,16 @@ describe('EventEmitter', () => {
     expect(second).toHaveBeenCalledWith('hello')
     expect(third).toHaveBeenCalledWith('hello')
   })
+
+  test('a throwing listener does not throw from emit or stop later listeners', () => {
+    const failing = jest.fn(() => {
+      throw new Error('listener failed')
+    })
+    const next = jest.fn()
+    emitter.on('data', failing)
+    emitter.on('data', next)
+
+    expect(() => emitter.emit('data', 'hello')).not.toThrow()
+    expect(next).toHaveBeenCalledWith('hello')
+  })
 })

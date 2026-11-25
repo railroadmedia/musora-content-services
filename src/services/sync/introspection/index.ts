@@ -24,6 +24,11 @@ export type IntrospectionConfig = Record<string, IntrospectionModelConfig>
 
 const CONFIG_MAX_AGE_MS = 60 * 60 * 1000
 
+// Introspection is diagnostics only: its async entry points report errors instead of rejecting.
+function reportFailure(step: string, error: unknown) {
+  SyncTelemetry.getInstance()?.warn(`[Introspection] ${step} failed`, { extra: error })
+}
+
 let configPromise: Promise<IntrospectionConfig | null> | null = null
 let configFetchedAt = 0
 
@@ -253,14 +258,19 @@ export default function setup(context: SyncContext, database: Database, storesRe
   const lastDumpAttemptAtByModel = new Map<string, number>()
 
   async function start() {
-    if (activeConfig || isTornDown) return
-    const config = await fetchConfig()
-    if (!config || activeConfig || isTornDown) return
-    activeConfig = config
+    try {
+      if (activeConfig || isTornDown) return
+      const config = await fetchConfig()
+      if (!config || activeConfig || isTornDown) return
+      activeConfig = config
 
-    stopReportingCursors = startCursorReporting(storesRegistry, context, config)
-    unsubscribeWriteEvents = subscribeToWriteEvents(storesRegistry, context, config)
-    scheduleNextDump(config)
+      stopReportingCursors = startCursorReporting(storesRegistry, context, config)
+      unsubscribeWriteEvents = subscribeToWriteEvents(storesRegistry, context, config)
+      scheduleNextDump(config)
+    } catch (error) {
+      stop()
+      reportFailure('start', error)
+    }
   }
 
   function stop() {
@@ -276,14 +286,18 @@ export default function setup(context: SyncContext, database: Database, storesRe
   }
 
   async function restartIfConfigChanged() {
-    if (isTornDown || !isConfigStale()) return
-    clearConfigCache()
-    const config = await fetchConfig()
-    if (!config || isTornDown) return
-    if (activeConfig && isSameConfig(config, activeConfig)) return
+    try {
+      if (isTornDown || !isConfigStale()) return
+      clearConfigCache()
+      const config = await fetchConfig()
+      if (!config || isTornDown) return
+      if (activeConfig && isSameConfig(config, activeConfig)) return
 
-    stop()
-    start()
+      stop()
+      start()
+    } catch (error) {
+      reportFailure('config refresh', error)
+    }
   }
 
   const unsubscribeConnectivity = context.connectivity.subscribe((isOnline) => {
@@ -315,7 +329,13 @@ export default function setup(context: SyncContext, database: Database, storesRe
       .map(([modelName]) => modelName)
     if (!dumpableModelNames.length) return
 
-    const lastDumpAtByModel = await getLastDumpAtByModel(database)
+    let lastDumpAtByModel: DumpTimestampsByModel
+    try {
+      lastDumpAtByModel = await getLastDumpAtByModel(database)
+    } catch (error) {
+      reportFailure('dump scheduling', error)
+      return
+    }
     const dueAtByModel = new Map(
       dumpableModelNames.map((modelName) => {
         const lastAt = Math.max(lastDumpAtByModel[modelName] ?? 0, lastDumpAttemptAtByModel.get(modelName) ?? 0)

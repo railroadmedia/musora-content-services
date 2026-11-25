@@ -170,3 +170,46 @@ describe('introspection config refresh', () => {
     expect(unsubscribe).not.toHaveBeenCalled()
   })
 })
+
+describe('introspection failure isolation', () => {
+  const likesTable = (models as any).ContentLike.table as string
+
+  beforeEach(() => {
+    jest.useFakeTimers({ now: new Date('2026-11-25T12:00:00Z') })
+    mockedFetch.mockReset()
+    clearConfigCache()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  test('a store that fails to subscribe leaves introspection stopped, and a later config refresh retries', async () => {
+    respondWith({ ContentLike: EVENTS_ON })
+    const context = makeContext()
+    const store = {
+      on: jest.fn((): (() => void) => {
+        throw new Error('subscribe failed')
+      }),
+      getLastFetchToken: jest.fn(),
+    }
+
+    expect(() => setupIntrospection(context, makeDatabase(), { [likesTable]: store as any })).not.toThrow()
+    await flushPromises()
+    expect(store.on).toHaveBeenCalledTimes(1)
+
+    store.on.mockImplementation(() => () => {})
+    jest.setSystemTime(Date.now() + ONE_HOUR_MS)
+    becomeVisible(context)
+    await flushPromises()
+
+    expect(store.on).toHaveBeenCalledTimes(4)
+  })
+
+  test('setup does not throw when the config fetch fails', async () => {
+    mockedFetch.mockRejectedValue(new Error('offline'))
+
+    expect(() => setupIntrospection(makeContext(), makeDatabase(), {})).not.toThrow()
+    await flushPromises()
+  })
+})
