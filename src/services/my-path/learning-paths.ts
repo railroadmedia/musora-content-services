@@ -38,6 +38,7 @@ import { LEARNING_PATH_LESSON } from '../../contentTypeConfig'
 import { featureFlags } from '../feature-flags'
 import { Brands } from '../../lib/brands'
 import { advanceActiveLearningPath, fetchActiveLearningPath } from './active-path'
+import { createDailySession, DailySessionResponse as FetchDailySessionResponse } from './daily-session'
 
 const excludeFromGeneratedIndex = [
   'onLearningPathCompletedActions',
@@ -171,12 +172,12 @@ export async function startLearningPath(brand: string, learningPathId: number): 
   * @param {string} brand
   * @param {number} learningPathId - The ID of the active learning path to reset.
   * @param {Date} userDate - The user's local date.
-  * @returns {Promise<DailySessionResponse | '' | null>} - The updated daily session response or null if an error occurs.
+  * @returns {Promise<DailySessionResponse | '' | null>} - The updated daily session response or null if it could not update.
  */
-export async function resetActiveLearningPath(brand: string, learningPathId: number, userDate: Date): Promise<DailySessionResponse | '' | null> {
+export async function resetActiveLearningPath(brand: string, learningPathId: number, userDate: Date): Promise<FetchDailySessionResponse | null> {
   const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
   await resetStatus(learningPathId, collection)
-  return await updateDailySession(brand, userDate)
+  return await createDailySession(brand, userDate)
 }
 
 /**
