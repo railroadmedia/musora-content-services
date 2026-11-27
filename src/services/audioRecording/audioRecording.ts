@@ -20,6 +20,12 @@ const excludeFromGeneratedIndex = ['uploadChunk', 'logEvent']
 export type RecordingPlaybackStatus = 'pending' | 'ready' | 'failed' | null
 
 /**
+ * `reviewing` once feedback was requested and until its note is saved, then `available`.
+ * A take nobody asked feedback for is `none`, even when it was graded automatically.
+ */
+export type TakeFeedbackState = 'none' | 'reviewing' | 'available'
+
+/**
  * One take, as listed per lesson (listRecordings) and returned by renameRecording.
  * `take_number` is only null for a take recorded outside a lesson.
  */
@@ -35,6 +41,8 @@ export interface RecordingTake {
   name: string | null
   is_shared: boolean
   playback_status: RecordingPlaybackStatus
+  feedback_eligible: boolean
+  feedback_state: TakeFeedbackState
 }
 
 /** A take on a lesson, as every per-lesson list returns it: always numbered. */
@@ -74,9 +82,15 @@ export interface MyRecordingsPage {
   meta: PaginationMeta
 }
 
+/**
+ * Lesson ids for the practice list rows: lessons with a recording, a take still saving,
+ * a take under review (the Reviewing indicator) and a take with feedback (the dot on the mic).
+ */
 export interface RecordingIndicators {
   content_ids: number[]
   processing_content_ids: number[]
+  reviewing_content_ids: number[]
+  feedback_content_ids: number[]
 }
 
 export interface StartSessionExtras {
@@ -799,6 +813,82 @@ export async function unshareRecording(folder: string): Promise<unknown> {
   return POST(`${BASE_PATH}/unshare`, { folder })
 }
 
+export type FeedbackJobStatus = 'queued' | 'running' | 'done' | 'failed' | 'skipped'
+
+export interface FeedbackJob {
+  job_id: string
+  status: FeedbackJobStatus
+  stage: string
+  elapsed_s?: number
+  total_s?: number
+  reason?: string
+  created_at?: string
+  finished_at?: string
+}
+
+export interface TakeFeedback {
+  folder: string
+  take_number: number | null
+  name: string | null
+  body: string
+  created_at: string
+}
+
+export interface FeedbackStatusResponse {
+  feedback_state: TakeFeedbackState
+  feedback: TakeFeedback | null
+  job: FeedbackJob | null
+}
+
+export interface RequestedFeedbackTake {
+  folder: string
+  take_number: number | null
+  name: string | null
+  feedback_state: TakeFeedbackState
+}
+
+export type FeedbackRequestRejection =
+  | 'not_found'
+  | 'deleted'
+  | 'ineligible'
+  | 'processing'
+  | 'already_reviewing'
+  | 'already_has_feedback'
+
+export interface RequestFeedbackResponse {
+  requested: RequestedFeedbackTake[]
+  rejected: { folder: string; reason: FeedbackRequestRejection }[]
+}
+
+/**
+ * Ask for AI feedback on one or more of the user's own takes. The takes that can't be requested
+ * come back in `rejected` without blocking the others, also when none of them can be requested.
+ * Throws the HTTP error when the user's Feedback setting is off or `folders` is empty or repeats a
+ * folder (422), while on-demand feedback is switched off (404), and when the feedback service is
+ * unavailable (502, worth retrying).
+ */
+export async function requestFeedback(folders: string[]): Promise<RequestFeedbackResponse> {
+  try {
+    return await POST(`${BASE_PATH}/feedback`, { folders })
+  } catch (error: any) {
+    const rejected = error?.status === 422 ? error?.body?.additional_details?.rejected : undefined
+    if (!Array.isArray(rejected) || rejected.length === 0) {
+      throw error
+    }
+
+    return { requested: [], rejected }
+  }
+}
+
+/**
+ * The take's feedback state and, once it's `available`, its feedback. Poll on `feedback_state`:
+ * `job` is the FBL job while the take is `reviewing` and FBL can report it, null otherwise (also
+ * while reviewing, when FBL is unreachable or doesn't know the take).
+ */
+export async function getFeedbackStatus(folder: string): Promise<FeedbackStatusResponse> {
+  return GET(`${BASE_PATH}/feedback?folder=${encodeURIComponent(folder)}`)
+}
+
 /**
  * Give a take a custom name. Owner only. Pass null or an empty string to clear it, so the
  * take shows as "Take {take_number}" again. Returns the updated recording.
@@ -947,6 +1037,39 @@ export async function createAudioChunkUploader(
   return { upload, finish }
 }
 
+export interface PracticeFeedback {
+  body: string
+  created_at: string
+  summary: Record<string, unknown> | null
+}
+
+/**
+ * The user's feedback on a lesson, summarizing the takes they requested feedback on, or null when
+ * there is none yet.
+ */
+export async function getLessonFeedback(
+  contentId: number
+): Promise<{ feedback: PracticeFeedback | null }> {
+  return GET(`${BASE_PATH}/lesson-feedback?content_id=${contentId}`)
+}
+
+/**
+ * The user's practice feedback for a day (`YYYY-MM-DD`), or null when there is none.
+ */
+export async function getDailyFeedback(date: string): Promise<{ feedback: PracticeFeedback | null }> {
+  return GET(`${BASE_PATH}/daily-feedback?date=${encodeURIComponent(date)}`)
+}
+
+/**
+ * The user's practice feedback for the week starting on `weekStart` (a Monday, `YYYY-MM-DD`), or
+ * null when there is none. Past weeks work too.
+ */
+export async function getWeeklyFeedback(
+  weekStart: string
+): Promise<{ feedback: PracticeFeedback | null }> {
+  return GET(`${BASE_PATH}/weekly-feedback?week_start=${encodeURIComponent(weekStart)}`)
+}
+
 export default {
   MIME_TYPES,
   EXTENSIONS,
@@ -970,6 +1093,8 @@ export default {
   getDownloadUrl,
   shareRecording,
   unshareRecording,
+  requestFeedback,
+  getFeedbackStatus,
   renameRecording,
   deleteRecording,
   deleteLessonRecordings,
@@ -978,4 +1103,7 @@ export default {
   buildShareUrl,
   getSharedCombinedAudioUrl,
   createAudioChunkUploader,
+  getLessonFeedback,
+  getDailyFeedback,
+  getWeeklyFeedback,
 }

@@ -7,8 +7,11 @@ import {
 	deleteRecording,
 	formatDurationMs,
 	getCombinedAudioUrl,
+	getDailyFeedback,
 	getDownloadUrl,
 	getExtensionForMimeType,
+	getFeedbackStatus,
+	getLessonFeedback,
 	getMimeTypeForExtension,
 	getMyRecordings,
 	getRecordedContentIds,
@@ -17,10 +20,12 @@ import {
 	getSharedCombinedAudioUrl,
 	getSharedRecording,
 	getSupportedFormats,
+	getWeeklyFeedback,
 	isFormatSupported,
 	listRecordings,
 	logSeekEvent,
 	renameRecording,
+	requestFeedback,
 	restoreRecordings,
 	shareRecording,
 	startSession,
@@ -650,7 +655,7 @@ import {
 } from './services/whoLiked.ts';
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -869,12 +874,14 @@ declare module 'musora-content-services' {
 		getContentAwardsByIds,
 		getContentIdsWithLessonNotes,
 		getContentRows,
+		getDailyFeedback,
 		getDailySession,
 		getDownloadUrl,
 		getEndScreen,
 		getEnrichedLearningPath,
 		getEnrichedLearningPaths,
 		getExtensionForMimeType,
+		getFeedbackStatus,
 		getHierarchies,
 		getHierarchy,
 		getIdsWhereLastAccessedFromMethod,
@@ -883,6 +890,7 @@ declare module 'musora-content-services' {
 		getLearningPathLessonsByIds,
 		getLegacyMethods,
 		getLessonContentRows,
+		getLessonFeedback,
 		getLessonNotes,
 		getMCSVersion,
 		getMimeTypeForExtension,
@@ -938,6 +946,7 @@ declare module 'musora-content-services' {
 		getWatchedMethodLessonCount,
 		getWaveformPeaks,
 		getWeekNumber,
+		getWeeklyFeedback,
 		getWeeklyPracticeSessions,
 		getWeeklyPracticeSessionsOffline,
 		globalConfig,
@@ -966,7 +975,7 @@ declare module 'musora-content-services' {
 		listRecordings,
 		lockThread,
 		logRateChangeEvent,
-	  logResumeEvent,
+		logResumeEvent,
 		logSeekEvent,
 		login,
 		loginAsUser,
@@ -1012,6 +1021,7 @@ declare module 'musora-content-services' {
 		reportComment,
 		reportPlaylist,
 		requestEmailChange,
+		requestFeedback,
 		requestMagicLoginLink,
 		rescindInvite,
 		reset,
