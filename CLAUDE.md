@@ -426,3 +426,4 @@ When adding new WatermelonDB models for sync:
 - **Multi-brand**: All functions should handle brand filtering (`drumeo`, `pianote`, `guitareo`, `singeo`)
 - **Environment**: Always develop within railenvironment Docker container - paths and database connections assume this environment
 - **React Native**: Always verify changes are compatible with React Native (see "React Native Compatibility" section above)
+- **Practice feedback**: Before working on take, lesson, daily or weekly feedback, read the "Practice feedback" section of `AUDIO_RECORDING_METHODS.md`

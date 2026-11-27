@@ -181,8 +181,9 @@ Saved on the user's profile, so a toggle changed on one device applies on every 
 
 ### `fetchAudioSettings()`
 Returns `{ recording_enabled, voice_commands_enabled, help_improve_coach,
-help_improve_coach_updated_at, coach_feedback_enabled }`, or the defaults
-(`recording_enabled: true`, everything else `false`) when the user has never saved any.
+help_improve_coach_updated_at, coach_feedback_enabled, ... }`. A setting the user never saved
+comes back as MPB's default (`AudioSettingsResource`): `recording_enabled` is `false` and
+`coach_feedback_enabled` is `true`.
 `recording_enabled` is the user's preference only: start recording only when it's on
 **and** the device has mic permission. If permission is skipped or denied, keep the toggle
 off on that device without updating the saved preference.
@@ -191,6 +192,89 @@ off on that device without updating the saved preference.
 Pass only the toggles that changed, e.g. `updateAudioSettings({ recording_enabled: false })`;
 the rest keep their values. Changing `help_improve_coach` (the Musora Coach consent)
 updates `help_improve_coach_updated_at`. Resolves to the full settings after the update.
+
+## Practice feedback
+
+FBL grades a student's takes and writes four kinds of note: a take note per graded take, a lesson
+note, a daily note and a weekly note. MPB stores them and serves them through the methods below
+(`AudioRecordingFeedbackController`). All are server-only. End-to-end system:
+[fbl_system.md](https://github.com/railroadmedia/musora-machine-learning-FBL/blob/main/documentation/fbl_system.md).
+
+Paths are under `/api/audio-recording/v1`.
+
+| MCS method | MPB endpoint | Returns |
+|---|---|---|
+| `requestFeedback(folders)` | `POST /feedback` `{ folders }` | 202 `{ requested, rejected }`. `requested[]` is `{ folder, take_number, name, feedback_state }`; `rejected[]` is `{ folder, reason }` with reason `not_found`, `deleted`, `ineligible`, `processing`, `already_reviewing` or `already_has_feedback`. When every folder is rejected MPB answers 422 and the method resolves with `requested: []` instead of throwing. |
+| `getFeedbackStatus(folder)` | `GET /feedback?folder=` | `{ feedback_state, feedback, job }`. `feedback` is `{ folder, take_number, name, body, created_at }` only when `available`. `job` is FBL's job (`job_id`, `status`, `stage`, ...) while `reviewing` and FBL answers; null otherwise. |
+| `getLessonFeedback(contentId)` | `GET /lesson-feedback?content_id=` | `{ feedback: { body, created_at, summary } \| null }` |
+| `getDailyFeedback(date)` | `GET /daily-feedback?date=` | same shape; `date` is `YYYY-MM-DD` |
+| `getWeeklyFeedback(weekStart)` | `GET /weekly-feedback?week_start=` | same shape; `week_start` must be a Monday or MPB answers 422 |
+| `listRecordings(...)`, `renameRecording(...)` | `GET /my-sessions`, `POST /rename` | each take carries `feedback_eligible` and `feedback_state` |
+| `getRecordingIndicators(start?, end?)` | `GET /recorded-content-ids` | adds `reviewing_content_ids` (lessons with a take under review) and `feedback_content_ids` (lessons with a take whose feedback is available) |
+| `fetchAudioSettings()`, `updateAudioSettings({ coach_feedback_enabled })` | `GET` / `PATCH /settings` | the Feedback toggle |
+
+`requestFeedback` throws on 422 when Feedback is off or `folders` is empty or repeats a folder, on
+404 while `FBL_ON_DEMAND` is off, and on 502 when FBL is unreachable. On a 502 MPB releases the
+takes again, so a retry is safe.
+
+### Take feedback states
+
+`feedback_state` is MPB's `TakeFeedbackState`, worked out per request in `AudioSession::feedbackState()`:
+
+| State | Meaning |
+|---|---|
+| `none` | Nobody asked for feedback on this take. Stays `none` even when auto-grade already wrote its note. |
+| `reviewing` | Feedback was requested and the take note isn't saved yet. Poll `getFeedbackStatus`. |
+| `available` | Feedback was requested and the take note exists. |
+
+A take can be requested only when it isn't deleted, `feedback_eligible` is true (MPB sets it false,
+for example, for a take played at a speed other than 1x), its playback copy is ready (otherwise `processing`),
+and its state is `none`. A take auto-grade already graded becomes `available` straight away. MPB
+answers some takes itself with a fixed note instead of asking FBL: a take recorded before its lesson
+was re-filmed, a take on a lesson marked "No Feedback Available" in Sanity, and a take FBL skipped as
+too short.
+
+### Feedback setting
+
+`coach_feedback_enabled` null counts as on, so settings return `true` until the student turns it
+off. Feedback only takes effect while `recording_enabled` is also true
+(`UserAudioSetting::isFeedbackEnabled`), and MPB answers 422 to turning it on while the mic is off.
+With Feedback off, `requestFeedback` throws 422, no take is auto-graded, no daily or weekly note is
+queued and no notification is sent. The read methods still return notes written earlier.
+
+### One note across instruments
+
+Daily and weekly notes are one note per student per period, covering every instrument the student
+played in it. There is no brand parameter: `getDailyFeedback` and `getWeeklyFeedback` return the
+newest current note for the user, surface and `period_start`. The day is the student's local day
+and the week runs Monday to Sunday in their time zone. A lesson note is one current note per
+student and lesson; `getLessonFeedback` returns the newest, and it only covers takes the student
+requested feedback on.
+
+### Production flags
+
+| Flag | Off | On |
+|---|---|---|
+| `FBL_ON_DEMAND` | `requestFeedback` throws 404 and `getFeedbackStatus` always returns `job: null`. | Students can request feedback on their takes. |
+| `FBL_AUTO_GRADE` | A take is graded only after it is requested. | Every take of a student with Feedback on is graded once its playback copy is ready. Its state stays `none` until requested, then the note shows without waiting. |
+| `FBL_SCHEDULED_NOTES` | No daily or weekly note is written, so `getDailyFeedback` and `getWeeklyFeedback` return null. | Every 15 minutes MPB queues the note of each student whose local day or week ended at least 60 minutes ago, who has Feedback on and recorded an eligible take in it. A period with no graded take gets no note. |
+| `PRACTICE_FEEDBACK_PUSH` | No push. The in-app notification for a new lesson, daily or weekly note is still created, if the student's notification settings allow it. | Push for each new lesson, daily or weekly note. |
+| `PRACTICE_FEEDBACK_EMAIL` | No email. | Customer.io event `practice_feedback_ready` for daily and weekly notes (not lesson notes), unless the student turned that email off. |
+
+Take notes never send a notification. Notification links go to
+`/profile?feedback=lesson&content_id={id}&date={day}`, `/profile?feedback=daily&date={day}` and
+`/profile?feedback=weekly&week={monday}`.
+
+### Staging2 test trigger
+
+`POST /feedback/generate` exists only on MPB's `staging2` branch and answers 404 unless
+`FBL_TEST_TRIGGERS` and the harness URL and key are set. Body: `{ surface: 'lesson', content_id }`
+or `{ surface: 'daily' | 'weekly', date? }` (`date` defaults to today in the student's time zone;
+for weekly, any day of the week). It answers 202 with `{ surface, content_id, audio_session_id }`
+or `{ surface, period_start, period_end }`, and 422 when Feedback is off or the lesson has no
+graded take. The note then shows up on the matching read method. The MCS wrapper,
+`generateFeedback(params)` in `src/services/audioRecording/feedbackTestTriggers.ts`, exists only
+on the MCS branch `test/feedback-generate-staging2`, not on main.
 
 ## Small utilities (platform-agnostic)
 
