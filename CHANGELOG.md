@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.198.0](https://github.com/railroadmedia/musora-content-services/compare/v2.197.4...v2.198.0) (2026-11-27)
+
+
+### Features
+
+* Audio Recording Stage 2 (AI Feedback) methods ([#1118](https://github.com/railroadmedia/musora-content-services/issues/1118)) ([c0ed254](https://github.com/railroadmedia/musora-content-services/commit/c0ed2543f659e4fce7795e247a239136f5b242ab))
+
 ### [2.197.4](https://github.com/railroadmedia/musora-content-services/compare/v2.197.3...v2.197.4) (2026-11-25)
 
 
