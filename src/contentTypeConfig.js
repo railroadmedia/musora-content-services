@@ -331,6 +331,7 @@ export const progressTypesMapping = {
     'live',
     'course-lesson',
     'routine',
+    'special',
   ],
   method: [LEARNING_PATH_LESSON],
   course: ['course'],
@@ -1059,11 +1060,11 @@ function groupFilters(filters) {
 export const getFormattedType = (type, brand) => {
   for (const [key, values] of Object.entries(progressTypesMapping)) {
     if (values.includes(type)) {
-      return key === 'songs' ? songs[brand] : key
+      return key === 'songs' ? (songs[brand] ?? '') : key
     }
   }
 
-  return null
+  return ''
 }
 
 export const awardTemplate = {

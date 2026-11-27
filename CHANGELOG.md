@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.197.4](https://github.com/railroadmedia/musora-content-services/compare/v2.197.3...v2.197.4) (2026-11-25)
+
+
+### Bug Fixes
+
+* **BR-1844:** update resetActiveLearningPath to call v2 myPath endpoints ([#1115](https://github.com/railroadmedia/musora-content-services/issues/1115)) ([99c7b7a](https://github.com/railroadmedia/musora-content-services/commit/99c7b7a9114218a90234c6771912dcb6958b97f7))
+
+### [2.197.3](https://github.com/railroadmedia/musora-content-services/compare/v2.197.2...v2.197.3) (2026-11-24)
+
+### [2.197.2](https://github.com/railroadmedia/musora-content-services/compare/v2.197.1...v2.197.2) (2026-11-23)
+
+
+### Bug Fixes
+
+* return an empty header instead of null for a content type without one ([85ab0f5](https://github.com/railroadmedia/musora-content-services/commit/85ab0f5461999df0be01d9426db94b4c264133c2))
+* show special content as Lesson in the progress row ([c379a54](https://github.com/railroadmedia/musora-content-services/commit/c379a5464b451000b9074e622b1346e0f11c34e4))
+
 ### [2.197.1](https://github.com/railroadmedia/musora-content-services/compare/v2.197.0...v2.197.1) (2026-11-12)
 
 

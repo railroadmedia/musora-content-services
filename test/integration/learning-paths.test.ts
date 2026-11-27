@@ -427,17 +427,17 @@ describe('resetActiveLearningPath', () => {
     expect(await getProgressState(5, collection)).toBe('')
     expect(result).toEqual(resp)
     const [url, body] = HttpClient.POST.mock.calls[0]
-    expect(url).toContain('/daily-session/create')
+    expect(url).toContain('/api/my-path/v2/daily-session')
     expect(body.brand).toBe('drumeo')
   })
 
-  test('returns null when updateDailySession fails', async () => {
+  test('throws when createDailySession fails', async () => {
     sanity.fetchByRailContentId.mockResolvedValue(makeLp(6))
     HttpClient.POST.mockRejectedValueOnce(new Error('boom'))
 
-    const result = await resetActiveLearningPath('drumeo', 6, new Date('2026-01-01T10:00:00Z'))
-
-    expect(result).toBeNull()
+    await expect(
+      resetActiveLearningPath('drumeo', 6, new Date('2026-01-01T10:00:00Z'))
+    ).rejects.toThrow('boom')
   })
 })
 
