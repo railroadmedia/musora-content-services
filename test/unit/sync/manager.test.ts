@@ -4,6 +4,7 @@ import { SyncError } from '@/services/sync/errors/index'
 import BaseModel from '@/services/sync/models/Base'
 import createStoreConfigs from '@/services/sync/store-configs'
 import { makeTelemetry, makeContext, makeUserScope, makeDatabase } from './helpers/index'
+import setupIntrospection from '@/services/sync/introspection'
 import type { ModelClass, SyncUserScope } from '@/services/sync/index'
 
 class DummyModelA extends BaseModel { static table = 'dummy_a' }
@@ -15,6 +16,13 @@ jest.mock('../../../src/services/awards/internal/content-progress-observer', () 
     start: jest.fn().mockResolvedValue(undefined),
     stop: jest.fn(),
   },
+}))
+
+// Introspection fetches its server config on setup; keep manager tests off the network.
+jest.mock('../../../src/services/sync/introspection', () => ({
+  __esModule: true,
+  default: jest.fn(() => jest.fn().mockResolvedValue(undefined)),
+  triggerManualDump: jest.fn().mockResolvedValue(undefined),
 }))
 
 // ---
@@ -299,5 +307,36 @@ describe('abort', () => {
     const { manager, teardown } = setupManager()
     expect(() => manager.abort('test reason')).not.toThrow()
     await teardown()
+  })
+})
+
+describe('introspection isolation', () => {
+  const mockedSetupIntrospection = setupIntrospection as jest.MockedFunction<typeof setupIntrospection>
+
+  test('sync still starts when introspection setup throws', async () => {
+    mockedSetupIntrospection.mockImplementationOnce(() => {
+      throw new Error('introspection setup failed')
+    })
+    const manager = buildManager()
+    const strategy = makeMockStrategy()
+    manager.registerStrategies([DummyModelA], [strategy])
+
+    const teardown = assignManager(manager)
+
+    expect(strategy.start).toHaveBeenCalledTimes(1)
+    await expect(teardown()).resolves.not.toThrow()
+  })
+
+  test('the rest of teardown still runs when introspection teardown rejects', async () => {
+    mockedSetupIntrospection.mockImplementationOnce(() => jest.fn().mockRejectedValue(new Error('teardown failed')))
+    const manager = buildManager()
+    const strategy = makeMockStrategy()
+    manager.registerStrategies([DummyModelA], [strategy])
+
+    const teardown = assignManager(manager)
+    await teardown()
+
+    expect(strategy.stop).toHaveBeenCalledTimes(1)
+    expect(SyncManager.getInstanceOrNull()).toBeNull()
   })
 })

@@ -1,3 +1,5 @@
+import { SyncTelemetry } from '../telemetry/index'
+
 type EventMap = Record<string, any[]>;
 
 export default class EventEmitter<Events extends EventMap> {
@@ -19,6 +21,14 @@ export default class EventEmitter<Events extends EventMap> {
   }
 
   emit<K extends keyof Events>(event: K, ...args: Events[K]) {
-    this.events[event]?.forEach(fn => fn(...args));
+    // A failing listener is reported and skipped, so it can't fail the code that emitted
+    // the event or stop the listeners after it.
+    this.events[event]?.forEach(fn => {
+      try {
+        fn(...args);
+      } catch (error) {
+        SyncTelemetry.getInstance()?.warn('[EventEmitter] listener failed', { extra: error });
+      }
+    });
   }
 }
