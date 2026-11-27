@@ -27,6 +27,7 @@ export interface AudioSettings {
   mic_access_granted_at: string | null
   feedback_opt_in_completed_at: string | null
   audio_setup_toast_shown_at: string | null
+  feedback_off_toast_shown_at: string | null
   test_speaker_url: string | null
 }
 
@@ -54,6 +55,7 @@ export type AudioSettingsChanges = Partial<
   mic_access_granted?: true
   feedback_opt_in_completed?: true
   audio_setup_toast_shown?: true
+  feedback_off_toast_shown?: true
 }
 
 const SETTINGS_PATH = '/api/audio-recording/v1/settings'
